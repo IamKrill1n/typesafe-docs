@@ -1,0 +1,17 @@
+{
+  "name": "typesafe-docs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Incremental mirror of the TypeSafe documentation (docs.typesafe.ai) with a zero-dependency crawler.",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "crawl": "node scripts/crawl.mjs",
+    "crawl:check": "node scripts/crawl.mjs --check",
+    "test": "node --test tests/*.test.mjs",
+    "lint": "node --check scripts/crawl.mjs && node --check scripts/lib/fetch.mjs && node --check scripts/lib/links.mjs && node --check scripts/lib/clean.mjs && node --check tests/clean.test.mjs && node --check tests/crawl.test.mjs"
+  },
+  "license": "MIT"
+}

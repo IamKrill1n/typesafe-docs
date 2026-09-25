@@ -10,4 +10,4 @@ These documents cover how TypeSafe handles your data when you have an account wi
 * [Master Customer Agreement](https://typesafe.ai/legal/mca) — the general terms that apply to your TypeSafe account.
 * [Privacy Policy](https://typesafe.ai/legal/privacy-policy) — what data we collect and how we use it, including our commitment not to train models on user data.
 
-We also offer zero data retention (ZDR) for enterprise customers. Contact [privacy@typesafe.ai](mailto:privacy@typesafe.ai) to learn more.
+We also offer zero data retention (ZDR) for enterprise customers. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai) to learn more.

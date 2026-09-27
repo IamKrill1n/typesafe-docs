@@ -897,10 +897,10 @@
       "url": "https://docs.typesafe.ai/sdk/python.md",
       "title": "TypeSafe Python SDK",
       "description": "Install the TypeSafe Python SDK and get started with asynchronous or synchronous API calls.",
-      "raw_sha256": "40d5c6a5fb9b6a8f68ec9f14343837bc0ea5a7fe09a3bfb9a07f52418e41f1a3",
-      "clean_sha256": "7f879ae77d28825fc7545c78f4f9d07efa5e33aa583b3b69e06d526bc660eee0",
-      "bytes": 3324,
-      "changed_at": "2026-09-23T02:51:54.213Z"
+      "raw_sha256": "6b8fa10843621f6090026ed81259e5b420eadaa9af6f2370de63097d3486875a",
+      "clean_sha256": "8f4e032b110c11deb9e4afb021e0bc03a82455c20ee2a506324cb4faf52489e7",
+      "bytes": 3714,
+      "changed_at": "2026-09-27T12:08:19.910Z"
     },
     "sdk/python/api.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api.md",
@@ -987,19 +987,19 @@
       "url": "https://docs.typesafe.ai/sdk/python/changelog.md",
       "title": "Changelog",
       "description": "Python clients for the TypeSafe AI API",
-      "raw_sha256": "47c90969dd76a83271c82650e0f4cfcea86db8ca0d9820ee8334eecc388162c5",
-      "clean_sha256": "0906e0076a5d55c84d921765712b434da54cb3c9a29bc053fd3337bea3eea563",
-      "bytes": 1828,
-      "changed_at": "2026-09-23T02:51:54.215Z"
+      "raw_sha256": "5a106cf423ea4e81d41a7f3d026a020cce9e1648d86a1611a7b823797c1c285c",
+      "clean_sha256": "43d8720ad421aa4b9831cd9bc9112cefac1e08fbe09d6d56f0065d6bd119fe74",
+      "bytes": 2079,
+      "changed_at": "2026-09-27T12:08:19.914Z"
     },
     "sdk/python/usage.md": {
       "url": "https://docs.typesafe.ai/sdk/python/usage.md",
       "title": "Usage",
       "description": "Guides and patterns for working with the TypeSafe Python SDK.",
-      "raw_sha256": "9a7d1d4e52face5ccc889418b1b67c2442d41e64951b8ae480169d6542f222f4",
-      "clean_sha256": "fe05ecc1556e740e09e01e425a08d207ee2d59cf4a94d551bc84ff1721761a38",
-      "bytes": 10189,
-      "changed_at": "2026-09-23T02:51:54.214Z"
+      "raw_sha256": "cf3feca83e9c784273562dc21d1bc64003ea521275f16aa7775c1abf241ea285",
+      "clean_sha256": "f649529641c03b64a37770ce1a79bcfc770bb39fee662e891a91f47c4bd1d6f8",
+      "bytes": 17497,
+      "changed_at": "2026-09-27T12:08:19.913Z"
     }
   }
 }

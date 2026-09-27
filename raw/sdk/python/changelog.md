@@ -8,6 +8,22 @@
 
 <a id="changelog" />
 
+<h2 id="v072-2026-09-26">
+  v0.7.2 (2026-09-26)
+</h2>
+
+<h3 id="miscellaneous">
+  Miscellaneous
+</h3>
+
+* add `http2` extra to `typesafe-sdk` package
+
+<h3 id="documentation">
+  Documentation
+</h3>
+
+* document `typesafe-sdk` usage with HTTP/2 support
+
 <h2 id="v071-2026-09-21">
   v0.7.1 (2026-09-21)
 </h2>
@@ -18,7 +34,7 @@
 
 * validate the API key early and exclude the value from logged exceptions
 
-<h3 id="documentation">
+<h3 id="documentation_1">
   Documentation
 </h3>
 
@@ -70,7 +86,7 @@
 * handle invalid values in `RetryPolicy`
 * make exceptions and responses picklable
 
-<h3 id="documentation_1">
+<h3 id="documentation_2">
   Documentation
 </h3>
 

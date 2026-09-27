@@ -31,6 +31,8 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
        ```
      </Tab>
    </Tabs>
+
+   Add the `http2` extra (`typesafe-sdk[http2]`) to enable [HTTP/2 support](/sdk/python/usage#http2).
 2. Set `TYPESAFE_API_KEY` in your environment (create it [here](https://console.typesafe.ai/))
 3. Call the System One API:
 
@@ -94,8 +96,8 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
      </Tab>
    </Tabs>
 
-<h2 id="usage">
-  Usage
+<h2 id="whats-next">
+  What's next
 </h2>
 
-Learn more in the [Usage guide](/sdk/python/usage).
+Visit the [Usage guide](/sdk/python/usage) to learn more about patterns such as [typed responses](/sdk/python/usage#typed-system_one-responses), [model selection](/sdk/python/usage#choosing-a-model), [retries](/sdk/python/usage#retries), [HTTP/2](/sdk/python/usage#http2), or [error handling](/sdk/python/usage#error-handling).

@@ -25,6 +25,8 @@ uv add typesafe-sdk
 ```sh
 pip install typesafe-sdk
 ```
+
+   Add the `http2` extra (`typesafe-sdk[http2]`) to enable [HTTP/2 support](./python/usage.md#http2).
 2. Set `TYPESAFE_API_KEY` in your environment (create it [here](https://console.typesafe.ai/))
 3. Call the System One API:
 
@@ -85,8 +87,8 @@ print(response.choices["tone"].choice)
 print(response.scores["urgency"].score)
 ```
 
-<h2 id="usage">
-  Usage
+<h2 id="whats-next">
+  What's next
 </h2>
 
-Learn more in the [Usage guide](./python/usage.md).
+Visit the [Usage guide](./python/usage.md) to learn more about patterns such as [typed responses](./python/usage.md#typed-system_one-responses), [model selection](./python/usage.md#choosing-a-model), [retries](./python/usage.md#retries), [HTTP/2](./python/usage.md#http2), or [error handling](./python/usage.md#error-handling).

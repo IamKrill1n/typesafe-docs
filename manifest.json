@@ -996,10 +996,10 @@
       "url": "https://docs.typesafe.ai/sdk/python/usage.md",
       "title": "Usage",
       "description": "Guides and patterns for working with the TypeSafe Python SDK.",
-      "raw_sha256": "cf3feca83e9c784273562dc21d1bc64003ea521275f16aa7775c1abf241ea285",
-      "clean_sha256": "f649529641c03b64a37770ce1a79bcfc770bb39fee662e891a91f47c4bd1d6f8",
-      "bytes": 17497,
-      "changed_at": "2026-09-27T12:08:19.913Z"
+      "raw_sha256": "7a9f63b8b6f4c536fbab00eefd91a3b814d45462f620b8fc39d723201bab245f",
+      "clean_sha256": "d29f50af205ac02f1094a0d46231e1144fc4a0a181c06a54b675a4f3a334e6b5",
+      "bytes": 19333,
+      "changed_at": "2026-09-28T14:03:51.415Z"
     }
   }
 }

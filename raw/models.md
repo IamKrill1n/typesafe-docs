@@ -8,12 +8,12 @@ Jev is TypeSafe's flagship model and the first [System One model](/concepts/syst
 
 ## Current models
 
-| Jev 1.13                    | `jev-1.13.0`                                                                              |
-| :-------------------------- | :---------------------------------------------------------------------------------------- |
-| Price (per Btok / per Mtok) | \$42 / \$0.042                                                                            |
-| Rate limits                 | 250,000 tokens per second / 1,200 requests per minute                                     |
-| Context length              | 64k tokens per request; 32k tokens for `state` plus the longest question                  |
-| Input                       | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
+| Jev 1.13 | `jev-1.13.0` |
+| :- | :- |
+| Price (per Btok / per Mtok) | \$42 / \$0.042 |
+| Rate limits | 250,000 tokens per second / 1,200 requests per minute |
+| Context length | 64k tokens per request; 32k tokens for `state` plus the longest question |
+| Input | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
 
 * **Price:** Charged per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
 * **Rate limits:** Measured in tokens per second and requests per minute. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry with backoff by default and honor the `retry-after` header when the response carries one. If you call the HTTP API directly, see [Handling rate limits](/api#handling-rate-limits).
@@ -28,9 +28,9 @@ Jev is TypeSafe's flagship model and the first [System One model](/concepts/syst
 
 An alias is a model name that resolves to a versioned model ID. Send it in the `model` field like any other name.
 
-| Alias         | Points to    | Meaning                                                                                                                       |
-| :------------ | :----------- | :---------------------------------------------------------------------------------------------------------------------------- |
-| `jev-latest`  | `jev-1.13.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use.        |
+| Alias | Points to | Meaning |
+| :- | :- | :- |
+| `jev-latest` | `jev-1.13.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use. |
 | `jev-preview` | `jev-1.13.0` | The most recent release, whether or not it is an official one. Moves ahead of `jev-latest` when a preview build is available. |
 
 <Warning>

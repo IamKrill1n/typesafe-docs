@@ -177,15 +177,15 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 ## Example task categories
 
-| Decision shape                 | Reach for it when                                          | Examples                                                                |
-| ------------------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Classification**             | One known category should win                              | Intent, topic, department, risk type, entity type                       |
-| **Detection**                  | You need a probability that one property is present        | Spam, fraud, urgency, jailbreaks, sensitive data                        |
-| **Scoring**                    | The answer belongs on an ordered rubric                    | Severity, relevance, quality, frustration, suitability                  |
-| **Routing**                    | A category selects the next code path                      | Tool use, escalation, model routing, support queues                     |
-| **Search**                     | You need to find items that match a natural-language query | Semantic search, document discovery, candidate generation               |
-| **Retrieval**                  | A workflow needs the most relevant context or records      | RAG context, evidence retrieval, knowledge lookup                       |
-| **Ranking**                    | Items need to be ordered by semantic relevance or quality  | Search results, recommendations, candidate prioritization               |
-| **Verification**               | An artifact must be checked for specific failure modes     | Citation support, policy violations, tool-call errors, response quality |
-| **ML Feature Extraction**      | A downstream classical ML model needs semantic signals     | Purchase intent, product interest, competitive pressure, churn signals  |
-| **Structured Data Extraction** | Known fields must be recovered from unstructured input     | Candidate attributes, order fields, document labels                     |
+| Decision shape | Reach for it when | Examples |
+| - | - | - |
+| **Classification** | One known category should win | Intent, topic, department, risk type, entity type |
+| **Detection** | You need a probability that one property is present | Spam, fraud, urgency, jailbreaks, sensitive data |
+| **Scoring** | The answer belongs on an ordered rubric | Severity, relevance, quality, frustration, suitability |
+| **Routing** | A category selects the next code path | Tool use, escalation, model routing, support queues |
+| **Search** | You need to find items that match a natural-language query | Semantic search, document discovery, candidate generation |
+| **Retrieval** | A workflow needs the most relevant context or records | RAG context, evidence retrieval, knowledge lookup |
+| **Ranking** | Items need to be ordered by semantic relevance or quality | Search results, recommendations, candidate prioritization |
+| **Verification** | An artifact must be checked for specific failure modes | Citation support, policy violations, tool-call errors, response quality |
+| **ML Feature Extraction** | A downstream classical ML model needs semantic signals | Purchase intent, product interest, competitive pressure, churn signals |
+| **Structured Data Extraction** | Known fields must be recovered from unstructured input | Candidate attributes, order fields, document labels |

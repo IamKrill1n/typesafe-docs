@@ -237,11 +237,11 @@ export function TypesafeExample({example, display, title}) {
 
 TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](/concepts/system-one) to make about a [state](/concepts/state), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. There are three question types, each returning a different shape of answer.
 
-| Type                         | What it answers         | Returns                                          |
-| ---------------------------- | ----------------------- | ------------------------------------------------ |
-| [Choice](/primitives/choice) | Which of these options? | `choice`, `probabilities`, `confidence`          |
-| [Score](/primitives/score)   | Which level?            | `score`, `legend`, `probabilities`, `confidence` |
-| [Noul](/primitives/noul)     | Is this true?           | `noul` (0 to 1)                                  |
+| Type | What it answers | Returns |
+| - | - | - |
+| [Choice](/primitives/choice) | Which of these options? | `choice`, `probabilities`, `confidence` |
+| [Score](/primitives/score) | Which level? | `score`, `legend`, `probabilities`, `confidence` |
+| [Noul](/primitives/noul) | Is this true? | `noul` (0 to 1) |
 
 You can ask one question or send several together. Every question in a request sees the same state, is evaluated independently, and returns a typed answer under the ID you chose.
 
@@ -298,11 +298,11 @@ If two types both seem to fit, prefer the one whose answer your code can act on 
 
 Answers are primitives too. Each question type returns a typed value that your code can compare, threshold, sort, pass into further logic, or put into the state of a follow-up request (see [When one question depends on another](#when-one-question-depends-on-another)).
 
-| Type   | Answer fields                                    | How to read it                                                                                                                                                       |
-| ------ | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Choice | `choice`, `probabilities`, `confidence`          | `choice` is the selected option. `probabilities` is the distribution across every option. `confidence` summarizes how peaked that distribution is.                   |
-| Score  | `score`, `legend`, `probabilities`, `confidence` | `score` is a position along your levels, and can fall between two of them. `legend` repeats the levels by number. `probabilities` is the distribution across levels. |
-| Noul   | `noul`                                           | The probability that the answer is yes. Near 1 is a strong yes, near 0 a strong no, near 0.5 uncertain. Noul has no separate `confidence`.                           |
+| Type | Answer fields | How to read it |
+| - | - | - |
+| Choice | `choice`, `probabilities`, `confidence` | `choice` is the selected option. `probabilities` is the distribution across every option. `confidence` summarizes how peaked that distribution is. |
+| Score | `score`, `legend`, `probabilities`, `confidence` | `score` is a position along your levels, and can fall between two of them. `legend` repeats the levels by number. `probabilities` is the distribution across levels. |
+| Noul | `noul` | The probability that the answer is yes. Near 1 is a strong yes, near 0 a strong no, near 0.5 uncertain. Noul has no separate `confidence`. |
 
 Two properties of these answers make them composable:
 

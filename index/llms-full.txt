@@ -20669,103 +20669,155 @@ In order to use the SDK with a different API url, set `base_url` on the client o
 
 For example, connect through an AI gateway using its API key and model ID.
 
-### OpenRouter
-
-Use an OpenRouter API key and an [OpenRouter model ID](https://openrouter.ai/~typesafe/jev-latest/):
-
 <Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import asyncio
-    import os
+  <Tab title="OpenRouter">
+    Use an OpenRouter API key and an [OpenRouter model ID](https://openrouter.ai/~typesafe/jev-latest/):
 
-    from typesafe_sdk import AsyncTypeSafeClient, Noul
+    <Tabs>
+      <Tab title="Async client">
+        ```python theme={null}
+        import asyncio
+        import os
+
+        from typesafe_sdk import AsyncTypeSafeClient, Noul
 
 
-    async def main() -> None:
-        async with AsyncTypeSafeClient(
+        async def main() -> None:
+            async with AsyncTypeSafeClient(
+                api_key=os.environ["OPENROUTER_API_KEY"],
+                base_url="https://openrouter.ai/api",
+                model="~typesafe/jev-latest",
+            ) as client:
+                result = await client.system_one(
+                    "I was charged twice.",
+                    {"billing": Noul(instructions="Is this about billing?")},
+                )
+                print(result.nouls["billing"].noul)
+
+
+        asyncio.run(main())
+        ```
+      </Tab>
+
+      <Tab title="Sync client">
+        ```python theme={null}
+        import os
+
+        from typesafe_sdk import Noul, TypeSafeClient
+
+        with TypeSafeClient(
             api_key=os.environ["OPENROUTER_API_KEY"],
             base_url="https://openrouter.ai/api",
             model="~typesafe/jev-latest",
         ) as client:
-            result = await client.system_one(
+            result = client.system_one(
                 "I was charged twice.",
                 {"billing": Noul(instructions="Is this about billing?")},
             )
             print(result.nouls["billing"].noul)
-
-
-    asyncio.run(main())
-    ```
+        ```
+      </Tab>
+    </Tabs>
   </Tab>
 
-  <Tab title="Sync">
-    ```python theme={null}
-    import os
+  <Tab title="Vercel AI Gateway">
+    [Vercel's TypeSafe-compatible API](https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe) can be used with the SDK:
 
-    from typesafe_sdk import Noul, TypeSafeClient
+    <Tabs>
+      <Tab title="Async client">
+        ```python theme={null}
+        import asyncio
+        import os
 
-    with TypeSafeClient(
-        api_key=os.environ["OPENROUTER_API_KEY"],
-        base_url="https://openrouter.ai/api",
-        model="~typesafe/jev-latest",
-    ) as client:
-        result = client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-        )
-        print(result.nouls["billing"].noul)
-    ```
-  </Tab>
-</Tabs>
-
-### Vercel AI Gateway
-
-[Vercel's TypeSafe-compatible API](https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe) can be used with the SDK:
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import asyncio
-    import os
-
-    from typesafe_sdk import AsyncTypeSafeClient, Noul
+        from typesafe_sdk import AsyncTypeSafeClient, Noul
 
 
-    async def main() -> None:
-        async with AsyncTypeSafeClient(
+        async def main() -> None:
+            async with AsyncTypeSafeClient(
+                api_key=os.environ["AI_GATEWAY_API_KEY"],
+                base_url="https://ai-gateway.vercel.sh/typesafe",
+                model="typesafe-ai/jev",
+            ) as client:
+                result = await client.system_one(
+                    "I was charged twice.",
+                    {"billing": Noul(instructions="Is this about billing?")},
+                )
+                print(result.nouls["billing"].noul)
+
+
+        asyncio.run(main())
+        ```
+      </Tab>
+
+      <Tab title="Sync client">
+        ```python theme={null}
+        import os
+
+        from typesafe_sdk import Noul, TypeSafeClient
+
+        with TypeSafeClient(
             api_key=os.environ["AI_GATEWAY_API_KEY"],
             base_url="https://ai-gateway.vercel.sh/typesafe",
             model="typesafe-ai/jev",
         ) as client:
-            result = await client.system_one(
+            result = client.system_one(
                 "I was charged twice.",
                 {"billing": Noul(instructions="Is this about billing?")},
             )
             print(result.nouls["billing"].noul)
-
-
-    asyncio.run(main())
-    ```
+        ```
+      </Tab>
+    </Tabs>
   </Tab>
 
-  <Tab title="Sync">
-    ```python theme={null}
-    import os
+  <Tab title="Pydantic AI Gateway">
+    Use a [Pydantic AI Gateway API key](https://pydantic.dev/articles/jev-pydantic-ai-gateway):
 
-    from typesafe_sdk import Noul, TypeSafeClient
+    <Tabs>
+      <Tab title="Async client">
+        ```python theme={null}
+        import asyncio
+        import os
 
-    with TypeSafeClient(
-        api_key=os.environ["AI_GATEWAY_API_KEY"],
-        base_url="https://ai-gateway.vercel.sh/typesafe",
-        model="typesafe-ai/jev",
-    ) as client:
-        result = client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-        )
-        print(result.nouls["billing"].noul)
-    ```
+        from typesafe_sdk import AsyncTypeSafeClient, Noul
+
+
+        async def main() -> None:
+            async with AsyncTypeSafeClient(
+                api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
+                base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
+                model="jev-latest",
+            ) as client:
+                result = await client.system_one(
+                    "I was charged twice.",
+                    {"billing": Noul(instructions="Is this about billing?")},
+                )
+                print(result.nouls["billing"].noul)
+
+
+        asyncio.run(main())
+        ```
+      </Tab>
+
+      <Tab title="Sync client">
+        ```python theme={null}
+        import os
+
+        from typesafe_sdk import Noul, TypeSafeClient
+
+        with TypeSafeClient(
+            api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
+            base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
+            model="jev-latest",
+        ) as client:
+            result = client.system_one(
+                "I was charged twice.",
+                {"billing": Noul(instructions="Is this about billing?")},
+            )
+            print(result.nouls["billing"].noul)
+        ```
+      </Tab>
+    </Tabs>
   </Tab>
 </Tabs>
 

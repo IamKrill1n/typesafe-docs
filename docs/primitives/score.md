@@ -471,10 +471,10 @@ With plain strings this ticket scored 1.11 with a confidence of 0.84. With examp
 
 Examples steer the model, and they only help when they look like your real inputs. The table below is the opening Safari report with three different sets of level objects:
 
-| Level description                                                                                            | `score` | `confidence` |
-| ------------------------------------------------------------------------------------------------------------ | ------- | ------------ |
-| plain string: no object with examples                                                                        | 1.43    | 0.35         |
-| Added examples array with useful example: "export fails in one browser but works in another"                 | 1.03    | 0.96         |
-| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.43    | 0.35         |
+| Level description | `score` | `confidence` |
+| - | - | - |
+| plain string: no object with examples | 1.43 | 0.35 |
+| Added examples array with useful example: "export fails in one browser but works in another" | 1.03 | 0.96 |
+| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.43 | 0.35 |
 
 In this comparison, the matching example concentrates almost all the probability on one level. The unrelated example returns the same result as plain strings. Higher confidence does not establish which answer is correct. Choose examples with known expected levels, then test the revised descriptions on separate inputs before keeping them.

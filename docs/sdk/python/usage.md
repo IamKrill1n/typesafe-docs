@@ -498,12 +498,12 @@ Or set `TYPESAFE_LOG_LEVEL` to one of `debug`, `info`, `warning`, `error`, or `o
 
 The SDK reads and uses the following environment variables:
 
-| Variable                 | Configures                                          | Default                   |
-| ------------------------ | --------------------------------------------------- | ------------------------- |
-| `TYPESAFE_API_KEY`       | API key (required)                                  | —                         |
-| `TYPESAFE_BASE_URL`      | API root URL                                        | `https://api.typesafe.ai` |
-| `TYPESAFE_DEFAULT_MODEL` | Default model                                       | `jev-latest`              |
-| `TYPESAFE_LOG_LEVEL`     | `typesafe_sdk` logger level, applied once at import | unset                     |
+| Variable | Configures | Default |
+| - | - | - |
+| `TYPESAFE_API_KEY` | API key (required) | — |
+| `TYPESAFE_BASE_URL` | API root URL | `https://api.typesafe.ai` |
+| `TYPESAFE_DEFAULT_MODEL` | Default model | `jev-latest` |
+| `TYPESAFE_LOG_LEVEL` | `typesafe_sdk` logger level, applied once at import | unset |
 
 See the [constants reference](./api/constants.md) for SDK defaults.
 

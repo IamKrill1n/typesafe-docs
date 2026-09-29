@@ -354,13 +354,13 @@ def ask_llm_rubric(
 
 ### Experiment Grid
 
-| Model group          | Model                          | Probability (t=0) | Probability (default) | Yes/no (t=0) |
-| -------------------- | ------------------------------ | :---------------: | :-------------------: | :----------: |
-| Non-reasoning Models | `claude-haiku-4-5`             |         ✓         |           ✓           |       ✓      |
-| Non-reasoning Models | `gpt-5.4-mini`                 |         ✓         |           ✓           |       ✓      |
-| Reasoning Models     | `gpt-5.5`                      |         —         |           ✓           |       —      |
-| Reasoning Models     | `claude-opus-4-8`              |         —         |           ✓           |       —      |
-| TypeSafe             | `jev-latest` (`typesafe_noul`) |         —         |           ✓           |       —      |
+| Model group | Model | Probability (t=0) | Probability (default) | Yes/no (t=0) |
+| - | - | :-: | :-: | :-: |
+| Non-reasoning Models | `claude-haiku-4-5` | ✓ | ✓ | ✓ |
+| Non-reasoning Models | `gpt-5.4-mini` | ✓ | ✓ | ✓ |
+| Reasoning Models | `gpt-5.5` | — | ✓ | — |
+| Reasoning Models | `claude-opus-4-8` | — | ✓ | — |
+| TypeSafe | `jev-latest` (`typesafe_noul`) | — | ✓ | — |
 
 * A check mark is one condition, run 15 times. A dash is a combination that was not tested.
 * The default column sends no temperature argument: non-reasoning models use the API

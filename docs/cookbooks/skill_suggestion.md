@@ -36,11 +36,11 @@ entry to look at first. The roster itself never changes, so any prefix caching o
 still holds. Over 488 requests against `claude-haiku-4-5-20251001`, using skills from the
 Hermes roster:
 
-|                                      | loads the wrong skill | loads one when nothing fits |
-| ------------------------------------ | --------------------- | --------------------------- |
-| agent alone, with just its roster    | 16.8%                 | 9.8%                        |
-| **agent with a TypeSafe suggestion** | **7.3%**              | **4.0%**                    |
-| agent handed the right answer        | 2.5%                  | 1.2%                        |
+| | loads the wrong skill | loads one when nothing fits |
+| - | - | - |
+| agent alone, with just its roster | 16.8% | 9.8% |
+| **agent with a TypeSafe suggestion** | **7.3%** | **4.0%** |
+| agent handed the right answer | 2.5% | 1.2% |
 
 The third row shows the floor for making mistakes is not zero, because an agent given the
 right skill still does not always load it, and no selection method, however good, gets past
@@ -714,11 +714,11 @@ Relevant to the current request: xurl. Ignore this if it does not fit what the u
 Each of the 488 requests goes to the agent three times, one measured turn each. The runs
 differ only in what the agent is told:
 
-|                         | what goes in the system prompt                                     |
-| ----------------------- | ------------------------------------------------------------------ |
-| agent alone             | nothing                                                            |
-| agent with a suggestion | whatever `suggest()` returned                                      |
-| agent given the answer  | the covering skill's name, or "nothing applies" when there is none |
+| | what goes in the system prompt |
+| - | - |
+| agent alone | nothing |
+| agent with a suggestion | whatever `suggest()` returned |
+| agent given the answer | the covering skill's name, or "nothing applies" when there is none |
 
 The third is not achievable; it is the ceiling the other two get measured against.
 

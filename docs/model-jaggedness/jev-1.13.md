@@ -9,17 +9,17 @@
 
 ## The failure modes in detail
 
-| # | Failure mode                                                                        | Do this instead                                                |
-| - | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 1 | [Literal reading](#literal-reading)                                                 | Write the exact condition, criteria for each available options |
-| 2 | [Math and Numbers](#math-and-numbers)                                               | Keep the arithmetic in code                                    |
-| 3 | [Date and time comparison](#date-and-time-comparison)                               | Extract components; compare in code                            |
-| 4 | [Indirection](#indirection)                                                         | Reduce hops; point to the relevant state                       |
-| 5 | [Large state full of irrelevant detail](#large-state-full-of-irrelevant-detail)     | Filter first; send only what the question needs                |
-| 6 | [Adversarial content](#adversarial-content)                                         | Write precise prompts, and test edge cases before deploying    |
-| 7 | [Contradictory instructions and criteria](#contradictory-instructions-and-criteria) | Align the criteria and instruction                             |
-| 8 | [Common-sense structural invariants](#common-sense-structural-invariants)           | Ask each decision one way; enforce identities in code          |
-| 9 | [Generation](#generation)                                                           | Use a generative model                                         |
+| # | Failure mode | Do this instead |
+| - | - | - |
+| 1 | [Literal reading](#literal-reading) | Write the exact condition, criteria for each available options |
+| 2 | [Math and Numbers](#math-and-numbers) | Keep the arithmetic in code |
+| 3 | [Date and time comparison](#date-and-time-comparison) | Extract components; compare in code |
+| 4 | [Indirection](#indirection) | Reduce hops; point to the relevant state |
+| 5 | [Large state full of irrelevant detail](#large-state-full-of-irrelevant-detail) | Filter first; send only what the question needs |
+| 6 | [Adversarial content](#adversarial-content) | Write precise prompts, and test edge cases before deploying |
+| 7 | [Contradictory instructions and criteria](#contradictory-instructions-and-criteria) | Align the criteria and instruction |
+| 8 | [Common-sense structural invariants](#common-sense-structural-invariants) | Ask each decision one way; enforce identities in code |
+| 9 | [Generation](#generation) | Use a generative model |
 
 ## Literal reading
 
@@ -115,16 +115,16 @@ However there are many structural invariants one might imagine to hold that simp
 For example, "Is the customer asking for a refund?", asked as a [Noul](../primitives/noul.md) and as a yes/no [Choice](../primitives/choice.md) on the ticket "I'm not happy with the fit. What are my options here?":
 
 | Noul `noul` | Choice `yes` | Choice `no` | Choice `confidence` |
-| ----------- | ------------ | ----------- | ------------------- |
-| 0.22        | 0.01         | 0.99        | 0.97                |
+| - | - | - | - |
+| 0.22 | 0.01 | 0.99 | 0.97 |
 
 The comparable numbers are `noul` and `probabilities["yes"]`, and it is not obvious how to interpret either the Choice output and confidence for the Noul question or vice versa.
 
 The same question and its negation, "Is the customer asking for something other than a refund?", as two Nouls on the ticket "I was charged twice for the same order. Can someone look into this?":
 
-| `refund` | `not_refund` | Sum  |
-| -------- | ------------ | ---- |
-| 0.72     | 0.47         | 1.19 |
+| `refund` | `not_refund` | Sum |
+| - | - | - |
+| 0.72 | 0.47 | 1.19 |
 
 There are many reasons that `P(noul)` and `1 - P(not noul)` may not be directly comparable.
 

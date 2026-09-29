@@ -38,13 +38,13 @@ out. RMSE measures prediction error in critic-score points, with larger misses c
 more, and lower is better. Every number in the table below comes from the 800 reviews that
 neither the model nor the loop ever saw.
 
-| how the note becomes a score                            | RMSE     |
-| ------------------------------------------------------- | -------- |
-| predict the average score of the training rows          | 3.09     |
-| the same CatBoost, reading the note as word counts      | 2.47     |
-| ask TypeSafe for the score itself, rescaled and shifted | 2.15     |
-| 18 questions from one proposal call, no loop            | 1.87     |
-| **38 questions after five rounds of the loop**          | **1.77** |
+| how the note becomes a score | RMSE |
+| - | - |
+| predict the average score of the training rows | 3.09 |
+| the same CatBoost, reading the note as word counts | 2.47 |
+| ask TypeSafe for the score itself, rescaled and shifted | 2.15 |
+| 18 questions from one proposal call, no loop | 1.87 |
+| **38 questions after five rounds of the loop** | **1.77** |
 
 The last two rows are the loop. One proposal call, with nothing to go on yet, gets to 1.87.
 Four more rounds of reading its own worst predictions get to 1.77. Most of the gain is in

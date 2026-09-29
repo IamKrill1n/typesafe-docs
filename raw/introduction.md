@@ -28,11 +28,11 @@ flowchart LR
 
 TypeSafe exposes three *AI primitives*. Similar to software primitives, our AI primitives are modular, composable, structured, reliable, and fast. Each asks a different type of *question* and returns a different type of answer.
 
-| Question type                | Goal                         | Returns                                 |
-| ---------------------------- | ---------------------------- | --------------------------------------- |
+| Question type | Goal | Returns |
+| - | - | - |
 | [Choice](/primitives/choice) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
-| [Score](/primitives/score)   | Score the state on a rubric  | `score`, `probabilities`, `confidence`  |
-| [Noul](/primitives/noul)     | Is this statement true?      | `noul` (0–1)                            |
+| [Score](/primitives/score) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
+| [Noul](/primitives/noul) | Is this statement true? | `noul` (0–1) |
 
 All three *question* types can be mixed in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 

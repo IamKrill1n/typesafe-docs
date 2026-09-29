@@ -17,11 +17,11 @@ System One models are trained for calibrated decisions: their probabilities are 
 
 System One models do not write replies, produce code, or generate explanations of their reasoning. You define the possible answers through [primitives](../primitives.md):
 
-| Primitive                    | Question                              | Example answer space                          | Example output      |
-| ---------------------------- | ------------------------------------- | --------------------------------------------- | ------------------- |
-| [Choice](../primitives/choice.md) | Which team should handle this ticket? | `billing`, `technical`, or `account`          | `choice: "billing"` |
-| [Score](../primitives/score.md)   | How frustrated is this customer?      | 0 = calm, 1 = frustrated, 2 = very frustrated | `score: 1.4`        |
-| [Noul](../primitives/noul.md)     | Does this message request a refund?   | True or false                                 | `noul: 0.95`        |
+| Primitive | Question | Example answer space | Example output |
+| - | - | - | - |
+| [Choice](../primitives/choice.md) | Which team should handle this ticket? | `billing`, `technical`, or `account` | `choice: "billing"` |
+| [Score](../primitives/score.md) | How frustrated is this customer? | 0 = calm, 1 = frustrated, 2 = very frustrated | `score: 1.4` |
+| [Noul](../primitives/noul.md) | Does this message request a refund? | True or false | `noul: 0.95` |
 
 These are illustrative configurations and values. The primitive pages describe the available configuration options and full response fields.
 

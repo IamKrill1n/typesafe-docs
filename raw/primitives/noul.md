@@ -340,14 +340,14 @@ The number is the answer and the certainty in one. A value near 1 is a strong ye
 
 The table below shows recorded `jev-1.13.0` answers to the `is_human_escalation` question for different customer messages:
 
-| State                                                                  | `noul` |
-| ---------------------------------------------------------------------- | ------ |
-| Thanks, that fixed it!                                                 | 0.02   |
-| How do I reset my password?                                            | 0.07   |
-| I need this sorted today, whatever it takes.                           | 0.26   |
-| Are you a bot?                                                         | 0.40   |
-| Is there any way to speak to someone about my invoice?                 | 0.84   |
-| I have asked three times now. Can I please just talk to a real person? | 0.99   |
+| State | `noul` |
+| - | - |
+| Thanks, that fixed it! | 0.02 |
+| How do I reset my password? | 0.07 |
+| I need this sorted today, whatever it takes. | 0.26 |
+| Are you a bot? | 0.40 |
+| Is there any way to speak to someone about my invoice? | 0.84 |
+| I have asked three times now. Can I please just talk to a real person? | 0.99 |
 
 The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and the model splits almost evenly at 0.40. Both are the kind of message where a decision needs to be made based on a threshold in your code.
 
@@ -368,12 +368,12 @@ Where to set the threshold depends on the cost of being wrong. Use 0.5 when yes 
 
 A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
-| Candidate                                                                                   | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| My experience is in Java and Go. I have not used Python.                                    | 0.03                                       | 0.0 (No experience)                                          |
-| I have used Python occasionally for small scripts alongside my main Java work.              | 0.14                                       | 1.0 (Some familiarity)                                       |
-| I used Python every day for two years in my last job, mostly data pipelines.                | 0.81                                       | 2.05 (Regular use in a job)                                  |
-| I have written Python daily for eight years, including maintaining a large Django codebase. | 0.92                                       | 2.89 (Deep expertise)                                        |
+| Candidate | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
+| - | - | - |
+| My experience is in Java and Go. I have not used Python. | 0.03 | 0.0 (No experience) |
+| I have used Python occasionally for small scripts alongside my main Java work. | 0.14 | 1.0 (Some familiarity) |
+| I used Python every day for two years in my last job, mostly data pipelines. | 0.81 | 2.05 (Regular use in a job) |
+| I have written Python daily for eight years, including maintaining a large Django codebase. | 0.92 | 2.89 (Deep expertise) |
 
 The Noul judges one proposition, "strong", and the values are how likely it is. You could create levels in the 0 to 1 range in your code, such as 0.3 to 0.7 for "some experience", but the model will not see them, so nothing in the answer was judged against them. A middle value can mean medium experience or an unclear case, and the spacing between candidates is not something you chose. The Score judges each level description on its own, so every candidate landed on or near a level you wrote, and the returned probabilities show how the model divided its judgment between levels. If you disagree, reword a level and run it again. [Choose a question type](/primitives#choose-a-question-type) explains the distinction.
 

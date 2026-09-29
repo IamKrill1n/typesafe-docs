@@ -16,11 +16,11 @@ state = "My card was charged twice."
 
 State can also be a JSON object or array containing related context, examples, and other information that helps the model answer the associated questions. Think of state as the material you would present to a panel of experts before asking them to make a judgment. In Python, pass the corresponding string, dictionary, or list directly to `client.system_one(state=...)`.
 
-| Format | Useful for                                          | Example                                                                 |
-| ------ | --------------------------------------------------- | ----------------------------------------------------------------------- |
-| String | A message, article, or passage                      | `"My card was charged twice."`                                          |
-| Object | Named fields, related records, or application state | `{"message": "My card was charged twice.", "order_id": "A-104"}`        |
-| Array  | A sequence of messages or records                   | `["Hi", "My customer number is TS1337.", "My card was charged twice."]` |
+| Format | Useful for | Example |
+| - | - | - |
+| String | A message, article, or passage | `"My card was charged twice."` |
+| Object | Named fields, related records, or application state | `{"message": "My card was charged twice.", "order_id": "A-104"}` |
+| Array | A sequence of messages or records | `["Hi", "My customer number is TS1337.", "My card was charged twice."]` |
 
 Use an object for most requests so each part of the state has a descriptive name and its relationships remain clear. A string is suitable when the use case is simple and requires only one piece of text.
 

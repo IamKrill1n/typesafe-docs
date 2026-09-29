@@ -241,12 +241,12 @@ System One models are trained to understand structure.
 
 Every one of these fields is an [`EntryType`](/sdk/javascript/api/type-aliases/EntryType).
 
-| Field                                   | Applies to          | Accepted shape                         |
-| --------------------------------------- | ------------------- | -------------------------------------- |
-| `instructions`                          | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
-| `criteria` values (option descriptions) | Choice              | `string`, `object`, `array`, or `null` |
-| `criteria` entries (level descriptions) | Score               | `string`, `object`, `array`, or `null` |
-| `criteria.true` and `criteria.false`    | Noul                | `string`, `object`, `array`, or `null` |
+| Field | Applies to | Accepted shape |
+| - | - | - |
+| `instructions` | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
+| `criteria` values (option descriptions) | Choice | `string`, `object`, `array`, or `null` |
+| `criteria` entries (level descriptions) | Score | `string`, `object`, `array`, or `null` |
+| `criteria.true` and `criteria.false` | Noul | `string`, `object`, `array`, or `null` |
 
 ## When to structure a question
 

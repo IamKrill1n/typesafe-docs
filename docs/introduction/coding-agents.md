@@ -18,12 +18,12 @@ Coding agents rely on an LLM that streams text, calls tools, and edits files bas
 
 Pick the row that matches what you were trying to do:
 
-| You wanted to...                                                                                                              | Do this                                                                                                                                                                                                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Make your coding agent better at *writing code that uses TypeSafe*                                                            | Install the [TypeSafe agent skill](../agent-skill.md). It gives Claude Code, Codex, and other agents full context on the Jev API, the [primitives](../primitives.md), and the [patterns](../patterns.md) so they can generate correct TypeSafe integrations for you.                                                 |
+| You wanted to... | Do this |
+| - | - |
+| Make your coding agent better at *writing code that uses TypeSafe* | Install the [TypeSafe agent skill](../agent-skill.md). It gives Claude Code, Codex, and other agents full context on the Jev API, the [primitives](../primitives.md), and the [patterns](../patterns.md) so they can generate correct TypeSafe integrations for you. |
 | Use Jev inside an app or agent you're building — for routing, classification, scoring, guardrails, or any structured decision | Start with the [Quick start](./quickstart.md), then read [How to build with TypeSafe](../concepts/how-to-build-with-system-one.md) and the [Patterns](../patterns.md) for common architectures like [confidence routing](../patterns/confidence-routing.md) and [intent routing](../patterns/intent-routing.md). |
-| Replace or swap the model that powers a coding agent                                                                          | Jev isn't the tool for this. Keep using an LLM-based coding agent, and use Jev separately wherever your product needs a fast, calibrated, structured decision.                                                                                                                                        |
-| Try Jev before writing any code                                                                                               | Open the [Playground](https://console.typesafe.ai/playground), paste some text as the state, and add a few questions. See the [Quick start](./quickstart.md) for a walkthrough.                                                                                                              |
+| Replace or swap the model that powers a coding agent | Jev isn't the tool for this. Keep using an LLM-based coding agent, and use Jev separately wherever your product needs a fast, calibrated, structured decision. |
+| Try Jev before writing any code | Open the [Playground](https://console.typesafe.ai/playground), paste some text as the state, and add a few questions. See the [Quick start](./quickstart.md) for a walkthrough. |
 
 ## When Jev is worth reaching for
 

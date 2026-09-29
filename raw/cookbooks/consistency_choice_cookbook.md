@@ -475,13 +475,13 @@ def ask_llm_rubric(
 
 ### Experiment Grid
 
-| Model group          | Model                            | Distribution (t=0) | Distribution (default) | Single-pick (t=0) |
-| -------------------- | -------------------------------- | :----------------: | :--------------------: | :---------------: |
-| Non-reasoning Models | `claude-haiku-4-5`               |          ✓         |            ✓           |         ✓         |
-| Non-reasoning Models | `gpt-5.4-mini`                   |          ✓         |            ✓           |         ✓         |
-| Reasoning Models     | `gpt-5.5`                        |          —         |            ✓           |         —         |
-| Reasoning Models     | `claude-opus-4-8`                |          —         |            ✓           |         —         |
-| TypeSafe             | `jev-latest` (`typesafe_choice`) |          —         |            ✓           |         —         |
+| Model group | Model | Distribution (t=0) | Distribution (default) | Single-pick (t=0) |
+| - | - | :-: | :-: | :-: |
+| Non-reasoning Models | `claude-haiku-4-5` | ✓ | ✓ | ✓ |
+| Non-reasoning Models | `gpt-5.4-mini` | ✓ | ✓ | ✓ |
+| Reasoning Models | `gpt-5.5` | — | ✓ | — |
+| Reasoning Models | `claude-opus-4-8` | — | ✓ | — |
+| TypeSafe | `jev-latest` (`typesafe_choice`) | — | ✓ | — |
 
 * A `✓` marks a condition tested with 15 repeats; a `—` marks a combination that is not
   tested.

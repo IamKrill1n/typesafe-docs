@@ -326,12 +326,12 @@ Every answer carries a `type` matching its question. Choice and Score answers al
 
 Errors use standard HTTP status codes with a JSON body describing what went wrong.
 
-| Status                     | Meaning                                                                                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `401 Unauthorized`         | Missing or invalid API key. Check the `Authorization` header.                                                                            |
+| Status | Meaning |
+| - | - |
+| `401 Unauthorized` | Missing or invalid API key. Check the `Authorization` header. |
 | `422 Unprocessable Entity` | The request body failed validation — for example a missing required field or a malformed question. The body details the offending field. |
-| `429 Too Many Requests`    | You have exceeded your rate limit. Back off and retry after a short delay.                                                               |
-| `529 Overloaded`           | TypeSafe is temporarily overloaded. Retry after a short delay.                                                                           |
+| `429 Too Many Requests` | You have exceeded your rate limit. Back off and retry after a short delay. |
+| `529 Overloaded` | TypeSafe is temporarily overloaded. Retry after a short delay. |
 
 ### Handling rate limits
 

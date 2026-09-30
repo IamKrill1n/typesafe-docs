@@ -7,12 +7,12 @@ Jev is TypeSafe's flagship model and the first [System One model](./concepts/sys
 | Jev 1.13 | `jev-1.13.0` |
 | :- | :- |
 | Price (per Btok / per Mtok) | \$42 / \$0.042 |
-| Rate limits | 250,000 tokens per second / 1,200 requests per minute |
+| Rate limits | 100K tokens per second / 40 requests per second |
 | Context length | 64k tokens per request; 32k tokens for `state` plus the longest question |
 | Input | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
 
 * **Price:** Charged per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
-* **Rate limits:** Measured in tokens per second and requests per minute. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](./sdk.md) retry with backoff by default and honor the `retry-after` header when the response carries one. If you call the HTTP API directly, see [Handling rate limits](./api.md#handling-rate-limits).
+* **Rate limits:** Measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](./sdk.md) retry with backoff by default and honor the `retry-after` header when the response carries one. If you call the HTTP API directly, see [Handling rate limits](./api.md#handling-rate-limits).
 * **Context length:** Jev ingests the `state` once and evaluates every question against it in parallel. The 64k budget covers the `state` plus all questions combined; the 32k budget applies to the `state` plus the single longest question. See [Speculative fan-out](./patterns/fan-out.md) for packing many questions into one request, and [Jev 1.13 jaggedness](./model-jaggedness/jev-1.13.md) for how accuracy shifts as the state grows.
 * **Input:** Jev evaluates natural-language text. Pre-process non-text inputs (images, audio, video, binaries) into text or structured fields before sending them as `state`. See [State](./concepts/state.md) for supported shapes.
 

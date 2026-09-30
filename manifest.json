@@ -312,10 +312,10 @@
       "url": "https://docs.typesafe.ai/models.md",
       "title": "Models",
       "description": "",
-      "raw_sha256": "2f808305a59eff809cdb74f13344b6583579a200af38495ae3017335eb584e9f",
-      "clean_sha256": "36ceb079163c7786b7404f2babf5a30132fa1a5127d12942e01efae0d50b1bf5",
-      "bytes": 6577,
-      "changed_at": "2026-09-29T12:59:30.330Z"
+      "raw_sha256": "c4ebee942e3fef93bfc12c1bce5c04ea9f3e03fd3267dcdd4b76183c83c0639c",
+      "clean_sha256": "adce9f9559a39bece54fafddf4379f86a661937c80d6856b62927cf4d1aba1ab",
+      "bytes": 6571,
+      "changed_at": "2026-09-30T12:41:46.891Z"
     },
     "patterns.md": {
       "url": "https://docs.typesafe.ai/patterns.md",

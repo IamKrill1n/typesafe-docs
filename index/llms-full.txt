@@ -432,12 +432,12 @@ Every answer carries a `type` matching its question. Choice and Score answers al
 
 Errors use standard HTTP status codes with a JSON body describing what went wrong.
 
-| Status                     | Meaning                                                                                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `401 Unauthorized`         | Missing or invalid API key. Check the `Authorization` header.                                                                            |
+| Status | Meaning |
+| - | - |
+| `401 Unauthorized` | Missing or invalid API key. Check the `Authorization` header. |
 | `422 Unprocessable Entity` | The request body failed validation — for example a missing required field or a malformed question. The body details the offending field. |
-| `429 Too Many Requests`    | You have exceeded your rate limit. Back off and retry after a short delay.                                                               |
-| `529 Overloaded`           | TypeSafe is temporarily overloaded. Retry after a short delay.                                                                           |
+| `429 Too Many Requests` | You have exceeded your rate limit. Back off and retry after a short delay. |
+| `529 Overloaded` | TypeSafe is temporarily overloaded. Retry after a short delay. |
 
 ### Handling rate limits
 
@@ -896,11 +896,11 @@ state = "My card was charged twice."
 
 State can also be a JSON object or array containing related context, examples, and other information that helps the model answer the associated questions. Think of state as the material you would present to a panel of experts before asking them to make a judgment. In Python, pass the corresponding string, dictionary, or list directly to `client.system_one(state=...)`.
 
-| Format | Useful for                                          | Example                                                                 |
-| ------ | --------------------------------------------------- | ----------------------------------------------------------------------- |
-| String | A message, article, or passage                      | `"My card was charged twice."`                                          |
-| Object | Named fields, related records, or application state | `{"message": "My card was charged twice.", "order_id": "A-104"}`        |
-| Array  | A sequence of messages or records                   | `["Hi", "My customer number is TS1337.", "My card was charged twice."]` |
+| Format | Useful for | Example |
+| - | - | - |
+| String | A message, article, or passage | `"My card was charged twice."` |
+| Object | Named fields, related records, or application state | `{"message": "My card was charged twice.", "order_id": "A-104"}` |
+| Array | A sequence of messages or records | `["Hi", "My customer number is TS1337.", "My card was charged twice."]` |
 
 Use an object for most requests so each part of the state has a descriptive name and its relationships remain clear. A string is suitable when the use case is simple and requires only one piece of text.
 
@@ -960,11 +960,11 @@ System One models are trained for calibrated decisions: their probabilities are 
 
 System One models do not write replies, produce code, or generate explanations of their reasoning. You define the possible answers through [primitives](/primitives):
 
-| Primitive                    | Question                              | Example answer space                          | Example output      |
-| ---------------------------- | ------------------------------------- | --------------------------------------------- | ------------------- |
-| [Choice](/primitives/choice) | Which team should handle this ticket? | `billing`, `technical`, or `account`          | `choice: "billing"` |
-| [Score](/primitives/score)   | How frustrated is this customer?      | 0 = calm, 1 = frustrated, 2 = very frustrated | `score: 1.4`        |
-| [Noul](/primitives/noul)     | Does this message request a refund?   | True or false                                 | `noul: 0.95`        |
+| Primitive | Question | Example answer space | Example output |
+| - | - | - | - |
+| [Choice](/primitives/choice) | Which team should handle this ticket? | `billing`, `technical`, or `account` | `choice: "billing"` |
+| [Score](/primitives/score) | How frustrated is this customer? | 0 = calm, 1 = frustrated, 2 = very frustrated | `score: 1.4` |
+| [Noul](/primitives/noul) | Does this message request a refund? | True or false | `noul: 0.95` |
 
 These are illustrative configurations and values. The primitive pages describe the available configuration options and full response fields.
 
@@ -1169,18 +1169,18 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 ## Example task categories
 
-| Decision shape                 | Reach for it when                                          | Examples                                                                |
-| ------------------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Classification**             | One known category should win                              | Intent, topic, department, risk type, entity type                       |
-| **Detection**                  | You need a probability that one property is present        | Spam, fraud, urgency, jailbreaks, sensitive data                        |
-| **Scoring**                    | The answer belongs on an ordered rubric                    | Severity, relevance, quality, frustration, suitability                  |
-| **Routing**                    | A category selects the next code path                      | Tool use, escalation, model routing, support queues                     |
-| **Search**                     | You need to find items that match a natural-language query | Semantic search, document discovery, candidate generation               |
-| **Retrieval**                  | A workflow needs the most relevant context or records      | RAG context, evidence retrieval, knowledge lookup                       |
-| **Ranking**                    | Items need to be ordered by semantic relevance or quality  | Search results, recommendations, candidate prioritization               |
-| **Verification**               | An artifact must be checked for specific failure modes     | Citation support, policy violations, tool-call errors, response quality |
-| **ML Feature Extraction**      | A downstream classical ML model needs semantic signals     | Purchase intent, product interest, competitive pressure, churn signals  |
-| **Structured Data Extraction** | Known fields must be recovered from unstructured input     | Candidate attributes, order fields, document labels                     |
+| Decision shape | Reach for it when | Examples |
+| - | - | - |
+| **Classification** | One known category should win | Intent, topic, department, risk type, entity type |
+| **Detection** | You need a probability that one property is present | Spam, fraud, urgency, jailbreaks, sensitive data |
+| **Scoring** | The answer belongs on an ordered rubric | Severity, relevance, quality, frustration, suitability |
+| **Routing** | A category selects the next code path | Tool use, escalation, model routing, support queues |
+| **Search** | You need to find items that match a natural-language query | Semantic search, document discovery, candidate generation |
+| **Retrieval** | A workflow needs the most relevant context or records | RAG context, evidence retrieval, knowledge lookup |
+| **Ranking** | Items need to be ordered by semantic relevance or quality | Search results, recommendations, candidate prioritization |
+| **Verification** | An artifact must be checked for specific failure modes | Citation support, policy violations, tool-call errors, response quality |
+| **ML Feature Extraction** | A downstream classical ML model needs semantic signals | Purchase intent, product interest, competitive pressure, churn signals |
+| **Structured Data Extraction** | Known fields must be recovered from unstructured input | Candidate attributes, order fields, document labels |
 
 
 # Confidence
@@ -1281,54 +1281,54 @@ This section assumes you know the [TypeSafe primitives](/primitives) and underst
 
 Repeat a decision and use the agreement across runs as a signal.
 
-| Cookbook                                                            | What it does                                                                                                      | Level    |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------- |
-| [Self-consistency: nouls](/cookbooks/consistency_noul_cookbook)     | Route uncertain probabilities to human review while keeping the underlying noul values visible.                   | Beginner |
+| Cookbook | What it does | Level |
+| - | - | - |
+| [Self-consistency: nouls](/cookbooks/consistency_noul_cookbook) | Route uncertain probabilities to human review while keeping the underlying noul values visible. | Beginner |
 | [Self-consistency: choices](/cookbooks/consistency_choice_cookbook) | Add an uncertain outcome to moderation decisions and compare label agreement with the share of automatic actions. | Beginner |
 
 ## Batching
 
 Pack many questions into a single request.
 
-| Cookbook                                            | What it does                                                                                                                                                                                     | Level    |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Cookbook | What it does | Level |
+| - | - | - |
 | [Parallel questions](/cookbooks/parallel_questions) | Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers. | Beginner |
 
 ## How-to
 
 Recipes for common tasks: search, formatting, tool selection, guardrails.
 
-| Cookbook                                                        | What it does                                                                                                                                                                                                             | Level        |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
-| [Re-ranking](/cookbooks/rerank_typesafe)                        | Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.                       | Beginner     |
-| [Line-by-line search](/cookbooks/semantic_find)                 | Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer. | Beginner     |
-| [Structure recovery](/cookbooks/autoformat)                     | Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout).                                | Beginner     |
-| [Function calling](/cookbooks/function_calling)                 | Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware TypeSafe questions.                                                | Intermediate |
-| [Skill suggestion](/cookbooks/skill_suggestion)                 | Picks at most one skill for an agent turn out of the 182 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates.                                                         | Intermediate |
-| [Knowledge graph entity alignment](/cookbooks/entity_alignment) | Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree.                                          | Beginner     |
-| [Classifying RAG passages](/cookbooks/classifying_rag_passages) | Score each retrieved passage with one TypeSafe request, then decide in code which ones reach the answering model.                                                                                                        | Intermediate |
-| [Double-checking citations](/cookbooks/citation_check)          | Catch wrong or hallucinated citations by checking against the source document. One Choice question decides whether the quote's context supports the claim.                                                               | Beginner     |
-| [Guardrails for LLMs](/cookbooks/llm_guardrails)                | Screen every message going into and out of an LLM app with one TypeSafe request, thresholding hazard probabilities and severity to pass, review, block, or route.                                                        | Intermediate |
+| Cookbook | What it does | Level |
+| - | - | - |
+| [Re-ranking](/cookbooks/rerank_typesafe) | Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%. | Beginner |
+| [Line-by-line search](/cookbooks/semantic_find) | Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer. | Beginner |
+| [Structure recovery](/cookbooks/autoformat) | Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout). | Beginner |
+| [Function calling](/cookbooks/function_calling) | Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware TypeSafe questions. | Intermediate |
+| [Skill suggestion](/cookbooks/skill_suggestion) | Picks at most one skill for an agent turn out of the 182 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates. | Intermediate |
+| [Knowledge graph entity alignment](/cookbooks/entity_alignment) | Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree. | Beginner |
+| [Classifying RAG passages](/cookbooks/classifying_rag_passages) | Score each retrieved passage with one TypeSafe request, then decide in code which ones reach the answering model. | Intermediate |
+| [Double-checking citations](/cookbooks/citation_check) | Catch wrong or hallucinated citations by checking against the source document. One Choice question decides whether the quote's context supports the claim. | Beginner |
+| [Guardrails for LLMs](/cookbooks/llm_guardrails) | Screen every message going into and out of an LLM app with one TypeSafe request, thresholding hazard probabilities and severity to pass, review, block, or route. | Intermediate |
 
 ## Extraction
 
 Pull typed values out of messy text.
 
-| Cookbook                                                                       | What it does                                                                                                                                                        | Level        |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| [SDE cascade](/cookbooks/sde_cascade)                                          | Uses a 2-stage structured-data-extraction cascade (mini → verify → reasoning) to get most of the quality of a big reasoning model at a fraction of the cost.        | Intermediate |
-| [Date extraction](/cookbooks/date_extraction_cookbook)                         | Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review. | Beginner     |
-| [Pre-parsed value extraction](/cookbooks/pre_parsed_value_extraction_cookbook) | Uses regexes to find candidate emails, phone numbers, and amounts, then has TypeSafe select the requested span so code can normalize a verbatim value.              | Beginner     |
+| Cookbook | What it does | Level |
+| - | - | - |
+| [SDE cascade](/cookbooks/sde_cascade) | Uses a 2-stage structured-data-extraction cascade (mini → verify → reasoning) to get most of the quality of a big reasoning model at a fraction of the cost. | Intermediate |
+| [Date extraction](/cookbooks/date_extraction_cookbook) | Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review. | Beginner |
+| [Pre-parsed value extraction](/cookbooks/pre_parsed_value_extraction_cookbook) | Uses regexes to find candidate emails, phone numbers, and amounts, then has TypeSafe select the requested span so code can normalize a verbatim value. | Beginner |
 
 ## Classification
 
 Assign inputs to categories at any depth.
 
-| Cookbook                                                                      | What it does                                                                                                                                                                             | Level        |
-| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| [Hierarchical classification](/cookbooks/hierarchical_classification)         | Classifies documents through deep patent, retail product, biomedical, and source-code hierarchies using parallel beam search over TypeSafe Choice probabilities.                         | Intermediate |
-| [Autoresearch feature discovery](/cookbooks/autoresearch_feature_discovery)   | Runs an autoresearch loop that proposes TypeSafe questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor.                  | Advanced     |
-| [Classification using confidence](/cookbooks/classification_using_confidence) | Classify SEC annual reports into 75 industry groups with one Choice each, then read the answer's own confidence to decide whether to report that group or the broader division above it. | Beginner     |
+| Cookbook | What it does | Level |
+| - | - | - |
+| [Hierarchical classification](/cookbooks/hierarchical_classification) | Classifies documents through deep patent, retail product, biomedical, and source-code hierarchies using parallel beam search over TypeSafe Choice probabilities. | Intermediate |
+| [Autoresearch feature discovery](/cookbooks/autoresearch_feature_discovery) | Runs an autoresearch loop that proposes TypeSafe questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor. | Advanced |
+| [Classification using confidence](/cookbooks/classification_using_confidence) | Classify SEC annual reports into 75 industry groups with one Choice each, then read the answer's own confidence to decide whether to report that group or the broader division above it. | Beginner |
 
 <Tip>
   We're always keen to learn how people are making use of our primitives. If you've built something worth a cookbook, drop us a note!
@@ -2024,13 +2024,13 @@ out. RMSE measures prediction error in critic-score points, with larger misses c
 more, and lower is better. Every number in the table below comes from the 800 reviews that
 neither the model nor the loop ever saw.
 
-| how the note becomes a score                            | RMSE     |
-| ------------------------------------------------------- | -------- |
-| predict the average score of the training rows          | 3.09     |
-| the same CatBoost, reading the note as word counts      | 2.47     |
-| ask TypeSafe for the score itself, rescaled and shifted | 2.15     |
-| 18 questions from one proposal call, no loop            | 1.87     |
-| **38 questions after five rounds of the loop**          | **1.77** |
+| how the note becomes a score | RMSE |
+| - | - |
+| predict the average score of the training rows | 3.09 |
+| the same CatBoost, reading the note as word counts | 2.47 |
+| ask TypeSafe for the score itself, rescaled and shifted | 2.15 |
+| 18 questions from one proposal call, no loop | 1.87 |
+| **38 questions after five rounds of the loop** | **1.77** |
 
 The last two rows are the loop. One proposal call, with nothing to go on yet, gets to 1.87.
 Four more rounds of reading its own worst predictions get to 1.77. Most of the gain is in
@@ -5431,13 +5431,13 @@ def ask_llm_rubric(
 
 ### Experiment Grid
 
-| Model group          | Model                            | Distribution (t=0) | Distribution (default) | Single-pick (t=0) |
-| -------------------- | -------------------------------- | :----------------: | :--------------------: | :---------------: |
-| Non-reasoning Models | `claude-haiku-4-5`               |          ✓         |            ✓           |         ✓         |
-| Non-reasoning Models | `gpt-5.4-mini`                   |          ✓         |            ✓           |         ✓         |
-| Reasoning Models     | `gpt-5.5`                        |          —         |            ✓           |         —         |
-| Reasoning Models     | `claude-opus-4-8`                |          —         |            ✓           |         —         |
-| TypeSafe             | `jev-latest` (`typesafe_choice`) |          —         |            ✓           |         —         |
+| Model group | Model | Distribution (t=0) | Distribution (default) | Single-pick (t=0) |
+| - | - | :-: | :-: | :-: |
+| Non-reasoning Models | `claude-haiku-4-5` | ✓ | ✓ | ✓ |
+| Non-reasoning Models | `gpt-5.4-mini` | ✓ | ✓ | ✓ |
+| Reasoning Models | `gpt-5.5` | — | ✓ | — |
+| Reasoning Models | `claude-opus-4-8` | — | ✓ | — |
+| TypeSafe | `jev-latest` (`typesafe_choice`) | — | ✓ | — |
 
 * A `✓` marks a condition tested with 15 repeats; a `—` marks a combination that is not
   tested.
@@ -6397,13 +6397,13 @@ def ask_llm_rubric(
 
 ### Experiment Grid
 
-| Model group          | Model                          | Probability (t=0) | Probability (default) | Yes/no (t=0) |
-| -------------------- | ------------------------------ | :---------------: | :-------------------: | :----------: |
-| Non-reasoning Models | `claude-haiku-4-5`             |         ✓         |           ✓           |       ✓      |
-| Non-reasoning Models | `gpt-5.4-mini`                 |         ✓         |           ✓           |       ✓      |
-| Reasoning Models     | `gpt-5.5`                      |         —         |           ✓           |       —      |
-| Reasoning Models     | `claude-opus-4-8`              |         —         |           ✓           |       —      |
-| TypeSafe             | `jev-latest` (`typesafe_noul`) |         —         |           ✓           |       —      |
+| Model group | Model | Probability (t=0) | Probability (default) | Yes/no (t=0) |
+| - | - | :-: | :-: | :-: |
+| Non-reasoning Models | `claude-haiku-4-5` | ✓ | ✓ | ✓ |
+| Non-reasoning Models | `gpt-5.4-mini` | ✓ | ✓ | ✓ |
+| Reasoning Models | `gpt-5.5` | — | ✓ | — |
+| Reasoning Models | `claude-opus-4-8` | — | ✓ | — |
+| TypeSafe | `jev-latest` (`typesafe_noul`) | — | ✓ | — |
 
 * A check mark is one condition, run 15 times. A dash is a combination that was not tested.
 * The default column sends no temperature argument: non-reasoning models use the API
@@ -8744,12 +8744,12 @@ display(
 
 Each example has a known expected leaf. Beam search matched 4 of 4 expected leaves; greedy search matched 2 of 4. Keeping three paths recovered the expected classification for CPC patents, Shopify products.
 
-| Hierarchy                | Expected leaf                                       | Greedy leaf                                                         | Beam K=3 leaf                                       | Greedy correct | Beam correct |
-| ------------------------ | --------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------- | -------------- | ------------ |
-| CPC patents              | A01K31/12 Perches for poultry or birds, e.g. roosts | E99Z99/00 Subject matter not otherwise provided for in this section | A01K31/12 Perches for poultry or birds, e.g. roosts | no             | yes          |
-| Shopify products         | Cat Window Beds & Perches                           | Pet Chairs                                                          | Cat Window Beds & Perches                           | no             | yes          |
-| MeSH biomedical subjects | C06.405.469.432.500 Crohn Disease                   | C06.405.469.432.500 Crohn Disease                                   | C06.405.469.432.500 Crohn Disease                   | yes            | yes          |
-| CookSafe files           | retrievers.py                                       | retrievers.py                                                       | retrievers.py                                       | yes            | yes          |
+| Hierarchy | Expected leaf | Greedy leaf | Beam K=3 leaf | Greedy correct | Beam correct |
+| - | - | - | - | - | - |
+| CPC patents | A01K31/12 Perches for poultry or birds, e.g. roosts | E99Z99/00 Subject matter not otherwise provided for in this section | A01K31/12 Perches for poultry or birds, e.g. roosts | no | yes |
+| Shopify products | Cat Window Beds & Perches | Pet Chairs | Cat Window Beds & Perches | no | yes |
+| MeSH biomedical subjects | C06.405.469.432.500 Crohn Disease | C06.405.469.432.500 Crohn Disease | C06.405.469.432.500 Crohn Disease | yes | yes |
+| CookSafe files | retrievers.py | retrievers.py | retrievers.py | yes | yes |
 
 The diagrams show why the methods differ. Orange marks the greedy route, green marks the winning beam route, purple marks other retained paths, and dashed edges were pruned.
 
@@ -11445,11 +11445,11 @@ entry to look at first. The roster itself never changes, so any prefix caching o
 still holds. Over 488 requests against `claude-haiku-4-5-20251001`, using skills from the
 Hermes roster:
 
-|                                      | loads the wrong skill | loads one when nothing fits |
-| ------------------------------------ | --------------------- | --------------------------- |
-| agent alone, with just its roster    | 16.8%                 | 9.8%                        |
-| **agent with a TypeSafe suggestion** | **7.3%**              | **4.0%**                    |
-| agent handed the right answer        | 2.5%                  | 1.2%                        |
+| | loads the wrong skill | loads one when nothing fits |
+| - | - | - |
+| agent alone, with just its roster | 16.8% | 9.8% |
+| **agent with a TypeSafe suggestion** | **7.3%** | **4.0%** |
+| agent handed the right answer | 2.5% | 1.2% |
 
 The third row shows the floor for making mistakes is not zero, because an agent given the
 right skill still does not always load it, and no selection method, however good, gets past
@@ -12139,11 +12139,11 @@ Relevant to the current request: xurl. Ignore this if it does not fit what the u
 Each of the 488 requests goes to the agent three times, one measured turn each. The runs
 differ only in what the agent is told:
 
-|                         | what goes in the system prompt                                     |
-| ----------------------- | ------------------------------------------------------------------ |
-| agent alone             | nothing                                                            |
-| agent with a suggestion | whatever `suggest()` returned                                      |
-| agent given the answer  | the covering skill's name, or "nothing applies" when there is none |
+| | what goes in the system prompt |
+| - | - |
+| agent alone | nothing |
+| agent with a suggestion | whatever `suggest()` returned |
+| agent given the answer | the covering skill's name, or "nothing applies" when there is none |
 
 The third is not achievable; it is the ceiling the other two get measured against.
 
@@ -12429,11 +12429,11 @@ flowchart LR
 
 TypeSafe exposes three *AI primitives*. Similar to software primitives, our AI primitives are modular, composable, structured, reliable, and fast. Each asks a different type of *question* and returns a different type of answer.
 
-| Question type                | Goal                         | Returns                                 |
-| ---------------------------- | ---------------------------- | --------------------------------------- |
+| Question type | Goal | Returns |
+| - | - | - |
 | [Choice](/primitives/choice) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
-| [Score](/primitives/score)   | Score the state on a rubric  | `score`, `probabilities`, `confidence`  |
-| [Noul](/primitives/noul)     | Is this statement true?      | `noul` (0–1)                            |
+| [Score](/primitives/score) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
+| [Noul](/primitives/noul) | Is this statement true? | `noul` (0–1) |
 
 All three *question* types can be mixed in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 
@@ -12475,12 +12475,12 @@ Coding agents rely on an LLM that streams text, calls tools, and edits files bas
 
 Pick the row that matches what you were trying to do:
 
-| You wanted to...                                                                                                              | Do this                                                                                                                                                                                                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Make your coding agent better at *writing code that uses TypeSafe*                                                            | Install the [TypeSafe agent skill](/agent-skill). It gives Claude Code, Codex, and other agents full context on the Jev API, the [primitives](/primitives), and the [patterns](/patterns) so they can generate correct TypeSafe integrations for you.                                                 |
+| You wanted to... | Do this |
+| - | - |
+| Make your coding agent better at *writing code that uses TypeSafe* | Install the [TypeSafe agent skill](/agent-skill). It gives Claude Code, Codex, and other agents full context on the Jev API, the [primitives](/primitives), and the [patterns](/patterns) so they can generate correct TypeSafe integrations for you. |
 | Use Jev inside an app or agent you're building — for routing, classification, scoring, guardrails, or any structured decision | Start with the [Quick start](/introduction/quickstart), then read [How to build with TypeSafe](/concepts/how-to-build-with-system-one) and the [Patterns](/patterns) for common architectures like [confidence routing](/patterns/confidence-routing) and [intent routing](/patterns/intent-routing). |
-| Replace or swap the model that powers a coding agent                                                                          | Jev isn't the tool for this. Keep using an LLM-based coding agent, and use Jev separately wherever your product needs a fast, calibrated, structured decision.                                                                                                                                        |
-| Try Jev before writing any code                                                                                               | Open the [Playground](https://console.typesafe.ai/playground), paste some text as the state, and add a few questions. See the [Quick start](/introduction/quickstart) for a walkthrough.                                                                                                              |
+| Replace or swap the model that powers a coding agent | Jev isn't the tool for this. Keep using an LLM-based coding agent, and use Jev separately wherever your product needs a fast, calibrated, structured decision. |
+| Try Jev before writing any code | Open the [Playground](https://console.typesafe.ai/playground), paste some text as the state, and add a few questions. See the [Quick start](/introduction/quickstart) for a walkthrough. |
 
 ## When Jev is worth reaching for
 
@@ -12850,17 +12850,17 @@ Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Man
 
 ## The failure modes in detail
 
-| # | Failure mode                                                                        | Do this instead                                                |
-| - | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 1 | [Literal reading](#literal-reading)                                                 | Write the exact condition, criteria for each available options |
-| 2 | [Math and Numbers](#math-and-numbers)                                               | Keep the arithmetic in code                                    |
-| 3 | [Date and time comparison](#date-and-time-comparison)                               | Extract components; compare in code                            |
-| 4 | [Indirection](#indirection)                                                         | Reduce hops; point to the relevant state                       |
-| 5 | [Large state full of irrelevant detail](#large-state-full-of-irrelevant-detail)     | Filter first; send only what the question needs                |
-| 6 | [Adversarial content](#adversarial-content)                                         | Write precise prompts, and test edge cases before deploying    |
-| 7 | [Contradictory instructions and criteria](#contradictory-instructions-and-criteria) | Align the criteria and instruction                             |
-| 8 | [Common-sense structural invariants](#common-sense-structural-invariants)           | Ask each decision one way; enforce identities in code          |
-| 9 | [Generation](#generation)                                                           | Use a generative model                                         |
+| # | Failure mode | Do this instead |
+| - | - | - |
+| 1 | [Literal reading](#literal-reading) | Write the exact condition, criteria for each available options |
+| 2 | [Math and Numbers](#math-and-numbers) | Keep the arithmetic in code |
+| 3 | [Date and time comparison](#date-and-time-comparison) | Extract components; compare in code |
+| 4 | [Indirection](#indirection) | Reduce hops; point to the relevant state |
+| 5 | [Large state full of irrelevant detail](#large-state-full-of-irrelevant-detail) | Filter first; send only what the question needs |
+| 6 | [Adversarial content](#adversarial-content) | Write precise prompts, and test edge cases before deploying |
+| 7 | [Contradictory instructions and criteria](#contradictory-instructions-and-criteria) | Align the criteria and instruction |
+| 8 | [Common-sense structural invariants](#common-sense-structural-invariants) | Ask each decision one way; enforce identities in code |
+| 9 | [Generation](#generation) | Use a generative model |
 
 ## Literal reading
 
@@ -12957,16 +12957,16 @@ However there are many structural invariants one might imagine to hold that simp
 For example, "Is the customer asking for a refund?", asked as a [Noul](/primitives/noul) and as a yes/no [Choice](/primitives/choice) on the ticket "I'm not happy with the fit. What are my options here?":
 
 | Noul `noul` | Choice `yes` | Choice `no` | Choice `confidence` |
-| ----------- | ------------ | ----------- | ------------------- |
-| 0.22        | 0.01         | 0.99        | 0.97                |
+| - | - | - | - |
+| 0.22 | 0.01 | 0.99 | 0.97 |
 
 The comparable numbers are `noul` and `probabilities["yes"]`, and it is not obvious how to interpret either the Choice output and confidence for the Noul question or vice versa.
 
 The same question and its negation, "Is the customer asking for something other than a refund?", as two Nouls on the ticket "I was charged twice for the same order. Can someone look into this?":
 
-| `refund` | `not_refund` | Sum  |
-| -------- | ------------ | ---- |
-| 0.72     | 0.47         | 1.19 |
+| `refund` | `not_refund` | Sum |
+| - | - | - |
+| 0.72 | 0.47 | 1.19 |
 
 There are many reasons that `P(noul)` and `1 - P(not noul)` may not be directly comparable.
 
@@ -13001,15 +13001,15 @@ Jev is TypeSafe's flagship model and the first [System One model](/concepts/syst
 
 ## Current models
 
-| Jev 1.13                    | `jev-1.13.0`                                                                              |
-| :-------------------------- | :---------------------------------------------------------------------------------------- |
-| Price (per Btok / per Mtok) | \$42 / \$0.042                                                                            |
-| Rate limits                 | 250,000 tokens per second / 1,200 requests per minute                                     |
-| Context length              | 64k tokens per request; 32k tokens for `state` plus the longest question                  |
-| Input                       | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
+| Jev 1.13 | `jev-1.13.0` |
+| :- | :- |
+| Price (per Btok / per Mtok) | \$42 / \$0.042 |
+| Rate limits | 100K tokens per second / 40 requests per second |
+| Context length | 64k tokens per request; 32k tokens for `state` plus the longest question |
+| Input | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
 
 * **Price:** Charged per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
-* **Rate limits:** Measured in tokens per second and requests per minute. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry with backoff by default and honor the `retry-after` header when the response carries one. If you call the HTTP API directly, see [Handling rate limits](/api#handling-rate-limits).
+* **Rate limits:** Measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry with backoff by default and honor the `retry-after` header when the response carries one. If you call the HTTP API directly, see [Handling rate limits](/api#handling-rate-limits).
 * **Context length:** Jev ingests the `state` once and evaluates every question against it in parallel. The 64k budget covers the `state` plus all questions combined; the 32k budget applies to the `state` plus the single longest question. See [Speculative fan-out](/patterns/fan-out) for packing many questions into one request, and [Jev 1.13 jaggedness](/model-jaggedness/jev-1.13) for how accuracy shifts as the state grows.
 * **Input:** Jev evaluates natural-language text. Pre-process non-text inputs (images, audio, video, binaries) into text or structured fields before sending them as `state`. See [State](/concepts/state) for supported shapes.
 
@@ -13021,9 +13021,9 @@ Jev is TypeSafe's flagship model and the first [System One model](/concepts/syst
 
 An alias is a model name that resolves to a versioned model ID. Send it in the `model` field like any other name.
 
-| Alias         | Points to    | Meaning                                                                                                                       |
-| :------------ | :----------- | :---------------------------------------------------------------------------------------------------------------------------- |
-| `jev-latest`  | `jev-1.13.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use.        |
+| Alias | Points to | Meaning |
+| :- | :- | :- |
+| `jev-latest` | `jev-1.13.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use. |
 | `jev-preview` | `jev-1.13.0` | The most recent release, whether or not it is an official one. Moves ahead of `jev-latest` when a preview build is available. |
 
 <Warning>
@@ -13109,12 +13109,12 @@ This section assumes you know the [TypeSafe primitives](/primitives) and underst
 
 ## The patterns
 
-| Pattern                                                  | What it does                                                                                               | Benefits                 |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------ |
-| [Speculative Fan-Out](/patterns/fan-out)                 | Send many questions in a single call, including speculative ones, and let your code decide what's relevant | Cost, Speed              |
-| [Confidence-Gated Routing](/patterns/confidence-routing) | Utilize confidence as a second decision axis to build safer systems                                        | Reliability, Safety      |
-| [Composite Scoring](/patterns/composite-scoring)         | Combine several dimensions of analysis into a single score                                                 | Cost, Reliability, Speed |
-| [Intent Routing](/patterns/intent-routing)               | Classify a user's intent and route to the appropriate handler                                              | Cost, Speed              |
+| Pattern | What it does | Benefits |
+| - | - | - |
+| [Speculative Fan-Out](/patterns/fan-out) | Send many questions in a single call, including speculative ones, and let your code decide what's relevant | Cost, Speed |
+| [Confidence-Gated Routing](/patterns/confidence-routing) | Utilize confidence as a second decision axis to build safer systems | Reliability, Safety |
+| [Composite Scoring](/patterns/composite-scoring) | Combine several dimensions of analysis into a single score | Cost, Reliability, Speed |
+| [Intent Routing](/patterns/intent-routing) | Classify a user's intent and route to the appropriate handler | Cost, Speed |
 
 <Tip>
   We're always keen to learn how people are making use of our primitives. If you've found a killer use case you think should be mentioned here, feel free to drop us a note!
@@ -13401,11 +13401,11 @@ The three TypeSafe question types (Choice, Score, Noul), the typed answers they 
 
 TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](/concepts/system-one) to make about a [state](/concepts/state), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. There are three question types, each returning a different shape of answer.
 
-| Type                         | What it answers         | Returns                                          |
-| ---------------------------- | ----------------------- | ------------------------------------------------ |
-| [Choice](/primitives/choice) | Which of these options? | `choice`, `probabilities`, `confidence`          |
-| [Score](/primitives/score)   | Which level?            | `score`, `legend`, `probabilities`, `confidence` |
-| [Noul](/primitives/noul)     | Is this true?           | `noul` (0 to 1)                                  |
+| Type | What it answers | Returns |
+| - | - | - |
+| [Choice](/primitives/choice) | Which of these options? | `choice`, `probabilities`, `confidence` |
+| [Score](/primitives/score) | Which level? | `score`, `legend`, `probabilities`, `confidence` |
+| [Noul](/primitives/noul) | Is this true? | `noul` (0 to 1) |
 
 You can ask one question or send several together. Every question in a request sees the same state, is evaluated independently, and returns a typed answer under the ID you chose.
 
@@ -13462,11 +13462,11 @@ If two types both seem to fit, prefer the one whose answer your code can act on 
 
 Answers are primitives too. Each question type returns a typed value that your code can compare, threshold, sort, pass into further logic, or put into the state of a follow-up request (see [When one question depends on another](#when-one-question-depends-on-another)).
 
-| Type   | Answer fields                                    | How to read it                                                                                                                                                       |
-| ------ | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Choice | `choice`, `probabilities`, `confidence`          | `choice` is the selected option. `probabilities` is the distribution across every option. `confidence` summarizes how peaked that distribution is.                   |
-| Score  | `score`, `legend`, `probabilities`, `confidence` | `score` is a position along your levels, and can fall between two of them. `legend` repeats the levels by number. `probabilities` is the distribution across levels. |
-| Noul   | `noul`                                           | The probability that the answer is yes. Near 1 is a strong yes, near 0 a strong no, near 0.5 uncertain. Noul has no separate `confidence`.                           |
+| Type | Answer fields | How to read it |
+| - | - | - |
+| Choice | `choice`, `probabilities`, `confidence` | `choice` is the selected option. `probabilities` is the distribution across every option. `confidence` summarizes how peaked that distribution is. |
+| Score | `score`, `legend`, `probabilities`, `confidence` | `score` is a position along your levels, and can fall between two of them. `legend` repeats the levels by number. `probabilities` is the distribution across levels. |
+| Noul | `noul` | The probability that the answer is yes. Near 1 is a strong yes, near 0 a strong no, near 0.5 uncertain. Noul has no separate `confidence`. |
 
 Two properties of these answers make them composable:
 
@@ -13624,12 +13624,12 @@ System One models are trained to understand structure.
 
 Every one of these fields is an [`EntryType`](/sdk/javascript/api/type-aliases/EntryType).
 
-| Field                                   | Applies to          | Accepted shape                         |
-| --------------------------------------- | ------------------- | -------------------------------------- |
-| `instructions`                          | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
-| `criteria` values (option descriptions) | Choice              | `string`, `object`, `array`, or `null` |
-| `criteria` entries (level descriptions) | Score               | `string`, `object`, `array`, or `null` |
-| `criteria.true` and `criteria.false`    | Noul                | `string`, `object`, `array`, or `null` |
+| Field | Applies to | Accepted shape |
+| - | - | - |
+| `instructions` | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
+| `criteria` values (option descriptions) | Choice | `string`, `object`, `array`, or `null` |
+| `criteria` entries (level descriptions) | Score | `string`, `object`, `array`, or `null` |
+| `criteria.true` and `criteria.false` | Noul | `string`, `object`, `array`, or `null` |
 
 ## When to structure a question
 
@@ -14108,14 +14108,14 @@ The number is the answer and the certainty in one. A value near 1 is a strong ye
 
 The table below shows recorded `jev-1.13.0` answers to the `is_human_escalation` question for different customer messages:
 
-| State                                                                  | `noul` |
-| ---------------------------------------------------------------------- | ------ |
-| Thanks, that fixed it!                                                 | 0.02   |
-| How do I reset my password?                                            | 0.07   |
-| I need this sorted today, whatever it takes.                           | 0.26   |
-| Are you a bot?                                                         | 0.40   |
-| Is there any way to speak to someone about my invoice?                 | 0.84   |
-| I have asked three times now. Can I please just talk to a real person? | 0.99   |
+| State | `noul` |
+| - | - |
+| Thanks, that fixed it! | 0.02 |
+| How do I reset my password? | 0.07 |
+| I need this sorted today, whatever it takes. | 0.26 |
+| Are you a bot? | 0.40 |
+| Is there any way to speak to someone about my invoice? | 0.84 |
+| I have asked three times now. Can I please just talk to a real person? | 0.99 |
 
 The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and the model splits almost evenly at 0.40. Both are the kind of message where a decision needs to be made based on a threshold in your code.
 
@@ -14136,12 +14136,12 @@ Where to set the threshold depends on the cost of being wrong. Use 0.5 when yes 
 
 A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
-| Candidate                                                                                   | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| My experience is in Java and Go. I have not used Python.                                    | 0.03                                       | 0.0 (No experience)                                          |
-| I have used Python occasionally for small scripts alongside my main Java work.              | 0.14                                       | 1.0 (Some familiarity)                                       |
-| I used Python every day for two years in my last job, mostly data pipelines.                | 0.81                                       | 2.05 (Regular use in a job)                                  |
-| I have written Python daily for eight years, including maintaining a large Django codebase. | 0.92                                       | 2.89 (Deep expertise)                                        |
+| Candidate | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
+| - | - | - |
+| My experience is in Java and Go. I have not used Python. | 0.03 | 0.0 (No experience) |
+| I have used Python occasionally for small scripts alongside my main Java work. | 0.14 | 1.0 (Some familiarity) |
+| I used Python every day for two years in my last job, mostly data pipelines. | 0.81 | 2.05 (Regular use in a job) |
+| I have written Python daily for eight years, including maintaining a large Django codebase. | 0.92 | 2.89 (Deep expertise) |
 
 The Noul judges one proposition, "strong", and the values are how likely it is. You could create levels in the 0 to 1 range in your code, such as 0.3 to 0.7 for "some experience", but the model will not see them, so nothing in the answer was judged against them. A middle value can mean medium experience or an unclear case, and the spacing between candidates is not something you chose. The Score judges each level description on its own, so every candidate landed on or near a level you wrote, and the returned probabilities show how the model divided its judgment between levels. If you disagree, reword a level and run it again. [Choose a question type](/primitives#choose-a-question-type) explains the distinction.
 
@@ -14692,11 +14692,11 @@ With plain strings this ticket scored 1.11 with a confidence of 0.84. With examp
 
 Examples steer the model, and they only help when they look like your real inputs. The table below is the opening Safari report with three different sets of level objects:
 
-| Level description                                                                                            | `score` | `confidence` |
-| ------------------------------------------------------------------------------------------------------------ | ------- | ------------ |
-| plain string: no object with examples                                                                        | 1.43    | 0.35         |
-| Added examples array with useful example: "export fails in one browser but works in another"                 | 1.03    | 0.96         |
-| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.43    | 0.35         |
+| Level description | `score` | `confidence` |
+| - | - | - |
+| plain string: no object with examples | 1.43 | 0.35 |
+| Added examples array with useful example: "export fails in one browser but works in another" | 1.03 | 0.96 |
+| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.43 | 0.35 |
 
 In this comparison, the matching example concentrates almost all the probability on one level. The unrelated example returns the same result as plain strings. Higher confidence does not establish which answer is correct. Choose examples with known expected levels, then test the revised descriptions on separate inputs before keeping them.
 
@@ -20965,12 +20965,12 @@ Or set `TYPESAFE_LOG_LEVEL` to one of `debug`, `info`, `warning`, `error`, or `o
 
 The SDK reads and uses the following environment variables:
 
-| Variable                 | Configures                                          | Default                   |
-| ------------------------ | --------------------------------------------------- | ------------------------- |
-| `TYPESAFE_API_KEY`       | API key (required)                                  | —                         |
-| `TYPESAFE_BASE_URL`      | API root URL                                        | `https://api.typesafe.ai` |
-| `TYPESAFE_DEFAULT_MODEL` | Default model                                       | `jev-latest`              |
-| `TYPESAFE_LOG_LEVEL`     | `typesafe_sdk` logger level, applied once at import | unset                     |
+| Variable | Configures | Default |
+| - | - | - |
+| `TYPESAFE_API_KEY` | API key (required) | — |
+| `TYPESAFE_BASE_URL` | API root URL | `https://api.typesafe.ai` |
+| `TYPESAFE_DEFAULT_MODEL` | Default model | `jev-latest` |
+| `TYPESAFE_LOG_LEVEL` | `typesafe_sdk` logger level, applied once at import | unset |
 
 See the [constants reference](/sdk/python/api/constants) for SDK defaults.
 

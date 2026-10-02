@@ -29,3 +29,5 @@ At least two descriptions indexed by score from zero; entries may be `null`.
 ## Returns
 
 [`ScoreQuestion`](../interfaces/ScoreQuestion.md)\<`T`>
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

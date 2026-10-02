@@ -97,3 +97,6 @@
 </h2>
 
 This is the initial public release of TypeSafe Python SDK. Learn more in the [documentation](https://docs.typesafe.ai/sdk/python).
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

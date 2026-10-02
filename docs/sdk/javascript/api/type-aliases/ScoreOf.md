@@ -11,3 +11,5 @@ Score keys inferred from the rubric; a fixed-length tuple yields its indices, ot
 ### T
 
 `T` *extends* [`ScoreCriteria`](./ScoreCriteria.md)
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

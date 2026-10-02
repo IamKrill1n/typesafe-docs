@@ -53,3 +53,5 @@ Probabilities keyed by label.
 ```ts
 readonly type: "choice";
 ```
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

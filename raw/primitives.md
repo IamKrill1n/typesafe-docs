@@ -476,3 +476,6 @@ See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) for gui
 </Columns>
 
 To see how these compose into system architectures, head to [Patterns](/patterns).
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

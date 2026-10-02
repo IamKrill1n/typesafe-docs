@@ -148,3 +148,5 @@ Create the error subclass for an HTTP status code.
 #### Inherited from
 
 [`APIError`](./APIError.md).[`fromResponse`](./APIError.md#sdk-fromresponse)
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

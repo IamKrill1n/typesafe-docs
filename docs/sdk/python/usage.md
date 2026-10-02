@@ -637,3 +637,5 @@ raw_answers = result.raw_http_response.json()["answers"]
 </h3>
 
 Unknown extra fields on recognized responses are ignored.
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

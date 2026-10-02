@@ -146,3 +146,5 @@ There are many reasons that `P(noul)` and `1 - P(not noul)` may not be directly 
 
 > **Tip:**
 > Found a failure mode that belongs on this list? We want to hear about it. Reach us on [Discord](https://discord.com/invite/WUujKYBp8s).
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -64,3 +64,5 @@
 * [choice](./api/functions/choice.md)
 * [noul](./api/functions/noul.md)
 * [score](./api/functions/score.md)
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

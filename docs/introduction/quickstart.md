@@ -223,3 +223,5 @@ Let's build a simple CLI that uses the TypeSafe API to evaluate a set of supplie
 ```
 
 See the [Agent Skill](../agent-skill.md) page for more details.
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

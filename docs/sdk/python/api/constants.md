@@ -93,3 +93,5 @@ DEFAULT_TIMEOUT = 10.0
 ```
 
 Default timeout in seconds for each HTTP operation.
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

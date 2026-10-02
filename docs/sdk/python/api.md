@@ -10,3 +10,5 @@
 * [Retries](./api/retries.md)
 * [Exceptions](./api/exceptions.md)
 * [Constants](./api/constants.md)
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

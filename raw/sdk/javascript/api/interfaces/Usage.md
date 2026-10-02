@@ -29,3 +29,6 @@ readonly output_tokens: number;
 ```
 
 Number of output tokens used.
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

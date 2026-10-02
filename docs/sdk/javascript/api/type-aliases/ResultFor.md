@@ -11,3 +11,5 @@ The answer type for a question, preserving its criteria keys.
 ### T
 
 `T` *extends* [`Question`](./Question.md)
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

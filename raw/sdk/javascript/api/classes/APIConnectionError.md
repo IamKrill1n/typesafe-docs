@@ -41,3 +41,6 @@ new APIConnectionError(message?, options?): APIConnectionError;
 #### Overrides
 
 [`TypeSafeError`](/sdk/javascript/api/classes/TypeSafeError).[`constructor`](/sdk/javascript/api/classes/TypeSafeError#sdk-constructor)
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

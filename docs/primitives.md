@@ -237,3 +237,5 @@ See [How to build with TypeSafe](./concepts/how-to-build-with-system-one.md) for
   Get the probability that a statement is true.
 
 To see how these compose into system architectures, head to [Patterns](./patterns.md).
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -749,3 +749,5 @@ QuestionModel: TypeAlias = (
 ```
 
 A question dictionary identified by its `type` key.
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

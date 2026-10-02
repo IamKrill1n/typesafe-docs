@@ -57,3 +57,6 @@ Text, a JSON object or array, or `null` to evaluate.
 #### Inherited from
 
 [`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest).[`state`](/sdk/javascript/api/interfaces/SystemOneRequest#sdk-state)
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

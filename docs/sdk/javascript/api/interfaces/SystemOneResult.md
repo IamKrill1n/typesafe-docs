@@ -43,3 +43,5 @@ readonly usage: Usage;
 ```
 
 Token usage for the request.
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

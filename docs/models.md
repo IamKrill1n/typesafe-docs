@@ -91,3 +91,5 @@ for (const model of models) {
     When the model or alias was released.
 
 See the [Python](./sdk/python/api/clients/sync.md#typesafe_sdk.Models.list) and [JavaScript](./sdk/javascript/api/interfaces/Models.md) SDK references for the full method signatures.
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

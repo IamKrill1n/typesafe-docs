@@ -1028,3 +1028,6 @@ def triage_ticket(ticket, customer):
     )
     return route_to_account_support(ticket, priority=priority)
 ```
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

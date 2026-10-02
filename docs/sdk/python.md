@@ -92,3 +92,5 @@ print(response.scores["urgency"].score)
 </h2>
 
 Visit the [Usage guide](./python/usage.md) to learn more about patterns such as [typed responses](./python/usage.md#typed-system_one-responses), [model selection](./python/usage.md#choosing-a-model), [retries](./python/usage.md#retries), [HTTP/2](./python/usage.md#http2), or [error handling](./python/usage.md#error-handling).
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

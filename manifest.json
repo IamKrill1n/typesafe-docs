@@ -6,1000 +6,1000 @@
       "url": "https://docs.typesafe.ai/agent-skill.md",
       "title": "Agent skill",
       "description": "Drop-in skill for Claude Code, Codex, and other agent environments.",
-      "raw_sha256": "5ed8f74a133760523a67674f0feaac6ac88d9f1d242574ce3c9c4965f6e037c4",
-      "clean_sha256": "ad7ef42eb38548602240c6b469e27675c566d1b3bdacc628ab9bbce3f1d742d6",
-      "bytes": 5798,
-      "changed_at": "2026-09-23T02:51:54.206Z"
+      "raw_sha256": "58150a9cecb9b9727c6039b14e0dfea7f2e3cb9be6ee14611b7df9cc8e0c94c7",
+      "clean_sha256": "a53c21f4f6a3ef6865799c1d31b2db3c9ea11466da26578140b122af67cea65b",
+      "bytes": 5911,
+      "changed_at": "2026-10-02T12:43:50.522Z"
     },
     "api.md": {
       "url": "https://docs.typesafe.ai/api.md",
       "title": "API reference",
       "description": "Full HTTP API reference for the TypeSafe evaluation endpoint.",
-      "raw_sha256": "0252c4126fdaa45c537fa83718f90d544890a878a12324690294dfeee9f0849e",
-      "clean_sha256": "0033fcddd3d8cd93f3a5dfe1e581a82e5d9a33edfa6b4a75f0439615d861595b",
-      "bytes": 11231,
-      "changed_at": "2026-09-29T12:59:30.332Z"
+      "raw_sha256": "6b760275f89341fe15cff80c28aacae94d7d0c0c99afcd987ec0bca680b5713a",
+      "clean_sha256": "85f6998ae5ae270f10712e08b07b618a5bb13abb508a14a8362cf826dde1d02e",
+      "bytes": 11344,
+      "changed_at": "2026-10-02T12:43:50.521Z"
     },
     "concepts/how-to-build-with-system-one.md": {
       "url": "https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md",
       "title": "How to build with TypeSafe",
       "description": "Design AI-powered software by keeping code in control and giving System One narrow, structured decisions.",
-      "raw_sha256": "d9f4d34c1349bf5acb55c99d6a1651eacfc481ad8d1f78ccb8776769da729a49",
-      "clean_sha256": "a28035e228b170dfb7ae333b072e8d49b3244b571f1b701ccf72df45562672fc",
-      "bytes": 40921,
-      "changed_at": "2026-09-23T02:51:54.158Z"
+      "raw_sha256": "9f5a20ac39383695d554bf812b365ed4b70622b8e5ac10484dce290469c68972",
+      "clean_sha256": "8aba977bf16aca1d9677468e3ac0730ffad8f714b19627ebf4bbedba21f6c368",
+      "bytes": 41034,
+      "changed_at": "2026-10-02T12:43:50.475Z"
     },
     "concepts/state.md": {
       "url": "https://docs.typesafe.ai/concepts/state.md",
       "title": "State",
       "description": "What state is, how to structure it, and how to give a System One model the context it needs.",
-      "raw_sha256": "0c78c1a347bdf97b5067655c2ff4bf9ae6f1ea1af601b54fbeac1beeecab5271",
-      "clean_sha256": "45e7844059671c2befff61522345e47d8a10a6fe4e0fe01e448891be79f05baa",
-      "bytes": 3556,
-      "changed_at": "2026-09-29T12:59:30.287Z"
+      "raw_sha256": "8ed5a4e719cf2414759fed92463c203855f1fb4bf02b685746cd4858481375a5",
+      "clean_sha256": "39069b3dd457c36931f18feee1be7ae2cd63cad532c49e5b0cd4d1ffc1493140",
+      "bytes": 3669,
+      "changed_at": "2026-10-02T12:43:50.461Z"
     },
     "concepts/system-one.md": {
       "url": "https://docs.typesafe.ai/concepts/system-one.md",
       "title": "System One",
       "description": "System One models make fast, structured decisions for software. Jev is TypeSafe's flagship model and the first System One model.",
-      "raw_sha256": "bd5ecf9c18ad8abb6847576ab630dde9529622bfd41bf02961aa84609a77dadd",
-      "clean_sha256": "004977df0a94dec81ab6c591a5383e2538d98c69fbbbfc000bb032f57733c4c6",
-      "bytes": 3790,
-      "changed_at": "2026-09-29T12:59:30.286Z"
+      "raw_sha256": "a9a536be92d9c906c02f8aee6c28622a563bbe4a1ead5078d9bc48fe3612f265",
+      "clean_sha256": "691a7567b75a5a49aabf88b7adb7900970b5724880190d85d2dbf97f3de18481",
+      "bytes": 3903,
+      "changed_at": "2026-10-02T12:43:50.460Z"
     },
     "concepts/use-case-map.md": {
       "url": "https://docs.typesafe.ai/concepts/use-case-map.md",
       "title": "Example use cases",
       "description": "Explore TypeSafe use cases by industry and turn promising ideas into software workflows.",
-      "raw_sha256": "8fcbbe46f7b5449a3c73f4e49a24dd06aa0812c0d2edfd77c050edfdf9274f05",
-      "clean_sha256": "c4beaf802a135b43bb9829dfa6f00b3659d4262a2c215cb4ed4322e69fabcd35",
-      "bytes": 11042,
-      "changed_at": "2026-09-29T12:59:30.285Z"
+      "raw_sha256": "4dd749d672520170b99113c870ca8aff93e16212075b210c8797849d8ba24fbc",
+      "clean_sha256": "b19b4a90cd5f8c762bd7284457c620c538b2473a8199db658d9204458214fb7d",
+      "bytes": 11155,
+      "changed_at": "2026-10-02T12:43:50.459Z"
     },
     "confidence.md": {
       "url": "https://docs.typesafe.ai/confidence.md",
       "title": "Confidence",
       "description": "How TypeSafe reports certainty, how it differs from probability, and how to use it to control system behavior.",
-      "raw_sha256": "97dafe98b77979906a2ad456013dd85a70dcecd109d0644b096817d910997ea5",
-      "clean_sha256": "7828542cbc50e814d6554274999ab7eb6bebbda746a1e74c0ee7b88b140b1b86",
-      "bytes": 11396,
-      "changed_at": "2026-09-23T02:51:54.155Z"
+      "raw_sha256": "5c325ec0c0b69e78129406ca7c5d3aef113bce365abd34985b8674cd278c81be",
+      "clean_sha256": "48a3349938ec7d51bbe6b367b04c3c24cf93a4059914fb2aa1aae34c6099e4bb",
+      "bytes": 24090,
+      "changed_at": "2026-10-02T12:43:50.472Z"
     },
     "cookbooks.md": {
       "url": "https://docs.typesafe.ai/cookbooks.md",
       "title": "Cookbooks",
       "description": "End-to-end recipes that show TypeSafe in real problems, from a few questions to full pipelines.",
-      "raw_sha256": "0fa0717f3815425ffcd79c40a49a6db38134c5c794cd04797db8263830f3c6c0",
-      "clean_sha256": "979172e86dbbfed25f622b9b89a8a39347718aae8e09cb57203d82c5f377b04b",
-      "bytes": 5831,
-      "changed_at": "2026-09-29T12:59:30.301Z"
+      "raw_sha256": "45f9d361808ab00c9bd7d9fbd814ecaa7e557836dc1d4f739cdb31480a08cc54",
+      "clean_sha256": "178a48ed1dd4a0337ef9204b6d57f344eecc37a4add8c7660f25269e9b711c1e",
+      "bytes": 5944,
+      "changed_at": "2026-10-02T12:43:50.481Z"
     },
     "cookbooks/autoformat.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoformat.md",
       "title": "Structure recovery",
       "description": "Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout).",
-      "raw_sha256": "c23355f56ea56518792f8432ed2b4ca11771e01ff430922d8db2c27864ab34ac",
-      "clean_sha256": "167ca31fe21d99eb0750cc898399aa5e248a7f574d892bbec64c0757491e4974",
-      "bytes": 40882,
-      "changed_at": "2026-09-23T02:51:54.177Z"
+      "raw_sha256": "cb5db3e079d337d0b5923e1d122a9c65612e342061d42939ed1aea130f3a58ba",
+      "clean_sha256": "699e3add3553ce89971866e48a3158d99ceff32b063326b583a197ffc99445d7",
+      "bytes": 40995,
+      "changed_at": "2026-10-02T12:43:50.495Z"
     },
     "cookbooks/autoresearch_feature_discovery.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md",
       "title": "Autoresearch feature discovery",
       "description": "Runs an autoresearch loop that proposes TypeSafe questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor.",
-      "raw_sha256": "af2595f41e8cb26ca4116f346e7e269502bcf2892e8cb6e810883ddb7f5f5768",
-      "clean_sha256": "dc616d2d8e3508fbc6c8bf7a975d4089baa3a2adfaa87f41bd1795460b08b05b",
-      "bytes": 71355,
-      "changed_at": "2026-09-29T12:59:30.327Z"
+      "raw_sha256": "24e0854e5a5846c269142d2a57abfb8aa90d63c37231b03036ed08f1e9989b72",
+      "clean_sha256": "15f480b5d02ce0c0719eca829ae6dfbcf4b58e4ccdc6ada076c1cac94c528d60",
+      "bytes": 71468,
+      "changed_at": "2026-10-02T12:43:50.516Z"
     },
     "cookbooks/citation_check.md": {
       "url": "https://docs.typesafe.ai/cookbooks/citation_check.md",
       "title": "Double-checking citations",
       "description": "Catch wrong or hallucinated citations by checking against the source document. One Choice question decides whether the quote's context supports the claim.",
-      "raw_sha256": "2497e2c62a4c5fb2d1aca1c4031fb7bd39948d27b13f18e1db07d8c5777cd529",
-      "clean_sha256": "fa017fc483a86c8d8536b68d9904edda7ddbdee1a9ec27f4a42812041324b091",
-      "bytes": 15254,
-      "changed_at": "2026-09-23T02:51:54.184Z"
+      "raw_sha256": "76bdeead0640f4963815aba7c4cbafe7812cb619b678606998f1735a808fd3f6",
+      "clean_sha256": "f0d6554ad63d2a7ef42440d6e30895aee2c384acc2fcccc41adee355d5747b94",
+      "bytes": 15367,
+      "changed_at": "2026-10-02T12:43:50.506Z"
     },
     "cookbooks/classification_using_confidence.md": {
       "url": "https://docs.typesafe.ai/cookbooks/classification_using_confidence.md",
       "title": "Classification using confidence",
       "description": "Classify SEC annual reports into 75 industry groups with one Choice each, then read the answer's own confidence to decide whether to report that group or the broader division above it.",
-      "raw_sha256": "20afd8e6c651de25c5a0fbfec2fde98a202f181066b2a5b391f1ffcb7ed5e377",
-      "clean_sha256": "d661f3a985c0a247f8498eab504ee9b23b51833276e3a84d5df440b9bd6bb437",
-      "bytes": 30705,
-      "changed_at": "2026-09-23T02:51:54.197Z"
+      "raw_sha256": "6b5bed0126a9df1dac941760a57f82b5a336d866b03a0634ff4a845c4c146f35",
+      "clean_sha256": "7a3be1cd10927f279cd1b14d1805e6ab143b547751667a54fce1f1caaf39bfba",
+      "bytes": 30818,
+      "changed_at": "2026-10-02T12:43:50.518Z"
     },
     "cookbooks/classifying_rag_passages.md": {
       "url": "https://docs.typesafe.ai/cookbooks/classifying_rag_passages.md",
       "title": "Classifying RAG passages",
       "description": "Score each retrieved passage with one TypeSafe request, then decide in code which ones reach the answering model.",
-      "raw_sha256": "fbe9208da48e2bdada3c671a02e5dc55954660b2e283a85f0f2df1b596c090e3",
-      "clean_sha256": "755be5ff0f13620ec409ac569503db7baea1aa69838e68d7681eae099f0c1fed",
-      "bytes": 32392,
-      "changed_at": "2026-09-23T02:51:54.183Z"
+      "raw_sha256": "c0e8075add0790efb51ea298281c5fb1a2510a108012449c425e5af4a61c66e1",
+      "clean_sha256": "5e339c5468bb0cfae445d4abff05e6a2a8b309e49a1421a608b363aa4d80e937",
+      "bytes": 32505,
+      "changed_at": "2026-10-02T12:43:50.505Z"
     },
     "cookbooks/consistency_choice_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md",
       "title": "Self-consistency: choices",
       "description": "Add an uncertain outcome to moderation decisions and compare label agreement with the share of automatic actions.",
-      "raw_sha256": "adbff767c226d0b94671778ca8d49c3fc6bf1de6ef1253de88829f1efcb5ecc4",
-      "clean_sha256": "935174e999b28d1a68494cb669cc5d26db028eb7cfeb5e2242e8f0c6877dded1",
-      "bytes": 49397,
-      "changed_at": "2026-09-29T12:59:30.304Z"
+      "raw_sha256": "a1a8481c676fd4b6419a9f26feeacd1f223624cb17f438ac8b640597bbc03900",
+      "clean_sha256": "00782bd8c797e42014bf5c1bf1aade3ab12e900606e6416160ef5a514a3c0f47",
+      "bytes": 49510,
+      "changed_at": "2026-10-02T12:43:50.486Z"
     },
     "cookbooks/consistency_noul_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md",
       "title": "Self-consistency: nouls",
       "description": "Route uncertain probabilities to human review while keeping the underlying noul values visible.",
-      "raw_sha256": "037ce3ab766d0966d761ca668ec9b808eda52bdb752ba78924defa29b6089f14",
-      "clean_sha256": "c83e6694190846f0bc543a7af0726dddc477e030c38bdd949cee350d411dbb6c",
-      "bytes": 31952,
-      "changed_at": "2026-09-29T12:59:30.303Z"
+      "raw_sha256": "7d0a90fc22b71703d4dc38a901032afbe5a22bb911134d553654f143a9a6fd41",
+      "clean_sha256": "435a68fe2df13bc44bfbaef8ba9a85a6b5710f4eebc8750d245deca2cc4f0893",
+      "bytes": 32065,
+      "changed_at": "2026-10-02T12:43:50.483Z"
     },
     "cookbooks/date_extraction_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md",
       "title": "Date extraction",
       "description": "Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review.",
-      "raw_sha256": "c216cb3d293a07eadb64464b2f9b1d2a8e1670efc309cbfb6acd92724f386300",
-      "clean_sha256": "d4c54828ffa844cd8ba2af634c5ad287c4d40cfe69233257f8f55427cd8ae2c1",
-      "bytes": 19844,
-      "changed_at": "2026-09-23T02:51:54.188Z"
+      "raw_sha256": "28565d596103548298c3a26f3dce11c1d2e9e21e59608e84044cfb7134914cca",
+      "clean_sha256": "86632aecfe8ff0ee3efa251bf9d11de4be86fc08456910a1d95508e7764de789",
+      "bytes": 19957,
+      "changed_at": "2026-10-02T12:43:50.510Z"
     },
     "cookbooks/entity_alignment.md": {
       "url": "https://docs.typesafe.ai/cookbooks/entity_alignment.md",
       "title": "Knowledge graph entity alignment",
       "description": "Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree.",
-      "raw_sha256": "efa473b53ff4a2c353a8320ed6b89729b2d72f4fdf860e9c12fe0fb2500c58cc",
-      "clean_sha256": "5c52fc61bf4e2fe9e0946ed362acbcd212766bf5bb3db2d25672c650eb9ee024",
-      "bytes": 16563,
-      "changed_at": "2026-09-23T02:51:54.181Z"
+      "raw_sha256": "4042aa07e351032b4ebf0799b25df9427845f7860afaebe8d8e387aa495b8db0",
+      "clean_sha256": "3ad5a02ab81bc10a19137cce6bdbc2a7d25eab70c56028dd8d57782bb002e5ce",
+      "bytes": 16676,
+      "changed_at": "2026-10-02T12:43:50.504Z"
     },
     "cookbooks/function_calling.md": {
       "url": "https://docs.typesafe.ai/cookbooks/function_calling.md",
       "title": "Function calling",
       "description": "Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware TypeSafe questions.",
-      "raw_sha256": "d6301a7e0e6ed229e2c54deed160c1007a902885232c05fc30f0781fb6d40535",
-      "clean_sha256": "9b34e9c98d4bea50839be3a4591ac113baefa3471fc1a29a70b1a5d4b2017bb2",
-      "bytes": 18860,
-      "changed_at": "2026-09-23T02:51:54.178Z"
+      "raw_sha256": "c03cd58ac34dca4e282bfda4b21df943f27c0d652d49ad6b8bac1afa47f8856c",
+      "clean_sha256": "1bb3873f3c9546a7e0c9bc8adceff51bea3eec34f13bed0443260e7a3190792c",
+      "bytes": 18973,
+      "changed_at": "2026-10-02T12:43:50.498Z"
     },
     "cookbooks/hierarchical_classification.md": {
       "url": "https://docs.typesafe.ai/cookbooks/hierarchical_classification.md",
       "title": "Hierarchical classification",
       "description": "Classifies documents through deep patent, retail product, biomedical, and source-code hierarchies using parallel beam search over TypeSafe Choice probabilities.",
-      "raw_sha256": "2b1b095b87306e41f2d73ae6d009e6e733f08f0fe27948d798b3fd922ca2c275",
-      "clean_sha256": "8cb3a80bdaeab45d5defa48fd528d9cd95339020e3856bcee5fee941b59335fa",
-      "bytes": 35663,
-      "changed_at": "2026-09-29T12:59:30.324Z"
+      "raw_sha256": "c88074597b5d49a2a19b35626688467f8a8186a730ec0074041858499aff2455",
+      "clean_sha256": "9e8d9e422a78984f79c107ab91f7acd26b78b1cbe3580421a79616572d41cec5",
+      "bytes": 35776,
+      "changed_at": "2026-10-02T12:43:50.512Z"
     },
     "cookbooks/llm_guardrails.md": {
       "url": "https://docs.typesafe.ai/cookbooks/llm_guardrails.md",
       "title": "Guardrails for LLMs",
       "description": "Screen every message going into and out of an LLM app with one TypeSafe request, thresholding hazard probabilities and severity to pass, review, block, or route.",
-      "raw_sha256": "fb5935988e2c470ee0979b40e648d641b97604802093a1a6bf56d64dedd3e0d0",
-      "clean_sha256": "4efa8448573686a103736181da36221a0e128834f567f0a80b228a8250c731e8",
-      "bytes": 22500,
-      "changed_at": "2026-09-23T02:51:54.186Z"
+      "raw_sha256": "aa9dbed8188e07606e74fc0866f0b23493d8f5f3cdea65a3edefcfb55881f43e",
+      "clean_sha256": "98de285d26243e433a80f6698bf20c6b3a987a8eb868f709bfb5b25daed333df",
+      "bytes": 22613,
+      "changed_at": "2026-10-02T12:43:50.507Z"
     },
     "cookbooks/parallel_questions.md": {
       "url": "https://docs.typesafe.ai/cookbooks/parallel_questions.md",
       "title": "Parallel questions",
       "description": "Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers.",
-      "raw_sha256": "53dfe4516fd67b9bfc5abc9a50a6f4db6426b5b2951d41cd91e2fec45aded2fe",
-      "clean_sha256": "78cab15f63f8bd85d98867b885e880289cefd49ad5b191adcc1a61e8f9e1f4db",
-      "bytes": 48484,
-      "changed_at": "2026-09-23T02:51:54.170Z"
+      "raw_sha256": "1f4574474139321a1e05b31887a18ffe1dd3235169276aa4b600c6ebc110aee8",
+      "clean_sha256": "312f2665236413f385af50acea23b1dab048aea1ba4370d99bdea60f1193fa69",
+      "bytes": 48597,
+      "changed_at": "2026-10-02T12:43:50.488Z"
     },
     "cookbooks/pre_parsed_value_extraction_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook.md",
       "title": "Pre-parsed value extraction",
       "description": "Uses regexes to find candidate emails, phone numbers, and amounts, then has TypeSafe select the requested span so code can normalize a verbatim value.",
-      "raw_sha256": "c9ebb87b822ba958664b28b4e214e322dd62540c0964ea317d54da531a0fa6bd",
-      "clean_sha256": "2b8ceb3a241b35d78fc9dca754264878eeb5c975f1c0172102b8a681bf00a055",
-      "bytes": 12542,
-      "changed_at": "2026-09-23T02:51:54.190Z"
+      "raw_sha256": "a5242dbf4df6dcae3bbf374047026714c1801cdc126b39bc4bca99212dd1a1c9",
+      "clean_sha256": "5751dc1d7de7334a35ca5ac963d33239f4b5c15ca1eea35e2c385037432bf34a",
+      "bytes": 12655,
+      "changed_at": "2026-10-02T12:43:50.511Z"
     },
     "cookbooks/rerank_typesafe.md": {
       "url": "https://docs.typesafe.ai/cookbooks/rerank_typesafe.md",
       "title": "Re-ranking",
       "description": "Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.",
-      "raw_sha256": "5397e56dcdcff36dcba9f2200c0c494baed957eada0364db96075053af7eaa5c",
-      "clean_sha256": "319205a5661df94160dca0a220d4c1e6ae44d701ca6479d85fa6e353be7b882e",
-      "bytes": 26067,
-      "changed_at": "2026-09-23T02:51:54.173Z"
+      "raw_sha256": "7d8969ab0d851fb0296d5e86c53eac03f3ba3dc0b779aecd7903604f51a6ce11",
+      "clean_sha256": "ecee0afee5450f9932f1a057881cecff9b2d88427df52fcba0d86fdec2be8955",
+      "bytes": 26180,
+      "changed_at": "2026-10-02T12:43:50.490Z"
     },
     "cookbooks/sde_cascade.md": {
       "url": "https://docs.typesafe.ai/cookbooks/sde_cascade.md",
       "title": "SDE cascade",
       "description": "Uses a 2-stage structured-data-extraction cascade (mini → verify → reasoning) to get most of the quality of a big reasoning model at a fraction of the cost.",
-      "raw_sha256": "03675753d74f2a08c746afe04c4f4283b55e5c6931d58a6ca9c6268b954a1a2f",
-      "clean_sha256": "0cce358f75ae1b6b529fd763037d948ffb7d0f86e734fcaa1c1a9fb2576ddfd7",
-      "bytes": 32667,
-      "changed_at": "2026-09-23T02:51:54.187Z"
+      "raw_sha256": "90ab0294cb0d83b0ece3343edf11c6d492ce0236f4e21b434bbdbcb7c5500b74",
+      "clean_sha256": "fa7d70a965b59786483a7a2776ec55b940c4698380f24c2770697d2c0510ca9b",
+      "bytes": 32780,
+      "changed_at": "2026-10-02T12:43:50.509Z"
     },
     "cookbooks/semantic_find.md": {
       "url": "https://docs.typesafe.ai/cookbooks/semantic_find.md",
       "title": "Line-by-line search",
       "description": "Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer.",
-      "raw_sha256": "7e30135ddc6758bc00806f3d58784a80466d77655c29a815ce10b396c356de74",
-      "clean_sha256": "84cff020eafaf42315404b9396269baecf26de52ea684c321abce5be29f11307",
-      "bytes": 37844,
-      "changed_at": "2026-09-23T02:51:54.176Z"
+      "raw_sha256": "92b23c001081fd4244a99e7162e87f8152306865c2906af8922fcc29587171d6",
+      "clean_sha256": "079ec7469924aec94d6be17e4445ac1cd0c52f3fa002f13c7f477c09ec312016",
+      "bytes": 37957,
+      "changed_at": "2026-10-02T12:43:50.493Z"
     },
     "cookbooks/skill_suggestion.md": {
       "url": "https://docs.typesafe.ai/cookbooks/skill_suggestion.md",
       "title": "Skill suggestion",
       "description": "Picks at most one skill for an agent turn out of the 182 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates.",
-      "raw_sha256": "fb53dc000c8bad01e45f64210fefedbc27ab5b87d7037a77dd23d2654629105b",
-      "clean_sha256": "57a78c90499d05c0b8870f3dbae88be2cfd9dad7ce7031e9754583f0fc034fcc",
-      "bytes": 39278,
-      "changed_at": "2026-09-29T12:59:30.311Z"
+      "raw_sha256": "c59bf591db3d45e20b90a93a4526775e5188c479c6366b9a4267cb37ab51fc90",
+      "clean_sha256": "c4b72eebcfb8fb3b11ba39a778d5637bfb61838fa09fc591a443d4e391f3a0e9",
+      "bytes": 39391,
+      "changed_at": "2026-10-02T12:43:50.501Z"
     },
     "demos.md": {
       "url": "https://docs.typesafe.ai/demos.md",
       "title": "Demos",
       "description": "Interactive examples showing what's possible with TypeSafe.",
-      "raw_sha256": "df111cec8c2653209cb7c44f20bc7359619a3807bb16b60870ab2190fb47359b",
-      "clean_sha256": "e725dde7cf4a18cb94e88a9379a3cb954a4e0c847f89636749ea5d4b2bdf1d64",
-      "bytes": 588,
-      "changed_at": "2026-09-23T02:51:54.198Z"
+      "raw_sha256": "4faa2fa2b75622e6eb908fa0356e3dec8ec3ffb5a254bae30d378339ce4d288c",
+      "clean_sha256": "eb2e5bce19ea5ba0f1f41602da6d420453bf0b5782210aad71fce66267079030",
+      "bytes": 701,
+      "changed_at": "2026-10-02T12:43:50.518Z"
     },
     "demos/smart-home.md": {
       "url": "https://docs.typesafe.ai/demos/smart-home.md",
       "title": "Smart home assistant demo",
       "description": "Demo code: a smart home assistant that uses TypeSafe to evaluate user requests.",
-      "raw_sha256": "155c0af9a4ae31d2e283ee77147bc3a0bbaba45e15568a2382c29cc75f0adde4",
-      "clean_sha256": "fba641c155d2c797b1004d7fbad3e5c171e5aff97d19eed275541a10cc854239",
-      "bytes": 3825,
-      "changed_at": "2026-09-23T02:51:54.199Z"
+      "raw_sha256": "ea60b22f89269d95d1b974f72ddfa755a0aafa0d3b162882d10cde3d4b3379e6",
+      "clean_sha256": "6d187235e44d329dfc7344bc88acbbfdc328f4304b11cc10973bffe322bf2105",
+      "bytes": 3938,
+      "changed_at": "2026-10-02T12:43:50.519Z"
     },
     "introduction.md": {
       "url": "https://docs.typesafe.ai/introduction.md",
       "title": "Introduction",
       "description": "Jev is TypeSafe's flagship model and the first System One model. Send state and typed questions; get structured answers your code can use directly.",
-      "raw_sha256": "e484b102dfe5bc25d71b4601712499835d02777da2d5dee4541436dd0c4a6c8a",
-      "clean_sha256": "99d9be0dc8f24dd6e48d09492e180fbdae9d06cbd214e1ea414d78f7a53ae8f7",
-      "bytes": 4114,
-      "changed_at": "2026-09-29T12:59:30.281Z"
+      "raw_sha256": "df1ed7ec91afcaa1d35f3a4f9d4b3ba33d2e816e472c64a1870f8ed885963c67",
+      "clean_sha256": "01a38f072a3792d878f5913321500833e204f912a33f9a28098a9c8d6e97701d",
+      "bytes": 4227,
+      "changed_at": "2026-10-02T12:43:50.454Z"
     },
     "introduction/coding-agents.md": {
       "url": "https://docs.typesafe.ai/introduction/coding-agents.md",
       "title": "Jev with coding agents",
       "description": "What Jev is (and isn't) when you're using a coding agent.",
-      "raw_sha256": "591c36ffd02bacc587c880584a042c6ca1ae94f3775f67c56d289d23531aa831",
-      "clean_sha256": "98d20110d9cf0306c64d588fa92f9069216bd02c2be491c00df6844f3a491881",
-      "bytes": 3821,
-      "changed_at": "2026-09-29T12:59:30.283Z"
+      "raw_sha256": "72b81af8a34379d9c6d0f632aabc6b69b98dad6a85371ffd088687e844841a80",
+      "clean_sha256": "2b369dd5ac22621e24374f8686f16070ae0bc577f7a18658554883623b4171b1",
+      "bytes": 3934,
+      "changed_at": "2026-10-02T12:43:50.458Z"
     },
     "introduction/machine-learning-primer.md": {
       "url": "https://docs.typesafe.ai/introduction/machine-learning-primer.md",
       "title": "AI primer",
       "description": "Why TypeSafe trains decision models with calibrated probabilities instead of optimizing for generated text.",
-      "raw_sha256": "45e6a22bc175f2ce1c404271dd26559179a6f6a83bde2dfcdbd963dbc1649551",
-      "clean_sha256": "8fd95034103e9fef698b063a6b1aa516a44a4d5d513fc168ef13b432f927fe51",
-      "bytes": 6580,
-      "changed_at": "2026-09-23T02:51:54.158Z"
+      "raw_sha256": "62f4354cfcdc00c5ec3e4865bc6b6a79900042c26c3afea0e67d88537e980121",
+      "clean_sha256": "077606790d1fce1bfbaa03411cde7bb0989459abc6beba695fb9a6fa2877355d",
+      "bytes": 6693,
+      "changed_at": "2026-10-02T12:43:50.477Z"
     },
     "introduction/quickstart.md": {
       "url": "https://docs.typesafe.ai/introduction/quickstart.md",
       "title": "Quick start",
       "description": "Prefer to just dive in? Here's everything you need to get started immediately.",
-      "raw_sha256": "c30183944985b269c49939140272f9eec885895df346f19d76cf9b04e18073d2",
-      "clean_sha256": "bd1bbe53fa5a1663a4143e0ff4715f54d7adb591bec7a52a66a97fccde5cec9c",
-      "bytes": 7053,
-      "changed_at": "2026-09-23T02:51:54.139Z"
+      "raw_sha256": "ff4d66b466bc4a4748ae911fc51e1dc489ee363876263b4e271eb1f22b8cc9aa",
+      "clean_sha256": "24f5f7adb2b1288af953c1451b3adb9bdce1405b5a7b56baeef931a799961b78",
+      "bytes": 7166,
+      "changed_at": "2026-10-02T12:43:50.456Z"
     },
     "legal.md": {
       "url": "https://docs.typesafe.ai/legal.md",
       "title": "Legal",
       "description": "Legal documents and policies for TypeSafe.",
-      "raw_sha256": "2d4a97a13e7b06b469bcd2c2fdcbf8b6c3aa0e56949eac67e8897ba5633aed7d",
-      "clean_sha256": "4e03bdcbdf0ba557662c6866de39bd9bd7f8806955de961f9f25a6ba4c2726c5",
-      "bytes": 1055,
-      "changed_at": "2026-09-25T11:56:07.064Z"
+      "raw_sha256": "cc96ee6f2d53a89a76b21dc0df6102e5982d2583aa9ad95971d8bebc9de55897",
+      "clean_sha256": "f0b7924e396151d6071c0142346d31b41a87dd578b8513e71d5fc040c50171b0",
+      "bytes": 1168,
+      "changed_at": "2026-10-02T12:43:50.522Z"
     },
     "model-jaggedness/jev-1.13.md": {
       "url": "https://docs.typesafe.ai/model-jaggedness/jev-1.13.md",
       "title": "Jev 1.13 jaggedness",
       "description": "Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.",
-      "raw_sha256": "e5f4d10c3f67fa93de403530cd8b0ef9d3178223dfcced8961b48260c849f501",
-      "clean_sha256": "62c1e9c7504d27306a27a3daa5ac010299e0bb00aac16c41c5d1d6c9e843c208",
-      "bytes": 10736,
-      "changed_at": "2026-09-29T12:59:30.333Z"
+      "raw_sha256": "c591ecd05ab7b2f6083b397625a6ba5ee49f63038e74a9733b222e50f7ac5345",
+      "clean_sha256": "b5c46ab219398c05fd2badf531592d222fc12737f70b1c622f89090eb0dad23b",
+      "bytes": 10849,
+      "changed_at": "2026-10-02T12:43:50.523Z"
     },
     "models.md": {
       "url": "https://docs.typesafe.ai/models.md",
       "title": "Models",
       "description": "",
-      "raw_sha256": "c4ebee942e3fef93bfc12c1bce5c04ea9f3e03fd3267dcdd4b76183c83c0639c",
-      "clean_sha256": "adce9f9559a39bece54fafddf4379f86a661937c80d6856b62927cf4d1aba1ab",
-      "bytes": 6571,
-      "changed_at": "2026-09-30T12:41:46.891Z"
+      "raw_sha256": "da8014e39b651b7e7ae21a74826e5437d274257a63a3d5c594474934f7b639df",
+      "clean_sha256": "0cbeea1a28287db64d95d35be9dbf2fc35cf979e47a8bf1a499bd152e8ca10d5",
+      "bytes": 6684,
+      "changed_at": "2026-10-02T12:43:50.520Z"
     },
     "patterns.md": {
       "url": "https://docs.typesafe.ai/patterns.md",
       "title": "Patterns",
       "description": "Architectural patterns for building systems with TypeSafe.",
-      "raw_sha256": "570ac5ae2a4502846bd7da05fd10696a6ddb17e0bb3dadf5ab1246622d3a3006",
-      "clean_sha256": "8d181ef4a35a28414d2fbf68557d10351b0c58276b59514146a958d72f5e10d8",
-      "bytes": 1477,
-      "changed_at": "2026-09-29T12:59:30.297Z"
+      "raw_sha256": "2e4e92e424f23e4e0af622f61551cf43d2d608591f2d14bb776b86fe9a92a523",
+      "clean_sha256": "e96177ee13c5e1987d31abbac416ca67304be40a0a3313aade1163f11db2cbf7",
+      "bytes": 1590,
+      "changed_at": "2026-10-02T12:43:50.477Z"
     },
     "patterns/composite-scoring.md": {
       "url": "https://docs.typesafe.ai/patterns/composite-scoring.md",
       "title": "Composite scoring",
       "description": "Break a complex judgment into atomic scores, combine with weights you control in code.",
-      "raw_sha256": "538f42d614fbf29cbfa0aa9fee1859651083a0b67c4b31a21d2710f3fe84d9f5",
-      "clean_sha256": "7c9301976430890d524a55095c0882d26d496e590d00453cfdd6bf3a16999824",
-      "bytes": 13545,
-      "changed_at": "2026-09-23T02:51:54.162Z"
+      "raw_sha256": "043dc1d58d91a823f9da3ef47d018340b357ed78857a94a56b5220718d106147",
+      "clean_sha256": "da10636a86d55251f4b59e63f32a34b0ff09d49a4a92b8b18901f74fe27059ce",
+      "bytes": 13658,
+      "changed_at": "2026-10-02T12:43:50.479Z"
     },
     "patterns/confidence-routing.md": {
       "url": "https://docs.typesafe.ai/patterns/confidence-routing.md",
       "title": "Confidence-gated routing",
       "description": "Use confidence as a second axis. The answer tells you what; confidence tells you whether to act.",
-      "raw_sha256": "7a4de8d39a24c5d6b7e74b1b170fbbe101ca69419af39bac6da4e0c1f678b7bf",
-      "clean_sha256": "a5da7df376a329927f0e3aa4660f140443d0ea54b46641c0ddaf9da026f16eaf",
-      "bytes": 12168,
-      "changed_at": "2026-09-23T02:51:54.161Z"
+      "raw_sha256": "3d156395f69856e2cdadb9405a23fa3f08b5ecf4274c3cd81d844d8bbe860b0e",
+      "clean_sha256": "5675648424d272fae353d62d7ac4b677ae1259c760eb122d536d076e8d635131",
+      "bytes": 12281,
+      "changed_at": "2026-10-02T12:43:50.479Z"
     },
     "patterns/fan-out.md": {
       "url": "https://docs.typesafe.ai/patterns/fan-out.md",
       "title": "Speculative fan-out",
       "description": "Send many questions in a single call, including speculative ones, and let your code decide what's relevant.",
-      "raw_sha256": "8d7a251ea6b735cb4994c1e0a95166cc0b3febce7d18189c3aa5e1673f182c91",
-      "clean_sha256": "1a2f12d2f9130fa3b43df60f2a673def34cf3420e946959154a9631f1ed210db",
-      "bytes": 13967,
-      "changed_at": "2026-09-23T02:51:54.160Z"
+      "raw_sha256": "f78bd972e2f24338c03c99f2ab4c2d1c46666e27c085ee703b661a96b6da7543",
+      "clean_sha256": "4c78d6c09a5a06581f5a823dc7345bf0f8a6d5dd38ac5316fdc9d146dfa6b41f",
+      "bytes": 14080,
+      "changed_at": "2026-10-02T12:43:50.478Z"
     },
     "patterns/intent-routing.md": {
       "url": "https://docs.typesafe.ai/patterns/intent-routing.md",
       "title": "Intent routing",
       "description": "Classify incoming requests and route each to the optimal handler: deterministic logic, a specialist LLM, or a human.",
-      "raw_sha256": "84b670d502b3f41165a901495688dc7bd586ff3082854f5432a7a4962d697cfb",
-      "clean_sha256": "9c62428af8e7d37f3b6ee802ddff16adf66e87850378c38b08f51f5d639d0f49",
-      "bytes": 13444,
-      "changed_at": "2026-09-23T02:51:54.163Z"
+      "raw_sha256": "b4a6d42a9a1d90211bc1ab81539520157630e5d404c918360b26db53afc41bae",
+      "clean_sha256": "32a8ac19c87843344034887bb2c6d466a37642f33d3f460fc1df0c41688763af",
+      "bytes": 13557,
+      "changed_at": "2026-10-02T12:43:50.480Z"
     },
     "primitives.md": {
       "url": "https://docs.typesafe.ai/primitives.md",
       "title": "Primitives (Questions)",
       "description": "The three TypeSafe question types (Choice, Score, Noul), the typed answers they return, how to choose between them, and how to ask several at once.",
-      "raw_sha256": "eb51deaaa836e919f10ecbb9b5731e89e25aeff9d2a73173d12141c66bf635f5",
-      "clean_sha256": "b8bedfc370d6406335eef5b25205ce96fc02b13c9299a1069e770567cf990744",
-      "bytes": 24072,
-      "changed_at": "2026-09-29T12:59:30.289Z"
+      "raw_sha256": "fe67e1062c34ffef8f64ba5e541d00159214cd15c48f6c19ef46c25a6357a294",
+      "clean_sha256": "768276ff13df99eee41e26a9908182111be6edc3efb284894cd33932aada6aff",
+      "bytes": 24185,
+      "changed_at": "2026-10-02T12:43:50.463Z"
     },
     "primitives/advanced.md": {
       "url": "https://docs.typesafe.ai/primitives/advanced.md",
       "title": "Advanced: structure",
       "description": "Instructions, Choice options, Score levels, and Noul criteria all accept JSON structure.",
-      "raw_sha256": "7fc102da510626951b513921902b70513e07718d072daf844e360757efab7af1",
-      "clean_sha256": "afc32b1c8e7ca83f245cca5ad8b4917afb3fb01d58eddbf62c40bdbef4abd612",
-      "bytes": 18830,
-      "changed_at": "2026-09-29T12:59:30.294Z"
+      "raw_sha256": "650a61153fe3d16619e57c8f81fc03b570d663c40dd2fe94df6e57db6c906f62",
+      "clean_sha256": "ab3f765202603cdb6654036e81778972889d17188c867eaa75e0992b03cf85d4",
+      "bytes": 18943,
+      "changed_at": "2026-10-02T12:43:50.470Z"
     },
     "primitives/choice.md": {
       "url": "https://docs.typesafe.ai/primitives/choice.md",
       "title": "Choice",
       "description": "A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.",
-      "raw_sha256": "4c55085131f8f2d7ae1faefdec52b1c7b379d40657d701cd2c786021cfe9dac9",
-      "clean_sha256": "b0a61cef845f8249025b147b1f4cf44da37e859061a461c60c3ac323d2e03ac1",
-      "bytes": 26794,
-      "changed_at": "2026-09-23T02:51:54.148Z"
+      "raw_sha256": "ae9c49b815ee30b28ed851e22b63041130fba50ae41368d41a5d80b571f383bb",
+      "clean_sha256": "3510acbedc0a4bff18291c407904bd5bbdce27d134fabf7ad396bd7d854152b4",
+      "bytes": 26907,
+      "changed_at": "2026-10-02T12:43:50.465Z"
     },
     "primitives/noul.md": {
       "url": "https://docs.typesafe.ai/primitives/noul.md",
       "title": "Noul",
       "description": "A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.",
-      "raw_sha256": "8b04eed7b25e1e30368e4379bbe6bede7fc0b77578f7546f193f946bd11c405a",
-      "clean_sha256": "8500ea97414e1415b74554126ef0cc126d7f34f696df8c32b82073f7ccf0ad1a",
-      "bytes": 26385,
-      "changed_at": "2026-09-29T12:59:30.293Z"
+      "raw_sha256": "bf5d8c6700fbd9272ce27b53a6439d598e7915cdf505704ac7c827c6175ecb88",
+      "clean_sha256": "92b1e7dd20ab69a58694380e17065b8207f83d15986d6da6a18d238c483d7455",
+      "bytes": 26498,
+      "changed_at": "2026-10-02T12:43:50.469Z"
     },
     "primitives/score.md": {
       "url": "https://docs.typesafe.ai/primitives/score.md",
       "title": "Score",
       "description": "A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.",
-      "raw_sha256": "ee6afe3494b816770e34df1551d0a64659f2682a42879de5349e76db11e5e018",
-      "clean_sha256": "eeac4f23e51ca2e25cc944a23b96edf97b5aa5d2a389d2b7837ef97ffe5355a2",
-      "bytes": 43657,
-      "changed_at": "2026-09-29T12:59:30.292Z"
+      "raw_sha256": "a0a39b9c01f5ac3616efae071bf23f879bbe3fb12b0af2169932dbb71dd83d32",
+      "clean_sha256": "91f2806065133f116448e88c18e2f8b330747f5a8aaaf471c1f221c82a4289a4",
+      "bytes": 43770,
+      "changed_at": "2026-10-02T12:43:50.467Z"
     },
     "sdk.md": {
       "url": "https://docs.typesafe.ai/sdk.md",
       "title": "Client SDKs",
       "description": "Install a TypeSafe client SDK and use typed questions and answers in your application.",
-      "raw_sha256": "bbd9d2eaad4c605150fcead2dcb1fdb8415a10f6e5481186e185e7e8d4826a97",
-      "clean_sha256": "727fac5323ba1b41ff0a57068e41be762fc974468ef4809fe06c43cd2be411e6",
-      "bytes": 823,
-      "changed_at": "2026-09-23T02:51:54.211Z"
+      "raw_sha256": "874e852726f1aa5567e69e2b748d7432b691d45a755b0cdbfb4fddcc5e838d35",
+      "clean_sha256": "7193368c78f141481cd79511bdc92e14ff14794731613254afc1a9ebab4f13f7",
+      "bytes": 936,
+      "changed_at": "2026-10-02T12:43:50.524Z"
     },
     "sdk/javascript.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript.md",
       "title": "JavaScript SDK",
       "description": "",
-      "raw_sha256": "25ba04f5b55819bee85e21d9184b7b8c807a81e95754baef4b05157240a2e1bb",
-      "clean_sha256": "00d755dd46f18cf546064e20a3a4d897058ff52ae1643e7460244683157ec5d5",
-      "bytes": 1302,
-      "changed_at": "2026-09-23T02:51:54.230Z"
+      "raw_sha256": "269059683486938fd93c9ef675ed93d7b38c5ce9151b0baa892837bb79e55cc2",
+      "clean_sha256": "be24aae66a189765fa0f4e0460c619c36274570c35a824bdfd7034d0a52834f4",
+      "bytes": 1415,
+      "changed_at": "2026-10-02T12:43:50.538Z"
     },
     "sdk/javascript/api.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api.md",
       "title": "API reference",
       "description": "",
-      "raw_sha256": "e8abd954c9eb20d338d07cb3397bd933f3fe5633237b9ff7bd73c6dd290e51c8",
-      "clean_sha256": "a461d89fafaf96198fe61adbf2da0121d3ed73f9918dce0ec1b7c4bb62aa1b62",
-      "bytes": 3327,
-      "changed_at": "2026-09-23T02:51:54.232Z"
+      "raw_sha256": "8a593d34f66b64f099d6610aae78f460dbcb3afc5e3b58ff649ad076b28b6f42",
+      "clean_sha256": "d16866fc18083461e0de25048acfe85250be33a3a6d1ddc7d4743fa0a9633491",
+      "bytes": 3440,
+      "changed_at": "2026-10-02T12:43:50.540Z"
     },
     "sdk/javascript/api/classes/APIConnectionError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError.md",
       "title": "Class: APIConnectionError",
       "description": "",
-      "raw_sha256": "a20405bd5c86d947fd7cfea9d04afc79c03a7634382911ba82038b88c43c7ecd",
-      "clean_sha256": "68486112710d64b9c9685fa72453f3a521ffedd05adeb14c783307bc6bb2a700",
-      "bytes": 888,
-      "changed_at": "2026-09-23T02:51:54.233Z"
+      "raw_sha256": "c0c606422c5421971b5807f66bd67a12e3d292d157debedfcc23b9845a802b78",
+      "clean_sha256": "4b840d5e2aff5181f7e44402d2deec542d0f5f8334ddd3f63cf1c5aa868b9cf7",
+      "bytes": 1001,
+      "changed_at": "2026-10-02T12:43:50.540Z"
     },
     "sdk/javascript/api/classes/APIError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/APIError.md",
       "title": "Class: APIError",
       "description": "",
-      "raw_sha256": "99fdf20f20bd67faf0b1fecb915079b2e87dbf9e12fb19c22e4dc0ff8a887b7a",
-      "clean_sha256": "68ecd9c92c3a372a3dbfea0279370d1aec9cd69a8ee93de845bd16e0584f877e",
-      "bytes": 2190,
-      "changed_at": "2026-09-23T02:51:54.234Z"
+      "raw_sha256": "5d7a12451f08d98e507f3b7ff2b32a835827c9fcdd9d8cb3f246500d99a0e4a4",
+      "clean_sha256": "ba789074aebf74f72628be8f9bfee7369fbc8f5dc3857af2259e1eea750f971f",
+      "bytes": 2303,
+      "changed_at": "2026-10-02T12:43:50.541Z"
     },
     "sdk/javascript/api/classes/APIPromise.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/APIPromise.md",
       "title": "Class: APIPromise<T>",
       "description": "",
-      "raw_sha256": "0d00c57977f2777183bc2dcf7019f4293a89dd2e76fe3706b3b3db80a069ceb3",
-      "clean_sha256": "bd98918da84a4a9f637e60c643351d718b563df77d116028775df838ac2b8ff0",
-      "bytes": 3573,
-      "changed_at": "2026-09-23T02:51:54.235Z"
+      "raw_sha256": "2a1c74759dfd10c8fed4e051802cfb59cc2f8720889f010440a59e97a1f6cae4",
+      "clean_sha256": "3c68398c57e867e25039bf0eb533edb4638ad6367f927996a9880d5c87c5c378",
+      "bytes": 3686,
+      "changed_at": "2026-10-02T12:43:50.542Z"
     },
     "sdk/javascript/api/classes/APITimeoutError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/APITimeoutError.md",
       "title": "Class: APITimeoutError",
       "description": "",
-      "raw_sha256": "c0bdf6e807b322d559704b16e4fd1d0379c3decc63c98471dbd8374cc5f5468c",
-      "clean_sha256": "1f1733bfca24857f71076889da07dba536830fe640074f1cb0751e9144ec49ef",
-      "bytes": 943,
-      "changed_at": "2026-09-23T02:51:54.236Z"
+      "raw_sha256": "dfb22f9e8b0a5b40c156569ff18bae410fca0b6da8000717dc1cd96f0d7b574d",
+      "clean_sha256": "3fee00be523c900183c0237ef7c4656f483495ac2ac85b8238cf1d85e17661be",
+      "bytes": 1056,
+      "changed_at": "2026-10-02T12:43:50.542Z"
     },
     "sdk/javascript/api/classes/APIUserAbortError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/APIUserAbortError.md",
       "title": "Class: APIUserAbortError",
       "description": "",
-      "raw_sha256": "f7db36a7ca8eab94e01e8a452ef23f183245770f0915ea64dd7ea17484fe5d88",
-      "clean_sha256": "02c3ca053326691af8dd5d35b8af47a2d5598a8c61ef254c5b858aa8dae854c1",
-      "bytes": 780,
-      "changed_at": "2026-09-23T02:51:54.238Z"
+      "raw_sha256": "dac5bfd48bd2be4077d1e2d6e3c26105b345b3ca250400eee832a3d5eadad747",
+      "clean_sha256": "61d99e36a121fbbb463351584205eb20f5ed367e5ee8cdb0fdbc3c3babcd12a1",
+      "bytes": 893,
+      "changed_at": "2026-10-02T12:43:50.542Z"
     },
     "sdk/javascript/api/classes/AuthenticationError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/AuthenticationError.md",
       "title": "Class: AuthenticationError",
       "description": "",
-      "raw_sha256": "8420db7d6a927cc0ed598d80b509a04d7e2fcdc78ebb8fe23e4c3113de81fc7d",
-      "clean_sha256": "b4c11056e5cbf59cd27fdfb2632b9a9342f9b5de79e6246c0678dda615d43556",
-      "bytes": 2398,
-      "changed_at": "2026-09-23T02:51:54.239Z"
+      "raw_sha256": "6059e775cfd5efcfbaba12fcd19a48225bc97edb5723ebbada0e8b3c2c68c8b8",
+      "clean_sha256": "8e54d17c997476f891f4cb5677aa60413e4ae8361d16a7f7c4c1547a052a6c88",
+      "bytes": 2511,
+      "changed_at": "2026-10-02T12:43:50.543Z"
     },
     "sdk/javascript/api/classes/BadRequestError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/BadRequestError.md",
       "title": "Class: BadRequestError",
       "description": "",
-      "raw_sha256": "ac95c8e0d1ca8ad1a9e61947374439047fd6fc5595369b8c8b9aa02a9323f979",
-      "clean_sha256": "cb51f62a1af9ba977009c3c74994c3395d2c1e2b4385c19da08f2c8685526f74",
-      "bytes": 2383,
-      "changed_at": "2026-09-23T02:51:54.240Z"
+      "raw_sha256": "2463ee449a0728a535c464b7a916feec7f7cfa6c787f372682e406448783b743",
+      "clean_sha256": "121e8e7e054de80e6d84edf9b7eef4b66a3235cfc16ea7030010286099dacca2",
+      "bytes": 2496,
+      "changed_at": "2026-10-02T12:43:50.544Z"
     },
     "sdk/javascript/api/classes/InternalServerError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/InternalServerError.md",
       "title": "Class: InternalServerError",
       "description": "",
-      "raw_sha256": "e878d63c8d1970545d9376dd9ce0ab92110af0009dc3a802d235c153d381b986",
-      "clean_sha256": "4e2e9197499c00e406132f332c4b58a97d5f39ace48fb2659f42987434c77604",
-      "bytes": 2416,
-      "changed_at": "2026-09-23T02:51:54.241Z"
+      "raw_sha256": "dda08eedad85bd5516e862748dff570239b41774c53d297d29653763d17ecc07",
+      "clean_sha256": "8cc92920b9e1cd324b86619112099572a08f40b85afe01160bfcab96303ec745",
+      "bytes": 2529,
+      "changed_at": "2026-10-02T12:43:50.545Z"
     },
     "sdk/javascript/api/classes/NotFoundError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/NotFoundError.md",
       "title": "Class: NotFoundError",
       "description": "",
-      "raw_sha256": "29ee86c3e039c786e07484580663a963a4a5c87418079ee1743899f647174a00",
-      "clean_sha256": "7f2493d8839660639e11c8030bf08dea669ac5c1db5115fd47e79d788468190a",
-      "bytes": 2379,
-      "changed_at": "2026-09-23T02:51:54.242Z"
+      "raw_sha256": "3434c1a3f9198998224473bcfaf68d0e84e2831e72bf5f5ab893d0cfee67cfbf",
+      "clean_sha256": "e643e7483e7b803a0232bff7b8c47523e817136efb12265465eaac42c0eb97d3",
+      "bytes": 2492,
+      "changed_at": "2026-10-02T12:43:50.545Z"
     },
     "sdk/javascript/api/classes/PermissionDeniedError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/PermissionDeniedError.md",
       "title": "Class: PermissionDeniedError",
       "description": "",
-      "raw_sha256": "1d5c7a29683e93133df42ce6b937d19e8344c5b45a9133a966039a164b5bc3cf",
-      "clean_sha256": "74ed37cdc578ea3357bf9e513ef2fb8f69a4105f539f297a2328b85532321b6c",
-      "bytes": 2401,
-      "changed_at": "2026-09-23T02:51:54.243Z"
+      "raw_sha256": "d0c4b4c0666dfe09828238e2e3908560d0853711b5b54d6eae3654893180071b",
+      "clean_sha256": "ee8540f4176b1a9c9032c29f95f047168e9b5efa4399806854f59ae4fb313c7b",
+      "bytes": 2514,
+      "changed_at": "2026-10-02T12:43:50.546Z"
     },
     "sdk/javascript/api/classes/RateLimitError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/RateLimitError.md",
       "title": "Class: RateLimitError",
       "description": "",
-      "raw_sha256": "4e552a0610a26794cb68ac08e17ab6402534004e825b73e177408ecd854efdf0",
-      "clean_sha256": "3ccf76b911337009004fb442a730ebe5b71c9dcfcd7c0ed6c66650adfe0d2bf1",
-      "bytes": 2579,
-      "changed_at": "2026-09-23T02:51:54.244Z"
+      "raw_sha256": "11def3d900207697e5fe5163b2ccf90da0bcffacc35383a2bd69de249b43b648",
+      "clean_sha256": "a5f8bc4f7ef49f73fcab47cb9a76104e04951745e891b9b1d1ba76309c027d51",
+      "bytes": 2692,
+      "changed_at": "2026-10-02T12:43:50.546Z"
     },
     "sdk/javascript/api/classes/TypeSafeClient.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeClient.md",
       "title": "Class: TypeSafeClient",
       "description": "",
-      "raw_sha256": "3831ede08860c95daa182c33a5c3dc698f92d30990df88f7d6af764d989d2347",
-      "clean_sha256": "d0fa4884444f55cf16c28ae6ab397af2c4bd8fcda03c2748b7aeee1f5e96ea30",
-      "bytes": 3375,
-      "changed_at": "2026-09-23T02:51:54.245Z"
+      "raw_sha256": "d06e51285de022bed9deabe2fc8c4f91ddda0f9f38a9297535c7e1cd5cda79d3",
+      "clean_sha256": "c9c3090a8cb4d9db9cea1747398f804d5743973517baf2971e2e635e55277aa9",
+      "bytes": 3488,
+      "changed_at": "2026-10-02T12:43:50.547Z"
     },
     "sdk/javascript/api/classes/TypeSafeError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError.md",
       "title": "Class: TypeSafeError",
       "description": "",
-      "raw_sha256": "a1eb2d99ba005a680324f062842dfeef9a6bf7267508521eee2b87c3cfe12556",
-      "clean_sha256": "8442a69d2e6dbd6181aa5b8a24038697b677cf1f61dcb123d88014d0a2c04481",
-      "bytes": 769,
-      "changed_at": "2026-09-23T02:51:54.245Z"
+      "raw_sha256": "0ca02d89bea4a591d624dc462a6d7bb198cbf9a758772b1e8e96b62016ab93c5",
+      "clean_sha256": "514c3a3eb2cefb4c4cc87d47abb7fdbee98906315f8cb20e6e83478548fc3c1c",
+      "bytes": 882,
+      "changed_at": "2026-10-02T12:43:50.548Z"
     },
     "sdk/javascript/api/classes/UnprocessableEntityError.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/classes/UnprocessableEntityError.md",
       "title": "Class: UnprocessableEntityError",
       "description": "",
-      "raw_sha256": "4620ac84c0bef57460dacf4b85b42ac3b3597a9b059bd13ff5cf644db27af366",
-      "clean_sha256": "7fd5f6cabfeaa6eda9f05e9ebc66b0be12a5b8e368cdfe4ef5f1edfc44043f2f",
-      "bytes": 2422,
-      "changed_at": "2026-09-23T02:51:54.246Z"
+      "raw_sha256": "ff95eb411c61d56ed4dfc1f26146eeaf700d20baaaadffc37130b14ccd1120c7",
+      "clean_sha256": "281ebafbed7ff619d1cfa648b006afdde6dc3d9d935ae3606193a5b2e2a37875",
+      "bytes": 2535,
+      "changed_at": "2026-10-02T12:43:50.548Z"
     },
     "sdk/javascript/api/functions/choice.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/functions/choice.md",
       "title": "Function: choice()",
       "description": "",
-      "raw_sha256": "971e2ac7f5ef762fac9afb4aa481350296938872cb886cf198162018b36f30a8",
-      "clean_sha256": "abc897fa097bd44400dd525b6cf7c49daac38479a43c4488db419f4ed3ff3a86",
-      "bytes": 777,
-      "changed_at": "2026-09-23T02:51:54.271Z"
+      "raw_sha256": "3c880415afc18a8498a5484863e5eb5bfa998dc33cf1d2999bdbc5c16b12bfa8",
+      "clean_sha256": "64f72667e9fecf52f3f21e1c603e92c4be88771f9b5a8169b29ac798735e87cf",
+      "bytes": 890,
+      "changed_at": "2026-10-02T12:43:50.565Z"
     },
     "sdk/javascript/api/functions/noul.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/functions/noul.md",
       "title": "Function: noul()",
       "description": "",
-      "raw_sha256": "496c8ffa64162d5fdf4aca671f7f363672ffb25de8f666b28753810b7820e1bd",
-      "clean_sha256": "83277856b47b31ba75d7663890a9d7501f5212811137f5706ab6047bd8e3a5b1",
-      "bytes": 1252,
-      "changed_at": "2026-09-23T02:51:54.271Z"
+      "raw_sha256": "f8f94ce2dbdce0aa841dfe043a5c4163980fcd72211ab9dba858ea179cd1e663",
+      "clean_sha256": "eefc097f6eba5716e49c696b2dad91b79eedddf041f8116d79c91eacee0a3b07",
+      "bytes": 1365,
+      "changed_at": "2026-10-02T12:43:50.565Z"
     },
     "sdk/javascript/api/functions/score.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/functions/score.md",
       "title": "Function: score()",
       "description": "",
-      "raw_sha256": "2f7bd6acff7da9a8fa6e88a8f9cc0b9b7040df039f6d5072a3187729ff155783",
-      "clean_sha256": "311c468a6ce7be301973c2031f081714d998697231682fa453f8c148444ef970",
-      "bytes": 772,
-      "changed_at": "2026-09-23T02:51:54.272Z"
+      "raw_sha256": "0792d52afd3afc54303fce693c7c42534e57a2b8ce369cc11fb6340fb327b135",
+      "clean_sha256": "85b053cb878a418462f7f4ce5edbe484793d60e3a216b76f0ebebb298df6b324",
+      "bytes": 885,
+      "changed_at": "2026-10-02T12:43:50.566Z"
     },
     "sdk/javascript/api/interfaces/ChoiceQuestion.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceQuestion.md",
       "title": "Interface: ChoiceQuestion<T>",
       "description": "",
-      "raw_sha256": "3eeef7d78386649011c5d4f1c792976a546f77e4904ff824d488b2634af567da",
-      "clean_sha256": "c75d7616d1ee02348aeb2f74db428f535b9532ce62c7322e8498095984ded884",
-      "bytes": 834,
-      "changed_at": "2026-09-23T02:51:54.247Z"
+      "raw_sha256": "82c0a35cfb782a954da2dc31e269fcc273447c7c6c9cc5d959d7c5968bfbc0a6",
+      "clean_sha256": "b6afc88bf87570c9f1a49df8d5a78b0f36136bcc5da88d8d8e68db7d818bd5b6",
+      "bytes": 947,
+      "changed_at": "2026-10-02T12:43:50.549Z"
     },
     "sdk/javascript/api/interfaces/ChoiceResponse.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceResponse.md",
       "title": "Interface: ChoiceResponse<T>",
       "description": "",
-      "raw_sha256": "4325f9f44b85549c68ea4fff2e79d8c24dbd6a44103589a8752ab40003885d06",
-      "clean_sha256": "2003d11bc4e873a5b9a218478add997de24e9c225bd014a40a2b9ada2aceca27",
-      "bytes": 982,
-      "changed_at": "2026-09-23T02:51:54.248Z"
+      "raw_sha256": "d06a957fe92af44639a97319c0cf56082ef11e243a8dfd64f093480de400d87f",
+      "clean_sha256": "726a81a499354695ffbff7f05eea59ebb4fd7ccf5b8c57dc739bd030e2862535",
+      "bytes": 1095,
+      "changed_at": "2026-10-02T12:43:50.549Z"
     },
     "sdk/javascript/api/interfaces/Logger.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/Logger.md",
       "title": "Interface: Logger",
       "description": "",
-      "raw_sha256": "9ebf6cdbafffbece6faf32e249747c48eec372785fc14ccf74a1c7ab6ebe32b7",
-      "clean_sha256": "71acbea3627be0a089c598d8e51564afcb4c5873bcb6d03f12b46f9aa18b3a50",
-      "bytes": 1035,
-      "changed_at": "2026-09-23T02:51:54.248Z"
+      "raw_sha256": "e3b49455b725f3a766d0e8e3dc02243a314ccbec61f337a667238f14d6581b9d",
+      "clean_sha256": "203a6ebd0708dbefb4d578a6f7de78b2e33eb33ca34c9f72ec0f4d7991e52124",
+      "bytes": 1148,
+      "changed_at": "2026-10-02T12:43:50.550Z"
     },
     "sdk/javascript/api/interfaces/ModelCard.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/ModelCard.md",
       "title": "Interface: ModelCard",
       "description": "",
-      "raw_sha256": "4427f8c944169d2bb3ed64ea08894b6a138d9b5bb7fa0e20db56e142320461bb",
-      "clean_sha256": "abb9fa03ecd6084b88fbee7f663c4a1f901206ca0c3815c3c3f8a7e2e9f80b8c",
-      "bytes": 541,
-      "changed_at": "2026-09-23T02:51:54.249Z"
+      "raw_sha256": "8a7bd6545efb68fda0371cf747a038ce261ebc5f44e2bae139cb2274bd3da997",
+      "clean_sha256": "4e99c604930208727b63b10c48ea127b8f358815d04c8b7f2e028fe0557bc731",
+      "bytes": 654,
+      "changed_at": "2026-10-02T12:43:50.550Z"
     },
     "sdk/javascript/api/interfaces/Models.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/Models.md",
       "title": "Interface: Models",
       "description": "",
-      "raw_sha256": "335e3d5c1d3fb2c048d81dfc6c4aeaf93365bfa78f8ee281c74224729e9d63e1",
-      "clean_sha256": "4d9d5ab81bf36006b4aea6613d95d884405ec3465854613aa923e689607cb666",
-      "bytes": 626,
-      "changed_at": "2026-09-23T02:51:54.250Z"
+      "raw_sha256": "d68ed24aa95b6cfc185201da18a03b3df9b305a340a02ab157435867c83ee459",
+      "clean_sha256": "2a739a786be698a5963313fb90b35838ffa257675b046b05b13df35109273ab8",
+      "bytes": 739,
+      "changed_at": "2026-10-02T12:43:50.551Z"
     },
     "sdk/javascript/api/interfaces/NoulQuestion.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulQuestion.md",
       "title": "Interface: NoulQuestion",
       "description": "",
-      "raw_sha256": "0968d15de4642b9f18f6a2902081067f2404127c5f2ccacb14ef14d99d46ea96",
-      "clean_sha256": "aece1e3aa59d3906dd7835828dae0f8fbe87a5b8ee3351a8a0cdd42dd166152e",
-      "bytes": 1055,
-      "changed_at": "2026-09-23T02:51:54.250Z"
+      "raw_sha256": "dd49aae30b34e0e5942611aa08cb9ac008b0f9270e4c9fbc5bd5eef979761385",
+      "clean_sha256": "cfe8745167cc69d50b8839a22dce7d0e4d8fa2049094ed0743f2eda43a1844e2",
+      "bytes": 1168,
+      "changed_at": "2026-10-02T12:43:50.551Z"
     },
     "sdk/javascript/api/interfaces/NoulResponse.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulResponse.md",
       "title": "Interface: NoulResponse",
       "description": "",
-      "raw_sha256": "6227fefaed88bd826c07d8183f752990c9af6b5b52468dda49335fc6a99eb1bf",
-      "clean_sha256": "3f57bbf91e70328c865556fff1d10acfe37db065d3594cc3157bd5858171a882",
-      "bytes": 447,
-      "changed_at": "2026-09-23T02:51:54.251Z"
+      "raw_sha256": "4c978ecf12bdd329c2468e81b1cdbe32f070c758e21f33e01c532c52e6c15b00",
+      "clean_sha256": "1dc27582883c5b9b39d4fbd7b08b6d9238a7be40636454176a734e23bf3b92d4",
+      "bytes": 560,
+      "changed_at": "2026-10-02T12:43:50.552Z"
     },
     "sdk/javascript/api/interfaces/Questions.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions.md",
       "title": "Interface: Questions",
       "description": "",
-      "raw_sha256": "35a610a7c3f857d320fdc7db8f53415434b60948ff3013d8d69a331611c4c48a",
-      "clean_sha256": "7001e37075af8016723dff7446d8d64dab0c7bfba01e29c8362f6a6d8044b692",
-      "bytes": 327,
-      "changed_at": "2026-09-23T02:51:54.252Z"
+      "raw_sha256": "508f221b34597ac915ae94cabfe6daa829156142fcee2b20b5c9e07c47cd0512",
+      "clean_sha256": "f18da5c343e43c4dba70adc862cbd9d4c1e2de4f03474aabb7655d9da3a3c77a",
+      "bytes": 440,
+      "changed_at": "2026-10-02T12:43:50.552Z"
     },
     "sdk/javascript/api/interfaces/RequestOptions.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/RequestOptions.md",
       "title": "Interface: RequestOptions",
       "description": "",
-      "raw_sha256": "81fae66c86b0b25f88536144d656f3f8ecf20588658a24b488514d22091d67ee",
-      "clean_sha256": "1ad01855bd4cd9327f5e68e6df29025edeb1bb0901900fb2df2118c350c25ce6",
-      "bytes": 919,
-      "changed_at": "2026-09-23T02:51:54.253Z"
+      "raw_sha256": "48b8d64541f9baf8b266c324df48a50ee622ec8f0cd1f7c4619cb35f29c07f88",
+      "clean_sha256": "190027f3fc7767175341beb992688c127b048d06687c509cdab0588018adc0e9",
+      "bytes": 1032,
+      "changed_at": "2026-10-02T12:43:50.553Z"
     },
     "sdk/javascript/api/interfaces/RetryPolicy.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/RetryPolicy.md",
       "title": "Interface: RetryPolicy",
       "description": "",
-      "raw_sha256": "ecaf1ae900811fdb14829e188bb398347d1d8b549d01d24953eab1eabef5eddb",
-      "clean_sha256": "a92fd2eccb64b9c214573bcb1683ad2f707a24264016c794631a00d27023d670",
-      "bytes": 2033,
-      "changed_at": "2026-09-23T02:51:54.253Z"
+      "raw_sha256": "85f6633028b04475606bba7e784fbd6db3d08ca861c5fa6e33afa243dc2b4b8b",
+      "clean_sha256": "53490de472ffa51ea28d8250c9f34c84196a3d8b2779afa85e4e73b92bf0b5b5",
+      "bytes": 2146,
+      "changed_at": "2026-10-02T12:43:50.553Z"
     },
     "sdk/javascript/api/interfaces/ScoreQuestion.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreQuestion.md",
       "title": "Interface: ScoreQuestion<T>",
       "description": "",
-      "raw_sha256": "cf3a67c335854ba7aea0564f1fc6dcfaa91ea70831bf7c42444c1986eda934db",
-      "clean_sha256": "5fc2d5f8a2a6e6256b293530ec73a2933578b61d8780ef56139eaf1bbf436f7c",
-      "bytes": 833,
-      "changed_at": "2026-09-23T02:51:54.254Z"
+      "raw_sha256": "23960b9224205758da776d76dbcbf21975233947fed5048b09197da16913d58d",
+      "clean_sha256": "8fa2d3f524ba654f4b71b24c546ad004e7676534b2aff1dfdf39f5111d5e17d9",
+      "bytes": 946,
+      "changed_at": "2026-10-02T12:43:50.554Z"
     },
     "sdk/javascript/api/interfaces/ScoreResponse.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreResponse.md",
       "title": "Interface: ScoreResponse<T>",
       "description": "",
-      "raw_sha256": "f9f1d1f6da5db8d8a32512e07839973d05a19e5742fa0d943754ec9e1897d3ff",
-      "clean_sha256": "66532b9d52e89b4ddd3c72cddeed614ed319fe01ca4aa562540504a7adc7682e",
-      "bytes": 1139,
-      "changed_at": "2026-09-23T02:51:54.255Z"
+      "raw_sha256": "9db7752262f2e1d76df123dfc26fa97f4483e0bade858456cbd1ed6cc9678dee",
+      "clean_sha256": "634625e91fe9fee98e43f1a207cfe7853e534dd1c069162466b9d12099eae018",
+      "bytes": 1252,
+      "changed_at": "2026-10-02T12:43:50.554Z"
     },
     "sdk/javascript/api/interfaces/SystemOneRequest.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequest.md",
       "title": "Interface: SystemOneRequest<Q>",
       "description": "",
-      "raw_sha256": "a9cc654ab780c1b63390cec607ba42fc91625545e70410ae348bfecd2ed447e5",
-      "clean_sha256": "23d1f7e3a9810dd30bbf88c854dc7729445fdd6afb47088a69c5822c05daffd3",
-      "bytes": 1043,
-      "changed_at": "2026-09-23T02:51:54.255Z"
+      "raw_sha256": "c2f8d6a326fefca098f6d8331dd26f5721f523e16dbaf2f77f2fed81f2253ed4",
+      "clean_sha256": "b5aadca0e035f9bbf5a55b4e16b8682d27f610e76259542d5187f5dca49edf63",
+      "bytes": 1156,
+      "changed_at": "2026-10-02T12:43:50.555Z"
     },
     "sdk/javascript/api/interfaces/SystemOneRequestPayload.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequestPayload.md",
       "title": "Interface: SystemOneRequestPayload",
       "description": "",
-      "raw_sha256": "97088e861eac6197f5c9d0f242191070d65e0d45a0c6e05d70e5df6b982fb74e",
-      "clean_sha256": "bf7dbdaa9dad524ae924943dbad61b2cb5317cb16dd7183d6bac909069e9eb1a",
-      "bytes": 1292,
-      "changed_at": "2026-09-23T02:51:54.256Z"
+      "raw_sha256": "50dcc14c938af2f75afdcff95a34a86e62b6395f4a0effc98e10e2d2606ce84f",
+      "clean_sha256": "9bd0b1c4af1a0875119b4b1ff7519df0332b01be9bac5a9466e7b5cb380c2a24",
+      "bytes": 1405,
+      "changed_at": "2026-10-02T12:43:50.555Z"
     },
     "sdk/javascript/api/interfaces/SystemOneResult.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneResult.md",
       "title": "Interface: SystemOneResult<Q>",
       "description": "",
-      "raw_sha256": "7cb2e4e7a724cd7841310f2e119e55a8ca9b55b9c94191ad36c76713cee08ced",
-      "clean_sha256": "f59970d6294486ccfcc3da3d745e38b92656487a6e826660f5423ecb82e9c67b",
-      "bytes": 828,
-      "changed_at": "2026-09-23T02:51:54.256Z"
+      "raw_sha256": "de54fe865040fdb8edb2440528af9a3ad02aa1b6838fd0058cde5036966a364f",
+      "clean_sha256": "b5d424a4378fc4c2fa11f65d0ce7b5548f63d2da7a11b3087bf1f32bb266d241",
+      "bytes": 941,
+      "changed_at": "2026-10-02T12:43:50.556Z"
     },
     "sdk/javascript/api/interfaces/TypeSafeClientConfig.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/TypeSafeClientConfig.md",
       "title": "Interface: TypeSafeClientConfig",
       "description": "",
-      "raw_sha256": "5780a70b4f0bc12433b1cebc8810e22ad6c5298fcec7fb77163770af483a1f69",
-      "clean_sha256": "8404119ce24fa05d15e2d2e8a93d989d2ec28141a1a75d282ca99215ee213fab",
-      "bytes": 2201,
-      "changed_at": "2026-09-23T02:51:54.257Z"
+      "raw_sha256": "60beed43998f14205e7fac512b890822f8f6f930d7039957feed517b88cf7230",
+      "clean_sha256": "15b00875a28a70ed95fc573bdee150b28938f6592b41993fa2b253eef1b02e80",
+      "bytes": 2314,
+      "changed_at": "2026-10-02T12:43:50.556Z"
     },
     "sdk/javascript/api/interfaces/Usage.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/Usage.md",
       "title": "Interface: Usage",
       "description": "",
-      "raw_sha256": "89166ea2f5f82c1265440869fb7ed753ff5980122ecf6ff847588fb64ec3cb0a",
-      "clean_sha256": "86336e6c5bee94e3c23b4f2ab629f70564da5a1e8533fd25a3ac8e7d5a374616",
-      "bytes": 516,
-      "changed_at": "2026-09-23T02:51:54.257Z"
+      "raw_sha256": "6c31113ae0000cbfd34b4220a8d4333c3941f654549981d89a9335444f2c31d6",
+      "clean_sha256": "ac94a9f614a7e0700a9d40511f93c0fcbc68430e42f8a0e6637460be792c2bdc",
+      "bytes": 629,
+      "changed_at": "2026-10-02T12:43:50.557Z"
     },
     "sdk/javascript/api/interfaces/WithResponse.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/interfaces/WithResponse.md",
       "title": "Interface: WithResponse<T>",
       "description": "",
-      "raw_sha256": "ad47903342ef004b6b29e2f8112e0217ba26439bcb40cfbbc09bb6f65f3bb782",
-      "clean_sha256": "302bc55d899d3ba4aa3297a9829c97947ea0e2d5e766d889f35cea1d5fe36582",
-      "bytes": 712,
-      "changed_at": "2026-09-23T02:51:54.258Z"
+      "raw_sha256": "90ff30334b4b6f63e49cdc157f2c914817c9886043299f9d8f6c14f82b8ec306",
+      "clean_sha256": "e77dcaeda5da7e1fbb3408e4ab20109b14d9e6d6df030c5c657d2e42fd3d7e44",
+      "bytes": 825,
+      "changed_at": "2026-10-02T12:43:50.557Z"
     },
     "sdk/javascript/api/type-aliases/ChoiceCriteria.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ChoiceCriteria.md",
       "title": "Type Alias: ChoiceCriteria",
       "description": "",
-      "raw_sha256": "095bfad4b4840048f5fe7e8e9b65059a7f98c2472f331bd2bc8f2d8f27653d50",
-      "clean_sha256": "629c7727a818edfb1a8dca0a41bf7f6fe76f3a4d2bb7e6479b1f8a99985e36a6",
-      "bytes": 399,
-      "changed_at": "2026-09-23T02:51:54.258Z"
+      "raw_sha256": "a511eba6b5666eee2323e476bb126e868d498d0d486c743a06143c3642dae74d",
+      "clean_sha256": "afef0f48d895e34f8a93d641fb018855168baa6de54f770d2e2f4f7f6de404c1",
+      "bytes": 512,
+      "changed_at": "2026-10-02T12:43:50.558Z"
     },
     "sdk/javascript/api/type-aliases/Description.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Description.md",
       "title": "Type Alias: Description",
       "description": "",
-      "raw_sha256": "4891a677386abdb276a91f0be7a9d96c5168798f13daf56eeb4cd256c88dc318",
-      "clean_sha256": "429281bd3c6124fc81dc7c1ae15645128ce6f209ba6d1485cd02f559a3d2d5e1",
-      "bytes": 322,
-      "changed_at": "2026-09-23T02:51:54.259Z"
+      "raw_sha256": "92052bd2c7a1bdcd0e837c5942f506800d4e7ebc61c798a3f6199eab7e9d4910",
+      "clean_sha256": "be87bfbde14879078051e34a2ab853cf300f287a1c668c68c3e280515c8b4eab",
+      "bytes": 435,
+      "changed_at": "2026-10-02T12:43:50.558Z"
     },
     "sdk/javascript/api/type-aliases/EntryType.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType.md",
       "title": "Type Alias: EntryType",
       "description": "",
-      "raw_sha256": "25eddb598adc30e458b2a88df4b28d6ac7833c523e07b9e51fe485a99aa20f0b",
-      "clean_sha256": "ab561f58c551bd7208ce5419c0eafc981b984e94305a75941864289955077359",
-      "bytes": 396,
-      "changed_at": "2026-09-23T02:51:54.260Z"
+      "raw_sha256": "355a76ef34c00823acc4c71af7764fc2c25c9175c79cebb82cb90e6a3f4181e7",
+      "clean_sha256": "90f1f0bb5f1f2e128387c7c3b6f46863d2e2d3bce970d0e0e74efaf9cc3bf5f4",
+      "bytes": 509,
+      "changed_at": "2026-10-02T12:43:50.559Z"
     },
     "sdk/javascript/api/type-aliases/EnvVar.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EnvVar.md",
       "title": "Type Alias: EnvVar",
       "description": "",
-      "raw_sha256": "d10173bb6e14432a2b4c8563c534768aafe3bed9f987433ff0f4804b0aff3916",
-      "clean_sha256": "48bbe7d6e0dc7a01aadb12b6cbf1c392e348cac0b3e12663eeb0b3d6ee99cb09",
-      "bytes": 268,
-      "changed_at": "2026-09-23T02:51:54.260Z"
+      "raw_sha256": "2c979f608bbbd3223980fe5e705dd154515caf5de40cfc66956503de4a0787fb",
+      "clean_sha256": "907deb8e50e4d03d5105e436bf51472b8150fd577507e3db7097a73789e5595a",
+      "bytes": 381,
+      "changed_at": "2026-10-02T12:43:50.559Z"
     },
     "sdk/javascript/api/type-aliases/Fetch.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Fetch.md",
       "title": "Type Alias: Fetch",
       "description": "",
-      "raw_sha256": "17e01b94c2f9794a9a4c6b732b0172a9ab9bc7188b9ed306528ddc742c2c8f5d",
-      "clean_sha256": "20ae05682cc12ce49210d7b5322597c0fd0e9dad495984e8cb1423633c86c6d7",
-      "bytes": 434,
-      "changed_at": "2026-09-23T02:51:54.261Z"
+      "raw_sha256": "fa9814843bb1c0515d536cb494f866fff7621a5c4713335bd3c0291e0e374ac8",
+      "clean_sha256": "ccadbcacab32c9ce5b5140d5a44b22dd491f437aeb66bb904922bd4bd79bc389",
+      "bytes": 547,
+      "changed_at": "2026-10-02T12:43:50.559Z"
     },
     "sdk/javascript/api/type-aliases/JsonValue.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/JsonValue.md",
       "title": "Type Alias: JsonValue",
       "description": "",
-      "raw_sha256": "10f9f35278cc9c8059f45e13c9e16581ecdc848db015eaae46e4593975c6e030",
-      "clean_sha256": "03ef26e314c82b64aedd4928aaacab2ce0aa064afcdbd7837df746acae072ff7",
-      "bytes": 365,
-      "changed_at": "2026-09-23T02:51:54.262Z"
+      "raw_sha256": "d8c50dd0f6e64e149ef77c4f6ec84f646e705175a4a8fa7636b5d36c375b0d66",
+      "clean_sha256": "680dc845b40df0373bdf653120029e2484be726d53da8ae493538f5366d98b93",
+      "bytes": 478,
+      "changed_at": "2026-10-02T12:43:50.560Z"
     },
     "sdk/javascript/api/type-aliases/LogLevel.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/LogLevel.md",
       "title": "Type Alias: LogLevel",
       "description": "",
-      "raw_sha256": "dba7f4b1a63b6f7f2da62013ffefc152660867c508d2cb580de8c6983b5efe11",
-      "clean_sha256": "ab43eb5166ca2f1a8b664859cd2b647e3ae4ca0d22f2f81066104159b023421b",
-      "bytes": 327,
-      "changed_at": "2026-09-23T02:51:54.263Z"
+      "raw_sha256": "df1424fcfc1ce91f694150312ff6b2935ca8ab7a81ffe9571a0aa179e3b2b227",
+      "clean_sha256": "ef15134c31b3361d8a896d1ab5685e00e30fb76a62908110e88ee0c4de2fa59b",
+      "bytes": 440,
+      "changed_at": "2026-10-02T12:43:50.560Z"
     },
     "sdk/javascript/api/type-aliases/Question.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Question.md",
       "title": "Type Alias: Question",
       "description": "",
-      "raw_sha256": "f58601370daa9df78ea740d7bdd970c79e73d929b0c6c20cf6de0ae2f9ca5f20",
-      "clean_sha256": "aea22e65213a97b464aabfa138ed8343952a20d05d99ffb344b6d9fbb075e1ff",
-      "bytes": 342,
-      "changed_at": "2026-09-23T02:51:54.264Z"
+      "raw_sha256": "1e2bcda7a1644062945c733115e2da903a28e8d4349b7a53c8d48e64e2a3abb3",
+      "clean_sha256": "4eb1d95a3fad397f27359c531e8d9d3f0df5f4f6b415f3408e1f4aef0b0e371b",
+      "bytes": 455,
+      "changed_at": "2026-10-02T12:43:50.561Z"
     },
     "sdk/javascript/api/type-aliases/ResultFor.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ResultFor.md",
       "title": "Type Alias: ResultFor<T>",
       "description": "",
-      "raw_sha256": "e5575bb40e49aadc08996e758ba55c1d4399a4c99a0332eee82a6a2a03121573",
-      "clean_sha256": "db290f1872c6d140b679e861a01f88986424ecc50c3e06f1a743fe0973ba7e36",
-      "bytes": 568,
-      "changed_at": "2026-09-23T02:51:54.265Z"
+      "raw_sha256": "411004d64c3a2613881de525ee6d588d4cfa1f47c3284370ddb685c133323091",
+      "clean_sha256": "8864350f455891e2518fee39422be969fdc041e4ac077b8cfcb0e9157f7105c7",
+      "bytes": 681,
+      "changed_at": "2026-10-02T12:43:50.561Z"
     },
     "sdk/javascript/api/type-aliases/ScoreCriteria.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreCriteria.md",
       "title": "Type Alias: ScoreCriteria",
       "description": "",
-      "raw_sha256": "6f01554f2569f2c9d71acbf548dfa7d6e2c439886d13921cdee5584e09eff21e",
-      "clean_sha256": "a96accfd2f6405da7325220f513158f06b697b17aaab8cae9539229f2eeb2225",
-      "bytes": 391,
-      "changed_at": "2026-09-23T02:51:54.266Z"
+      "raw_sha256": "3599c4a136502d17c03f817cdd886cb72fa4475696b43b88abe94c6ddab5504c",
+      "clean_sha256": "1825dc98b10b4ca573fbc82f572a784abce8f9de363cf1476c55751063df92a2",
+      "bytes": 504,
+      "changed_at": "2026-10-02T12:43:50.562Z"
     },
     "sdk/javascript/api/type-aliases/ScoreLegend.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreLegend.md",
       "title": "Type Alias: ScoreLegend<T>",
       "description": "",
-      "raw_sha256": "4ee7b3f292648e093a9eb3946e3a6924ff44e8fba8161faab040c02adfaadaf5",
-      "clean_sha256": "05ddaf121503c56bbd94fdb0813035f7e69adab604be789dbc5070dd7b7346d5",
-      "bytes": 445,
-      "changed_at": "2026-09-23T02:51:54.267Z"
+      "raw_sha256": "ead596841cbea63f6d3dee2ba263f2b53d84dda4dde1ca3f749a817b9f2f3bfd",
+      "clean_sha256": "2b80485cdebb33e7659bbb633e424b608cce72bd226f3a4777862abcc945853d",
+      "bytes": 558,
+      "changed_at": "2026-10-02T12:43:50.562Z"
     },
     "sdk/javascript/api/type-aliases/ScoreOf.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreOf.md",
       "title": "Type Alias: ScoreOf<T>",
       "description": "",
-      "raw_sha256": "257c8140349b19766082e0bb91550090660265ea932d9ee2887156af8ef61434",
-      "clean_sha256": "fc593984a14123d7400e7e2d9e825704822e96f2ec38fe28ae215d9312e73d3c",
-      "bytes": 522,
-      "changed_at": "2026-09-23T02:51:54.267Z"
+      "raw_sha256": "98098e9e3e33a943a57eb380df83db07328eb3862cc87e4a1cac7589751785c2",
+      "clean_sha256": "e02a1a25d69fa32bd61320825aa627970f9abef035489d8491f45ccf53d722f9",
+      "bytes": 635,
+      "changed_at": "2026-10-02T12:43:50.563Z"
     },
     "sdk/javascript/api/variables/ENV.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/variables/ENV.md",
       "title": "Variable: ENV",
       "description": "",
-      "raw_sha256": "52a78017fdd446b976eb37589e3ece060228055cbd78f9a5f0568ed69146781f",
-      "clean_sha256": "98121d30e26c185e62941064a229ef2296acf93795cd47142e563e6d1c0ffc80",
-      "bytes": 1039,
-      "changed_at": "2026-09-23T02:51:54.269Z"
+      "raw_sha256": "3e8f16fa7e6137f432a6c5ee33329038d0b469234fe38bbd3431eb095929d125",
+      "clean_sha256": "383cfcfffd9ac15e8dc89ae58d4e049c8546ab1935e8264d7f9013b40a127298",
+      "bytes": 1152,
+      "changed_at": "2026-10-02T12:43:50.563Z"
     },
     "sdk/javascript/api/variables/LOG_LEVELS.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/variables/LOG_LEVELS.md",
       "title": "Variable: LOG_LEVELS",
       "description": "",
-      "raw_sha256": "0d5646a6c2fd3ef63b0037f2d43a159ff588841298ff15808adc51d10e5a8fa7",
-      "clean_sha256": "b8fff5a8e41d07f2891e7df598d2fa9fe14939be1120d937c924585a6e1982bf",
-      "bytes": 316,
-      "changed_at": "2026-09-23T02:51:54.269Z"
+      "raw_sha256": "8625f9eae048383a30915bc0585a494605d706d43a6bfd8574c737311b0540f2",
+      "clean_sha256": "515949f8b4476b1a75ef401da3db1e3d75c2953ae4a7e4169866ac792272dd3e",
+      "bytes": 429,
+      "changed_at": "2026-10-02T12:43:50.564Z"
     },
     "sdk/javascript/api/variables/VERSION.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api/variables/VERSION.md",
       "title": "Variable: VERSION",
       "description": "",
-      "raw_sha256": "de1e098300ddc35807ac8152b31ca2674a9f9f52a17e3595670a2758cd5c2e1b",
-      "clean_sha256": "4cf3276c573bbc9b26f81a690b9baf2ac977f8679b418bcb6a6643aaf4677dde",
-      "bytes": 257,
-      "changed_at": "2026-09-23T02:51:54.270Z"
+      "raw_sha256": "3c9b18c8dad4b2f0a45b62662fa3ac69d05168a3ae06af1309b80762209a99de",
+      "clean_sha256": "e79fb2ead0cebe9342a412795accefd3d17dd6426dec0a3d66eeb84b06c5b9a0",
+      "bytes": 370,
+      "changed_at": "2026-10-02T12:43:50.564Z"
     },
     "sdk/javascript/changelog.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/changelog.md",
       "title": "Changelog",
       "description": "",
-      "raw_sha256": "73389d4c01993603a0c943aa04d491ef92670a358e413e74a5aac4891661250d",
-      "clean_sha256": "a23c20675f76277dc253c16eaba58b5e1a8110f509d163190f451c5807dfda10",
-      "bytes": 508,
-      "changed_at": "2026-09-23T02:51:54.231Z"
+      "raw_sha256": "6204f65e88fd44beee8a5515b4f7e6d566eb8203cac2e7838c12db1cb8890381",
+      "clean_sha256": "9f6b1364ad7825aae9142e442a7f2fd084b0dd0a81cdfaa2678084b79764b860",
+      "bytes": 621,
+      "changed_at": "2026-10-02T12:43:50.539Z"
     },
     "sdk/python.md": {
       "url": "https://docs.typesafe.ai/sdk/python.md",
       "title": "TypeSafe Python SDK",
       "description": "Install the TypeSafe Python SDK and get started with asynchronous or synchronous API calls.",
-      "raw_sha256": "6b8fa10843621f6090026ed81259e5b420eadaa9af6f2370de63097d3486875a",
-      "clean_sha256": "8f4e032b110c11deb9e4afb021e0bc03a82455c20ee2a506324cb4faf52489e7",
-      "bytes": 3714,
-      "changed_at": "2026-09-27T12:08:19.910Z"
+      "raw_sha256": "ff4564cfcf2b577f36be5f6bb6bb0ee5f4f39306af1a39357316a54c81f92279",
+      "clean_sha256": "693210f150c4107ddab3466f58b7a5821fb0cda0411bf69320fa406133d7fafb",
+      "bytes": 3827,
+      "changed_at": "2026-10-02T12:43:50.525Z"
     },
     "sdk/python/api.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api.md",
       "title": "API reference",
       "description": "Python clients for the TypeSafe AI API",
-      "raw_sha256": "fd58d0024e6269c295ed83e0397c0e19477d0f7a8b2b666dde496a1c6524bcaa",
-      "clean_sha256": "1587146b5f592a4484a374a3768860352b23a70147d68154df9deda97155b355",
-      "bytes": 623,
-      "changed_at": "2026-09-23T02:51:54.216Z"
+      "raw_sha256": "9b5fde7a25687f53e3b824736c4c94fb958065298b80aafc7c2de63d693a4a48",
+      "clean_sha256": "91dad3567a2f21756aa7ec06cc0fafb15467088aa6cddde68ef6367080bfb529",
+      "bytes": 736,
+      "changed_at": "2026-10-02T12:43:50.528Z"
     },
     "sdk/python/api/clients/async.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/clients/async.md",
       "title": "Asynchronous client",
       "description": "Use AsyncTypeSafeClient to ask questions, list models, and configure asynchronous TypeSafe API requests.",
-      "raw_sha256": "f45f04e87431ce9e21cdb90e074066a23ab962b3c870d316f9092682923d7fa2",
-      "clean_sha256": "dd3392c7ca18032b5e8f3c850141aa10e95e2701e8e32837ee0e2ed8c6e06298",
-      "bytes": 32575,
-      "changed_at": "2026-09-23T02:51:54.218Z"
+      "raw_sha256": "4caa60c0eafbda1da734fe640ea2f43776a79d6f4a128bae3595bdf7a9029ade",
+      "clean_sha256": "c2c4d8828f42275f63233f5f56d0aae5fff3d91995afcd0531cfaf0223c6b42a",
+      "bytes": 32688,
+      "changed_at": "2026-10-02T12:43:50.530Z"
     },
     "sdk/python/api/clients/sync.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/clients/sync.md",
       "title": "Synchronous client",
       "description": "Use TypeSafeClient to ask questions, list models, and configure synchronous TypeSafe API requests.",
-      "raw_sha256": "55a144c0161e9b22dc3cf1b2134f9c64ae28348ead2ef4a269e39fbe4757d8f6",
-      "clean_sha256": "fca34cad767c19821ccf2df3016206adfdadfb8f7b7f37a77cdf21667814c807",
-      "bytes": 31967,
-      "changed_at": "2026-09-23T02:51:54.219Z"
+      "raw_sha256": "1524df5a9dc8bc6e0306fbdffd4b9d5ca2da49a54949276d43b6ff4a11bab338",
+      "clean_sha256": "bc7d4d5900459d4e2170db8a501f7d7e69aa7787403fe9afde5d9cabc63b7bec",
+      "bytes": 32080,
+      "changed_at": "2026-10-02T12:43:50.531Z"
     },
     "sdk/python/api/constants.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/constants.md",
       "title": "Constants",
       "description": "Default settings and environment variable names for the TypeSafe Python SDK.",
-      "raw_sha256": "dfcd6bfd691412058b2ea06c9a44414f5126e4aea06d7bf7071600f42a9b5003",
-      "clean_sha256": "a15776101c01798904f4db4c4f61ab3d75e33a765fc4cf3a49680865e99db40e",
-      "bytes": 1782,
-      "changed_at": "2026-09-23T02:51:54.230Z"
+      "raw_sha256": "73d81e80043ed07af283b07b484ed2e7a309823d6e11e79f239956b8c5e741b9",
+      "clean_sha256": "c625c79cf8f2a70d6e8a3186bb38768966d5dbdebe42a3b2964a0443802816e7",
+      "bytes": 1895,
+      "changed_at": "2026-10-02T12:43:50.538Z"
     },
     "sdk/python/api/exceptions.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/exceptions.md",
       "title": "Exceptions",
       "description": "Handle TypeSafe API errors, rate limits, connection failures, and timeouts.",
-      "raw_sha256": "c1cec8b4f1e4c8d258f18a40acf8736e34be3c6b0bd0915189d2542624447fad",
-      "clean_sha256": "69e2d24be0ca2789fca355b0364ac0066162342820f8081f816eab30d3ef6147",
-      "bytes": 7059,
-      "changed_at": "2026-09-23T02:51:54.229Z"
+      "raw_sha256": "8d0ea798ce78a4e69cba889eaa9696766a09e82575b35fe79a34ce068808c7ba",
+      "clean_sha256": "1da02566cb64aa475aeaa792bd97690f119943d064638b48f658cd254868da05",
+      "bytes": 7172,
+      "changed_at": "2026-10-02T12:43:50.537Z"
     },
     "sdk/python/api/retries.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/retries.md",
       "title": "Retries",
       "description": "Configure retries with RetryPolicy — attempt count, retryable statuses, backoff, and retry headers handling.",
-      "raw_sha256": "bdf94b25ae1d23a0784c9e1affcf0363e80deb56089a0e48d3e3860bb5181cc9",
-      "clean_sha256": "f35518fb3d10ee611df58ef9c9ca50b9e1efcd4289ec8fa7025ca247d603d920",
-      "bytes": 15732,
-      "changed_at": "2026-09-23T02:51:54.228Z"
+      "raw_sha256": "6b1137deabfac2926e08356504f02dc856892b2d061cfeedf762535c328c5ec1",
+      "clean_sha256": "01f67530d6cc7aae145eb0f372fa7826c343882b31c277da31f27dc536f048a7",
+      "bytes": 15845,
+      "changed_at": "2026-10-02T12:43:50.536Z"
     },
     "sdk/python/api/types/common.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/common.md",
       "title": "Common types",
       "description": "Common types for TypeSafe API SDK.",
-      "raw_sha256": "bda3f01322aa1a0fdff3d5603278330dc3396fc377eabd21eb4336cce365c241",
-      "clean_sha256": "648914f273bfb7afa10d10f831ba817e205d45a592224ce846394acb68fde0e2",
-      "bytes": 2942,
-      "changed_at": "2026-09-23T02:51:54.228Z"
+      "raw_sha256": "d93bf202cbbd2eeebb7f91af476b803400bd8ebe81b7c6013027d8b7c8c461bd",
+      "clean_sha256": "0f23a61045185dafe93371b70399c0c643e3bb8bec31489772c5af527c61d413",
+      "bytes": 3055,
+      "changed_at": "2026-10-02T12:43:50.537Z"
     },
     "sdk/python/api/types/questions.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/questions.md",
       "title": "Questions",
       "description": "Provide state and ask yes/no, choice, and score questions using objects or dictionaries.",
-      "raw_sha256": "cbad949affff140bc00a090b37748c52f1239ec0e98f308012eceb562fdaaa0a",
-      "clean_sha256": "3bdb7c72f4a2f2a28a20b8b5e38eb45bf6f50d2e7f1375432350374a80431f88",
-      "bytes": 30016,
-      "changed_at": "2026-09-23T02:51:54.222Z"
+      "raw_sha256": "60da0a09dc5b4115665a001344929912430f52ce381228f5a70bce8a59ee61ed",
+      "clean_sha256": "c570216a041b693f9284cef9c357bb8937d13f49f7d8ab34e974366f718a092d",
+      "bytes": 30129,
+      "changed_at": "2026-10-02T12:43:50.533Z"
     },
     "sdk/python/api/types/responses.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/responses.md",
       "title": "Answers and responses",
       "description": "Read answers, confidence scores, token usage, and available models returned by the TypeSafe API.",
-      "raw_sha256": "7b0167d010dc165b6584939a550c8ec35d31c003f0e8095638a46a037b6f6f8a",
-      "clean_sha256": "b16b5a17b73efcfdee79bf386a0c2221b0c003501eeb2a18a07e414db025d7ce",
-      "bytes": 38625,
-      "changed_at": "2026-09-23T02:51:54.226Z"
+      "raw_sha256": "03efd826c4334bd7260cae2fd980a9ae01a934f8714e58ea59093389a14bb6ad",
+      "clean_sha256": "eb74fab85a6955b43b8537f5aabdebb578b305fae93de911cac193cf93ae2a93",
+      "bytes": 38738,
+      "changed_at": "2026-10-02T12:43:50.535Z"
     },
     "sdk/python/changelog.md": {
       "url": "https://docs.typesafe.ai/sdk/python/changelog.md",
       "title": "Changelog",
       "description": "Python clients for the TypeSafe AI API",
-      "raw_sha256": "5a106cf423ea4e81d41a7f3d026a020cce9e1648d86a1611a7b823797c1c285c",
-      "clean_sha256": "43d8720ad421aa4b9831cd9bc9112cefac1e08fbe09d6d56f0065d6bd119fe74",
-      "bytes": 2079,
-      "changed_at": "2026-09-27T12:08:19.914Z"
+      "raw_sha256": "686ef1baf6cfe2b15c669f5cbccdf28f4e6e7ef3aafc7123f6864f868d74a821",
+      "clean_sha256": "b349d9035298db684262a98e30199500299da26d837abec54d95d620b0e73be1",
+      "bytes": 2192,
+      "changed_at": "2026-10-02T12:43:50.527Z"
     },
     "sdk/python/usage.md": {
       "url": "https://docs.typesafe.ai/sdk/python/usage.md",
       "title": "Usage",
       "description": "Guides and patterns for working with the TypeSafe Python SDK.",
-      "raw_sha256": "bf5ce8360b16a97f203f8ad1c54693a6d41f27ea6a98412617a6f1ada3c38be7",
-      "clean_sha256": "e14bb4fb1a579fc0b4fe2fee00332a5925929aa54269e5b76ce75f6a54817464",
-      "bytes": 18979,
-      "changed_at": "2026-09-29T12:59:30.334Z"
+      "raw_sha256": "a6b916b9d87b3722fe6692b049480f99e0083f24b9853831ee2edd38ddc6764d",
+      "clean_sha256": "fa9cf3e49bd7b1b857a13feebdf86b9d3f9f2142f89f8d2027f37381916971cb",
+      "bytes": 19092,
+      "changed_at": "2026-10-02T12:43:50.527Z"
     }
   }
 }

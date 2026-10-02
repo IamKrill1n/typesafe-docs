@@ -362,3 +362,5 @@ async def main() -> None:
     async with AsyncTypeSafeClient() as client:
         models = await client.models.list()
 ```
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

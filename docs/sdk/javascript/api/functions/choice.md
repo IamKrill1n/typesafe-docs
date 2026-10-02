@@ -29,3 +29,5 @@ Labels mapped to descriptions, or `null` for undescribed labels.
 ## Returns
 
 [`ChoiceQuestion`](../interfaces/ChoiceQuestion.md)\<`T`>
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

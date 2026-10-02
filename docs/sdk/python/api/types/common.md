@@ -33,3 +33,5 @@ JSONContent = TypeAliasType(
 ```
 
 Either a plain string or a mapping/sequence of [`JSONValue`](./common.md#typesafe_sdk.JSONValue) entries.
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

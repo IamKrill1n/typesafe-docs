@@ -113,3 +113,6 @@ readonly respectRetryAfter: boolean;
 ```
 
 Honor `Retry-After` and `retry-after-ms` up to `maxRetryAfterMs`. Default: true.
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -7,7 +7,7 @@
 > Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
 
 <Note>
-  **Applies to `jev-1.13`.** Last reviewed 2026-09-17.
+  **Applies to `jev-1.13`.** Last reviewed 2026-10-02.
 </Note>
 
 `jev-1.13` is fast, calibrated, and good at common-sense judgment but it is not perfect. `jev-1.13` does the best on [System One](/concepts/system-one) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
@@ -23,7 +23,7 @@
 | 5 | [Large state full of irrelevant detail](#large-state-full-of-irrelevant-detail) | Filter first; send only what the question needs |
 | 6 | [Adversarial content](#adversarial-content) | Write precise prompts, and test edge cases before deploying |
 | 7 | [Contradictory instructions and criteria](#contradictory-instructions-and-criteria) | Align the criteria and instruction |
-| 8 | [Common-sense structural invariants](#common-sense-structural-invariants) | Ask each decision one way; enforce identities in code |
+| 8 | [Choice option order](#choice-option-order) | Reorder the options and check the answer is consistent |
 | 9 | [Generation](#generation) | Use a generative model |
 
 ## Literal reading
@@ -113,28 +113,11 @@ When the `instructions` and the `criteria` ask for different things, `jev-1.13` 
 
 **Instead:** treat the criteria as an extension of the instruction. Align the two using clear and precise language.
 
-## Common-sense structural invariants
+## Choice option order
 
-`jev-1.13` is extremely consistent, meaning you should expect quantitatively similar outputs for semantically similar inputs.
-However there are many structural invariants one might imagine to hold that simply aren't guaranteed by the model.
+In some cases, we observed that the order of a [Choice](/primitives/choice)'s options can affect the answer, and `jev-1.13` leans toward the option that comes first.
 
-For example, "Is the customer asking for a refund?", asked as a [Noul](/primitives/noul) and as a yes/no [Choice](/primitives/choice) on the ticket "I'm not happy with the fit. What are my options here?":
-
-| Noul `noul` | Choice `yes` | Choice `no` | Choice `confidence` |
-| - | - | - | - |
-| 0.22 | 0.01 | 0.99 | 0.97 |
-
-The comparable numbers are `noul` and `probabilities["yes"]`, and it is not obvious how to interpret either the Choice output and confidence for the Noul question or vice versa.
-
-The same question and its negation, "Is the customer asking for something other than a refund?", as two Nouls on the ticket "I was charged twice for the same order. Can someone look into this?":
-
-| `refund` | `not_refund` | Sum |
-| - | - | - |
-| 0.72 | 0.47 | 1.19 |
-
-There are many reasons that `P(noul)` and `1 - P(not noul)` may not be directly comparable.
-
-**Instead:** don't rely on expected structural invariance, and word questions to mean directly what you want. Don't carry a threshold tuned on a Noul over to a Choice, and don't hold the model to arithmetic identities between separate questions. A Choice over options and one Noul per option answer different questions: the Choice is relative, settling *which* option, while each Noul is absolute and can be low for all of them. The [skill suggestion cookbook](/cookbooks/skill_suggestion) uses both on the same shortlist, the Choice to pick a skill and the Nouls to decide whether to suggest one at all.
+**Instead:** reorder the options to double check that the answer stays consistent.
 
 ## Generation
 

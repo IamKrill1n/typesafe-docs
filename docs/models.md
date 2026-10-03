@@ -7,7 +7,7 @@ Jev is TypeSafe's flagship model and the first [System One model](./concepts/sys
 | Jev 1.13 | `jev-1.13.0` |
 | :- | :- |
 | Price (per Btok / per Mtok) | \$42 / \$0.042 |
-| Rate limits | 100K tokens per second / 40 requests per second |
+| Rate limits | 100K tokens per second / 80 requests per second |
 | Context length | 64k tokens per request; 32k tokens for `state` plus the longest question |
 | Input | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
 

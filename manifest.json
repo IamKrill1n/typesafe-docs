@@ -303,19 +303,19 @@
       "url": "https://docs.typesafe.ai/model-jaggedness/jev-1.13.md",
       "title": "Jev 1.13 jaggedness",
       "description": "Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.",
-      "raw_sha256": "c591ecd05ab7b2f6083b397625a6ba5ee49f63038e74a9733b222e50f7ac5345",
-      "clean_sha256": "b5c46ab219398c05fd2badf531592d222fc12737f70b1c622f89090eb0dad23b",
-      "bytes": 10849,
-      "changed_at": "2026-10-02T12:43:50.523Z"
+      "raw_sha256": "5d471be7c8d2a359a81979b7bcf2c2fab536a198d4e50155c4233380d5c03986",
+      "clean_sha256": "dc5522bbfaac8118a7df96176b9452453f60b0698bd12e38e559535edef8c5bb",
+      "bytes": 9346,
+      "changed_at": "2026-10-03T11:44:36.687Z"
     },
     "models.md": {
       "url": "https://docs.typesafe.ai/models.md",
       "title": "Models",
       "description": "",
-      "raw_sha256": "da8014e39b651b7e7ae21a74826e5437d274257a63a3d5c594474934f7b639df",
-      "clean_sha256": "0cbeea1a28287db64d95d35be9dbf2fc35cf979e47a8bf1a499bd152e8ca10d5",
+      "raw_sha256": "15351adaab85874b5f1a942fc2fdf3c7b3ecadcc936d580793d734855a0038f3",
+      "clean_sha256": "4765430bd5f2db2500b0790834971a727c4b18ac93f36559e44194e1ff72636f",
       "bytes": 6684,
-      "changed_at": "2026-10-02T12:43:50.520Z"
+      "changed_at": "2026-10-03T11:44:36.685Z"
     },
     "patterns.md": {
       "url": "https://docs.typesafe.ai/patterns.md",

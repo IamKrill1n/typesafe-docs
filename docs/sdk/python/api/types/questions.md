@@ -56,6 +56,34 @@ Description of the no outcome as text, a JSON object, or an array; `None` leaves
 
 `pydantic-model`
 
+#### Implementation
+
+```python
+Noul(**data: Any)
+```
+
+#### Overload 1
+
+```python
+Noul(
+    *,
+    type: Literal["noul"] = ...,
+    instructions: JSONContent,
+    criteria: NoulCriteria | None = ...,
+)
+```
+
+#### Overload 2
+
+```python
+Noul(
+    *,
+    type: Literal["noul"] = ...,
+    instructions: None = ...,
+    criteria: _DescribedTrue | _DescribedFalse,
+)
+```
+
 Bases: `_Question`, `wire.NoulQuestion`
 
 A yes/no question with optional descriptions for either outcome.
@@ -227,7 +255,7 @@ Fields:
 instructions: JSONContent | None = None
 ```
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 <h3 id="typesafe_sdk.Noul.criteria">
   criteria
@@ -239,7 +267,7 @@ The question to ask, expressed as text, a JSON object, or an array; optional.
 criteria: NoulCriteria | None = None
 ```
 
-Optional descriptions of the yes and no outcomes.
+Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
 <h2 id="typesafe_sdk.Choice">
   typesafe_sdk.Choice
@@ -396,7 +424,7 @@ Fields:
 criteria: Mapping[str, JSONContent | None]
 ```
 
-Labels mapped to text, object, or array descriptions, or `None` for undescribed labels.
+A nonempty mapping of labels to text, object, or array descriptions, or `None` for undescribed labels.
 
 <h3 id="typesafe_sdk.Choice.instructions">
   instructions
@@ -530,6 +558,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
 >     "items": {
 >       "$ref": "#/$defs/JSONContent"
 >     },
+>     "minItems": 1,
 >     "title": "Criteria",
 >     "type": "array"
 >   }
@@ -634,7 +663,7 @@ type: Literal['noul']
 instructions: NotRequired[JSONContent | None]
 ```
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 <h3 id="typesafe_sdk.NoulModel.criteria">
   criteria
@@ -646,7 +675,7 @@ The question to ask, expressed as text, a JSON object, or an array; optional.
 criteria: NotRequired[NoulCriteria | None]
 ```
 
-Optional descriptions of the yes and no outcomes.
+Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
 <h2 id="typesafe_sdk.ChoiceModel">
   typesafe_sdk.ChoiceModel
@@ -690,7 +719,7 @@ The question to ask, expressed as text, a JSON object, or an array; optional.
 criteria: Mapping[str, JSONContent | None]
 ```
 
-Labels mapped to text, object, or array descriptions, or `None` for undescribed labels.
+A nonempty mapping of labels to text, object, or array descriptions, or `None` for undescribed labels.
 
 <h2 id="typesafe_sdk.ScoreModel">
   typesafe_sdk.ScoreModel

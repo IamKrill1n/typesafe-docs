@@ -218,7 +218,7 @@ Raises:
 
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
 
-  Questions are empty or a score question's criteria list is empty.
+  State is `None`, questions are empty, a score or choice question has no criteria, or a noul question has neither instructions nor criteria.
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code> –
 
   The server returns an unsuccessful HTTP response after any retries.

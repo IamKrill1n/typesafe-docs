@@ -357,14 +357,68 @@ result = client.system_one(
 print(result.nouls["billing"].noul)
 ```
 
-<h2 id="http2">
-  HTTP/2
+<h2 id="performance">
+  Performance
 </h2>
 
-> **Tip:**
-> **Tip**
->
-> It is often beneficial to enable HTTP/2 when sending many concurrent requests, because it allows multiple requests to be multiplexed over a single connection. The `'typesafe-sdk[http2]'` extra provides a convenient way to install the required dependencies. See the [`httpx2` HTTP/2 guide](https://pydantic.dev/docs/httpx2/guides/http2/) for details.
+If your application sends hundreds of requests per second, follow these recommendations.
+
+<h3 id="reuse-clients">
+  Reuse clients
+</h3>
+
+Make sure to reuse a client instance when sending multiple requests. Setting up a new client involves the overhead of starting new connections and TLS handshakes.
+
+<h3 id="use-aiohttp-for-async-code">
+  Use <code>aiohttp</code> for async code
+</h3>
+
+For async code at high request rates, pass an [aiohttp](https://docs.aiohttp.org/)-based HTTP client from [`httpx-aiohttp`](https://pypi.org/project/httpx-aiohttp/):
+
+```shell
+uv add "httpx-aiohttp[httpx2]"
+```
+
+```python
+from httpx_aiohttp.httpx2 import Httpx2AiohttpClient
+
+from typesafe_sdk import AsyncTypeSafeClient
+
+client = AsyncTypeSafeClient(http_client=Httpx2AiohttpClient())
+```
+
+<h3 id="create-a-client-per-thread">
+  Create a client per thread
+</h3>
+
+`TypeSafeClient` can be shared between threads, but under heavy load its connection pool becomes the bottleneck. Create one client per thread and reuse it for every request that thread sends.
+
+```python
+import threading
+
+from typesafe_sdk import TypeSafeClient
+
+class ThreadClients(threading.local):
+    def __init__(self) -> None:
+        self.client = TypeSafeClient()
+
+clients = ThreadClients()
+
+# In any thread, `clients.client` is that thread's own client.
+```
+
+<h3 id="http2">
+  HTTP/2
+</h3>
+
+The clients use HTTP/1.1 by default and can switch to HTTP/2:
+
+* **HTTP/1.1** sends one request at a time per connection and opens a connection for each concurrent request, up to the [connection limit](./usage.md#keep-a-connection-limit). Concurrency scales with the number of connections, at the cost of a TLS handshake for each new one.
+* **HTTP/2** multiplexes every request from one client over a single connection. It needs only one handshake and one socket, but that connection caps the client's throughput.
+
+Keep the default HTTP/1.1 for high request rates. Use HTTP/2 for low to moderate concurrency when you want fewer connections, for example behind a proxy or firewall that limits them.
+
+To enable HTTP/2, install the `'typesafe-sdk[http2]'` extra and pass an HTTP/2 client. See the [`httpx2` HTTP/2 guide](https://pydantic.dev/docs/httpx2/guides/http2/) for details.
 
 #### Async
 
@@ -384,6 +438,38 @@ import httpx2
 from typesafe_sdk import TypeSafeClient
 
 client = TypeSafeClient(http_client=httpx2.Client(http2=True))
+```
+
+<h3 id="keep-a-connection-limit">
+  Keep a connection limit
+</h3>
+
+The default clients open at most 100 connections and keep all of them open for 30 seconds while idle, so bursts reuse connections instead of opening new ones. Make sure to set appropriate limits when providing your own `http_client`.
+
+#### Async
+
+```python
+import httpx2
+
+from typesafe_sdk import AsyncTypeSafeClient
+
+limits = httpx2.Limits(
+  max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+)
+client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(limits=limits))
+```
+
+#### Sync
+
+```python
+import httpx2
+
+from typesafe_sdk import TypeSafeClient
+
+limits = httpx2.Limits(
+  max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+)
+client = TypeSafeClient(http_client=httpx2.Client(limits=limits))
 ```
 
 <h2 id="retries">

@@ -143,6 +143,58 @@ Description of the no outcome as text, a JSON object, or an array; `None` leaves
 
 `pydantic-model`
 
+<Tabs>
+  <Tab title="Implementation">
+    <SdkSignature>
+      <span className="nf">
+        {"Noul"}
+      </span>
+
+      <span className="p">
+        {"("}
+      </span>
+
+      <span className="o">
+        {"**"}
+      </span>
+
+      <span className="n">
+        {"data"}
+      </span>
+
+      <span className="p">
+        {":"}
+      </span>
+
+      {" "}
+
+      <span className="n">
+        <a href="https://docs.python.org/3/library/typing.html#typing.Any">
+          {"Any"}
+        </a>
+      </span>
+
+      <span className="p">
+        {")"}
+      </span>
+
+      {"\n"}
+    </SdkSignature>
+  </Tab>
+
+  <Tab title="Overload 1">
+    <SdkSignature>
+      <span className="nf">{"Noul"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="o">{"*"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="nb">{"type"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/typing.html#typing.Literal">{"Literal"}</a></span><span className="p">{"["}</span><span className="s2">{"\"noul\""}</span><span className="p">{"]"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="o">{"..."}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"instructions"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">{"JSONContent"}</a></span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"criteria"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria">{"NoulCriteria"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="o">{"..."}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
+    </SdkSignature>
+  </Tab>
+
+  <Tab title="Overload 2">
+    <SdkSignature>
+      <span className="nf">{"Noul"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="o">{"*"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="nb">{"type"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/typing.html#typing.Literal">{"Literal"}</a></span><span className="p">{"["}</span><span className="s2">{"\"noul\""}</span><span className="p">{"]"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="o">{"..."}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"instructions"}</span><span className="p">{":"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="o">{"..."}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"criteria"}</span><span className="p">{":"}</span>{" "}<span className="n">{"_DescribedTrue"}</span>{" "}<span className="o">{"|"}</span>{" "}<span className="n">{"_DescribedFalse"}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
+    </SdkSignature>
+  </Tab>
+</Tabs>
+
 Bases: `_Question`, `wire.NoulQuestion`
 
 A yes/no question with optional descriptions for either outcome.
@@ -355,7 +407,7 @@ Fields:
   {"\n"}
 </SdkSignature>
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 <h3 id="typesafe_sdk.Noul.criteria">
   criteria
@@ -407,7 +459,7 @@ The question to ask, expressed as text, a JSON object, or an array; optional.
   {"\n"}
 </SdkSignature>
 
-Optional descriptions of the yes and no outcomes.
+Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
 <h2 id="typesafe_sdk.Choice">
   typesafe\_sdk.Choice
@@ -619,7 +671,7 @@ Fields:
   {"\n"}
 </SdkSignature>
 
-Labels mapped to text, object, or array descriptions, or `None` for undescribed labels.
+A nonempty mapping of labels to text, object, or array descriptions, or `None` for undescribed labels.
 
 <h3 id="typesafe_sdk.Choice.instructions">
   instructions
@@ -792,6 +844,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
           "items": {
             "$ref": "#/$defs/JSONContent"
           },
+          "minItems": 1,
           "title": "Criteria",
           "type": "array"
         }
@@ -1092,7 +1145,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
   {"\n"}
 </SdkSignature>
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 <h3 id="typesafe_sdk.NoulModel.criteria">
   criteria
@@ -1146,7 +1199,7 @@ The question to ask, expressed as text, a JSON object, or an array; optional.
   {"\n"}
 </SdkSignature>
 
-Optional descriptions of the yes and no outcomes.
+Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
 <h2 id="typesafe_sdk.ChoiceModel">
   typesafe\_sdk.ChoiceModel
@@ -1314,7 +1367,7 @@ The question to ask, expressed as text, a JSON object, or an array; optional.
   {"\n"}
 </SdkSignature>
 
-Labels mapped to text, object, or array descriptions, or `None` for undescribed labels.
+A nonempty mapping of labels to text, object, or array descriptions, or `None` for undescribed labels.
 
 <h2 id="typesafe_sdk.ScoreModel">
   typesafe\_sdk.ScoreModel

@@ -1,6 +1,6 @@
 {
   "source": "https://docs.typesafe.ai",
-  "page_count": 111,
+  "page_count": 112,
   "pages": {
     "agent-skill.md": {
       "url": "https://docs.typesafe.ai/agent-skill.md",
@@ -69,10 +69,10 @@
       "url": "https://docs.typesafe.ai/cookbooks.md",
       "title": "Cookbooks",
       "description": "End-to-end recipes that show TypeSafe in real problems, from a few questions to full pipelines.",
-      "raw_sha256": "45f9d361808ab00c9bd7d9fbd814ecaa7e557836dc1d4f739cdb31480a08cc54",
-      "clean_sha256": "178a48ed1dd4a0337ef9204b6d57f344eecc37a4add8c7660f25269e9b711c1e",
-      "bytes": 5944,
-      "changed_at": "2026-10-02T12:43:50.481Z"
+      "raw_sha256": "b7d2b611551b8f5c3078b1521177e479c50bb4fcf905708a41b65938b4080324",
+      "clean_sha256": "550f7441f96c3fa6f40d683dde003fcd7b3351d3654b9727421fef2ac181f7a5",
+      "bytes": 6375,
+      "changed_at": "2026-10-11T12:57:57.896Z"
     },
     "cookbooks/autoformat.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoformat.md",
@@ -91,6 +91,15 @@
       "clean_sha256": "15f480b5d02ce0c0719eca829ae6dfbcf4b58e4ccdc6ada076c1cac94c528d60",
       "bytes": 71468,
       "changed_at": "2026-10-02T12:43:50.516Z"
+    },
+    "cookbooks/basic_memory.md": {
+      "url": "https://docs.typesafe.ai/cookbooks/basic_memory.md",
+      "title": "Simple memory system",
+      "description": "Let Jev decide which requests and answers are worth remembering, then wrap the Jev call in a small function that adds memories to later calls.",
+      "raw_sha256": "8e894e5b93ac45ffbe5b18997e9f4e811c99baf9f4504a894fa816df276f41ef",
+      "clean_sha256": "296e1281ff67ba244b54ac45930ed626173737428df332b27a67dc51e9352ffc",
+      "bytes": 28845,
+      "changed_at": "2026-10-11T12:57:57.902Z"
     },
     "cookbooks/citation_check.md": {
       "url": "https://docs.typesafe.ai/cookbooks/citation_check.md",
@@ -249,10 +258,10 @@
       "url": "https://docs.typesafe.ai/demos/smart-home.md",
       "title": "Smart home assistant demo",
       "description": "Demo code: a smart home assistant that uses TypeSafe to evaluate user requests.",
-      "raw_sha256": "ea60b22f89269d95d1b974f72ddfa755a0aafa0d3b162882d10cde3d4b3379e6",
-      "clean_sha256": "6d187235e44d329dfc7344bc88acbbfdc328f4304b11cc10973bffe322bf2105",
-      "bytes": 3938,
-      "changed_at": "2026-10-02T12:43:50.519Z"
+      "raw_sha256": "ec928346966d7634de65e1877cec1b5741d1a0319fdfc3a6ea99641b408cbc5a",
+      "clean_sha256": "34754a1ed5acfc2cf09bef0b42a967a8c890bccbc85694a176e035ed5d9a1dac",
+      "bytes": 3920,
+      "changed_at": "2026-10-11T12:57:57.918Z"
     },
     "introduction.md": {
       "url": "https://docs.typesafe.ai/introduction.md",

@@ -9,7 +9,7 @@
 ## Check it out in action
 
 <Frame>
-  <iframe src="https://www.loom.com/embed/18c4dbcf8db546dfb2d7f2ef018e78e4" title="Smart home assistant demo video" allow="fullscreen; picture-in-picture" style={{ width: '100%', aspectRatio: '16 / 9', border: 'none' }} />
+  <iframe src="https://player.vimeo.com/video/1230923853" title="Smart home assistant demo video" allow="fullscreen; picture-in-picture" style={{ width: '100%', aspectRatio: '16 / 9', border: 'none' }} />
 </Frame>
 
 ## How it works

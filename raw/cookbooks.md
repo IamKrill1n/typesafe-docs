@@ -33,6 +33,7 @@ Assign inputs to categories at any depth.
 | - | - | - |
 | [Hierarchical classification](/cookbooks/hierarchical_classification) | Classifies documents through deep patent, retail product, biomedical, and source-code hierarchies using parallel beam search over TypeSafe Choice probabilities. | Intermediate |
 | [Classification using confidence](/cookbooks/classification_using_confidence) | Classify SEC annual reports into 75 industry groups with one Choice each, then read the answer's own confidence to decide whether to report that group or the broader division above it. | Beginner |
+| [Twitch chat filter](/cookbooks/twitch_chat_filter) | Hide insults, spam, and unasked-for gameplay tips in Twitch chat, blur spoilers, and highlight questions. Each message gets one TypeSafe request containing multiple questions. Up to eight messages are processed concurrently, and the rules are defined in code. | Beginner |
 
 ## Extraction
 

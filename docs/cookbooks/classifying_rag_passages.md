@@ -49,9 +49,13 @@ flowchart LR
         CON["conflicting evidence"]
     end
 
-    R -->|"usable evidence"| INC
-    R -->|"denies the premise"| CON
-    R -->|"injection, off topic,<br/>or nothing usable"| DROP["dropped"]
+    R green_use@-->|"usable evidence"| INC
+    R orange_deny@-->|"denies the premise"| CON
+    R purple_drop@-->|"injection, off topic,<br/>or nothing usable"| DROP["dropped"]
+    %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.
+    class INC neonGreen
+    class CON neonOrange
+    class DROP neonPurple
 
     GEN --> ANS["generated answer"]
 

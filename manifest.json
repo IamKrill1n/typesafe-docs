@@ -1,6 +1,6 @@
 {
   "source": "https://docs.typesafe.ai",
-  "page_count": 112,
+  "page_count": 113,
   "pages": {
     "agent-skill.md": {
       "url": "https://docs.typesafe.ai/agent-skill.md",
@@ -69,10 +69,10 @@
       "url": "https://docs.typesafe.ai/cookbooks.md",
       "title": "Cookbooks",
       "description": "End-to-end recipes that show TypeSafe in real problems, from a few questions to full pipelines.",
-      "raw_sha256": "b7d2b611551b8f5c3078b1521177e479c50bb4fcf905708a41b65938b4080324",
-      "clean_sha256": "550f7441f96c3fa6f40d683dde003fcd7b3351d3654b9727421fef2ac181f7a5",
-      "bytes": 6375,
-      "changed_at": "2026-10-11T12:57:57.896Z"
+      "raw_sha256": "e49ea32fec37ca43ce7b83108f5de02d9e2cd3de8a0cfb4fb0ca4ad02de65a85",
+      "clean_sha256": "377fbfe4cef3aa71b1cbfa65ffa1c054f041137b0e50767071ddf29a73589300",
+      "bytes": 6704,
+      "changed_at": "2026-10-13T14:18:14.244Z"
     },
     "cookbooks/autoformat.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoformat.md",
@@ -123,10 +123,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/classifying_rag_passages.md",
       "title": "Classifying RAG passages",
       "description": "Score each retrieved passage with one TypeSafe request, then decide in code which ones reach the answering model.",
-      "raw_sha256": "c0e8075add0790efb51ea298281c5fb1a2510a108012449c425e5af4a61c66e1",
-      "clean_sha256": "5e339c5468bb0cfae445d4abff05e6a2a8b309e49a1421a608b363aa4d80e937",
-      "bytes": 32505,
-      "changed_at": "2026-10-02T12:43:50.505Z"
+      "raw_sha256": "a1267a404b72d1b08df7648e28542f0c1689df217c05070333d8562eddc8627e",
+      "clean_sha256": "7c80be60040d96ae850ad1724c55a29baf4ea454cdba76422cd23842aa8d049c",
+      "bytes": 32706,
+      "changed_at": "2026-10-13T14:18:14.249Z"
     },
     "cookbooks/consistency_choice_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md",
@@ -159,10 +159,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/entity_alignment.md",
       "title": "Knowledge graph entity alignment",
       "description": "Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree.",
-      "raw_sha256": "4042aa07e351032b4ebf0799b25df9427845f7860afaebe8d8e387aa495b8db0",
-      "clean_sha256": "3ad5a02ab81bc10a19137cce6bdbc2a7d25eab70c56028dd8d57782bb002e5ce",
-      "bytes": 16676,
-      "changed_at": "2026-10-02T12:43:50.504Z"
+      "raw_sha256": "c5aa6dba0b497d9b95dcfaad4381501ab0c0a260a254481be50b80d5996d5145",
+      "clean_sha256": "9f63b94a9becd76a995c342d7a50f1be2bb524354906d39cb4036f67c3c3d9be",
+      "bytes": 16884,
+      "changed_at": "2026-10-13T14:18:14.260Z"
     },
     "cookbooks/function_calling.md": {
       "url": "https://docs.typesafe.ai/cookbooks/function_calling.md",
@@ -186,10 +186,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/llm_guardrails.md",
       "title": "Guardrails for LLMs",
       "description": "Screen every message going into and out of an LLM app with one TypeSafe request, thresholding hazard probabilities and severity to pass, review, block, or route.",
-      "raw_sha256": "aa9dbed8188e07606e74fc0866f0b23493d8f5f3cdea65a3edefcfb55881f43e",
-      "clean_sha256": "98de285d26243e433a80f6698bf20c6b3a987a8eb868f709bfb5b25daed333df",
-      "bytes": 22613,
-      "changed_at": "2026-10-02T12:43:50.507Z"
+      "raw_sha256": "798d204918d9a1aa0ec98b47ebb6147f86f9558fb8d12e1548fde3641c20dd25",
+      "clean_sha256": "7c8755e1473c84519445a2b4cb48f522bf8e2693f2d64ee4e11f34f5beebfb99",
+      "bytes": 22845,
+      "changed_at": "2026-10-13T14:18:14.247Z"
     },
     "cookbooks/parallel_questions.md": {
       "url": "https://docs.typesafe.ai/cookbooks/parallel_questions.md",
@@ -245,6 +245,15 @@
       "bytes": 39391,
       "changed_at": "2026-10-02T12:43:50.501Z"
     },
+    "cookbooks/twitch_chat_filter.md": {
+      "url": "https://docs.typesafe.ai/cookbooks/twitch_chat_filter.md",
+      "title": "Twitch chat filter",
+      "description": "Hide insults, spam, and unasked-for gameplay tips in Twitch chat, blur spoilers, and highlight questions. Each message gets one TypeSafe request containing multiple questions. Up to eight messages are processed concurrently, and the rules are defined in code.",
+      "raw_sha256": "5cb7a3d1d62eafccc48a0962f1fa9a2f3f4f6c6b5acac17b7ec51ff01d99d8fb",
+      "clean_sha256": "96793ef57d58c7701c40eb82d5286a19817d9dcf7ce8ee1205c63b139100fa5a",
+      "bytes": 24676,
+      "changed_at": "2026-10-13T14:18:14.254Z"
+    },
     "demos.md": {
       "url": "https://docs.typesafe.ai/demos.md",
       "title": "Demos",
@@ -267,10 +276,10 @@
       "url": "https://docs.typesafe.ai/introduction.md",
       "title": "Introduction",
       "description": "Jev is TypeSafe's flagship model and the first System One model. Send state and typed questions; get structured answers your code can use directly.",
-      "raw_sha256": "df1ed7ec91afcaa1d35f3a4f9d4b3ba33d2e816e472c64a1870f8ed885963c67",
-      "clean_sha256": "01a38f072a3792d878f5913321500833e204f912a33f9a28098a9c8d6e97701d",
-      "bytes": 4227,
-      "changed_at": "2026-10-02T12:43:50.454Z"
+      "raw_sha256": "8fa5dd1b6e7d05a10c6ff5fcdd443d08209d980ab028a8f3f230842f4f445314",
+      "clean_sha256": "4e45201b72d0d48a96059d6c1c289e4fde55ffe18d163a5b21f3974bd9402146",
+      "bytes": 4667,
+      "changed_at": "2026-10-13T14:18:14.223Z"
     },
     "introduction/coding-agents.md": {
       "url": "https://docs.typesafe.ai/introduction/coding-agents.md",
@@ -293,11 +302,11 @@
     "introduction/quickstart.md": {
       "url": "https://docs.typesafe.ai/introduction/quickstart.md",
       "title": "Quick start",
-      "description": "Prefer to just dive in? Here's everything you need to get started immediately.",
-      "raw_sha256": "ff4d66b466bc4a4748ae911fc51e1dc489ee363876263b4e271eb1f22b8cc9aa",
-      "clean_sha256": "24f5f7adb2b1288af953c1451b3adb9bdce1405b5a7b56baeef931a799961b78",
-      "bytes": 7166,
-      "changed_at": "2026-10-02T12:43:50.456Z"
+      "description": "Get up and running with Jev in 5 minutes.",
+      "raw_sha256": "2277c88ee1c78d20c7dcc18af40400651e37d0800c4e2ed47d904e3b71edea5a",
+      "clean_sha256": "21d109975338cf69dff0f623301e4a8d5df6677ace399966a338c45bb8fd7325",
+      "bytes": 15092,
+      "changed_at": "2026-10-13T14:18:14.225Z"
     },
     "legal.md": {
       "url": "https://docs.typesafe.ai/legal.md",
@@ -348,28 +357,28 @@
       "url": "https://docs.typesafe.ai/patterns/confidence-routing.md",
       "title": "Confidence-gated routing",
       "description": "Use confidence as a second axis. The answer tells you what; confidence tells you whether to act.",
-      "raw_sha256": "3d156395f69856e2cdadb9405a23fa3f08b5ecf4274c3cd81d844d8bbe860b0e",
-      "clean_sha256": "5675648424d272fae353d62d7ac4b677ae1259c760eb122d536d076e8d635131",
-      "bytes": 12281,
-      "changed_at": "2026-10-02T12:43:50.479Z"
+      "raw_sha256": "61906b78d3cbf2285849a3920844fb8bf26035609c94699bd6cc6b28a88047c9",
+      "clean_sha256": "af8e2660dc0b59983719c4d2953a909be6e4af643329a50f53f2a2083d36da9f",
+      "bytes": 12536,
+      "changed_at": "2026-10-13T14:18:14.242Z"
     },
     "patterns/fan-out.md": {
       "url": "https://docs.typesafe.ai/patterns/fan-out.md",
       "title": "Speculative fan-out",
       "description": "Send many questions in a single call, including speculative ones, and let your code decide what's relevant.",
-      "raw_sha256": "f78bd972e2f24338c03c99f2ab4c2d1c46666e27c085ee703b661a96b6da7543",
-      "clean_sha256": "4c78d6c09a5a06581f5a823dc7345bf0f8a6d5dd38ac5316fdc9d146dfa6b41f",
-      "bytes": 14080,
-      "changed_at": "2026-10-02T12:43:50.478Z"
+      "raw_sha256": "7a81fc0647792c2e2b13afef2c044e80756de16161cd0840473ee46276a06363",
+      "clean_sha256": "69b5ad6a5612bd85b2dc00f61e96225f37635a6b9843a4e525f9a69e5a0d8ec3",
+      "bytes": 14280,
+      "changed_at": "2026-10-13T14:18:14.241Z"
     },
     "patterns/intent-routing.md": {
       "url": "https://docs.typesafe.ai/patterns/intent-routing.md",
       "title": "Intent routing",
       "description": "Classify incoming requests and route each to the optimal handler: deterministic logic, a specialist LLM, or a human.",
-      "raw_sha256": "b4a6d42a9a1d90211bc1ab81539520157630e5d404c918360b26db53afc41bae",
-      "clean_sha256": "32a8ac19c87843344034887bb2c6d466a37642f33d3f460fc1df0c41688763af",
-      "bytes": 13557,
-      "changed_at": "2026-10-02T12:43:50.480Z"
+      "raw_sha256": "94aeca51a9c36b044876850ec8ac2b23dccff60506334ad1795796bb5fa760a6",
+      "clean_sha256": "7cef5050b6485884a744c7598f54a0255e03022f83444bad89b8c4344bd1ec08",
+      "bytes": 13804,
+      "changed_at": "2026-10-13T14:18:14.243Z"
     },
     "primitives.md": {
       "url": "https://docs.typesafe.ai/primitives.md",

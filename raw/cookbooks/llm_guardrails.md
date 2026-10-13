@@ -41,10 +41,15 @@ flowchart LR
     end
 
     G --> R{"<b>route()</b><br/>thresholds<br/>in your code"}
-    R --> P["<b>pass</b> &mdash; nothing fired"]
-    R --> V["<b>review</b> &mdash; a human looks"]
-    R --> B["<b>block</b> &mdash; refuse the turn"]
-    R --> U["<b>support</b> &mdash; a crisis path"]
+    R green_pass@--> P["<b>pass</b> &mdash; nothing fired"]
+    R blue_review@--> V["<b>review</b> &mdash; a human looks"]
+    R purple_block@--> B["<b>block</b> &mdash; refuse the turn"]
+    R orange_support@--> U["<b>support</b> &mdash; a crisis path"]
+    %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.
+    class P neonGreen
+    class V neonBlue
+    class B neonPurple
+    class U neonOrange
 ```
 
 By the end you will have a `guard()` function to put on either side of any LLM call. You

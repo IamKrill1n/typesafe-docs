@@ -57,12 +57,16 @@ flowchart LR
     end
 
     S --> R{"round to the<br/>nearest level"}
-    R -->|"different"| DROP["leave unlinked"]
-    R -->|"same"| M["assert sameAs"]
+    R purple_diff@-->|"different"| DROP["leave unlinked"]
+    R green_same@-->|"same"| M["assert sameAs"]
     %% the queue is last so the dotted edge below reaches it without crossing
     %% the arrow into `assert sameAs`
-    R -->|"related"| Q["curator queue"]
-    N -.->|"which field<br/>they disagree on"| Q
+    R blue_related@-->|"related"| Q["curator queue"]
+    N blue_field@-.->|"which field<br/>they disagree on"| Q
+    %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.
+    class M neonGreen
+    class Q neonBlue
+    class DROP neonPurple
 ```
 
 ## Setup

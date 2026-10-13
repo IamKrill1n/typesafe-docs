@@ -28,9 +28,13 @@ flowchart LR
 
     t -- "one request<br/>ticket + 5 questions" --> req
     req -- "one response: 5 answers<br/>decisions + probabilities" --> route{"<b>filter, combine, and route</b><br/>in your code"}
-    route -- "bug_report" --> eng["read severity + repro steps<br/>escalate or backlog"]
-    route -- "billing" --> bill["refund requested<br/>send to billing"]
-    route -- "feature_request" --> feat["log it<br/>sent to devs"]
+    route blue_bug@-- "bug_report" --> eng["read severity + repro steps<br/>escalate or backlog"]
+    route orange_bill@-- "billing" --> bill["refund requested<br/>send to billing"]
+    route purple_feat@-- "feature_request" --> feat["log it<br/>sent to devs"]
+    %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.
+    class eng neonBlue
+    class bill neonOrange
+    class feat neonPurple
 ```
 
 ### Step 1: speculative fan-out

@@ -252,10 +252,15 @@ flowchart LR
 
     command -- "one request<br/>command + intent<br/>question" --> req
     req -- "one response<br/>intent answer +<br/>confidence" --> gate{"<b>confidence high enough?</b><br/>your code"}
-    gate -- "below 0.6<br/>or other intent" --> human["send to a support agent"]
-    gate -- "check_balance<br/>at least 0.6" --> balance["show the balance"]
-    gate -- "approve_transfer<br/>0.6 to 0.85" --> confirm["ask the user to confirm"]
-    gate -- "approve_transfer<br/>above 0.85" --> approve["approve the transfer"]
+    gate red_low@-- "below 0.6<br/>or other intent" --> human["send to a support agent"]
+    gate orange_balance@-- "check_balance<br/>at least 0.6" --> balance["show the balance"]
+    gate yellow_confirm@-- "approve_transfer<br/>0.6 to 0.85" --> confirm["ask the user to confirm"]
+    gate green_approve@-- "approve_transfer<br/>above 0.85" --> approve["approve the transfer"]
+    %% Branch colours (styles.css): a confidence gradient, red -> orange -> yellow -> green.
+    class human neonRed
+    class balance neonOrange
+    class confirm neonYellow
+    class approve neonGreen
 ```
 
 ### Step 1: determine the user's intent

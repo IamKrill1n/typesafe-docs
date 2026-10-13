@@ -256,14 +256,17 @@ flowchart LR
 
     message -- "one request<br/>message + 2 questions" --> req
     req -- "one response<br/>2 answers with<br/>confidence" --> confidence{"<b>intent confidence<br/>≥ 0.5?</b><br/>your code"}
-    confidence -- "no" --> human["human agent"]
+    confidence blue_low@-- "no" --> human["human agent"]
     confidence -- "yes" --> route{"<b>which intent?</b><br/>"}
-    route -- "order_status" --> order["order lookup<br/>deterministic code"]
-    route -- "product_question" --> product["product specialist LLM"]
-    route -- "return_exchange" --> returns["returns specialist LLM"]
+    route green_order@-- "order_status" --> order["order lookup<br/>deterministic code"]
+    route green_product@-- "product_question" --> product["product specialist LLM"]
+    route green_returns@-- "return_exchange" --> returns["returns specialist LLM"]
     route -- "complaint" --> escalate{"<b>complexity > 1<br/>or its confidence < 0.5?</b><br/>"}
-    escalate -- "yes" --> human
-    escalate -- "no" --> complaint["complaint resolution LLM"]
+    escalate blue_complex@-- "yes" --> human
+    escalate green_complaint@-- "no" --> complaint["complaint resolution LLM"]
+    %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.
+    class order,product,returns,complaint neonGreen
+    class human neonBlue
 ```
 
 ### Step 1: classify intent and complexity

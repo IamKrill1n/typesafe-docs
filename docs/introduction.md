@@ -9,15 +9,26 @@ Jev is TypeSafe's flagship model and the first [System One model](./concepts/sys
 ```mermaid actions={true}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
 flowchart LR
-    input["state + questions"]
+    state["your data<br/>(the state)<br/>text or JSON"]
+    questions["your questions<br/>about the data<br/>(3 different types)"]
 
-    subgraph model["TypeSafe AI model"]
+    %% not a node - the point where the two lines join into one request
+    join@{ shape: f-circ }
+
+    subgraph model["TypeSafe AI model: Jev"]
         evaluate["evaluate each question<br/>against the state<br/>in parallel"]
     end
 
-    input -- "one request" --> model
+    state --- join
+    questions --- join
+    join -- "one request" --> model
     model -- "one response" --> answers["typed answers<br/>+ probabilities<br/>+ confidence<br/>(Choice and Score)"]
     answers --> code["<b>your code</b><br/>branch, sort, and route"]
+
+    %% fill:none drops mermaid's own dot; .junction in styles.css redraws
+    %% the shape as the three short arms that bridge the join.
+    classDef junction fill:none
+    class join junction
 ```
 
 ## TypeSafe primitives

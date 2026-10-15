@@ -406,11 +406,11 @@ Our API integration started returning 500 errors on every request about 20 minut
 
 ## Next Steps
 
-Composing the three primitives into larger systems takes some practice, even if you're used to LLMs. The [Machine Learning Primer](/introduction/machine-learning-primer) explains why Jev returns calibrated probabilities instead of generated text, and how that changes the way you build with it.
+Composing primitives into larger systems takes some practice, even if you're used to LLMs. The [Machine Learning Primer](/introduction/machine-learning-primer) explains why Jev returns calibrated probabilities instead of generated text, and how that changes the way you build with it.
 
 We’d also suggest taking a look at [Primitives](/primitives) and the [Use Case Map](/concepts/use-case-map).
 
-1. [Errors and retries](/sdk/python/usage#error-handling)
+1. [Errors and retries](/sdk/python/usage/basic#error-handling)
 2. [Parallel Questions](/cookbooks/parallel_questions)
 
 

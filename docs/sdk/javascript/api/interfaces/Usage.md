@@ -9,10 +9,10 @@ Token usage for a request.
 ### input_tokens
 
 ```ts
-readonly input_tokens: number;
+readonly input_tokens: number | null;
 ```
 
-Number of input tokens used.
+Number of input tokens used, or `null` when the API did not report it.
 
 ***
 
@@ -21,9 +21,9 @@ Number of input tokens used.
 ### output_tokens
 
 ```ts
-readonly output_tokens: number;
+readonly output_tokens: number | null;
 ```
 
-Number of output tokens used.
+Number of output tokens used, or `null` when the API did not report it.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

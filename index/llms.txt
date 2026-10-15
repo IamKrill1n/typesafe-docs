@@ -8,11 +8,13 @@
 - [Example use cases](https://docs.typesafe.ai/concepts/use-case-map.md): Explore TypeSafe use cases by industry and turn promising ideas into software workflows.
 - [System One](https://docs.typesafe.ai/concepts/system-one.md): System One models make fast, structured decisions for software. Jev is TypeSafe's flagship model and the first System One model.
 - [State](https://docs.typesafe.ai/concepts/state.md): What state is, how to structure it, and how to give a System One model the context it needs.
-- [Primitives (Questions)](https://docs.typesafe.ai/primitives.md): The three TypeSafe question types (Choice, Score, Noul), the typed answers they return, how to choose between them, and how to ask several at once.
+- [Primitives (Questions)](https://docs.typesafe.ai/primitives.md): The TypeSafe question types, the typed answers they return, how to choose between them, and how to ask several at once.
 - [Choice](https://docs.typesafe.ai/primitives/choice.md): A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.
 - [Score](https://docs.typesafe.ai/primitives/score.md): A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.
 - [Noul](https://docs.typesafe.ai/primitives/noul.md): A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.
+- [Box](https://docs.typesafe.ai/primitives/box.md): A Box is a System One question type for finding where something is in an image. The answer is the four edges of a box around it, as fractions of the image's width and height.
 - [Advanced: structure](https://docs.typesafe.ai/primitives/advanced.md): Instructions, Choice options, Score levels, and Noul criteria all accept JSON structure.
+- [Images](https://docs.typesafe.ai/images.md): Send images in a System One request: in the state, inside a question's instructions, and as the criteria a question is judged against.
 - [Confidence](https://docs.typesafe.ai/confidence.md): How TypeSafe reports certainty, how it differs from probability, and how to use it to control system behavior.
 - [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md): Design AI-powered software by keeping code in control and giving System One narrow, structured decisions.
 - [AI primer](https://docs.typesafe.ai/introduction/machine-learning-primer.md): Why TypeSafe trains decision models with calibrated probabilities instead of optimizing for generated text.
@@ -51,12 +53,14 @@
 - [Jev 1.13 jaggedness](https://docs.typesafe.ai/model-jaggedness/jev-1.13.md): Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
 - [Client SDKs](https://docs.typesafe.ai/sdk.md): Install a TypeSafe client SDK and use typed questions and answers in your application.
 - [TypeSafe Python SDK](https://docs.typesafe.ai/sdk/python.md): Install the TypeSafe Python SDK and get started with asynchronous or synchronous API calls.
-- [Usage](https://docs.typesafe.ai/sdk/python/usage.md): Guides and patterns for working with the TypeSafe Python SDK.
+- [Basic usage](https://docs.typesafe.ai/sdk/python/usage/basic.md): Guides and patterns for working with the TypeSafe Python SDK.
+- [Advanced usage](https://docs.typesafe.ai/sdk/python/usage/advanced.md): Performance tuning, logging, and forward compatibility for the TypeSafe Python SDK.
 - [Changelog](https://docs.typesafe.ai/sdk/python/changelog.md): Python clients for the TypeSafe AI API
 - [API reference](https://docs.typesafe.ai/sdk/python/api.md): Python clients for the TypeSafe AI API
 - [Asynchronous client](https://docs.typesafe.ai/sdk/python/api/clients/async.md): Use AsyncTypeSafeClient to ask questions, list models, and configure asynchronous TypeSafe API requests.
 - [Synchronous client](https://docs.typesafe.ai/sdk/python/api/clients/sync.md): Use TypeSafeClient to ask questions, list models, and configure synchronous TypeSafe API requests.
 - [Questions](https://docs.typesafe.ai/sdk/python/api/types/questions.md): Provide state and ask yes/no, choice, and score questions using objects or dictionaries.
+- [Assets](https://docs.typesafe.ai/sdk/python/api/types/assets.md): Attach assets to System One requests and reference them from request content.
 - [Answers and responses](https://docs.typesafe.ai/sdk/python/api/types/responses.md): Read answers, confidence scores, token usage, and available models returned by the TypeSafe API.
 - [Retries](https://docs.typesafe.ai/sdk/python/api/retries.md): Configure retries with RetryPolicy — attempt count, retryable statuses, backoff, and retry headers handling.
 - [Common types](https://docs.typesafe.ai/sdk/python/api/types/common.md): Common types for TypeSafe API SDK.
@@ -72,6 +76,7 @@
 - [Class: APIUserAbortError](https://docs.typesafe.ai/sdk/javascript/api/classes/APIUserAbortError.md)
 - [Class: AuthenticationError](https://docs.typesafe.ai/sdk/javascript/api/classes/AuthenticationError.md)
 - [Class: BadRequestError](https://docs.typesafe.ai/sdk/javascript/api/classes/BadRequestError.md)
+- [Class: Image](https://docs.typesafe.ai/sdk/javascript/api/classes/Image.md)
 - [Class: InternalServerError](https://docs.typesafe.ai/sdk/javascript/api/classes/InternalServerError.md)
 - [Class: NotFoundError](https://docs.typesafe.ai/sdk/javascript/api/classes/NotFoundError.md)
 - [Class: PermissionDeniedError](https://docs.typesafe.ai/sdk/javascript/api/classes/PermissionDeniedError.md)
@@ -79,6 +84,9 @@
 - [Class: TypeSafeClient](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeClient.md)
 - [Class: TypeSafeError](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError.md)
 - [Class: UnprocessableEntityError](https://docs.typesafe.ai/sdk/javascript/api/classes/UnprocessableEntityError.md)
+- [Interface: BoxCoordinates](https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxCoordinates.md)
+- [Interface: BoxQuestion](https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxQuestion.md)
+- [Interface: BoxResponse](https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxResponse.md)
 - [Interface: ChoiceQuestion<T>](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceQuestion.md)
 - [Interface: ChoiceResponse<T>](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceResponse.md)
 - [Interface: Logger](https://docs.typesafe.ai/sdk/javascript/api/interfaces/Logger.md)
@@ -92,12 +100,15 @@
 - [Interface: ScoreQuestion<T>](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreQuestion.md)
 - [Interface: ScoreResponse<T>](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreResponse.md)
 - [Interface: SystemOneRequest<Q>](https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequest.md)
-- [Interface: SystemOneRequestPayload](https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequestPayload.md)
 - [Interface: SystemOneResult<Q>](https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneResult.md)
+- [Interface: TextWithAssets](https://docs.typesafe.ai/sdk/javascript/api/interfaces/TextWithAssets.md)
 - [Interface: TypeSafeClientConfig](https://docs.typesafe.ai/sdk/javascript/api/interfaces/TypeSafeClientConfig.md)
 - [Interface: Usage](https://docs.typesafe.ai/sdk/javascript/api/interfaces/Usage.md)
 - [Interface: WithResponse<T>](https://docs.typesafe.ai/sdk/javascript/api/interfaces/WithResponse.md)
+- [Type Alias: Asset](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Asset.md)
 - [Type Alias: ChoiceCriteria](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ChoiceCriteria.md)
+- [Type Alias: Compression](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Compression.md)
+- [Type Alias: ContentValue](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ContentValue.md)
 - [Type Alias: Description](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Description.md)
 - [Type Alias: EntryType](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType.md)
 - [Type Alias: EnvVar](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EnvVar.md)
@@ -109,12 +120,16 @@
 - [Type Alias: ScoreCriteria](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreCriteria.md)
 - [Type Alias: ScoreLegend<T>](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreLegend.md)
 - [Type Alias: ScoreOf<T>](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreOf.md)
+- [Type Alias: SentContent<T>](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/SentContent.md)
 - [Variable: ENV](https://docs.typesafe.ai/sdk/javascript/api/variables/ENV.md)
 - [Variable: LOG_LEVELS](https://docs.typesafe.ai/sdk/javascript/api/variables/LOG_LEVELS.md)
+- [Variable: noul](https://docs.typesafe.ai/sdk/javascript/api/variables/noul.md)
+- [Variable: score](https://docs.typesafe.ai/sdk/javascript/api/variables/score.md)
 - [Variable: VERSION](https://docs.typesafe.ai/sdk/javascript/api/variables/VERSION.md)
+- [Variable: withAssets](https://docs.typesafe.ai/sdk/javascript/api/variables/withAssets.md)
+- [Function: box()](https://docs.typesafe.ai/sdk/javascript/api/functions/box.md)
 - [Function: choice()](https://docs.typesafe.ai/sdk/javascript/api/functions/choice.md)
-- [Function: noul()](https://docs.typesafe.ai/sdk/javascript/api/functions/noul.md)
-- [Function: score()](https://docs.typesafe.ai/sdk/javascript/api/functions/score.md)
+- [Function: image()](https://docs.typesafe.ai/sdk/javascript/api/functions/image.md)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

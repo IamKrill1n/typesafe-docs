@@ -32,7 +32,11 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
      </Tab>
    </Tabs>
 
-   Add the `http2` extra (`typesafe-sdk[http2]`) to enable [HTTP/2 support](/sdk/python/usage#http2).
+   Extras (for example, `typesafe-sdk[http2]`) supported:
+
+   * `http2`: enable [HTTP/2 support](/sdk/python/usage/advanced#http2)
+   * `pil`: send [Pillow images](/sdk/python/api/types/assets#typesafe_sdk.Image.from_pil)
+   * `zstd`: [compress request bodies](/sdk/python/usage/advanced#ensure-zstd-is-available) on Python 3.13 and earlier
 2. Set `TYPESAFE_API_KEY` in your environment (create it [here](https://console.typesafe.ai/))
 3. Call the System One API:
 
@@ -100,7 +104,13 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
   What's next
 </h2>
 
-Visit the [Usage guide](/sdk/python/usage) to learn more about patterns such as [typed responses](/sdk/python/usage#typed-system_one-responses), [model selection](/sdk/python/usage#choosing-a-model), [retries](/sdk/python/usage#retries), [HTTP/2](/sdk/python/usage#http2), or [error handling](/sdk/python/usage#error-handling).
+Visit the [Usage guide](/sdk/python/usage/basic) to learn how to:
+
+* [Choose a System One model](/sdk/python/usage/basic#choosing-a-model)
+* [Send media inputs](/sdk/python/usage/basic#attaching-media-assets)
+* [Use typed responses](/sdk/python/usage/basic#typed-system_one-responses)
+* [Configure retry policy](/sdk/python/usage/basic#retries)
+* [Optimize performance](/sdk/python/usage/advanced#performance)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -59,5 +59,31 @@ A JSON-like value. May be nested and contain `None`.
 
 Either a plain string or a mapping/sequence of [`JSONValue`](/sdk/python/api/types/common#typesafe_sdk.JSONValue) entries.
 
+<h2 id="typesafe_sdk.ContentValue">
+  typesafe\_sdk.ContentValue
+</h2>
+
+`module-attribute`
+
+<SdkSignature>
+  <span className="n">{"ContentValue"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType">{"TypeAliasType"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="s2">{"\"ContentValue\""}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="s2">{"\"str | int | float | bool | Sequence[ContentValue | None] | Mapping[str, ContentValue | None] | Asset\""}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
+</SdkSignature>
+
+A JSON-like value that may also hold [assets](/sdk/python/api/types/assets#typesafe_sdk.Asset). May be nested and contain `None`.
+
+<h2 id="typesafe_sdk.Content">
+  typesafe\_sdk.Content
+</h2>
+
+`module-attribute`
+
+<SdkSignature>
+  <span className="n">{"Content"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType">{"TypeAliasType"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="s2">{"\"Content\""}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="s2">{"\"str | Mapping[str, ContentValue | None] | Sequence[ContentValue | None] | Asset\""}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
+</SdkSignature>
+
+Text, an [asset](/sdk/python/api/types/assets#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](/sdk/python/api/types/common#typesafe_sdk.ContentValue) entries.
+
+Each asset is sent in the request's assets, with its unique reference in its place.
+
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

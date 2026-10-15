@@ -4,10 +4,6 @@ State and named questions for `systemOne`.
 
 Additional properties on a request variable are forwarded, including `null` values.
 
-## Extended by
-
-* [`SystemOneRequestPayload`](./SystemOneRequestPayload.md)
-
 ## Type Parameters
 
 ### Q
@@ -15,6 +11,24 @@ Additional properties on a request variable are forwarded, including `null` valu
 `Q` *extends* [`Questions`](./Questions.md) = [`Questions`](./Questions.md)
 
 ## Properties
+
+<a id="sdk-assets" />
+
+### assets?
+
+```ts
+optional assets?: Record<string, Image>;
+```
+
+References mapped to assets, for referencing assets by name.
+
+References are matched literally in string values within `state`, question instructions,
+or criteria. Use distinct delimiters (such as `<photo>`) to avoid matching ordinary text.
+Assets placed directly in `state` or question content, or in `withAssets` text, are sent
+without being listed here. Every name must appear in the request; otherwise the call
+rejects before sending.
+
+***
 
 <a id="sdk-model" />
 
@@ -45,9 +59,9 @@ Nonempty questions keyed by the names used to identify their answers.
 ### state
 
 ```ts
-state: EntryType;
+state: NonNullable<EntryType>;
 ```
 
-Text, a JSON object or array, or `null` to evaluate.
+Text, an asset, a JSON object, or an array to evaluate.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

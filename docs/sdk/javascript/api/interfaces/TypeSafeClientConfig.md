@@ -28,6 +28,21 @@ API root; falls back to `TYPESAFE_BASE_URL`, then `https://api.typesafe.ai`.
 
 ***
 
+<a id="sdk-compression" />
+
+### compression?
+
+```ts
+optional compression?: Compression;
+```
+
+Request body compression, sent as `Content-Encoding`. Default: `"zstd"` on runtimes that
+have it (Node.js 22.15 or newer), otherwise `false`. Bodies under 1 KiB are always sent
+uncompressed. Pass `false` to send all bodies uncompressed, for example to an API that
+doesn't accept compressed requests.
+
+***
+
 <a id="sdk-dangerouslyallowbrowser" />
 
 ### dangerouslyAllowBrowser?

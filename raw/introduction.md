@@ -8,13 +8,13 @@
 
 Large language models (LLMs) are designed to produce text for humans to read. When you need a model to make a judgment that your code will consume, that creates a mismatch: you are coercing a text-generation system into outputting structured decisions, then parsing the results back into something your code can depend on.
 
-Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). System One models are built to make fast, structured decisions that software can use directly. Jev evaluates typed *questions* against a *state* and returns structured results directly. No text generation, no parsing. You get typed values and probability distributions that your code can branch on, sort by, and route with. Choice and Score also return [confidence](/confidence), which your code can use to decide whether and how to act on an answer.
+Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). System One models are built to make fast, structured decisions that software can use directly. Jev evaluates typed *questions* against a *state* and returns structured results directly. No text generation, no parsing. You get typed values and probability distributions that your code can branch on, sort by, and route with. Some question types also return [confidence](/confidence), which your code can use to decide whether and how to act on an answer. Each question type's page lists what its answers include.
 
 ```mermaid actions={true} theme={null}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
 flowchart LR
     state["your data<br/>(the state)<br/>text or JSON"]
-    questions["your questions<br/>about the data<br/>(3 different types)"]
+    questions["your questions<br/>about the data<br/>(several types)"]
 
     %% not a node - the point where the two lines join into one request
     join@{ shape: f-circ }
@@ -26,7 +26,7 @@ flowchart LR
     state --- join
     questions --- join
     join -- "one request" --> model
-    model -- "one response" --> answers["typed answers<br/>+ probabilities<br/>+ confidence<br/>(Choice and Score)"]
+    model -- "one response" --> answers["typed answers<br/>+ probabilities<br/>+ confidence<br/>(some types)"]
     answers --> code["<b>your code</b><br/>branch, sort, and route"]
 
     %% fill:none drops mermaid's own dot; .junction in styles.css redraws
@@ -37,7 +37,7 @@ flowchart LR
 
 ## TypeSafe primitives
 
-TypeSafe exposes three *AI primitives*. Similar to software primitives, our AI primitives are modular, composable, structured, reliable, and fast. Each asks a different type of *question* and returns a different type of answer.
+TypeSafe exposes *AI primitives*. Similar to software primitives, our AI primitives are modular, composable, structured, reliable, and fast. Each asks a different type of *question* and returns a different type of answer.
 
 | Question type | Goal | Returns |
 | - | - | - |
@@ -45,7 +45,7 @@ TypeSafe exposes three *AI primitives*. Similar to software primitives, our AI p
 | [Score](/primitives/score) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
 | [Noul](/primitives/noul) | Is this statement true? | `noul` (0–1) |
 
-All three *question* types can be mixed in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
+Any mix of *question* types can go in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 
 ## Atomic questions, composed in code
 
@@ -59,7 +59,7 @@ For example, instead of "rate this startup pitch," ask separately about market s
 
 * [Quick Start](/introduction/quickstart) — Everything you need to get started immediately.
 * [AI Primer](/introduction/machine-learning-primer) — Why TypeSafe trains models for calibrated decisions instead of generated text.
-* [Primitives (Questions)](/primitives) — How to define questions, choose between Choice, Score, and Noul, and ask several at once.
+* [Primitives (Questions)](/primitives) — How to define questions, choose a question type, and ask several at once.
 * [Confidence](/confidence) — How TypeSafe reports certainty, and how to use it architecturally.
 * [Patterns](/patterns) — Common patterns for building systems with TypeSafe.
 

@@ -5,7 +5,7 @@
 # Type Alias: ScoreLegend<T>
 
 ```ts theme={null}
-type ScoreLegend<T> = { readonly [score in ScoreOf<T>]: T[score] };
+type ScoreLegend<T> = { readonly [score in ScoreOf<T>]: SentContent<T[score]> };
 ```
 
 Rubric descriptions keyed by score.

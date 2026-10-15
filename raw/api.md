@@ -51,9 +51,26 @@ The top-level shape of every request. Each entry in the `questions` map is a typ
 }
 ```
 
+## Request rules
+
+These rules apply to every request:
+
+| Rule | Limit |
+| - | - |
+| Body size | At most 32 MiB. Headers don't count. |
+| Encoding | UTF-8 JSON without a byte order mark (BOM). |
+| Nesting | At most 64 nested levels of objects and arrays in each of `state`, `instructions`, and `criteria`. Flatten deeper content. |
+| Numbers | Finite numbers only. `NaN`, `Infinity`, and numbers too large to represent, such as `1e400`, are rejected. Send identifiers and exact large quantities as strings. |
+
+A body over 32 MiB returns `413`; the other rules return `400`.
+
+### Compression
+
+You can compress the body with `Content-Encoding: gzip` (or `x-gzip`) or `zstd`. The SDKs compress request bodies of 1 KiB or more with zstd when the runtime supports it. Use one compression layer, and keep zstd's window at most 8 MiB. The 32 MiB limit applies to both the compressed and the decompressed body. An unsupported `Content-Encoding` or more than one layer returns `415`; a malformed compressed body returns `400`.
+
 ## Question types
 
-A `Question` is one of three types, set by its `type` field. All three share `type` and `instructions`; each adds its own `criteria`.
+A `Question`'s type is set by its `type` field. Every question has `type` and `instructions`, and most types also take `criteria`; each type's page says what it accepts.
 
 The `instructions` property can be a string, an object, or an array. You can break up a long question that has extra context, or data it needs to reference, into a structured object. Put the question in one field and the data in the others, and refer to the data fields by name in backticks, the same way you point a question at a nested `state` value:
 
@@ -220,7 +237,7 @@ One answer per question, returned under the same ids you provided.
 
 ## Answer types
 
-Every answer carries a `type` matching its question. Choice and Score answers also carry a `confidence` between 0 to 1, derived from the answer's probability distribution. See [Confidence](/confidence).
+Every answer carries a `type` matching its question. Some answer types also carry a `confidence` between 0 and 1; each type's page lists the fields its answers include. See [Confidence](/confidence).
 
 ### Noul answer
 
@@ -328,8 +345,11 @@ Errors use standard HTTP status codes with a JSON body describing what went wron
 
 | Status | Meaning |
 | - | - |
+| `400 Bad Request` | The body breaks a [request rule](#request-rules), such as invalid UTF-8, too much nesting, a number that isn't finite, or a malformed compressed body. With `max_tokens_exceeded`, the request is longer than the model's [context length](/models). |
 | `401 Unauthorized` | Missing or invalid API key. Check the `Authorization` header. |
-| `422 Unprocessable Entity` | The request body failed validation — for example a missing required field or a malformed question. The body details the offending field. |
+| `413 Payload Too Large` | The body is over 32 MiB. See [Request rules](#request-rules). |
+| `415 Unsupported Media Type` | The body uses an unsupported `Content-Encoding` or more than one compression layer. See [Compression](#compression). |
+| `422 Unprocessable Entity` | The request body failed validation, for example a missing required field or a malformed question. The body details the offending field. |
 | `429 Too Many Requests` | You have exceeded your rate limit. Back off and retry after a short delay. |
 | `529 Overloaded` | TypeSafe is temporarily overloaded. Retry after a short delay. |
 

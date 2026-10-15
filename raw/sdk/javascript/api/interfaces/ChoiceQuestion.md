@@ -22,7 +22,7 @@ A question that selects between named alternatives.
 criteria: T;
 ```
 
-Descriptions of the available outcomes.
+Descriptions of the available outcomes; at least one label is required.
 
 ***
 

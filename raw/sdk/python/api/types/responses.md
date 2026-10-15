@@ -49,7 +49,7 @@ Bases: `Response`
 
 Answers grouped by question type with model and usage metadata.
 
-See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
+See [System One](https://docs.typesafe.ai/go/system-one) for details.
 
 <Note>
   **Show JSON schema:**
@@ -58,8 +58,84 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
     ```json theme={null}
     {
       "$defs": {
+        "BoxAnswer": {
+          "description": "A located box with its confidence.",
+          "properties": {
+            "type": {
+              "const": "box",
+              "default": "box",
+              "title": "Type",
+              "type": "string"
+            },
+            "box": {
+              "$ref": "#/$defs/BoxCoordinates"
+            },
+            "confidence": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Confidence"
+            }
+          },
+          "required": [
+            "box",
+            "confidence"
+          ],
+          "title": "BoxAnswer",
+          "type": "object"
+        },
+        "BoxCoordinates": {
+          "description": "A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).",
+          "properties": {
+            "top": {
+              "description": "Top edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.2
+              ],
+              "title": "Top",
+              "type": "number"
+            },
+            "bottom": {
+              "description": "Bottom edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.66
+              ],
+              "title": "Bottom",
+              "type": "number"
+            },
+            "left": {
+              "description": "Left edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.19
+              ],
+              "title": "Left",
+              "type": "number"
+            },
+            "right": {
+              "description": "Right edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.68
+              ],
+              "title": "Right",
+              "type": "number"
+            }
+          },
+          "required": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "title": "BoxCoordinates",
+          "type": "object"
+        },
         "ChoiceAnswer": {
-          "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.",
+          "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/go/choice) for details.",
           "properties": {
             "type": {
               "const": "choice",
@@ -108,7 +184,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "type": "object"
         },
         "NoulAnswer": {
-          "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.",
+          "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
           "properties": {
             "type": {
               "const": "noul",
@@ -132,7 +208,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "type": "object"
         },
         "ScoreAnswer": {
-          "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/primitives/score) for details.",
+          "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/go/score) for details.",
           "properties": {
             "type": {
               "const": "score",
@@ -224,7 +300,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "type": "object"
         }
       },
-      "description": "Answers grouped by question type with model and usage metadata.\n\nSee [System One](https://docs.typesafe.ai/concepts/system-one) for details.",
+      "description": "Answers grouped by question type with model and usage metadata.\n\nSee [System One](https://docs.typesafe.ai/go/system-one) for details.",
       "properties": {
         "model": {
           "title": "Model",
@@ -237,6 +313,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "additionalProperties": {
             "discriminator": {
               "mapping": {
+                "box": "#/$defs/BoxAnswer",
                 "choice": "#/$defs/ChoiceAnswer",
                 "noul": "#/$defs/NoulAnswer",
                 "score": "#/$defs/ScoreAnswer"
@@ -252,6 +329,9 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
               },
               {
                 "$ref": "#/$defs/ScoreAnswer"
+              },
+              {
+                "$ref": "#/$defs/BoxAnswer"
               }
             ]
           },
@@ -606,6 +686,60 @@ Choice answers keyed by question name.
 
 Score answers keyed by question name.
 
+<h3 id="typesafe_sdk.SystemOneResponse.boxes">
+  boxes
+</h3>
+
+`cached` `property`
+
+<SdkSignature>
+  <span className="n">
+    {"boxes"}
+  </span>
+
+  <span className="p">
+    {":"}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="https://docs.python.org/3/builtins/stdtypes.html#dict">
+      {"dict"}
+    </a>
+  </span>
+
+  <span className="p">
+    {"["}
+  </span>
+
+  <span className="n">
+    <a href="https://docs.python.org/3/builtins/stdtypes.html#str">
+      {"str"}
+    </a>
+  </span>
+
+  <span className="p">
+    {","}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer">
+      {"BoxAnswer"}
+    </a>
+  </span>
+
+  <span className="p">
+    {"]"}
+  </span>
+
+  {"\n"}
+</SdkSignature>
+
+Box answers keyed by question name.
+
 <h2 id="typesafe_sdk.Usage">
   typesafe\_sdk.Usage
 </h2>
@@ -797,7 +931,7 @@ Bases: `wire.NoulAnswer`
 
 A yes/no answer.
 
-See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
 <Note>
   **Show JSON schema:**
@@ -805,7 +939,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
   <Accordion title="Details" id="sdk-disclosure-3">
     ```json theme={null}
     {
-      "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.",
+      "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
       "properties": {
         "type": {
           "const": "noul",
@@ -893,7 +1027,7 @@ Bases: `wire.ChoiceAnswer`
 
 A selected label and its probabilities.
 
-See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 
 <Note>
   **Show JSON schema:**
@@ -901,7 +1035,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
   <Accordion title="Details" id="sdk-disclosure-4">
     ```json theme={null}
     {
-      "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.",
+      "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/go/choice) for details.",
       "properties": {
         "type": {
           "const": "choice",
@@ -1098,7 +1232,7 @@ Bases: `wire.ScoreAnswer`
 
 An expected score with its rubric and probabilities.
 
-See the [score primitive](https://docs.typesafe.ai/primitives/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 
 <Note>
   **Show JSON schema:**
@@ -1106,7 +1240,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
   <Accordion title="Details" id="sdk-disclosure-5">
     ```json theme={null}
     {
-      "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/primitives/score) for details.",
+      "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/go/score) for details.",
       "properties": {
         "type": {
           "const": "score",
@@ -1318,6 +1452,396 @@ Rubric descriptions keyed by integer score.
 
 Probabilities keyed by integer score.
 
+<h2 id="typesafe_sdk.BoxAnswer">
+  typesafe\_sdk.BoxAnswer
+</h2>
+
+`pydantic-model`
+
+Bases: `wire.BoxAnswer`
+
+A located box with its confidence.
+
+<Note>
+  **Show JSON schema:**
+
+  <Accordion title="Details" id="sdk-disclosure-6">
+    ```json theme={null}
+    {
+      "$defs": {
+        "BoxCoordinates": {
+          "description": "A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).",
+          "properties": {
+            "top": {
+              "description": "Top edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.2
+              ],
+              "title": "Top",
+              "type": "number"
+            },
+            "bottom": {
+              "description": "Bottom edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.66
+              ],
+              "title": "Bottom",
+              "type": "number"
+            },
+            "left": {
+              "description": "Left edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.19
+              ],
+              "title": "Left",
+              "type": "number"
+            },
+            "right": {
+              "description": "Right edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.68
+              ],
+              "title": "Right",
+              "type": "number"
+            }
+          },
+          "required": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "title": "BoxCoordinates",
+          "type": "object"
+        }
+      },
+      "description": "A located box with its confidence.",
+      "properties": {
+        "type": {
+          "const": "box",
+          "default": "box",
+          "title": "Type",
+          "type": "string"
+        },
+        "box": {
+          "$ref": "#/$defs/BoxCoordinates"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confidence"
+        }
+      },
+      "required": [
+        "box",
+        "confidence"
+      ],
+      "title": "BoxAnswer",
+      "type": "object"
+    }
+    ```
+  </Accordion>
+</Note>
+
+Config:
+
+* `extra`: `ignore`
+* `frozen`: `True`
+* `strict`: `True`
+
+Fields:
+
+* `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['box']</code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer.box">box</a></code> (<code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates">BoxCoordinates</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer.confidence">confidence</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a> | None</code>)
+
+<h3 id="typesafe_sdk.BoxAnswer.model_config">
+  model\_config
+</h3>
+
+`class-attribute` `instance-attribute`
+
+```python theme={null}
+model_config = ConfigDict(
+    extra="ignore", frozen=True, strict=True
+)
+```
+
+<h3 id="typesafe_sdk.BoxAnswer.box">
+  box
+</h3>
+
+`pydantic-field`
+
+<SdkSignature>
+  <span className="n">
+    {"box"}
+  </span>
+
+  <span className="p">
+    {":"}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates">
+      {"BoxCoordinates"}
+    </a>
+  </span>
+
+  {"\n"}
+</SdkSignature>
+
+The box's edges as fractions of the image's height and width, from 0 to 1.
+
+<h3 id="typesafe_sdk.BoxAnswer.confidence">
+  confidence
+</h3>
+
+`pydantic-field`
+
+<SdkSignature>
+  <span className="n">
+    {"confidence"}
+  </span>
+
+  <span className="p">
+    {":"}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="https://docs.python.org/3/builtins/functions.html#float">
+      {"float"}
+    </a>
+  </span>
+
+  {" "}
+
+  <span className="o">
+    {"|"}
+  </span>
+
+  {" "}
+
+  <span className="kc">
+    {"None"}
+  </span>
+
+  {"\n"}
+</SdkSignature>
+
+Confidence for the box, from 0 to 1, or `None` when the model does not provide it.
+
+<h2 id="typesafe_sdk.BoxCoordinates">
+  typesafe\_sdk.BoxCoordinates
+</h2>
+
+`pydantic-model`
+
+Bases: `wire.BoxCoordinates`
+
+A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).
+
+<Note>
+  **Show JSON schema:**
+
+  <Accordion title="Details" id="sdk-disclosure-7">
+    ```json theme={null}
+    {
+      "description": "A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).",
+      "properties": {
+        "top": {
+          "description": "Top edge of the box, as a fraction of image height from the top (0-1).",
+          "examples": [
+            0.2
+          ],
+          "title": "Top",
+          "type": "number"
+        },
+        "bottom": {
+          "description": "Bottom edge of the box, as a fraction of image height from the top (0-1).",
+          "examples": [
+            0.66
+          ],
+          "title": "Bottom",
+          "type": "number"
+        },
+        "left": {
+          "description": "Left edge of the box, as a fraction of image width from the left (0-1).",
+          "examples": [
+            0.19
+          ],
+          "title": "Left",
+          "type": "number"
+        },
+        "right": {
+          "description": "Right edge of the box, as a fraction of image width from the left (0-1).",
+          "examples": [
+            0.68
+          ],
+          "title": "Right",
+          "type": "number"
+        }
+      },
+      "required": [
+        "top",
+        "bottom",
+        "left",
+        "right"
+      ],
+      "title": "BoxCoordinates",
+      "type": "object"
+    }
+    ```
+  </Accordion>
+</Note>
+
+Config:
+
+* `extra`: `ignore`
+* `frozen`: `True`
+* `strict`: `True`
+
+Fields:
+
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.top">top</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.bottom">bottom</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.left">left</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.right">right</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+
+<h3 id="typesafe_sdk.BoxCoordinates.top">
+  top
+</h3>
+
+`pydantic-field`
+
+<SdkSignature>
+  <span className="n">
+    {"top"}
+  </span>
+
+  <span className="p">
+    {":"}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="https://docs.python.org/3/builtins/functions.html#float">
+      {"float"}
+    </a>
+  </span>
+
+  {"\n"}
+</SdkSignature>
+
+Top edge of the box, as a fraction of image height from the top (0-1).
+
+<h3 id="typesafe_sdk.BoxCoordinates.bottom">
+  bottom
+</h3>
+
+`pydantic-field`
+
+<SdkSignature>
+  <span className="n">
+    {"bottom"}
+  </span>
+
+  <span className="p">
+    {":"}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="https://docs.python.org/3/builtins/functions.html#float">
+      {"float"}
+    </a>
+  </span>
+
+  {"\n"}
+</SdkSignature>
+
+Bottom edge of the box, as a fraction of image height from the top (0-1).
+
+<h3 id="typesafe_sdk.BoxCoordinates.left">
+  left
+</h3>
+
+`pydantic-field`
+
+<SdkSignature>
+  <span className="n">
+    {"left"}
+  </span>
+
+  <span className="p">
+    {":"}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="https://docs.python.org/3/builtins/functions.html#float">
+      {"float"}
+    </a>
+  </span>
+
+  {"\n"}
+</SdkSignature>
+
+Left edge of the box, as a fraction of image width from the left (0-1).
+
+<h3 id="typesafe_sdk.BoxCoordinates.right">
+  right
+</h3>
+
+`pydantic-field`
+
+<SdkSignature>
+  <span className="n">
+    {"right"}
+  </span>
+
+  <span className="p">
+    {":"}
+  </span>
+
+  {" "}
+
+  <span className="n">
+    <a href="https://docs.python.org/3/builtins/functions.html#float">
+      {"float"}
+    </a>
+  </span>
+
+  {"\n"}
+</SdkSignature>
+
+Right edge of the box, as a fraction of image width from the left (0-1).
+
+<h3 id="typesafe_sdk.BoxCoordinates.model_config">
+  model\_config
+</h3>
+
+`class-attribute` `instance-attribute`
+
+```python theme={null}
+model_config = ConfigDict(
+    extra="ignore", frozen=True, strict=True
+)
+```
+
 <h2 id="typesafe_sdk.Answer">
   typesafe\_sdk.Answer
 </h2>
@@ -1325,7 +1849,7 @@ Probabilities keyed by integer score.
 `module-attribute`
 
 <SdkSignature>
-  <span className="n">{"Answer"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/typing.html#typing.TypeAlias">{"TypeAlias"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/typing.html#typing.Annotated">{"Annotated"}</a></span><span className="p">{"["}</span>{"\n"}{"    "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.NoulAnswer">{"NoulAnswer"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.ChoiceAnswer">{"ChoiceAnswer"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.ScoreAnswer">{"ScoreAnswer"}</a></span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"Field"}</span><span className="p">{"("}</span><span className="n">{"discriminator"}</span><span className="o">{"="}</span><span className="s2">{"\"type\""}</span><span className="p">{"),"}</span>{"\n"}<span className="p">{"]"}</span>{"\n"}
+  <span className="n">{"Answer"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/typing.html#typing.TypeAlias">{"TypeAlias"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/typing.html#typing.Annotated">{"Annotated"}</a></span><span className="p">{"["}</span>{"\n"}{"    "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.NoulAnswer">{"NoulAnswer"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.ChoiceAnswer">{"ChoiceAnswer"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.ScoreAnswer">{"ScoreAnswer"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer">{"BoxAnswer"}</a></span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"Field"}</span><span className="p">{"("}</span><span className="n">{"discriminator"}</span><span className="o">{"="}</span><span className="s2">{"\"type\""}</span><span className="p">{"),"}</span>{"\n"}<span className="p">{"]"}</span>{"\n"}
 </SdkSignature>
 
 An answer to a single question, identified by its `type`.
@@ -1347,7 +1871,7 @@ The models available to the account.
 <Note>
   **Show JSON schema:**
 
-  <Accordion title="Details" id="sdk-disclosure-6">
+  <Accordion title="Details" id="sdk-disclosure-8">
     ```json theme={null}
     {
       "$defs": {
@@ -1517,7 +2041,7 @@ Metadata describing a single available model.
 <Note>
   **Show JSON schema:**
 
-  <Accordion title="Details" id="sdk-disclosure-7">
+  <Accordion title="Details" id="sdk-disclosure-9">
     ```json theme={null}
     {
       "description": "Metadata describing a single available model.",

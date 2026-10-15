@@ -33,7 +33,8 @@ Empty or whitespace-only environment values are ignored.
 
 #### Throws
 
-The API key is missing, configuration is invalid, or the runtime is unsupported.
+The API key is missing, configuration is invalid, the runtime is
+unsupported, or the runtime lacks the requested compression.
 
 ## Properties
 
@@ -46,6 +47,18 @@ readonly baseURL: string;
 ```
 
 API root with trailing slashes removed.
+
+***
+
+<a id="sdk-compression" />
+
+### compression
+
+```ts theme={null}
+readonly compression: Compression;
+```
+
+Request body compression, or `false` when bodies are sent uncompressed.
 
 ***
 
@@ -153,7 +166,7 @@ Timeout per attempt in milliseconds.
 systemOne<Q>(request, options?): APIPromise<SystemOneResult<Q>>;
 ```
 
-Answer named questions about text or structured state.
+Answer named questions about text, structured state, or assets.
 
 #### Type Parameters
 
@@ -167,7 +180,8 @@ Answer named questions about text or structured state.
 
 [`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest)\<`Q`>
 
-State, questions, and an optional model override.
+State, questions, an optional model override, and optional assets.
+Assets in `state`, question content, or `withAssets` text are sent under their references.
 
 ##### options?
 
@@ -179,11 +193,16 @@ Per-call timeout, retry, headers, and cancellation settings.
 
 [`APIPromise`](/sdk/javascript/api/classes/APIPromise)\<[`SystemOneResult`](/sdk/javascript/api/interfaces/SystemOneResult)\<`Q`>>
 
-Answers typed by question name and criteria, with model and token usage.
+Answers typed by question name and criteria, with model and token usage. Every
+failure below rejects the returned promise; the call itself doesn't throw.
 
 #### Throws
 
-Questions are empty, or score criteria are not a list of at least two entries.
+State is `null` or omitted, questions are empty, score criteria are not
+a list of at least two entries, choice criteria are not a nonempty map, a noul question has
+neither instructions nor a described outcome, a string holds the reference of an asset not
+attached to the request, a name in `assets` doesn't appear in the request, or a `Blob`
+asset can't be read.
 
 #### Throws
 

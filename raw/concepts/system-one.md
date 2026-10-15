@@ -46,7 +46,7 @@ For a refund request, your application can:
 
 Once you have seen the primitives in action, you can combine them into a larger system. Because System One models return typed, constrained outputs rather than free-form text, your code can inspect and combine its answers into predictable workflows. See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) for the full workflow.
 
-Answers from System One models also include [confidence](/confidence), so you can decide when to act and when to escalate to a person or a reasoning model.
+Answers to some question types also include [confidence](/confidence) (each type's page says which), so you can decide when to act and when to escalate to a person or a reasoning model.
 
 ## Call a System One model
 

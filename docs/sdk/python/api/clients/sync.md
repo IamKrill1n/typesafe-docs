@@ -22,6 +22,8 @@ TypeSafeClient(
     | None = None,
     http_client: httpx2.Client | None = None,
     base_url: str | None = None,
+    compression: Literal["zstd", False]
+    | None = None,
 )
 ```
 
@@ -60,12 +62,15 @@ Parameters:
 * **`base_url`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
 
   API root; may be set via the `TYPESAFE_BASE_URL` environment variable.
+* **`compression`** (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['zstd', False] | None</code>, default: `None` ) –
+
+  Request body compression: `"zstd"`, or `False` to send bodies uncompressed. Defaults to zstd [when available](../../usage/advanced.md#ensure-zstd-is-available).
 
 Raises:
 
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
 
-  The API key is missing or invalid, or the timeout is invalid.
+  The API key is missing or invalid, the timeout is invalid, or zstd compression is unavailable.
 * <code><a href="https://docs.python.org/3/builtins/exceptions.html#ValueError">ValueError</a></code> –
 
   Both `transport` and `http_client` are supplied.
@@ -109,6 +114,53 @@ with TypeSafeClient() as client:
     models = client.models.list()
 ```
 
+<h3 id="typesafe_sdk.TypeSafeClient.attach_assets">
+  attach_assets
+</h3>
+
+```python
+attach_assets(
+    assets: Asset | Sequence[Asset],
+) -> AbstractContextManager[None]
+```
+
+Attach assets to calls made within a `with` block, for referencing them inside strings.
+
+Until the block exits, calls on this client send each attached asset whose reference, `str(asset)`, appears in the request.
+
+> **Warning:**
+> **Warning**
+>
+> The SDK only recognizes references to assets that are attached, passed in `assets`, or placed directly in the content. A reference to any other asset is sent as plain text, without the asset.
+
+Parameters:
+
+* **`assets`** (<code><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a> | <a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>\[<a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>]</code>) –
+
+  An asset, or a sequence of them.
+
+Raises:
+
+* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+
+  An attached value is not an asset.
+
+Examples:
+
+```python
+from pathlib import Path
+
+from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+
+def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
+    photo = Image(path)
+    with client.attach_assets(photo):
+        return client.system_one(
+            state=f"Product: {photo}",
+            questions={"damaged": Noul(instructions="Is the product damaged?")},
+        )
+```
+
 <h3 id="typesafe_sdk.TypeSafeClient.system_one">
   system_one
 </h3>
@@ -117,10 +169,11 @@ with TypeSafeClient() as client:
 
 ```python
 system_one(
-    state: JSONContent,
+    state: Content,
     questions: Mapping[str, Question],
     *,
     model: str | None = None,
+    assets: Mapping[str, Asset] | None = None,
     retry: RetryPolicy | None = None,
     timeout: float
     | httpx2.Timeout
@@ -138,10 +191,11 @@ system_one(
 
 ```python
 system_one(
-    state: JSONContent,
+    state: Content,
     questions: Mapping[str, Question],
     *,
     model: str | None = None,
+    assets: Mapping[str, Asset] | None = None,
     retry: RetryPolicy | None = None,
     timeout: float
     | httpx2.Timeout
@@ -158,10 +212,11 @@ system_one(
 
 ```python
 system_one(
-    state: JSONContent,
+    state: Content,
     questions: Mapping[str, Question],
     *,
     model: str | None = None,
+    assets: Mapping[str, Asset] | None = None,
     retry: RetryPolicy | None = None,
     timeout: float
     | httpx2.Timeout
@@ -174,21 +229,24 @@ system_one(
 ) -> ResponseT
 ```
 
-Answer named questions about text or structured state.
+Answer named questions about text, structured state, or assets.
 
-See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
+See [System One](https://docs.typesafe.ai/go/system-one) for details.
 
 Parameters:
 
-* **`state`** (<code><a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a></code>) –
+* **`state`** (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a></code>) –
 
-  Text, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/concepts/state) for details.
+  Text, an asset, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/go/state) for details.
 * **`questions`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/questions#typesafe_sdk.Question">Question</a>]</code>) –
 
   Nonempty mapping of names to question objects or raw dictionaries.
 * **`model`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
 
   Model override; `None` inherits the client default.
+* **`assets`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>] | None</code>, default: `None` ) –
+
+  Assets keyed by the reference used for them in `state` or questions; see [Attaching media assets](../../usage/basic.md#attaching-media-assets).
 * **`retry`** (<code><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">RetryPolicy</a> | None</code>, default: `None` ) –
 
   An optional retry policy to override the client-level value for this call only.
@@ -200,7 +258,7 @@ Parameters:
   Additional request headers to set.
 * **`extra_body`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/common#typesafe_sdk.JSONValue">JSONValue</a> | None] | None</code>, default: `None` ) –
 
-  Additional top-level request-body fields, shallow-merged over the body after `state`, `model`, and `questions` are set. Merging is last-write-wins: a key that collides with `state`, `model`, or `questions` overrides it, and object values are replaced rather than deep-merged.
+  Additional top-level request-body fields, shallow-merged over the body after `state`, `model`, `questions`, and `assets` are set. Merging is last-write-wins: a key that collides with those fields overrides it, and object values are replaced rather than deep-merged.
 * **`response_model`** (<code><a href="https://docs.python.org/3/builtins/functions.html#type">type</a>\[ResponseT] | None</code>, default: `None` ) –
 
   Optional Pydantic `BaseModel` type describing the JSON response body, including any nested answer models.
@@ -218,7 +276,7 @@ Raises:
 
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
 
-  State is `None`, questions are empty, a score or choice question has no criteria, or a noul question has neither instructions nor criteria.
+  The request is invalid before it's sent, such as empty questions or an unreadable asset.
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code> –
 
   The server returns an unsuccessful HTTP response after any retries.

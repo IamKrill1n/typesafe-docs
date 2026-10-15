@@ -13,6 +13,7 @@
 * [APIUserAbortError](/sdk/javascript/api/classes/APIUserAbortError)
 * [AuthenticationError](/sdk/javascript/api/classes/AuthenticationError)
 * [BadRequestError](/sdk/javascript/api/classes/BadRequestError)
+* [Image](/sdk/javascript/api/classes/Image)
 * [InternalServerError](/sdk/javascript/api/classes/InternalServerError)
 * [NotFoundError](/sdk/javascript/api/classes/NotFoundError)
 * [PermissionDeniedError](/sdk/javascript/api/classes/PermissionDeniedError)
@@ -23,6 +24,9 @@
 
 ## Interfaces
 
+* [BoxCoordinates](/sdk/javascript/api/interfaces/BoxCoordinates)
+* [BoxQuestion](/sdk/javascript/api/interfaces/BoxQuestion)
+* [BoxResponse](/sdk/javascript/api/interfaces/BoxResponse)
 * [ChoiceQuestion](/sdk/javascript/api/interfaces/ChoiceQuestion)
 * [ChoiceResponse](/sdk/javascript/api/interfaces/ChoiceResponse)
 * [Logger](/sdk/javascript/api/interfaces/Logger)
@@ -36,15 +40,18 @@
 * [ScoreQuestion](/sdk/javascript/api/interfaces/ScoreQuestion)
 * [ScoreResponse](/sdk/javascript/api/interfaces/ScoreResponse)
 * [SystemOneRequest](/sdk/javascript/api/interfaces/SystemOneRequest)
-* [SystemOneRequestPayload](/sdk/javascript/api/interfaces/SystemOneRequestPayload)
 * [SystemOneResult](/sdk/javascript/api/interfaces/SystemOneResult)
+* [TextWithAssets](/sdk/javascript/api/interfaces/TextWithAssets)
 * [TypeSafeClientConfig](/sdk/javascript/api/interfaces/TypeSafeClientConfig)
 * [Usage](/sdk/javascript/api/interfaces/Usage)
 * [WithResponse](/sdk/javascript/api/interfaces/WithResponse)
 
 ## Type Aliases
 
+* [Asset](/sdk/javascript/api/type-aliases/Asset)
 * [ChoiceCriteria](/sdk/javascript/api/type-aliases/ChoiceCriteria)
+* [Compression](/sdk/javascript/api/type-aliases/Compression)
+* [ContentValue](/sdk/javascript/api/type-aliases/ContentValue)
 * [Description](/sdk/javascript/api/type-aliases/Description)
 * [EntryType](/sdk/javascript/api/type-aliases/EntryType)
 * [EnvVar](/sdk/javascript/api/type-aliases/EnvVar)
@@ -56,18 +63,22 @@
 * [ScoreCriteria](/sdk/javascript/api/type-aliases/ScoreCriteria)
 * [ScoreLegend](/sdk/javascript/api/type-aliases/ScoreLegend)
 * [ScoreOf](/sdk/javascript/api/type-aliases/ScoreOf)
+* [SentContent](/sdk/javascript/api/type-aliases/SentContent)
 
 ## Variables
 
 * [ENV](/sdk/javascript/api/variables/ENV)
 * [LOG\_LEVELS](/sdk/javascript/api/variables/LOG_LEVELS)
+* [noul](/sdk/javascript/api/variables/noul)
+* [score](/sdk/javascript/api/variables/score)
 * [VERSION](/sdk/javascript/api/variables/VERSION)
+* [withAssets](/sdk/javascript/api/variables/withAssets)
 
 ## Functions
 
+* [box](/sdk/javascript/api/functions/box)
 * [choice](/sdk/javascript/api/functions/choice)
-* [noul](/sdk/javascript/api/functions/noul)
-* [score](/sdk/javascript/api/functions/score)
+* [image](/sdk/javascript/api/functions/image)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

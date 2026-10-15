@@ -4,18 +4,49 @@
 
 <a id="changelog" />
 
-<h2 id="v073-2026-10-09">
-  v0.7.3 (2026-10-09)
+<h2 id="v075-2026-10-14">
+  v0.7.5 (2026-10-14)
+</h2>
+
+<h3 id="documentation">
+  Documentation
+</h3>
+
+* split usage guide into Basic and Advanced pages
+* add docs for working with images
+* add docs for `Box` type
+
+<h3 id="features">
+  Features
+</h3>
+
+* enable request body compression with `zstd` by default (non-official APIs may not support this immediately)
+* support `Image` assets from raw bytes, file paths, base64 strings, and PIL objects
+* support `Box` questions and answers
+* reference assets in text with `attach_assets`
+
+<h2 id="v074-2026-10-09">
+  v0.7.4 (2026-10-09)
 </h2>
 
 <h3 id="bug-fixes">
   Bug fixes
 </h3>
 
+* serialize non-finite numbers as strings instead of invalid JSON tokens
+
+<h2 id="v073-2026-10-09">
+  v0.7.3 (2026-10-09)
+</h2>
+
+<h3 id="bug-fixes_1">
+  Bug fixes
+</h3>
+
 * prevent async client crashes during concurrent TLS connections with `truststore<=0.10.4`
 * add more request validation checks
 
-<h3 id="documentation">
+<h3 id="documentation_1">
   Documentation
 </h3>
 
@@ -37,7 +68,7 @@
 
 * add `http2` extra to `typesafe-sdk` package
 
-<h3 id="documentation_1">
+<h3 id="documentation_2">
   Documentation
 </h3>
 
@@ -47,13 +78,13 @@
   v0.7.1 (2026-09-21)
 </h2>
 
-<h3 id="bug-fixes_1">
+<h3 id="bug-fixes_2">
   Bug fixes
 </h3>
 
 * validate the API key early and exclude the value from logged exceptions
 
-<h3 id="documentation_2">
+<h3 id="documentation_3">
   Documentation
 </h3>
 
@@ -69,13 +100,13 @@
 
 * ser/de library has been changed from `msgspec` to `pydantic`
 
-<h3 id="bug-fixes_2">
+<h3 id="bug-fixes_3">
   Bug fixes
 </h3>
 
 * `str` subclasses are now correctly serialized as strings instead of lists of characters
 
-<h3 id="features">
+<h3 id="features_1">
   Features
 </h3>
 
@@ -91,21 +122,21 @@
 
 * accept `Score.criteria` as an ordered sequence instead of a dictionary keyed by integers
 
-<h3 id="features_1">
+<h3 id="features_2">
   Features
 </h3>
 
 * improve type annotations on SDK inputs to accept abstract types like `Mapping` and `Sequence`
 * improve error messages to include http details and metadata
 
-<h3 id="bug-fixes_3">
+<h3 id="bug-fixes_4">
   Bug fixes
 </h3>
 
 * handle invalid values in `RetryPolicy`
 * make exceptions and responses picklable
 
-<h3 id="documentation_3">
+<h3 id="documentation_4">
   Documentation
 </h3>
 
@@ -115,6 +146,6 @@
   v0.5.7 (2026-09-14)
 </h2>
 
-This is the initial public release of TypeSafe Python SDK. Learn more in the [documentation](https://docs.typesafe.ai/sdk/python).
+This is the initial public release of TypeSafe Python SDK. Learn more in the [documentation](https://docs.typesafe.ai/go/python-sdk).
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

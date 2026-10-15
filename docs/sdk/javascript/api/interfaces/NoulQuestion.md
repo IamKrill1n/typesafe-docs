@@ -17,7 +17,7 @@ optional criteria?:
   | null;
 ```
 
-Optional descriptions of the yes and no outcomes.
+Descriptions of the yes and no outcomes; at least one is required when `instructions` is omitted or `null`.
 
 #### Union Members
 
@@ -60,7 +60,7 @@ Description of the yes outcome.
 optional instructions?: EntryType;
 ```
 
-The question as text, a JSON object, or an array; optional or `null`.
+The question as text, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 ***
 

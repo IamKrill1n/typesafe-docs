@@ -4,7 +4,8 @@
 type Question = 
   | NoulQuestion
   | ScoreQuestion
-  | ChoiceQuestion;
+  | ChoiceQuestion
+  | BoxQuestion;
 ```
 
 A question identified by its `type` field.

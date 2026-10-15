@@ -1,8 +1,8 @@
 # Primitives (Questions)
 
-> The three TypeSafe question types (Choice, Score, Noul), the typed answers they return, how to choose between them, and how to ask several at once.
+> The TypeSafe question types, the typed answers they return, how to choose between them, and how to ask several at once.
 
-TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](./concepts/system-one.md) to make about a [state](./concepts/state.md), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. There are three question types, each returning a different shape of answer.
+TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](./concepts/system-one.md) to make about a [state](./concepts/state.md), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. Each question type returns a different shape of answer.
 
 | Type | What it answers | Returns |
 | - | - | - |
@@ -74,7 +74,7 @@ Two properties of these answers make them composable:
 * **Every answer is constrained to the options you supplied.** The model returns a probability distribution over your options or levels, never a value outside them. Your code never has to recover a value from generated prose.
 * **Every answer is independent.** One question's answer is not hidden context for another. You can add or remove questions without changing the others' results.
 
-[Confidence](./confidence.md) explains how `confidence` is derived from `probabilities` and how to use it to decide when to act automatically and when to escalate to a person.
+Some question types also return `confidence`; each type's page says whether its answers include it. [Confidence](./confidence.md) explains how to use it to decide when to act automatically and when to escalate to a person.
 
 ## Reference specific fields
 
@@ -211,11 +211,17 @@ Ask every question your code might need, including ones whose answer only matter
 > **Tip:**
 > Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](./agent-skill.md#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
 
+### How many questions you can ask
+
+There is no limit on the number of questions in a request. What limits a request is its size: it has to fit the model's [per-request context and per-question context](./models.md#context-length).
+
+Questions are often short compared with the `state`, in which case the `state` takes up most of both. If your questions don't all fit in one request, one option is to spread them across several requests with the same `state`.
+
 ### Split a complex judgment into several questions
 
 A judgment that depends on several things is best split into one question per thing. Combine the answers in your code, giving each a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Adding questions barely changes the response time because they run in parallel within one request. The split costs a few extra question tokens.
 
-For example, ticket priority might be built from three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with. The Score page walks through this request and the code that normalizes and weights the answers in [Splitting a complex judgment into several Scores](./primitives/score.md#splitting-a-complex-judgment-into-several-scores). This technique is called the [Composite scoring](./patterns/composite-scoring.md) pattern.
+For example, ticket priority might be built from three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with. The Score page walks through this request and the code that normalizes and weights the answers in [Splitting a complex judgment into several Scores](./primitives/score.md#splitting-a-complex-judgment-into-several-score-questions). This technique is called the [Composite scoring](./patterns/composite-scoring.md) pattern.
 
 ### When one question depends on another
 

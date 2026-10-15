@@ -98,7 +98,7 @@ Accuracy falls as the state grows with content unrelated to the decision. Unrela
 **Instead:** retrieve and filter in code first, and send only the fields the question needs. When it's not possible to filter in state, you can use a [Noul](/primitives/noul) to filter for relevance. The [classifying RAG passages cookbook](/cookbooks/classifying_rag_passages) has a worked example.
 
 <Note>
-  **Context length limit.** `jev-1.13` has a bounded context window. See the [Models](/models) page for the exact token limits.
+  **Context length limit.** The `state` counts once against each of `jev-1.13`'s context limits, the [per-request context and the per-question context](/models#context-length).
 </Note>
 
 ## Adversarial content

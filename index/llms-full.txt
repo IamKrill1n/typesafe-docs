@@ -3,7 +3,7 @@ Source: https://docs.typesafe.ai/agent-skill
 
 Drop-in skill for Claude Code, Codex, and other agent environments.
 
-The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the three question [types](/primitives), the architectural [patterns](/patterns), and best practices for structuring evaluations.
+The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the question [types](/primitives), the architectural [patterns](/patterns), and best practices for structuring evaluations.
 
 ## Installation
 
@@ -157,9 +157,26 @@ The top-level shape of every request. Each entry in the `questions` map is a typ
 }
 ```
 
+## Request rules
+
+These rules apply to every request:
+
+| Rule | Limit |
+| - | - |
+| Body size | At most 32 MiB. Headers don't count. |
+| Encoding | UTF-8 JSON without a byte order mark (BOM). |
+| Nesting | At most 64 nested levels of objects and arrays in each of `state`, `instructions`, and `criteria`. Flatten deeper content. |
+| Numbers | Finite numbers only. `NaN`, `Infinity`, and numbers too large to represent, such as `1e400`, are rejected. Send identifiers and exact large quantities as strings. |
+
+A body over 32 MiB returns `413`; the other rules return `400`.
+
+### Compression
+
+You can compress the body with `Content-Encoding: gzip` (or `x-gzip`) or `zstd`. The SDKs compress request bodies of 1 KiB or more with zstd when the runtime supports it. Use one compression layer, and keep zstd's window at most 8 MiB. The 32 MiB limit applies to both the compressed and the decompressed body. An unsupported `Content-Encoding` or more than one layer returns `415`; a malformed compressed body returns `400`.
+
 ## Question types
 
-A `Question` is one of three types, set by its `type` field. All three share `type` and `instructions`; each adds its own `criteria`.
+A `Question`'s type is set by its `type` field. Every question has `type` and `instructions`, and most types also take `criteria`; each type's page says what it accepts.
 
 The `instructions` property can be a string, an object, or an array. You can break up a long question that has extra context, or data it needs to reference, into a structured object. Put the question in one field and the data in the others, and refer to the data fields by name in backticks, the same way you point a question at a nested `state` value:
 
@@ -326,7 +343,7 @@ One answer per question, returned under the same ids you provided.
 
 ## Answer types
 
-Every answer carries a `type` matching its question. Choice and Score answers also carry a `confidence` between 0 to 1, derived from the answer's probability distribution. See [Confidence](/confidence).
+Every answer carries a `type` matching its question. Some answer types also carry a `confidence` between 0 and 1; each type's page lists the fields its answers include. See [Confidence](/confidence).
 
 ### Noul answer
 
@@ -434,8 +451,11 @@ Errors use standard HTTP status codes with a JSON body describing what went wron
 
 | Status | Meaning |
 | - | - |
+| `400 Bad Request` | The body breaks a [request rule](#request-rules), such as invalid UTF-8, too much nesting, a number that isn't finite, or a malformed compressed body. With `max_tokens_exceeded`, the request is longer than the model's [context length](/models). |
 | `401 Unauthorized` | Missing or invalid API key. Check the `Authorization` header. |
-| `422 Unprocessable Entity` | The request body failed validation — for example a missing required field or a malformed question. The body details the offending field. |
+| `413 Payload Too Large` | The body is over 32 MiB. See [Request rules](#request-rules). |
+| `415 Unsupported Media Type` | The body uses an unsupported `Content-Encoding` or more than one compression layer. See [Compression](#compression). |
+| `422 Unprocessable Entity` | The request body failed validation, for example a missing required field or a malformed question. The body details the offending field. |
 | `429 Too Many Requests` | You have exceeded your rate limit. Back off and retry after a short delay. |
 | `529 Overloaded` | TypeSafe is temporarily overloaded. Retry after a short delay. |
 
@@ -905,7 +925,7 @@ State can also be a JSON object or array containing related context, examples, a
 Use an object for most requests so each part of the state has a descriptive name and its relationships remain clear. A string is suitable when the use case is simple and requires only one piece of text.
 
 <Note>
-  Jev accepts text only. State must be a string, JSON object, or array of text values. Images, audio, and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
+  State is a string, JSON object, or array. Audio and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
 </Note>
 
 ```json title="A support conversation as state" theme={null}
@@ -984,7 +1004,7 @@ For a refund request, your application can:
 
 Once you have seen the primitives in action, you can combine them into a larger system. Because System One models return typed, constrained outputs rather than free-form text, your code can inspect and combine its answers into predictable workflows. See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) for the full workflow.
 
-Answers from System One models also include [confidence](/confidence), so you can decide when to act and when to escalate to a person or a reasoning model.
+Answers to some question types also include [confidence](/confidence) (each type's page says which), so you can decide when to act and when to escalate to a person or a reasoning model.
 
 ## Call a System One model
 
@@ -13545,6 +13565,393 @@ This demo also shows how TypeSafe can be paired with LLMs to handle a system tha
 This demo is a simple Vite/React single-page app that uses the TypeSafe API to evaluate user requests. The full source code will be available on GitHub at release. Its README includes instructions for running the demo locally and an overview of which bits of the source code are responsible for which parts of the demo.
 
 
+# Images
+Source: https://docs.typesafe.ai/images
+
+Send images in a System One request: in the state, inside a question's instructions, and as the criteria a question is judged against.
+
+<Callout icon="flask-conical">
+  **Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
+
+  To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](/images#turning-on-images).
+</Callout>
+
+An image can go anywhere text can go in a System One request: in the `state`, in a question's `instructions`, and in its `criteria`. Every question type accepts images, and the [Box](/primitives/box) question type returns where something is in an image.
+
+<Frame>
+  <img alt="A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs_up option in a Choice question's criteria. The images themselves are listed in the request's assets." />
+
+  <img alt="A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs_up option in a Choice question's criteria. The images themselves are listed in the request's assets." />
+</Frame>
+
+## Turning on images
+
+Images and [Box](/primitives/box) questions are off by default. To use them, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. The examples under [Uploading images](#uploading-images) show how. The other examples on this page show only the request body.
+
+## Sending images in a request
+
+Each image is listed once, in the request's top-level `assets` map. Its key in that map is a reference string. Write the reference wherever the image belongs, as a whole string value or inside a longer string, and the model receives the image in its place.
+
+This request sends a photo of a found dog as the state, and puts the photo from a lost-dog poster directly into one question:
+
+```json theme={null}
+{
+  "model": "jev-latest",
+  "state": {
+    "photo": "a3f1c2e8-found"
+  },
+  "assets": {
+    "a3f1c2e8-found": {"type": "image", "format": "jpg", "data_base64": "/9j/4AAQSkZJRg..."},
+    "77b0d4a1-poster": {"type": "image", "format": "jpg", "data_base64": "/9j/4AAQSkZJRg..."}
+  },
+  "questions": {
+    "same_dog": {
+      "type": "noul",
+      "instructions": "Is the dog in `photo` the same dog as in this picture: 77b0d4a1-poster?"
+    },
+    "has_collar": {
+      "type": "noul",
+      "instructions": "Is the dog in `photo` wearing a collar?"
+    },
+    "coat": {
+      "type": "choice",
+      "instructions": "What is the coat of the dog in `photo` like?",
+      "criteria": {
+        "short": "Short and smooth.",
+        "long": "Long or feathered.",
+        "curly": "Curly or wiry."
+      }
+    }
+  }
+}
+```
+
+Questions can refer to an image in the state by name or path in backticks, the same way they refer to any other field (see [Reference specific fields](/primitives#reference-specific-fields)). An image that only one question uses goes directly in that question's `instructions` or `criteria`, as the poster photo does above.
+
+Jev 1.13 and Jev 1.14 both accept images. [Box](/primitives/box) questions need Jev 1.14.
+
+### Asset fields
+
+<ParamField type="map<string, Asset>">
+  The images in the request, keyed by reference string. Every reference must appear somewhere in the `state`, `instructions`, or `criteria`.
+
+  <Expandable title="Asset properties">
+    <ParamField type="&#x22;image&#x22;">
+      The kind of asset. Optional. If you send it, it must be `"image"`.
+    </ParamField>
+
+    <ParamField type="string">
+      In a multipart request, the name of the file part that holds the image. See [Uploading images](#uploading-images).
+    </ParamField>
+
+    <ParamField type="string">
+      The image file, base64-encoded. Required unless `part` is set. Use the standard base64 alphabet with `=` padding, no line breaks or other whitespace, and no `data:` prefix.
+    </ParamField>
+
+    <ParamField type="&#x22;png&#x22; | &#x22;jpg&#x22; | &#x22;jpeg&#x22;">
+      The image's format, in lowercase. Required with `data_base64`. Optional with `part`. `"jpeg"` is another name for `"jpg"`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+Send each image one way, with `part` or `data_base64`. If an asset has both, the API uses `part`.
+
+### References
+
+References are matched as plain text anywhere in the request's strings, so a reference works mid-sentence as well as as a whole value. A short reference such as `cat` could also match inside `category`. Use references that can't occur in your text by accident. A new UUID for each image in each request is the safest choice.
+
+* **Every asset must be referenced.** A request with an asset that is not referenced anywhere returns `400`.
+* **Whole values match first.** A string that is exactly a reference becomes that image. In longer strings, references are replaced from left to right, and matches never overlap.
+* **Each use adds the image again.** The file is uploaded once, but every place its reference appears adds another copy of the image to what the model reads, and every copy counts toward the [expanded request limit](#limits).
+* **Object keys are not replaced.** A Choice option name, a question ID, or any other object key stays text. To define a Choice option with a picture, put the reference in the option's description, as in [Criteria](#criteria).
+* **Answers contain the reference, not the image,** wherever they repeat your criteria, such as a Score's `legend`.
+* **Keep keys short.** Each reference can be at most 1,024 bytes of UTF-8, and all references in a request together at most 65,536 bytes. These limits count bytes, not characters. A reference can't be empty or only whitespace.
+
+The Python and JavaScript SDKs create references for you. See [Uploading images](#uploading-images).
+
+## Uploading images
+
+With the latest Python or JavaScript SDK, put an image object anywhere text can go. The SDK creates a reference for it and uploads the file. This example sends one doorbell photo as the state and asks two questions about it:
+
+<CodeGroup>
+  ```python Python theme={null}
+  from pathlib import Path
+
+  from typesafe_sdk import Choice, Image, Noul, TypeSafeClient
+
+  with TypeSafeClient() as client:
+      result = client.system_one(
+          state={"door": Image(Path("door-camera.jpg"))},
+          questions={
+              "person_present": Noul(instructions="Is there a person in `door`?"),
+              "carrying": Choice(
+                  instructions="What is the person in `door` carrying?",
+                  criteria={
+                      "package": "A box or parcel.",
+                      "bag": "A bag of groceries or shopping.",
+                      "nothing": "Empty hands.",
+                  },
+              ),
+          },
+          extra_headers={"TypeSafe-Danger-Zone-Images": "true"},
+      )
+      print(result.answers)
+  ```
+
+  ```typescript JavaScript theme={null}
+  import { openAsBlob } from "node:fs";
+  import { choice, image, noul, TypeSafeClient } from "@typesafe-ai/sdk";
+
+  const client = new TypeSafeClient();
+  const door = image(await openAsBlob("door-camera.jpg"));
+
+  const { answers } = await client.systemOne(
+    {
+      state: { door },
+      questions: {
+        person_present: noul("Is there a person in `door`?"),
+        carrying: choice("What is the person in `door` carrying?", {
+          package: "A box or parcel.",
+          bag: "A bag of groceries or shopping.",
+          nothing: "Empty hands.",
+        }),
+      },
+    },
+    { headers: { "TypeSafe-Danger-Zone-Images": "true" } },
+  );
+  console.log(answers);
+  ```
+</CodeGroup>
+
+To put an image inside a sentence, or to choose your own references, see the [SDK guides](/sdk).
+
+### Over HTTP
+
+Without an SDK, send each image as a file part in a `multipart/form-data` request. Multipart is the better choice: it sends the file as it is, while base64 makes each image about a third larger, and that extra size counts toward the 32 MiB [request body limit](#limits). Base64-encode images into the JSON only when you can't send multipart.
+
+<Tabs>
+  <Tab title="Multipart (recommended)">
+    Send the JSON body as the first part, named `request`, with content type `application/json`. Send each image as its own file part, and set that image's `part` in `assets` to the file part's name:
+
+    ```bash theme={null}
+    curl https://api.typesafe.ai/v1/systemone \
+      -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+      -H "TypeSafe-Danger-Zone-Images: true" \
+      -F 'request={
+        "model": "jev-latest",
+        "state": {"door": "a3f1c2e8-door"},
+        "assets": {"a3f1c2e8-door": {"type": "image", "part": "door-photo"}},
+        "questions": {
+          "person_present": {"type": "noul", "instructions": "Is there a person in `door`?"}
+        }
+      };type=application/json' \
+      -F 'door-photo=@door-camera.jpg;type=image/jpeg'
+    ```
+
+    The rules for multipart requests:
+
+    * The first part is named `request` and holds the JSON body.
+    * Part names are unique and not empty. `request` is reserved for the JSON body.
+    * Each image part has content type `image/png`, `image/jpeg`, `image/jpg`, or `application/octet-stream`, or no content type. Any other content type returns `400`.
+    * Each file part belongs to exactly one asset. A part that no asset names, two assets that name the same part, and an asset whose part is missing all return `400`.
+
+    To use the same image in several places, write its reference in each of them.
+  </Tab>
+
+  <Tab title="Base64 in JSON">
+    Base64-encode the file into `data_base64` and set `format`, following the rules in [Asset fields](#asset-fields). Python's `base64.b64encode` produces the right encoding. This Python example sends one photo and asks two questions about it:
+
+    ```python theme={null}
+    import base64
+    import os
+    import uuid
+
+    import requests
+
+    def image_asset(path: str) -> tuple[str, dict]:
+        """Return a new reference and the asset entry for one image file."""
+        fmt = "png" if path.lower().endswith(".png") else "jpg"
+        with open(path, "rb") as f:
+            data = base64.b64encode(f.read()).decode("ascii")
+        return str(uuid.uuid4()), {"type": "image", "format": fmt, "data_base64": data}
+
+    photo_key, photo = image_asset("door-camera.jpg")
+
+    response = requests.post(
+        "https://api.typesafe.ai/v1/systemone",
+        headers={
+            "Authorization": f"Bearer {os.environ['TYPESAFE_API_KEY']}",
+            "TypeSafe-Danger-Zone-Images": "true",
+        },
+        json={
+            "model": "jev-latest",
+            "state": {"door": photo_key},
+            "assets": {photo_key: photo},
+            "questions": {
+                "person_present": {
+                    "type": "noul",
+                    "instructions": "Is there a person in `door`?",
+                },
+                "carrying": {
+                    "type": "choice",
+                    "instructions": "What is the person in `door` carrying?",
+                    "criteria": {
+                        "package": "A box or parcel.",
+                        "bag": "A bag of groceries or shopping.",
+                        "nothing": "Empty hands.",
+                    },
+                },
+            },
+        },
+    )
+    print(response.json()["answers"])
+    ```
+  </Tab>
+</Tabs>
+
+## Image placement
+
+### State
+
+Images in the `state` are part of the state, the same as any text or JSON there. The model evaluates them together with the rest of the state, and every question in the request is evaluated against them. A state can mix images with text, and can hold several images, labeled or nested like any other state data. This state holds a short history of camera frames, oldest first:
+
+```json theme={null}
+{
+  "state": {
+    "frames": [
+      {"seconds_ago": 2, "frame": "5c0e9a12-f1"},
+      {"seconds_ago": 1, "frame": "1d7be0c4-f2"},
+      {"seconds_ago": 0, "frame": "e48a6f30-f3"}
+    ]
+  }
+}
+```
+
+A question can ask "Did the door in `frames` open during these frames?" or refer to one frame by path, such as `` `frames[2].frame` ``.
+
+### Instructions
+
+An image in a question's `instructions` is part of that question and is sent only with that question. Put the reference in the sentence where the question needs the image:
+
+```json theme={null}
+{
+  "state": {"door": "e48a6f30-door"},
+  "questions": {
+    "is_badge_holder": {
+      "type": "noul",
+      "instructions": "Is the person in `door` the same person as in this badge photo: 9a21c7d3-badge?"
+    }
+  }
+}
+```
+
+An image in `instructions` is sent to the model once for every question that includes it. When several questions use the same image, put it in the `state` once and refer to it by path from each question. That uses fewer tokens and less of the [size limits](#limits).
+
+### Criteria
+
+Choice options, Score levels, and Noul `true` and `false` definitions can each include images. This Choice classifies a hand gesture, with each option defined by example pictures. The option names are the values your code receives in `choice`, and the pictures are what the model compares the hand against:
+
+```json theme={null}
+{
+  "state": {"camera": "e48a6f30-cam"},
+  "questions": {
+    "gesture": {
+      "type": "choice",
+      "instructions": "Which gesture is the hand in `camera` making?",
+      "criteria": {
+        "thumbs_up": "0b6c51aa-thumb",
+        "open_palm": {
+          "description": "A hand held up with the palm facing the camera.",
+          "examples": ["4fd2e7b9-palm1", "c83a0e15-palm2"]
+        },
+        "fist": "a7e94d02-fist",
+        "none": "No hand, or a hand that matches none of the examples."
+      }
+    }
+  }
+}
+```
+
+An option can be an image on its own (`thumbs_up`), a description with one or more examples (`open_palm`), or text only (`none`). The `description` and `examples` keys are names chosen for this example, not required fields: criteria accept any [structure](#structured-data).
+
+Score and Noul criteria take images the same way:
+
+* **Score levels** can each include an example picture. A Score for how open a hand is could use a closed fist, a half-open hand, and an open hand as its three levels.
+* **Noul criteria** can define `true` and `false` with pictures: `{"true": {"description": "Correctly assembled", "examples": ["<reference>"]}, "false": "Parts missing or in the wrong place."}`.
+
+### Structured data
+
+State, instructions, and criteria accept nested JSON [structure](/primitives/advanced), and a reference works at any level of it. A question can refer to one picture in an array as `` `lineup[2]` ``, or to one in a labeled object as `` `faces.happy` ``. A criterion can hold several example pictures as an array.
+
+## Patterns
+
+| Pattern | How it works | Where the image goes |
+| - | - | - |
+| Compare against a known picture | Ask whether the state shows the same person, product, or place as a known picture. | Known picture in `instructions`, photo in `state` |
+| Define options by example | Define each Choice option with one or a few example pictures. | `criteria` |
+| What changed | Send the previous frame or a short frame history, and ask about motion, arrivals, or differences. | `state` |
+| Look closer when needed | Ask about a small copy of the image first. Send a larger copy (up to the size limit), or a full-resolution crop, only when the answer needs more detail. | `state` |
+| Search a large image | Cut the image into tiles and ask a Choice with the tiles as its options. Repeat on the chosen tile until the target takes up most of the tile. | `criteria` |
+| Find where it is | Ask a [Box](/primitives/box) question for the edges of the target. | `state`, optionally a picture of the target in `instructions` |
+
+## Limits
+
+| Limit | Value |
+| - | - |
+| Format | PNG or JPEG, still images only. Animated PNGs are rejected. |
+| File size | 16 MiB per image file. For base64, this is the size after decoding. |
+| Width and height | 256 to 1568 pixels each. |
+| Total pixels (width × height) | 78,400 to 2,458,624, the area of a 280 × 280 to a 1568 × 1568 square. A 256 × 256 image is too small. |
+| Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](/api#compression) doesn't raise the limit. |
+| All images in the request | 32 MiB, shared by every distinct image after the API processes it. Processing re-encodes each image and can make it larger than the file you sent, so a request of small uploads can still go over. |
+| Expanded request | 32 MiB for the text, questions, structure, and images after every reference is replaced by its image. Each use of a reference adds the image again: an image that is 10 MiB after processing, referenced four times, is over the limit. |
+
+All limits include both ends of the range. An image outside them is rejected, never resized to fit. If any image in a request is rejected, the whole request fails: there are no partial answers. See [Errors](#errors) for the status codes.
+
+How many images fit in one request depends on these limits and on the [context length](/models). Images have no separate [rate limits](/api#handling-rate-limits): a request with images counts against the same limits as any other request.
+
+To stay under the request limits, send fewer images, send smaller images, put an image that several questions use in the `state` once instead of in each question's `instructions`, or split the work across requests.
+
+## Preparing images
+
+Send each image as a PNG or JPEG, rotated upright and sized within the [limits](#limits). Prepare each one before you send it:
+
+* **Resize before sending.** Scale the image so its longest side is at most 1568 pixels. A typical 12-megapixel phone photo becomes 1568 × 1176. Scale up, or pad, an image smaller than the minimum.
+* **Rotate the pixels upright.** The API removes all metadata (EXIF, color profiles, comments) and does not apply the EXIF orientation. A photo that looks upright in your photo viewer can reach the model sideways, so rotate the pixels themselves first.
+* **Send a still image.** For an animation or a video, export the frame you want as a PNG or JPEG. Convert other formats, such as GIF, WebP, or HEIC, to PNG or JPEG.
+* **Prefer standard JPEG.** A standard 8-bit baseline JPEG is the safest JPEG to send. Re-save progressive JPEGs as baseline.
+* **Re-export a rejected file.** If the API rejects a file that opens fine on your computer, open it in a standard image editor or library and export it again as PNG or JPEG.
+
+This Python example uses the Pillow library to prepare one photo:
+
+```python theme={null}
+from PIL import Image, ImageOps
+
+with Image.open("photo.jpg") as original:
+    img = ImageOps.exif_transpose(original)  # rotate the pixels upright
+    img.thumbnail((1568, 1568))  # longest side at most 1568, same aspect ratio
+    # thumbnail only shrinks: upscale or pad an image under the minimum separately
+    img.convert("RGB").save("photo-ready.jpg", "JPEG", quality=90)  # baseline JPEG
+```
+
+## Image tokens
+
+Each image counts as input tokens, billed at the same per-token [input price](/models) as text. There is no separate charge for images. The `usage.input_tokens` field in the response includes the tokens for every image in the request. Image tokens also count toward the request's [context length](/models).
+
+We'll be providing guidance on estimating image token usage soon.
+
+## Errors
+
+| Status | Cause |
+| - | - |
+| `400` | Images are not turned on: the request has an image or a Box question but no `TypeSafe-Danger-Zone-Images: true` header. See [Turning on images](#turning-on-images). |
+| `400` | An image or asset was rejected. The file isn't PNG or JPEG, is damaged or incomplete, or is animated; the image is below the minimum width, height, or total pixels; an asset isn't referenced anywhere; the base64 or `format` is invalid; a reference is empty; or the multipart request breaks a [multipart rule](#over-http). |
+| `400` | `max_tokens_exceeded`: the images and text together exceed the request's [context length](/models). Send fewer or smaller images, or move images out of `instructions` into the `state`. |
+| `413` | The request is over a size limit: an image file, an image's width, height, or total pixels, the request body, all images together, the expanded request, or the reference lengths. See [Limits](#limits). |
+
+If a request has several problems, the error reports one of them. Check the request against [Limits](#limits) and [Preparing images](#preparing-images).
+
+
 # Introduction
 Source: https://docs.typesafe.ai/introduction
 
@@ -13552,13 +13959,13 @@ Jev is TypeSafe's flagship model and the first System One model. Send state and 
 
 Large language models (LLMs) are designed to produce text for humans to read. When you need a model to make a judgment that your code will consume, that creates a mismatch: you are coercing a text-generation system into outputting structured decisions, then parsing the results back into something your code can depend on.
 
-Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). System One models are built to make fast, structured decisions that software can use directly. Jev evaluates typed *questions* against a *state* and returns structured results directly. No text generation, no parsing. You get typed values and probability distributions that your code can branch on, sort by, and route with. Choice and Score also return [confidence](/confidence), which your code can use to decide whether and how to act on an answer.
+Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). System One models are built to make fast, structured decisions that software can use directly. Jev evaluates typed *questions* against a *state* and returns structured results directly. No text generation, no parsing. You get typed values and probability distributions that your code can branch on, sort by, and route with. Some question types also return [confidence](/confidence), which your code can use to decide whether and how to act on an answer. Each question type's page lists what its answers include.
 
 ```mermaid actions={true} theme={null}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
 flowchart LR
     state["your data<br/>(the state)<br/>text or JSON"]
-    questions["your questions<br/>about the data<br/>(3 different types)"]
+    questions["your questions<br/>about the data<br/>(several types)"]
 
     %% not a node - the point where the two lines join into one request
     join@{ shape: f-circ }
@@ -13570,7 +13977,7 @@ flowchart LR
     state --- join
     questions --- join
     join -- "one request" --> model
-    model -- "one response" --> answers["typed answers<br/>+ probabilities<br/>+ confidence<br/>(Choice and Score)"]
+    model -- "one response" --> answers["typed answers<br/>+ probabilities<br/>+ confidence<br/>(some types)"]
     answers --> code["<b>your code</b><br/>branch, sort, and route"]
 
     %% fill:none drops mermaid's own dot; .junction in styles.css redraws
@@ -13581,7 +13988,7 @@ flowchart LR
 
 ## TypeSafe primitives
 
-TypeSafe exposes three *AI primitives*. Similar to software primitives, our AI primitives are modular, composable, structured, reliable, and fast. Each asks a different type of *question* and returns a different type of answer.
+TypeSafe exposes *AI primitives*. Similar to software primitives, our AI primitives are modular, composable, structured, reliable, and fast. Each asks a different type of *question* and returns a different type of answer.
 
 | Question type | Goal | Returns |
 | - | - | - |
@@ -13589,7 +13996,7 @@ TypeSafe exposes three *AI primitives*. Similar to software primitives, our AI p
 | [Score](/primitives/score) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
 | [Noul](/primitives/noul) | Is this statement true? | `noul` (0–1) |
 
-All three *question* types can be mixed in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
+Any mix of *question* types can go in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 
 ## Atomic questions, composed in code
 
@@ -13603,7 +14010,7 @@ For example, instead of "rate this startup pitch," ask separately about market s
 
 * [Quick Start](/introduction/quickstart) — Everything you need to get started immediately.
 * [AI Primer](/introduction/machine-learning-primer) — Why TypeSafe trains models for calibrated decisions instead of generated text.
-* [Primitives (Questions)](/primitives) — How to define questions, choose between Choice, Score, and Noul, and ask several at once.
+* [Primitives (Questions)](/primitives) — How to define questions, choose a question type, and ask several at once.
 * [Confidence](/confidence) — How TypeSafe reports certainty, and how to use it architecturally.
 * [Patterns](/patterns) — Common patterns for building systems with TypeSafe.
 
@@ -14150,11 +14557,11 @@ Our API integration started returning 500 errors on every request about 20 minut
 
 ## Next Steps
 
-Composing the three primitives into larger systems takes some practice, even if you're used to LLMs. The [Machine Learning Primer](/introduction/machine-learning-primer) explains why Jev returns calibrated probabilities instead of generated text, and how that changes the way you build with it.
+Composing primitives into larger systems takes some practice, even if you're used to LLMs. The [Machine Learning Primer](/introduction/machine-learning-primer) explains why Jev returns calibrated probabilities instead of generated text, and how that changes the way you build with it.
 
 We’d also suggest taking a look at [Primitives](/primitives) and the [Use Case Map](/concepts/use-case-map).
 
-1. [Errors and retries](/sdk/python/usage#error-handling)
+1. [Errors and retries](/sdk/python/usage/basic#error-handling)
 2. [Parallel Questions](/cookbooks/parallel_questions)
 
 
@@ -14271,7 +14678,7 @@ Accuracy falls as the state grows with content unrelated to the decision. Unrela
 **Instead:** retrieve and filter in code first, and send only the fields the question needs. When it's not possible to filter in state, you can use a [Noul](/primitives/noul) to filter for relevance. The [classifying RAG passages cookbook](/cookbooks/classifying_rag_passages) has a worked example.
 
 <Note>
-  **Context length limit.** `jev-1.13` has a bounded context window. See the [Models](/models) page for the exact token limits.
+  **Context length limit.** The `state` counts once against each of `jev-1.13`'s context limits, the [per-request context and the per-question context](/models#context-length).
 </Note>
 
 ## Adversarial content
@@ -14321,36 +14728,71 @@ Jev is TypeSafe's flagship model and the first [System One model](/concepts/syst
 
 ## Current models
 
-| Jev 1.13 | `jev-1.13.0` |
-| :- | :- |
-| Price (per Btok / per Mtok) | \$42 / \$0.042 |
-| Rate limits | 100K tokens per second / 80 requests per second |
-| Context length | 64k tokens per request; 32k tokens for `state` plus the longest question |
-| Input | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
+| | Jev 1.14 | Jev 1.13 |
+| :- | :- | :- |
+| Model ID | `jev-1.14.0` | `jev-1.13.0` |
+| Price (per Btok / per Mtok) | \$42 / \$0.042 | \$42 / \$0.042 |
+| Context length | 64k per-request / 32k per-question | 64k per-request / 32k per-question |
+| Input | Text | Text |
 
-* **Price:** Charged per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
-* **Rate limits:** Measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry with backoff by default and honor the `retry-after` header when the response carries one. If you call the HTTP API directly, see [Handling rate limits](/api#handling-rate-limits).
-* **Context length:** Jev ingests the `state` once and evaluates every question against it in parallel. The 64k budget covers the `state` plus all questions combined; the 32k budget applies to the `state` plus the single longest question. See [Speculative fan-out](/patterns/fan-out) for packing many questions into one request, and [Jev 1.13 jaggedness](/model-jaggedness/jev-1.13) for how accuracy shifts as the state grows.
-* **Input:** Jev evaluates natural-language text. Pre-process non-text inputs (images, audio, video, binaries) into text or structured fields before sending them as `state`. See [State](/concepts/state) for supported shapes.
+Jev 1.14 is the newest Jev release, available from October 14, 2026.
 
-<Warning>
-  **Rate limits are adjusting dynamically.** We are serving a very large volume of demand, and the limits above can change without notice while we do, as upcoming large GPU deals land and we let in more users. Once things settle down more, we'll be able to offer more stable limits. Higher limits are available on custom and enterprise plans. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai).
-</Warning>
+* **Price:** You pay per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
+* **Context length:** Two limits, the per-request context and the per-question context. See [Context length](#context-length). To raise both, see [Long context](#long-context).
+* **Input:** Jev reads natural-language text, sent as a string, a JSON object, or an array of text values. It does not accept audio or video. Convert those into text or structured fields before you send them as `state`. See [State](/concepts/state) for the shapes `state` accepts.
+
+## Context length
+
+Jev ingests the `state` once and evaluates every question against it in parallel. A request has to fit two context limits:
+
+* **Per-request context** (`per_request_context`): the `state` plus all questions combined.
+* **Per-question context** (`per_question_context`): the `state` plus any one question.
+
+There is no separate limit on the number of questions in a request. Any number of questions is allowed as long as the request fits both limits. See [Speculative fan-out](/patterns/fan-out) for packing many questions into one request, and [Jev 1.13 jaggedness](/model-jaggedness/jev-1.13) for how accuracy shifts as the state grows.
+
+To raise both limits, see [Long context](#long-context).
+
+### Long context
+
+Long context is off by default and works on both Jev 1.14 and Jev 1.13. To turn it on, send the `TypeSafe-Danger-Zone-Long-Context: true` header with each request that needs it. With the header, the per-request context and the per-question context are both 262k tokens. Requests without the header keep the default limits in the table above.
+
+```bash theme={null}
+curl https://api.typesafe.ai/v1/systemone \
+  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "TypeSafe-Danger-Zone-Long-Context: true" \
+  -d '{
+    "model": "jev-latest",
+    "state": "<a long contract, transcript, or record>",
+    "questions": {
+      "has_termination_clause": {
+        "type": "noul",
+        "instructions": "Does the `state` include a clause that lets either party end the agreement early?"
+      }
+    }
+  }'
+```
+
+Long context costs the same per token as any other request. It is slower and less accurate than staying within the default limits, so turn it on only for requests that need it.
+
+## Rate limits
+
+Rate limits are set per organization. Your organization's current limits are in the [developer console](https://console.typesafe.ai/rate-limits).
+
+Limits are measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry these requests by default, waiting longer between each attempt, and follow the `retry-after` header when the response includes one. If you call the HTTP API directly, see [Handling rate limits](/api#handling-rate-limits).
+
+Higher limits are available on custom and enterprise plans. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai).
 
 ## Aliases
 
-An alias is a model name that resolves to a versioned model ID. Send it in the `model` field like any other name.
+An alias is a model name that points to a versioned model ID. Send it in the `model` field the same way you send a model ID.
 
 | Alias | Points to | Meaning |
 | :- | :- | :- |
 | `jev-latest` | `jev-1.13.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use. |
-| `jev-preview` | `jev-1.13.0` | The most recent release, whether or not it is an official one. Moves ahead of `jev-latest` when a preview build is available. |
+| `jev-preview` | `jev-1.14.0` | The most recent release, official or not. Moves ahead of `jev-latest` when a preview build is available. |
 
-<Warning>
-  `jev-preview` currently points to the same model as `jev-latest`. There is no preview build available right now.
-</Warning>
-
-An alias moves when a new release ships, so the answers behind it can change without a change on your side. The response's `model` field reports the versioned ID that answered, so you can log which model produced each result. If you have tuned confidence thresholds against a specific version, pin that version's ID instead of the alias and move to the new one on your own schedule.
+An alias moves when a new release ships, so its answers can change without any change to your code. Each response's `model` field gives the versioned ID that answered, so you can log which model produced each result. If you have tuned confidence thresholds against one version, send that version's ID instead of the alias, and switch to the new version when you are ready.
 
 ## Customizing Jev
 
@@ -14370,7 +14812,7 @@ Jev is not trained on customer requests or responses. See [Legal](/legal) for th
 
 ## Listing models
 
-`GET /v1/models` returns the names your account can send in the `model` field, with a description and release date for each. It currently lists the aliases. Versioned IDs such as `jev-1.13.0` are accepted by the `model` field whether or not they appear in the list.
+`GET /v1/models` returns the names your account can send in the `model` field, each with a description and a release date. It currently lists the aliases. Versioned IDs such as `jev-1.14.0` are accepted by the `model` field whether or not they appear in the list.
 
 <CodeGroup>
   ```bash cURL theme={null}
@@ -14729,9 +15171,9 @@ Note the additional confidence check on the complexity score. As discussed in [C
 # Primitives (Questions)
 Source: https://docs.typesafe.ai/primitives
 
-The three TypeSafe question types (Choice, Score, Noul), the typed answers they return, how to choose between them, and how to ask several at once.
+The TypeSafe question types, the typed answers they return, how to choose between them, and how to ask several at once.
 
-TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](/concepts/system-one) to make about a [state](/concepts/state), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. There are three question types, each returning a different shape of answer.
+TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](/concepts/system-one) to make about a [state](/concepts/state), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. Each question type returns a different shape of answer.
 
 | Type | What it answers | Returns |
 | - | - | - |
@@ -14805,7 +15247,7 @@ Two properties of these answers make them composable:
 * **Every answer is constrained to the options you supplied.** The model returns a probability distribution over your options or levels, never a value outside them. Your code never has to recover a value from generated prose.
 * **Every answer is independent.** One question's answer is not hidden context for another. You can add or remove questions without changing the others' results.
 
-[Confidence](/confidence) explains how `confidence` is derived from `probabilities` and how to use it to decide when to act automatically and when to escalate to a person.
+Some question types also return `confidence`; each type's page says whether its answers include it. [Confidence](/confidence) explains how to use it to decide when to act automatically and when to escalate to a person.
 
 ## Reference specific fields
 
@@ -14912,11 +15354,17 @@ Ask every question your code might need, including ones whose answer only matter
   Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](/agent-skill#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
 </Tip>
 
+### How many questions you can ask
+
+There is no limit on the number of questions in a request. What limits a request is its size: it has to fit the model's [per-request context and per-question context](/models#context-length).
+
+Questions are often short compared with the `state`, in which case the `state` takes up most of both. If your questions don't all fit in one request, one option is to spread them across several requests with the same `state`.
+
 ### Split a complex judgment into several questions
 
 A judgment that depends on several things is best split into one question per thing. Combine the answers in your code, giving each a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Adding questions barely changes the response time because they run in parallel within one request. The split costs a few extra question tokens.
 
-For example, ticket priority might be built from three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with. The Score page walks through this request and the code that normalizes and weights the answers in [Splitting a complex judgment into several Scores](/primitives/score#splitting-a-complex-judgment-into-several-scores). This technique is called the [Composite scoring](/patterns/composite-scoring) pattern.
+For example, ticket priority might be built from three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with. The Score page walks through this request and the code that normalizes and weights the answers in [Splitting a complex judgment into several Scores](/primitives/score#splitting-a-complex-judgment-into-several-score-questions). This technique is called the [Composite scoring](/patterns/composite-scoring) pattern.
 
 ### When one question depends on another
 
@@ -15023,6 +15471,158 @@ Each entry in a Score `criteria` array can be an object.
 Noul `criteria` is optional, and when the yes/no boundary is subtle, structured `true` and `false` descriptions let you pin it down with a definition and examples on each side.
 
 <TypesafeExample />
+
+
+# Box
+Source: https://docs.typesafe.ai/primitives/box
+
+A Box is a System One question type for finding where something is in an image. The answer is the four edges of a box around it, as fractions of the image's width and height.
+
+<Callout icon="flask-conical">
+  **Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
+
+  To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](/images#turning-on-images).
+</Callout>
+
+Use a Box when you need to know where something is in an image: the mug on the counter, the signature on a scanned form, the person at the door. The answer is a bounding box, the smallest rectangle that contains the target, given as four edges. A Box question needs an image in the request; see [Images](/images) for how to send one. Box questions need Jev 1.14: send `jev-preview` or `jev-1.14.0` as the `model`.
+
+Each edge is a fraction of the image's size, measured from the top-left corner. `left` and `right` are fractions of the width, and `top` and `bottom` are fractions of the height, so the same answer works at any image size.
+
+<Frame>
+  <img alt="A drawing of a coffee mug inside an image, with a pink box around the mug. The box's left edge is at 0.44 of the image's width and its right edge at 0.84. Its top is at 0.25 of the height and its bottom at 0.82. The image's top-left corner is (0, 0) and its bottom-right corner is (1, 1)." />
+
+  <img alt="A drawing of a coffee mug inside an image, with a pink box around the mug. The box's left edge is at 0.44 of the image's width and its right edge at 0.84. Its top is at 0.25 of the height and its bottom at 0.82. The image's top-left corner is (0, 0) and its bottom-right corner is (1, 1)." />
+</Frame>
+
+## Request structure
+
+A Box question has two fields:
+
+* `type`: Always `"box"`.
+* `instructions`: What to find, and in which image. It doesn't have to be a question: "the coffee mug in `photo`" is enough.
+
+Box takes no `criteria`. This request finds a mug in a kitchen photo, sent as a file part with the images header:
+
+```bash theme={null}
+curl https://api.typesafe.ai/v1/systemone \
+  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+  -H "TypeSafe-Danger-Zone-Images: true" \
+  -F 'request={
+    "model": "jev-preview",
+    "state": {"photo": "6e1d0b7c-kitchen"},
+    "assets": {"6e1d0b7c-kitchen": {"type": "image", "part": "kitchen-photo"}},
+    "questions": {
+      "mug": {"type": "box", "instructions": "the coffee mug in `photo`"}
+    }
+  };type=application/json' \
+  -F 'kitchen-photo=@kitchen.jpg;type=image/jpeg'
+```
+
+To send the photo base64-encoded in a JSON body, or to use the SDKs, see [Uploading images](/images#uploading-images).
+
+A request can mix Box questions with the other types, and every question is evaluated against the same state.
+
+## Response structure
+
+```json theme={null}
+{
+  "model": "jev-1.14.0",
+  "answers": {
+    "mug": {
+      "type": "box",
+      "box": {
+        "top": 0.25,
+        "bottom": 0.82,
+        "left": 0.44,
+        "right": 0.84
+      },
+      "confidence": 0.92
+    }
+  },
+  "usage": {"input_tokens": 290, "output_tokens": 21}
+}
+```
+
+Each Box answer has these values:
+
+* `type`: The type of TypeSafe question.
+* `box`: The four edges, `top`, `bottom`, `left`, and `right`, each from 0 to 1. `left` is less than `right`, and `top` is less than `bottom`.
+* `confidence`: A number from 0 to 1. Higher means the model is more sure of its answer. See [Using confidence](#using-confidence).
+
+## Reading a Box
+
+To draw the box or crop to it, multiply each edge by the image's width or height in pixels:
+
+```python theme={null}
+from PIL import Image
+
+image = Image.open("kitchen.jpg")
+width, height = image.size
+mug = response["answers"]["mug"]
+edges = mug["box"]
+
+box = (
+    round(edges["left"] * width),
+    round(edges["top"] * height),
+    round(edges["right"] * width),
+    round(edges["bottom"] * height),
+)
+image.crop(box).save("mug.jpg")
+```
+
+### Using confidence
+
+How you act on a Box's confidence is up to your application. A common pattern is to pick a threshold and treat answers below it with more care. There is no recommended threshold yet, so tune it on your own images. When confidence is below your threshold, you can:
+
+* **Ask again on a better image.** Send a larger version of the image, or crop to the region around the box at a higher resolution and ask the same Box question on the crop. [Writing Box questions](#writing-box-questions) covers finding a small target in a large image.
+* **Pad the box before cropping.** When a crop must not cut off any part of the target, move each edge outward before you crop.
+* **Check the box with edge questions.** Ask whether the target continues past each edge, as in [Check a box with edge questions](#check-a-box-with-edge-questions).
+
+This code pads the box when confidence is below a threshold, and keeps it inside the image:
+
+```python theme={null}
+PAD = 0.05  # Fraction of the image to add on each side. Tune for your images.
+MIN_CONFIDENCE = 0.6  # Example threshold. Tune it on your own images.
+
+if mug["confidence"] < MIN_CONFIDENCE:
+    edges = {
+        "left": max(0.0, edges["left"] - PAD),
+        "top": max(0.0, edges["top"] - PAD),
+        "right": min(1.0, edges["right"] + PAD),
+        "bottom": min(1.0, edges["bottom"] + PAD),
+    }
+```
+
+Then crop with the padded `edges` as in the code above.
+
+## Writing Box questions
+
+**Name the target and the image.** "The coffee mug in `photo`" names what to find and where. When the request has several images, the path in backticks identifies which one to search.
+
+**The target can be a picture.** Put the reference for the target image directly in the instructions:
+
+```json theme={null}
+"instructions": "the person in `photo` who matches this badge photo: 9a21c7d3-badge"
+```
+
+**A Box answer is always a box.** There is no "not found" answer, so a Box question about something absent still returns four edges. In the same request, ask a [Noul](/primitives/noul) whether the target is in the image, and ignore the box when the Noul answer is low:
+
+```json theme={null}
+"questions": {
+  "mug_visible": {"type": "noul", "instructions": "Is there a coffee mug in `photo`?"},
+  "mug": {"type": "box", "instructions": "the coffee mug in `photo`"}
+}
+```
+
+**One box per question.** Box is designed to find one target, and every answer is a single box. To find several different things, ask one Box question for each in the same request. When the image might hold more than one of the same thing, describe the one you want so that only it fits: "the mug nearest the sink in `photo`". When you can't tell them apart in words, add a Choice with the options `none`, `one`, and `several` next to the Box. When the answer is `several`, split the image into regions and ask again on each.
+
+**Crop large images before looking for small things.** A target a few dozen pixels wide in a very large image can be missed. Find the region first, for example with a Choice that has tiles of the image as its options. Then ask the Box question on that tile, and convert its edges back to fractions of the full image.
+
+### Check a box with edge questions
+
+To check whether a box cuts off part of the target, crop to the box and ask one Noul per edge, such as "Does the mug in `crop` continue past the left edge of the image?". Move out each edge where the Noul answer is yes, and ask again.
+
+On 36 test crops of paintings, each with a known part of the target cut off, the four edge questions caught 30 of the cuts. A single "Is all of the mug inside `crop`?" question caught 26. Drawing the box as an outline on the full image and asking about that caught 20.
 
 
 # Choice
@@ -16062,7 +16662,7 @@ JavaScript and TypeScript SDK for [TypeSafe AI](https://typesafe.ai).
 
 ## Quickstart
 
-Install the SDK (Node.js 20 or newer):
+Install the SDK (Node.js 22 or newer):
 
 ```sh theme={null}
 npm install @typesafe-ai/sdk
@@ -16090,10 +16690,155 @@ console.log(response.answers.category.choice);
 
 Answer types are inferred from your questions. The package includes ESM, CommonJS, and TypeScript declarations.
 
+## Images
+
+Create an image with `image()` from file bytes or a `Blob` such as a `File`, or with
+`Image.fromBase64()` from base64 text. Images must be PNG or JPEG; the API detects the format
+from the file bytes and rejects other formats, such as WebP and GIF, with a `BadRequestError`.
+There are three ways to use an image in a request, and they can be combined.
+
+Image support is experimental. Opt in by sending the `TypeSafe-Danger-Zone-Images: true`
+header:
+
+```ts theme={null}
+const client = new TypeSafeClient({
+  defaultHeaders: { "TypeSafe-Danger-Zone-Images": "true" },
+});
+```
+
+To send it with a single request instead, pass it in the call's `headers` option.
+
+### Place the image in the content
+
+Put the image anywhere in `state`, question instructions, or criteria:
+
+```ts theme={null}
+import { openAsBlob } from "node:fs";
+import { image, noul, score, TypeSafeClient } from "@typesafe-ai/sdk";
+
+const client = new TypeSafeClient();
+const photo = image(await openAsBlob("returns/RMA-1042.jpg"));
+
+const { answers } = await client.systemOne({
+  state: { claim: "The mug arrived with a chipped rim.", photo },
+  questions: {
+    damaged: noul("Is the product in the photo damaged?"),
+    severity: score("How severe is the damage?", ["none", "cosmetic", "unusable"]),
+  },
+});
+console.log(answers.damaged.noul, answers.severity.score);
+```
+
+### Write the image into text with `withAssets`
+
+Tag a template literal with `withAssets` to reference images inside text. This route
+handler checks a seller's upload against the catalog photo:
+
+```ts theme={null}
+import { choice, image, noul, TypeSafeClient, withAssets } from "@typesafe-ai/sdk";
+import { catalogPhotoUrl } from "./catalog";
+
+const client = new TypeSafeClient();
+
+export async function POST(request: Request): Promise<Response> {
+  const form = await request.formData();
+  const upload = image(form.get("photo") as File);
+  const catalog = image(await (await fetch(catalogPhotoUrl(String(form.get("sku"))))).blob());
+
+  const { answers } = await client.systemOne({
+    state: withAssets`A seller uploaded ${upload} for a listing whose catalog photo is ${catalog}.`,
+    questions: {
+      sameProduct: noul(withAssets`Does ${upload} show the same product as ${catalog}?`),
+      quality: choice(withAssets`Is ${upload} usable as a listing photo?`, {
+        usable: null,
+        blurry: null,
+        cropped: null,
+        notAProduct: null,
+      }),
+    },
+  });
+  return Response.json({ sameProduct: answers.sameProduct.noul, quality: answers.quality.choice });
+}
+```
+
+Each image is sent once, however many times it is used. An image in an untagged template
+literal, such as `` `Compare ${upload}` ``, rejects the call with a `TypeSafeError` before the
+request is sent.
+
+To write a list of images, join it with `withAssets.join`, which works like `Array.prototype.join`:
+
+```ts theme={null}
+const uploads = (form.getAll("photos") as File[]).map((file) => image(file));
+const state = withAssets`The seller uploaded ${withAssets.join(uploads, ", ")}.`;
+```
+
+### Choose your own references with `assets`
+
+Pass images in `assets`, keyed by a reference of your choice, to reference them from plain
+strings, such as prompts stored in configuration:
+
+```ts theme={null}
+import { readFile } from "node:fs/promises";
+import { image, noul, TypeSafeClient } from "@typesafe-ai/sdk";
+
+const client = new TypeSafeClient();
+
+const { answers } = await client.systemOne({
+  state: "A customer returned <delivered>. The catalog photo is <catalog>.",
+  questions: { matches: noul("Is <delivered> the product shown in <catalog>?") },
+  assets: {
+    "<delivered>": image(await readFile("returns/RMA-1042.jpg")),
+    "<catalog>": image(await readFile("catalog/mug.png")),
+  },
+});
+console.log(answers.matches.noul);
+```
+
+Use distinct delimiters, such as `<delivered>`, so references don't match ordinary text.
+An image in `assets` that is also placed in content or in `withAssets` text is written there as
+its name. Every name in `assets` must appear in the request; otherwise the call rejects with a
+`TypeSafeError` before sending.
+
+### Locate something with `box`
+
+Ask a `box` question to locate what its instructions describe. The answer's `box` holds the
+edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`), and its
+`confidence` is `null` when the API doesn't report one. Use the `jev-preview` model for `box`
+questions:
+
+```ts theme={null}
+import { openAsBlob } from "node:fs";
+import { box, image, TypeSafeClient } from "@typesafe-ai/sdk";
+
+const client = new TypeSafeClient();
+
+const { answers } = await client.systemOne({
+  state: image(await openAsBlob("returns/RMA-1042.jpg")),
+  questions: { damage: box("The damaged area of the product") },
+  model: "jev-preview",
+});
+const { top, bottom, left, right } = answers.damage.box;
+```
+
+Requests with images are sent as `multipart/form-data`, with each image's file bytes in its
+own part.
+
+## Request compression
+
+The client compresses request bodies of 1 KiB or more with zstd, which reduces upload size and
+time, especially for large states. Smaller bodies fit in a single TCP segment, so they are sent
+uncompressed. zstd requires Node.js 22.15 or newer; on other runtimes, all bodies are sent
+uncompressed. Pass `compression: false` to send all bodies uncompressed, for example to an API
+that doesn't accept compressed requests:
+
+```ts theme={null}
+const client = new TypeSafeClient({ compression: false });
+```
+
 ## Documentation
 
 Learn what TypeSafe can do in the [TypeSafe docs](https://docs.typesafe.ai/).
-See the SDK's [client](https://github.com/typesafe-ai/typesafe-sdk-js/blob/v0.6.0/src/client.ts) and [types](https://github.com/typesafe-ai/typesafe-sdk-js/blob/v0.6.0/src/types.ts) for API options and defaults.
+See the SDK's [client](https://github.com/typesafe-ai/typesafe-sdk-js/blob/v0.7.0/src/client.ts) and [types](https://github.com/typesafe-ai/typesafe-sdk-js/blob/v0.7.0/src/types.ts) for API options and defaults.
 
 
 # API reference
@@ -16110,6 +16855,7 @@ Source: https://docs.typesafe.ai/sdk/javascript/api
 * [APIUserAbortError](/sdk/javascript/api/classes/APIUserAbortError)
 * [AuthenticationError](/sdk/javascript/api/classes/AuthenticationError)
 * [BadRequestError](/sdk/javascript/api/classes/BadRequestError)
+* [Image](/sdk/javascript/api/classes/Image)
 * [InternalServerError](/sdk/javascript/api/classes/InternalServerError)
 * [NotFoundError](/sdk/javascript/api/classes/NotFoundError)
 * [PermissionDeniedError](/sdk/javascript/api/classes/PermissionDeniedError)
@@ -16120,6 +16866,9 @@ Source: https://docs.typesafe.ai/sdk/javascript/api
 
 ## Interfaces
 
+* [BoxCoordinates](/sdk/javascript/api/interfaces/BoxCoordinates)
+* [BoxQuestion](/sdk/javascript/api/interfaces/BoxQuestion)
+* [BoxResponse](/sdk/javascript/api/interfaces/BoxResponse)
 * [ChoiceQuestion](/sdk/javascript/api/interfaces/ChoiceQuestion)
 * [ChoiceResponse](/sdk/javascript/api/interfaces/ChoiceResponse)
 * [Logger](/sdk/javascript/api/interfaces/Logger)
@@ -16133,15 +16882,18 @@ Source: https://docs.typesafe.ai/sdk/javascript/api
 * [ScoreQuestion](/sdk/javascript/api/interfaces/ScoreQuestion)
 * [ScoreResponse](/sdk/javascript/api/interfaces/ScoreResponse)
 * [SystemOneRequest](/sdk/javascript/api/interfaces/SystemOneRequest)
-* [SystemOneRequestPayload](/sdk/javascript/api/interfaces/SystemOneRequestPayload)
 * [SystemOneResult](/sdk/javascript/api/interfaces/SystemOneResult)
+* [TextWithAssets](/sdk/javascript/api/interfaces/TextWithAssets)
 * [TypeSafeClientConfig](/sdk/javascript/api/interfaces/TypeSafeClientConfig)
 * [Usage](/sdk/javascript/api/interfaces/Usage)
 * [WithResponse](/sdk/javascript/api/interfaces/WithResponse)
 
 ## Type Aliases
 
+* [Asset](/sdk/javascript/api/type-aliases/Asset)
 * [ChoiceCriteria](/sdk/javascript/api/type-aliases/ChoiceCriteria)
+* [Compression](/sdk/javascript/api/type-aliases/Compression)
+* [ContentValue](/sdk/javascript/api/type-aliases/ContentValue)
 * [Description](/sdk/javascript/api/type-aliases/Description)
 * [EntryType](/sdk/javascript/api/type-aliases/EntryType)
 * [EnvVar](/sdk/javascript/api/type-aliases/EnvVar)
@@ -16153,18 +16905,22 @@ Source: https://docs.typesafe.ai/sdk/javascript/api
 * [ScoreCriteria](/sdk/javascript/api/type-aliases/ScoreCriteria)
 * [ScoreLegend](/sdk/javascript/api/type-aliases/ScoreLegend)
 * [ScoreOf](/sdk/javascript/api/type-aliases/ScoreOf)
+* [SentContent](/sdk/javascript/api/type-aliases/SentContent)
 
 ## Variables
 
 * [ENV](/sdk/javascript/api/variables/ENV)
 * [LOG\_LEVELS](/sdk/javascript/api/variables/LOG_LEVELS)
+* [noul](/sdk/javascript/api/variables/noul)
+* [score](/sdk/javascript/api/variables/score)
 * [VERSION](/sdk/javascript/api/variables/VERSION)
+* [withAssets](/sdk/javascript/api/variables/withAssets)
 
 ## Functions
 
+* [box](/sdk/javascript/api/functions/box)
 * [choice](/sdk/javascript/api/functions/choice)
-* [noul](/sdk/javascript/api/functions/noul)
-* [score](/sdk/javascript/api/functions/score)
+* [image](/sdk/javascript/api/functions/image)
 
 
 # Class: APIConnectionError
@@ -16931,6 +17687,114 @@ Create the error subclass for an HTTP status code.
 [`APIError`](/sdk/javascript/api/classes/APIError).[`fromResponse`](/sdk/javascript/api/classes/APIError#sdk-fromresponse)
 
 
+# Class: Image
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/Image
+
+
+
+A PNG or JPEG image asset, created by `image` or `Image.fromBase64`.
+
+## Constructors
+
+### Constructor
+
+```ts theme={null}
+new Image(data): Image;
+```
+
+#### Parameters
+
+##### data
+
+`ArrayBuffer` | `ArrayBufferView`\<`ArrayBufferLike`> | `Blob`
+
+#### Returns
+
+`Image`
+
+#### Throws
+
+`data` is empty or isn't file bytes or a `Blob`.
+
+## Properties
+
+### data
+
+```ts theme={null}
+readonly data: Uint8Array<ArrayBufferLike> | Blob;
+```
+
+The image file bytes, or a `Blob` read when the request is sent.
+
+***
+
+### type
+
+```ts theme={null}
+readonly type: "image" = "image";
+```
+
+## Methods
+
+### toJSON()
+
+```ts theme={null}
+toJSON(): string;
+```
+
+The reference, written by `JSON.stringify` wherever the image appears in a request.
+
+#### Returns
+
+`string`
+
+***
+
+### toString()
+
+```ts theme={null}
+toString(): string;
+```
+
+The unique reference this image is sent under, for referencing it inside text.
+
+#### Returns
+
+`string`
+
+***
+
+### fromBase64()
+
+```ts theme={null}
+static fromBase64(text): Image;
+```
+
+Create an image from base64-encoded file bytes, decoding them now.
+
+#### Parameters
+
+##### text
+
+`string`
+
+The image file bytes, base64-encoded, without a `data:` URL prefix.
+
+#### Returns
+
+`Image`
+
+#### Throws
+
+`text` isn't valid base64 or decodes to no bytes.
+
+#### Example
+
+```ts theme={null}
+const photo = Image.fromBase64(upload.photoBase64);
+```
+
+
 # Class: InternalServerError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/InternalServerError
 
@@ -17545,7 +18409,8 @@ Empty or whitespace-only environment values are ignored.
 
 #### Throws
 
-The API key is missing, configuration is invalid, or the runtime is unsupported.
+The API key is missing, configuration is invalid, the runtime is
+unsupported, or the runtime lacks the requested compression.
 
 ## Properties
 
@@ -17556,6 +18421,16 @@ readonly baseURL: string;
 ```
 
 API root with trailing slashes removed.
+
+***
+
+### compression
+
+```ts theme={null}
+readonly compression: Compression;
+```
+
+Request body compression, or `false` when bodies are sent uncompressed.
 
 ***
 
@@ -17645,7 +18520,7 @@ Timeout per attempt in milliseconds.
 systemOne<Q>(request, options?): APIPromise<SystemOneResult<Q>>;
 ```
 
-Answer named questions about text or structured state.
+Answer named questions about text, structured state, or assets.
 
 #### Type Parameters
 
@@ -17659,7 +18534,8 @@ Answer named questions about text or structured state.
 
 [`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest)\<`Q`>
 
-State, questions, and an optional model override.
+State, questions, an optional model override, and optional assets.
+Assets in `state`, question content, or `withAssets` text are sent under their references.
 
 ##### options?
 
@@ -17671,11 +18547,16 @@ Per-call timeout, retry, headers, and cancellation settings.
 
 [`APIPromise`](/sdk/javascript/api/classes/APIPromise)\<[`SystemOneResult`](/sdk/javascript/api/interfaces/SystemOneResult)\<`Q`>>
 
-Answers typed by question name and criteria, with model and token usage.
+Answers typed by question name and criteria, with model and token usage. Every
+failure below rejects the returned promise; the call itself doesn't throw.
 
 #### Throws
 
-Questions are empty, or score criteria are not a list of at least two entries.
+State is `null` or omitted, questions are empty, score criteria are not
+a list of at least two entries, choice criteria are not a nonempty map, a noul question has
+neither instructions nor a described outcome, a string holds the reference of an asset not
+attached to the request, a name in `assets` doesn't appear in the request, or a `Blob`
+asset can't be read.
 
 #### Throws
 
@@ -17889,6 +18770,42 @@ Create the error subclass for an HTTP status code.
 [`APIError`](/sdk/javascript/api/classes/APIError).[`fromResponse`](/sdk/javascript/api/classes/APIError#sdk-fromresponse)
 
 
+# Function: box()
+Source: https://docs.typesafe.ai/sdk/javascript/api/functions/box
+
+
+
+```ts theme={null}
+function box(instructions?): BoxQuestion;
+```
+
+Create a question that locates what its instructions describe in the request's image.
+Use the `jev-preview` model for `box` questions.
+
+## Parameters
+
+### instructions?
+
+[`EntryType`](/sdk/javascript/api/type-aliases/EntryType) = `null`
+
+What to locate, as text, an asset, a JSON object or array; defaults to `null`.
+
+## Returns
+
+[`BoxQuestion`](/sdk/javascript/api/interfaces/BoxQuestion)
+
+## Example
+
+```ts theme={null}
+const { answers } = await client.systemOne({
+  state: image(await openAsBlob("photo.jpg")),
+  questions: { dog: box("The dog") },
+  model: "jev-preview",
+});
+const { top, bottom, left, right } = answers.dog.box;
+```
+
+
 # Function: choice()
 Source: https://docs.typesafe.ai/sdk/javascript/api/functions/choice
 
@@ -17925,99 +18842,160 @@ Labels mapped to descriptions, or `null` for undescribed labels.
 [`ChoiceQuestion`](/sdk/javascript/api/interfaces/ChoiceQuestion)\<`T`>
 
 
-# Function: noul()
-Source: https://docs.typesafe.ai/sdk/javascript/api/functions/noul
+# Function: image()
+Source: https://docs.typesafe.ai/sdk/javascript/api/functions/image
 
 
 
 ```ts theme={null}
-function noul(instructions?, criteria?): NoulQuestion;
+function image(data): Image;
 ```
 
-Create a yes/no question with optional descriptions for either outcome.
+Create an image asset for `systemOne`.
+
+Place the image in `state` or question content, or interpolate it into a `withAssets`
+tagged template; either way it is sent under its own reference, `String(image)`. To
+reference it by a name of your choice, pass it in `assets` instead.
+
+The image must be PNG or JPEG. The API detects the format from the file bytes and rejects
+other formats with a `BadRequestError`. `Blob` data is read when the request is sent, and its
+`type` is ignored. For base64 text, use `Image.fromBase64`.
 
 ## Parameters
 
-### instructions?
+### data
 
-[`EntryType`](/sdk/javascript/api/type-aliases/EntryType) = `null`
+`ArrayBuffer` | `ArrayBufferView`\<`ArrayBufferLike`> | `Blob`
 
-The question as text, a JSON object or array; defaults to `null`.
+Image file bytes, or a `Blob` such as a `File`.
 
-### criteria?
+## Returns
 
-\| \{
-`false?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
-`true?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
-}
-\| `null`
+[`Image`](/sdk/javascript/api/classes/Image)
 
-Optional descriptions of the yes and no outcomes.
+## Throws
 
-#### Type Literal
+`data` is empty or isn't file bytes or a `Blob`.
 
-\{
-`false?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
-`true?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
-}
+## Example
 
-Optional descriptions of the yes and no outcomes.
+```ts theme={null}
+// Node: `openAsBlob` reads a file as a Blob and is exported by "node:fs".
+const { answers } = await client.systemOne({
+  state: image(await openAsBlob("product.png")),
+  questions: { damaged: noul("Is the product damaged?") },
+});
+```
 
-##### false?
 
-[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+# Interface: BoxCoordinates
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxCoordinates
 
-Description of the no outcome.
 
-##### true?
 
-[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).
 
-Description of the yes outcome.
+## Properties
+
+### bottom
+
+```ts theme={null}
+readonly bottom: number;
+```
+
+Bottom edge, as a fraction of image height from the top, from zero to one.
 
 ***
 
-`null`
-
-## Returns
-
-[`NoulQuestion`](/sdk/javascript/api/interfaces/NoulQuestion)
-
-
-# Function: score()
-Source: https://docs.typesafe.ai/sdk/javascript/api/functions/score
-
-
+### left
 
 ```ts theme={null}
-function score<T>(instructions, criteria): ScoreQuestion<T>;
+readonly left: number;
 ```
 
-Create a score question using an ordered rubric.
+Left edge, as a fraction of image width from the left, from zero to one.
 
-## Type Parameters
+***
 
-### T
+### right
 
-`T` *extends* [`ScoreCriteria`](/sdk/javascript/api/type-aliases/ScoreCriteria)
+```ts theme={null}
+readonly right: number;
+```
 
-## Parameters
+Right edge, as a fraction of image width from the left, from zero to one.
 
-### instructions
+***
 
-[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+### top
 
-The question as text, a JSON object or array, or `null`.
+```ts theme={null}
+readonly top: number;
+```
 
-### criteria
+Top edge, as a fraction of image height from the top, from zero to one.
 
-`T`
 
-At least two descriptions indexed by score from zero; entries may be `null`.
+# Interface: BoxQuestion
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxQuestion
 
-## Returns
 
-[`ScoreQuestion`](/sdk/javascript/api/interfaces/ScoreQuestion)\<`T`>
+
+A question that locates what its instructions describe in the request's image.
+
+## Properties
+
+### instructions?
+
+```ts theme={null}
+optional instructions?: EntryType;
+```
+
+What to locate, as text, an asset, a JSON object, or an array; optional or `null`.
+
+***
+
+### type
+
+```ts theme={null}
+type: "box";
+```
+
+
+# Interface: BoxResponse
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxResponse
+
+
+
+The answer to a `box` question.
+
+## Properties
+
+### box
+
+```ts theme={null}
+readonly box: BoxCoordinates;
+```
+
+Where the instructions' subject is in the image.
+
+***
+
+### confidence
+
+```ts theme={null}
+readonly confidence: number | null;
+```
+
+Confidence in the box, from zero to one, or `null` when the API didn't report it.
+
+***
+
+### type
+
+```ts theme={null}
+readonly type: "box";
+```
 
 
 # Interface: ChoiceQuestion<T>
@@ -18041,7 +19019,7 @@ A question that selects between named alternatives.
 criteria: T;
 ```
 
-Descriptions of the available outcomes.
+Descriptions of the available outcomes; at least one label is required.
 
 ***
 
@@ -18290,7 +19268,7 @@ optional criteria?:
   | null;
 ```
 
-Optional descriptions of the yes and no outcomes.
+Descriptions of the yes and no outcomes; at least one is required when `instructions` is omitted or `null`.
 
 #### Union Members
 
@@ -18331,7 +19309,7 @@ Description of the yes outcome.
 optional instructions?: EntryType;
 ```
 
-The question as text, a JSON object, or an array; optional or `null`.
+The question as text, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 ***
 
@@ -18641,10 +19619,6 @@ State and named questions for `systemOne`.
 
 Additional properties on a request variable are forwarded, including `null` values.
 
-## Extended by
-
-* [`SystemOneRequestPayload`](/sdk/javascript/api/interfaces/SystemOneRequestPayload)
-
 ## Type Parameters
 
 ### Q
@@ -18652,6 +19626,22 @@ Additional properties on a request variable are forwarded, including `null` valu
 `Q` *extends* [`Questions`](/sdk/javascript/api/interfaces/Questions) = [`Questions`](/sdk/javascript/api/interfaces/Questions)
 
 ## Properties
+
+### assets?
+
+```ts theme={null}
+optional assets?: Record<string, Image>;
+```
+
+References mapped to assets, for referencing assets by name.
+
+References are matched literally in string values within `state`, question instructions,
+or criteria. Use distinct delimiters (such as `<photo>`) to avoid matching ordinary text.
+Assets placed directly in `state` or question content, or in `withAssets` text, are sent
+without being listed here. Every name must appear in the request; otherwise the call
+rejects before sending.
+
+***
 
 ### model?
 
@@ -18676,64 +19666,10 @@ Nonempty questions keyed by the names used to identify their answers.
 ### state
 
 ```ts theme={null}
-state: EntryType;
+state: NonNullable<EntryType>;
 ```
 
-Text, a JSON object or array, or `null` to evaluate.
-
-
-# Interface: SystemOneRequestPayload
-Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequestPayload
-
-
-
-Request body for `POST /v1/systemone`, with the model resolved.
-
-## Extends
-
-* [`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest)
-
-## Properties
-
-### model
-
-```ts theme={null}
-model: string;
-```
-
-Model override; omitted values inherit `defaultModel`.
-
-#### Overrides
-
-[`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest).[`model`](/sdk/javascript/api/interfaces/SystemOneRequest#sdk-model)
-
-***
-
-### questions
-
-```ts theme={null}
-questions: Questions;
-```
-
-Nonempty questions keyed by the names used to identify their answers.
-
-#### Inherited from
-
-[`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest).[`questions`](/sdk/javascript/api/interfaces/SystemOneRequest#sdk-questions)
-
-***
-
-### state
-
-```ts theme={null}
-state: EntryType;
-```
-
-Text, a JSON object or array, or `null` to evaluate.
-
-#### Inherited from
-
-[`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest).[`state`](/sdk/javascript/api/interfaces/SystemOneRequest#sdk-state)
+Text, an asset, a JSON object, or an array to evaluate.
 
 
 # Interface: SystemOneResult<Q>
@@ -18780,6 +19716,60 @@ readonly usage: Usage;
 Token usage for the request.
 
 
+# Interface: TextWithAssets
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/TextWithAssets
+
+
+
+Text from a `withAssets` tagged template, with the assets interpolated into it.
+
+## Properties
+
+### assets
+
+```ts theme={null}
+readonly assets: readonly Image[];
+```
+
+The assets interpolated into the text, including those in nested `withAssets` text.
+
+***
+
+### text
+
+```ts theme={null}
+readonly text: string;
+```
+
+The text, with each asset replaced by its reference.
+
+## Methods
+
+### toJSON()
+
+```ts theme={null}
+toJSON(): string;
+```
+
+The text, written by `JSON.stringify` wherever this value appears in a request.
+
+#### Returns
+
+`string`
+
+***
+
+### toString()
+
+```ts theme={null}
+toString(): string;
+```
+
+#### Returns
+
+`string`
+
+
 # Interface: TypeSafeClientConfig
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/TypeSafeClientConfig
 
@@ -18806,6 +19796,19 @@ optional baseURL?: string;
 ```
 
 API root; falls back to `TYPESAFE_BASE_URL`, then `https://api.typesafe.ai`.
+
+***
+
+### compression?
+
+```ts theme={null}
+optional compression?: Compression;
+```
+
+Request body compression, sent as `Content-Encoding`. Default: `"zstd"` on runtimes that
+have it (Node.js 22.15 or newer), otherwise `false`. Bodies under 1 KiB are always sent
+uncompressed. Pass `false` to send all bodies uncompressed, for example to an API that
+doesn't accept compressed requests.
 
 ***
 
@@ -18902,20 +19905,20 @@ Token usage for a request.
 ### input\_tokens
 
 ```ts theme={null}
-readonly input_tokens: number;
+readonly input_tokens: number | null;
 ```
 
-Number of input tokens used.
+Number of input tokens used, or `null` when the API did not report it.
 
 ***
 
 ### output\_tokens
 
 ```ts theme={null}
-readonly output_tokens: number;
+readonly output_tokens: number | null;
 ```
 
-Number of output tokens used.
+Number of output tokens used, or `null` when the API did not report it.
 
 
 # Interface: WithResponse<T>
@@ -18962,6 +19965,18 @@ response: Response;
 The HTTP response, with its body consumed by parsing.
 
 
+# Type Alias: Asset
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Asset
+
+
+
+```ts theme={null}
+type Asset = Image;
+```
+
+An asset sent with a request under a reference.
+
+
 # Type Alias: ChoiceCriteria
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ChoiceCriteria
 
@@ -18978,6 +19993,41 @@ Labels mapped to descriptions, or `null` for undescribed labels.
 ```ts theme={null}
 [label: string]: EntryType
 ```
+
+
+# Type Alias: Compression
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Compression
+
+
+
+```ts theme={null}
+type Compression = "zstd" | false;
+```
+
+Request body compression: `"zstd"`, or `false` to send bodies uncompressed.
+
+
+# Type Alias: ContentValue
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ContentValue
+
+
+
+```ts theme={null}
+type ContentValue = 
+  | string
+  | number
+  | boolean
+  | null
+  | Asset
+  | TextWithAssets
+  | ContentValue[]
+  | {
+[key: string]: ContentValue;
+};
+```
+
+A JSON-compatible value that may also hold assets, each written as its name in `assets`, or
+else as its reference.
 
 
 # Type Alias: Description
@@ -19000,14 +20050,19 @@ Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType
 ```ts theme={null}
 type EntryType = 
   | string
+  | Asset
+  | TextWithAssets
   | {
-[key: string]: JsonValue;
+[key: string]: ContentValue;
 }
-  | JsonValue[]
+  | ContentValue[]
   | null;
 ```
 
-Text, a JSON object or array, or `null` for state, instructions, and criteria.
+Text, an asset, a JSON object or array, or `null` for instructions and criteria.
+
+Each asset in it is written as its name in `assets`, or else as its reference, and sent
+with the request.
 
 
 # Type Alias: EnvVar
@@ -19087,7 +20142,8 @@ Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Question
 type Question = 
   | NoulQuestion
   | ScoreQuestion
-  | ChoiceQuestion;
+  | ChoiceQuestion
+  | BoxQuestion;
 ```
 
 A question identified by its `type` field.
@@ -19099,7 +20155,7 @@ Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ResultFor
 
 
 ```ts theme={null}
-type ResultFor<T> = T extends NoulQuestion ? NoulResponse : T extends ScoreQuestion<infer S> ? ScoreResponse<S> : T extends ChoiceQuestion<infer E> ? ChoiceResponse<E> : never;
+type ResultFor<T> = T extends NoulQuestion ? NoulResponse : T extends ScoreQuestion<infer S> ? ScoreResponse<S> : T extends ChoiceQuestion<infer E> ? ChoiceResponse<E> : T extends BoxQuestion ? BoxResponse : never;
 ```
 
 The answer type for a question, preserving its criteria keys.
@@ -19129,7 +20185,7 @@ Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreLegend
 
 
 ```ts theme={null}
-type ScoreLegend<T> = { readonly [score in ScoreOf<T>]: T[score] };
+type ScoreLegend<T> = { readonly [score in ScoreOf<T>]: SentContent<T[score]> };
 ```
 
 Rubric descriptions keyed by score.
@@ -19157,6 +20213,24 @@ Score keys inferred from the rubric; a fixed-length tuple yields its indices, ot
 ### T
 
 `T` *extends* [`ScoreCriteria`](/sdk/javascript/api/type-aliases/ScoreCriteria)
+
+
+# Type Alias: SentContent<T>
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/SentContent
+
+
+
+```ts theme={null}
+type SentContent<T> = T extends Asset | TextWithAssets ? string : T extends object ? { readonly [key in keyof T]: SentContent<T[key]> } : T;
+```
+
+Content as the API returns it, with assets and `withAssets` text written as strings.
+
+## Type Parameters
+
+### T
+
+`T`
 
 
 # Variable: ENV
@@ -19223,7 +20297,268 @@ Source: https://docs.typesafe.ai/sdk/javascript/api/variables/VERSION
 
 
 ```ts theme={null}
-const VERSION: "0.6.0" = "0.6.0";
+const VERSION: "0.7.0" = "0.7.0";
+```
+
+
+# Variable: noul
+Source: https://docs.typesafe.ai/sdk/javascript/api/variables/noul
+
+
+
+```ts theme={null}
+const noul: {
+  (instructions, criteria?): NoulQuestion;
+  (instructions, criteria): NoulQuestion;
+};
+```
+
+Create a yes/no question with optional descriptions for either outcome.
+
+## Call Signature
+
+```ts theme={null}
+(instructions, criteria?): NoulQuestion;
+```
+
+### Parameters
+
+#### instructions
+
+`NonNullable`\<[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)>
+
+#### criteria?
+
+\| \{
+`false?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
+`true?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
+}
+\| `null`
+
+##### Type Literal
+
+\{
+`false?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
+`true?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
+}
+
+###### false?
+
+[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+
+Description of the no outcome.
+
+###### true?
+
+[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+
+Description of the yes outcome.
+
+***
+
+`null`
+
+### Returns
+
+[`NoulQuestion`](/sdk/javascript/api/interfaces/NoulQuestion)
+
+## Call Signature
+
+```ts theme={null}
+(instructions, criteria): NoulQuestion;
+```
+
+### Parameters
+
+#### instructions
+
+[`EntryType`](/sdk/javascript/api/type-aliases/EntryType) | `undefined`
+
+#### criteria
+
+\| \{
+`false?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
+`true`: `NonNullable`\<[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)>;
+}
+\| \{
+`false`: `NonNullable`\<[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)>;
+`true?`: [`EntryType`](/sdk/javascript/api/type-aliases/EntryType);
+}
+
+### Returns
+
+[`NoulQuestion`](/sdk/javascript/api/interfaces/NoulQuestion)
+
+## Param
+
+**instructions**
+
+The question as text, a JSON object or array; `null` or omitted
+requires `criteria` to describe at least one outcome.
+
+## Param
+
+**criteria**
+
+Descriptions of the yes and no outcomes.
+
+
+# Variable: score
+Source: https://docs.typesafe.ai/sdk/javascript/api/variables/score
+
+
+
+```ts theme={null}
+const score: {
+<T>  (instructions, criteria): ScoreQuestion<T>;
+<T>  (instructions, criteria): ScoreQuestion<readonly [T[number], T[number], T[number]]>;
+};
+```
+
+Create a score question using an ordered rubric.
+
+## Call Signature
+
+```ts theme={null}
+<T>(instructions, criteria): ScoreQuestion<T>;
+```
+
+### Type Parameters
+
+#### T
+
+`T` *extends* [`ScoreCriteria`](/sdk/javascript/api/type-aliases/ScoreCriteria)
+
+### Parameters
+
+#### instructions
+
+[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+
+#### criteria
+
+`T`
+
+### Returns
+
+[`ScoreQuestion`](/sdk/javascript/api/interfaces/ScoreQuestion)\<`T`>
+
+## Call Signature
+
+```ts theme={null}
+<T>(instructions, criteria): ScoreQuestion<readonly [T[number], T[number], T[number]]>;
+```
+
+### Type Parameters
+
+#### T
+
+`T` *extends* readonly [`EntryType`](/sdk/javascript/api/type-aliases/EntryType)\[]
+
+### Parameters
+
+#### instructions
+
+[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+
+#### criteria
+
+`T` & `number` *extends* `T`\[`"length"`] ? `unknown` : `never`
+
+### Returns
+
+[`ScoreQuestion`](/sdk/javascript/api/interfaces/ScoreQuestion)\<readonly \[`T`\[`number`], `T`\[`number`], `T`\[`number`]]>
+
+## Param
+
+**instructions**
+
+The question as text, a JSON object or array, or `null`.
+
+## Param
+
+**criteria**
+
+At least two descriptions indexed by score from zero; entries may be `null`.
+A list built at runtime, such as a `string[]`, is accepted, and `systemOne` rejects it when
+it has fewer than two entries.
+
+
+# Variable: withAssets
+Source: https://docs.typesafe.ai/sdk/javascript/api/variables/withAssets
+
+
+
+```ts theme={null}
+const withAssets: {
+(strings, ...values): TextWithAssets;
+  join: TextWithAssets;
+};
+```
+
+Tag a template literal so the assets interpolated into it are sent with the text.
+
+Each asset is replaced by its reference; other values are converted to strings, as in an
+untagged template literal. To write a list of assets with a separator, use
+`withAssets.join`.
+
+## Type Declaration
+
+## Parameters
+
+### strings
+
+`TemplateStringsArray`
+
+### values
+
+...readonly `unknown`\[]
+
+## Returns
+
+[`TextWithAssets`](/sdk/javascript/api/interfaces/TextWithAssets)
+
+### join()
+
+```ts theme={null}
+join(values, separator?): TextWithAssets;
+```
+
+Join `values` with `separator`, as `Array.prototype.join` does, and send the assets among
+them with the text. The result can be passed as content or interpolated into `withAssets`.
+
+#### Parameters
+
+##### values
+
+readonly `unknown`\[]
+
+##### separator?
+
+`string`
+
+Written between values. Default: `","`.
+
+#### Returns
+
+[`TextWithAssets`](/sdk/javascript/api/interfaces/TextWithAssets)
+
+#### Example
+
+```ts theme={null}
+const { answers } = await client.systemOne({
+  state: withAssets`The seller uploaded ${withAssets.join(uploads, ", ")}.`,
+  questions: { same: noul("Do the uploads show the same product?") },
+});
+```
+
+## Example
+
+```ts theme={null}
+const { answers } = await client.systemOne({
+  state: withAssets`Compare ${photo} with the listing.`,
+  questions: { same: noul(withAssets`Is ${photo} the product in ${listing}?`) },
+});
 ```
 
 
@@ -19231,6 +20566,27 @@ const VERSION: "0.6.0" = "0.6.0";
 Source: https://docs.typesafe.ai/sdk/javascript/changelog
 
 
+
+## v0.7.0 (2026-10-14)
+
+### Breaking changes
+
+* require Node.js 22 or newer
+* stop exporting request payload types
+
+### Features
+
+* support images, as an experimental feature enabled with the `TypeSafe-Danger-Zone-Images: true` header: create them with `image()` or `Image.fromBase64()`, then place them in `state`, question instructions, or criteria, write them into text with `withAssets` and `withAssets.join`, or reference them by names you choose in `assets`
+* add `box` questions, which locate what their instructions describe in an image; use them with the `jev-preview` model
+* compress request bodies of 1 KiB or more with zstd on Node.js 22.15 or newer; pass `compression: false` to send them uncompressed
+
+### Bug fixes
+
+* allow null token counts in usage
+* add more request validation checks
+* reject the returned promise for invalid requests instead of throwing
+* accept score criteria lists built at runtime
+* stop an unhandled rejection on Node.js 22 when a request times out or is aborted mid-body
 
 ## v0.6.0 (2026-09-15)
 
@@ -19240,7 +20596,7 @@ Source: https://docs.typesafe.ai/sdk/javascript/changelog
 
 ## v0.5.7 (2026-09-11)
 
-This is the initial public release of TypeSafe JavaScript and TypeScript SDK. Learn more in the [documentation](https://docs.typesafe.ai/sdk/javascript).
+This is the initial public release of TypeSafe JavaScript and TypeScript SDK. Learn more in the [documentation](https://docs.typesafe.ai/go/js-sdk).
 
 
 # TypeSafe Python SDK
@@ -19270,7 +20626,11 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
      </Tab>
    </Tabs>
 
-   Add the `http2` extra (`typesafe-sdk[http2]`) to enable [HTTP/2 support](/sdk/python/usage#http2).
+   Extras (for example, `typesafe-sdk[http2]`) supported:
+
+   * `http2`: enable [HTTP/2 support](/sdk/python/usage/advanced#http2)
+   * `pil`: send [Pillow images](/sdk/python/api/types/assets#typesafe_sdk.Image.from_pil)
+   * `zstd`: [compress request bodies](/sdk/python/usage/advanced#ensure-zstd-is-available) on Python 3.13 and earlier
 2. Set `TYPESAFE_API_KEY` in your environment (create it [here](https://console.typesafe.ai/))
 3. Call the System One API:
 
@@ -19336,7 +20696,13 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
 
 ## What's next
 
-Visit the [Usage guide](/sdk/python/usage) to learn more about patterns such as [typed responses](/sdk/python/usage#typed-system_one-responses), [model selection](/sdk/python/usage#choosing-a-model), [retries](/sdk/python/usage#retries), [HTTP/2](/sdk/python/usage#http2), or [error handling](/sdk/python/usage#error-handling).
+Visit the [Usage guide](/sdk/python/usage/basic) to learn how to:
+
+* [Choose a System One model](/sdk/python/usage/basic#choosing-a-model)
+* [Send media inputs](/sdk/python/usage/basic#attaching-media-assets)
+* [Use typed responses](/sdk/python/usage/basic#typed-system_one-responses)
+* [Configure retry policy](/sdk/python/usage/basic#retries)
+* [Optimize performance](/sdk/python/usage/advanced#performance)
 
 
 # API reference
@@ -19395,12 +20761,15 @@ Parameters:
 * **`base_url`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
 
   API root; may be set via the `TYPESAFE_BASE_URL` environment variable.
+* **`compression`** (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['zstd', False] | None</code>, default: `None` ) –
+
+  Request body compression: `"zstd"`, or `False` to send bodies uncompressed. Defaults to zstd [when available](/sdk/python/usage/advanced#ensure-zstd-is-available).
 
 Raises:
 
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
 
-  The API key is missing or invalid, or the timeout is invalid.
+  The API key is missing or invalid, the timeout is invalid, or zstd compression is unavailable.
 * <code><a href="https://docs.python.org/3/builtins/exceptions.html#ValueError">ValueError</a></code> –
 
   Both `transport` and `http_client` are supplied.
@@ -19446,25 +20815,69 @@ async def main() -> None:
         models = await client.models.list()
 ```
 
+### attach\_assets
+
+Attach assets to calls made within a `with` block, for referencing them inside strings.
+
+Until the block exits, calls on this client send each attached asset whose reference, `str(asset)`, appears in the request.
+
+<Warning>
+  **Warning**
+
+  The SDK only recognizes references to assets that are attached, passed in `assets`, or placed directly in the content. A reference to any other asset is sent as plain text, without the asset.
+</Warning>
+
+Parameters:
+
+* **`assets`** (<code><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a> | <a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>\[<a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>]</code>) –
+
+  An asset, or a sequence of them.
+
+Raises:
+
+* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+
+  An attached value is not an asset.
+
+Examples:
+
+```python theme={null}
+from pathlib import Path
+
+from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
+
+
+async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
+    photo = Image(path)
+    with client.attach_assets(photo):
+        return await client.system_one(
+            state=f"Product: {photo}",
+            questions={"damaged": Noul(instructions="Is the product damaged?")},
+        )
+```
+
 ### system\_one
 
 `async`
 
-Answer named questions about text or structured state.
+Answer named questions about text, structured state, or assets.
 
-See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
+See [System One](https://docs.typesafe.ai/go/system-one) for details.
 
 Parameters:
 
-* **`state`** (<code><a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a></code>) –
+* **`state`** (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a></code>) –
 
-  Text, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/concepts/state) for details.
+  Text, an asset, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/go/state) for details.
 * **`questions`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/questions#typesafe_sdk.Question">Question</a>]</code>) –
 
   Nonempty mapping of names to question objects or raw dictionaries.
 * **`model`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
 
   Model override; `None` inherits the client default.
+* **`assets`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>] | None</code>, default: `None` ) –
+
+  Assets keyed by the reference used for them in `state` or questions; see [Attaching media assets](/sdk/python/usage/basic#attaching-media-assets).
 * **`retry`** (<code><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">RetryPolicy</a> | None</code>, default: `None` ) –
 
   An optional retry policy to override the client-level value for this call only.
@@ -19476,7 +20889,7 @@ Parameters:
   Additional request headers to set.
 * **`extra_body`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/common#typesafe_sdk.JSONValue">JSONValue</a> | None] | None</code>, default: `None` ) –
 
-  Additional top-level request-body fields, shallow-merged over the body after `state`, `model`, and `questions` are set. Merging is last-write-wins: a key that collides with `state`, `model`, or `questions` overrides it, and object values are replaced rather than deep-merged.
+  Additional top-level request-body fields, shallow-merged over the body after `state`, `model`, `questions`, and `assets` are set. Merging is last-write-wins: a key that collides with those fields overrides it, and object values are replaced rather than deep-merged.
 * **`response_model`** (<code><a href="https://docs.python.org/3/builtins/functions.html#type">type</a>\[ResponseT] | None</code>, default: `None` ) –
 
   Optional Pydantic `BaseModel` type describing the JSON response body, including any nested answer models.
@@ -19494,7 +20907,7 @@ Raises:
 
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
 
-  State is `None`, questions are empty, a score or choice question has no criteria, or a noul question has neither instructions nor criteria.
+  The request is invalid before it's sent, such as empty questions or an unreadable asset.
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code> –
 
   The server returns an unsuccessful HTTP response after any retries.
@@ -19655,12 +21068,15 @@ Parameters:
 * **`base_url`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
 
   API root; may be set via the `TYPESAFE_BASE_URL` environment variable.
+* **`compression`** (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['zstd', False] | None</code>, default: `None` ) –
+
+  Request body compression: `"zstd"`, or `False` to send bodies uncompressed. Defaults to zstd [when available](/sdk/python/usage/advanced#ensure-zstd-is-available).
 
 Raises:
 
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
 
-  The API key is missing or invalid, or the timeout is invalid.
+  The API key is missing or invalid, the timeout is invalid, or zstd compression is unavailable.
 * <code><a href="https://docs.python.org/3/builtins/exceptions.html#ValueError">ValueError</a></code> –
 
   Both `transport` and `http_client` are supplied.
@@ -19698,23 +21114,67 @@ with TypeSafeClient() as client:
     models = client.models.list()
 ```
 
-### system\_one
+### attach\_assets
 
-Answer named questions about text or structured state.
+Attach assets to calls made within a `with` block, for referencing them inside strings.
 
-See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
+Until the block exits, calls on this client send each attached asset whose reference, `str(asset)`, appears in the request.
+
+<Warning>
+  **Warning**
+
+  The SDK only recognizes references to assets that are attached, passed in `assets`, or placed directly in the content. A reference to any other asset is sent as plain text, without the asset.
+</Warning>
 
 Parameters:
 
-* **`state`** (<code><a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a></code>) –
+* **`assets`** (<code><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a> | <a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>\[<a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>]</code>) –
 
-  Text, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/concepts/state) for details.
+  An asset, or a sequence of them.
+
+Raises:
+
+* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+
+  An attached value is not an asset.
+
+Examples:
+
+```python theme={null}
+from pathlib import Path
+
+from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+
+
+def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
+    photo = Image(path)
+    with client.attach_assets(photo):
+        return client.system_one(
+            state=f"Product: {photo}",
+            questions={"damaged": Noul(instructions="Is the product damaged?")},
+        )
+```
+
+### system\_one
+
+Answer named questions about text, structured state, or assets.
+
+See [System One](https://docs.typesafe.ai/go/system-one) for details.
+
+Parameters:
+
+* **`state`** (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a></code>) –
+
+  Text, an asset, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/go/state) for details.
 * **`questions`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/questions#typesafe_sdk.Question">Question</a>]</code>) –
 
   Nonempty mapping of names to question objects or raw dictionaries.
 * **`model`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
 
   Model override; `None` inherits the client default.
+* **`assets`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>] | None</code>, default: `None` ) –
+
+  Assets keyed by the reference used for them in `state` or questions; see [Attaching media assets](/sdk/python/usage/basic#attaching-media-assets).
 * **`retry`** (<code><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">RetryPolicy</a> | None</code>, default: `None` ) –
 
   An optional retry policy to override the client-level value for this call only.
@@ -19726,7 +21186,7 @@ Parameters:
   Additional request headers to set.
 * **`extra_body`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/common#typesafe_sdk.JSONValue">JSONValue</a> | None] | None</code>, default: `None` ) –
 
-  Additional top-level request-body fields, shallow-merged over the body after `state`, `model`, and `questions` are set. Merging is last-write-wins: a key that collides with `state`, `model`, or `questions` overrides it, and object values are replaced rather than deep-merged.
+  Additional top-level request-body fields, shallow-merged over the body after `state`, `model`, `questions`, and `assets` are set. Merging is last-write-wins: a key that collides with those fields overrides it, and object values are replaced rather than deep-merged.
 * **`response_model`** (<code><a href="https://docs.python.org/3/builtins/functions.html#type">type</a>\[ResponseT] | None</code>, default: `None` ) –
 
   Optional Pydantic `BaseModel` type describing the JSON response body, including any nested answer models.
@@ -19744,7 +21204,7 @@ Raises:
 
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
 
-  State is `None`, questions are empty, a score or choice question has no criteria, or a noul question has neither instructions nor criteria.
+  The request is invalid before it's sent, such as empty questions or an unreadable asset.
 * <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code> –
 
   The server returns an unsuccessful HTTP response after any retries.
@@ -20202,6 +21662,146 @@ Total retry budget in seconds per SDK call, including the initial attempt and de
 Stops before a retry whose delay would reach or exceed the budget, re-raising the last error.
 
 
+# Assets
+Source: https://docs.typesafe.ai/sdk/python/api/types/assets
+
+Attach assets to System One requests and reference them from request content.
+
+<Note>
+  **Note**
+
+  The API detects each image's format from its bytes.
+</Note>
+
+## typesafe\_sdk.Asset
+
+`module-attribute`
+
+An asset referenced from request content; currently only images are supported.
+
+## typesafe\_sdk.Image
+
+`dataclass`
+
+An image asset backed by image file bytes, or a path to an image file.
+
+<Tip>
+  **Reusing images**
+
+  An `Image` is loaded once, on first use, and reused by every request that sends the same `Image` object.
+</Tip>
+
+<Tip>
+  **Working with `Buffer` objects**
+
+  `Image` also accepts `Buffer` objects: anything exposing its memory through the [buffer protocol](https://docs.python.org/3/c-api/buffer.html), such as `bytearray`, `memoryview`, `mmap`, or NumPy arrays. Buffers other than `bytes` are copied into memory once, on first use, so the original can change or be closed afterwards.
+</Tip>
+
+Examples:
+
+From a file path:
+
+```python theme={null}
+from pathlib import Path
+
+image = Image(Path("photos/product.png"))
+```
+
+From bytes in memory:
+
+```python theme={null}
+def from_bytes(data: bytes) -> Image:
+    return Image(data)
+```
+
+From base64 text, such as an upload:
+
+```python theme={null}
+def from_upload(data_base64: str) -> Image:
+    return Image.from_base64(data_base64)
+```
+
+From a Pillow image (requires the `pil` extra):
+
+```python theme={null}
+import PIL.Image
+
+image = Image.from_pil(PIL.Image.new("RGB", (64, 64)), format="jpeg")
+```
+
+From a slice of a larger buffer, without copying it into `bytes` first:
+
+```python theme={null}
+def embedded_photo(container: bytes, offset: int, length: int) -> Image:
+    return Image(memoryview(container)[offset : offset + length])
+```
+
+From a memory-mapped file:
+
+```python theme={null}
+import mmap
+
+
+def map_photo(path: Path) -> Image:
+    with path.open("rb") as file:
+        return Image(mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ))
+```
+
+### data
+
+`instance-attribute`
+
+Image contents, represented as one of:
+
+* raw bytes (anything supporting the [`Buffer` protocol](https://docs.python.org/3/library/stdtypes.html#buffer-objects))
+* [path-like](https://docs.python.org/3/library/os.html#os.PathLike) object pointing at the image on the filesystem
+
+### from\_base64
+
+`classmethod`
+
+Create an `Image` instance from a base64-encoded image bytes.
+
+Parameters:
+
+* **`data`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">Buffer</a></code>) –
+
+  The image file bytes, base64-encoded, as text or an ASCII buffer. Whitespace, such as the line breaks of wrapped base64, is ignored.
+
+Raises:
+
+* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+
+  The data isn't valid base64 text.
+
+### from\_pil
+
+`classmethod`
+
+Create an `Image` instance from a [Pillow](https://pillow.readthedocs.io/) image.
+
+<Warning>
+  **Encoder settings**
+
+  The image is saved with Pillow's default encoder settings, except that JPEG uses quality 95. JPEG can't store transparency or palettes, so pass `format="png"` for RGBA or P mode images. Encode it yourself if different settings are needed.
+</Warning>
+
+Parameters:
+
+* **`image`** (<code><a href="https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL">PIL</a>.<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image">Image</a>.<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image">Image</a></code>) –
+
+  The Pillow image to encode.
+* **`format`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>, default: `'jpeg'` ) –
+
+  The image format to save as, by its [Pillow name](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html).
+
+Raises:
+
+* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+
+  Pillow can't encode the image in this format.
+
+
 # Common types
 Source: https://docs.typesafe.ai/sdk/python/api/types/common
 
@@ -20219,6 +21819,20 @@ A JSON-like value. May be nested and contain `None`.
 
 Either a plain string or a mapping/sequence of [`JSONValue`](/sdk/python/api/types/common#typesafe_sdk.JSONValue) entries.
 
+## typesafe\_sdk.ContentValue
+
+`module-attribute`
+
+A JSON-like value that may also hold [assets](/sdk/python/api/types/assets#typesafe_sdk.Asset). May be nested and contain `None`.
+
+## typesafe\_sdk.Content
+
+`module-attribute`
+
+Text, an [asset](/sdk/python/api/types/assets#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](/sdk/python/api/types/common#typesafe_sdk.ContentValue) entries.
+
+Each asset is sent in the request's assets, with its unique reference in its place.
+
 
 # Questions
 Source: https://docs.typesafe.ai/sdk/python/api/types/questions
@@ -20231,7 +21845,7 @@ Provide state and ask yes/no, choice, and score questions using objects or dicti
 
 ## Question objects
 
-Use `Noul`, `Choice`, and `Score` to define questions with named arguments.
+Use `Noul`, `Choice`, `Score`, and `Box` to define questions with named arguments.
 
 ## typesafe\_sdk.NoulCriteria
 
@@ -20239,19 +21853,19 @@ Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.h
 
 Optional descriptions of the yes and no outcomes.
 
-See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
 ### true
 
 `instance-attribute`
 
-Description of the yes outcome as text, a JSON object, or an array; `None` leaves it undescribed.
+Description of the yes outcome as text, an asset, a JSON object, or an array; `None` leaves it undescribed.
 
 ### false
 
 `instance-attribute`
 
-Description of the no outcome as text, a JSON object, or an array; `None` leaves it undescribed.
+Description of the no outcome as text, an asset, a JSON object, or an array; `None` leaves it undescribed.
 
 ## typesafe\_sdk.Noul
 
@@ -20261,7 +21875,7 @@ Bases: `_Question`, `wire.NoulQuestion`
 
 A yes/no question with optional descriptions for either outcome.
 
-See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
 <Note>
   **Show JSON schema:**
@@ -20270,7 +21884,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
     ```json theme={null}
     {
       "$defs": {
-        "JSONContent": {
+        "Content": {
           "anyOf": [
             {
               "type": "string"
@@ -20279,7 +21893,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
               "additionalProperties": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20292,7 +21906,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20303,7 +21917,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
             }
           ]
         },
-        "JSONValue": {
+        "ContentValue": {
           "anyOf": [
             {
               "type": "string"
@@ -20321,7 +21935,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20334,7 +21948,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
               "additionalProperties": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20347,12 +21961,12 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
         },
         "NoulCriteria": {
           "additionalProperties": false,
-          "description": "Optional descriptions of the yes and no outcomes.\n\nSee the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.",
+          "description": "Optional descriptions of the yes and no outcomes.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
           "properties": {
             "true": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/JSONContent"
+                  "$ref": "#/$defs/Content"
                 },
                 {
                   "type": "null"
@@ -20362,7 +21976,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
             "false": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/JSONContent"
+                  "$ref": "#/$defs/Content"
                 },
                 {
                   "type": "null"
@@ -20375,7 +21989,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
         }
       },
       "additionalProperties": false,
-      "description": "A yes/no question with optional descriptions for either outcome.\n\nSee the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.",
+      "description": "A yes/no question with optional descriptions for either outcome.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
       "properties": {
         "type": {
           "const": "noul",
@@ -20386,7 +22000,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
         "instructions": {
           "anyOf": [
             {
-              "$ref": "#/$defs/JSONContent"
+              "$ref": "#/$defs/Content"
             },
             {
               "type": "null"
@@ -20416,14 +22030,14 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
 Fields:
 
 * `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['noul']</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Noul.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a> | None</code>)
+* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Noul.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
 * <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Noul.criteria">criteria</a></code> (<code><a href="/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria">NoulCriteria</a> | None</code>)
 
 ### instructions
 
 `pydantic-field`
 
-The question to ask, expressed as text, a JSON object, or an array; optional when `criteria` describes an outcome.
+The question to ask, expressed as text, an asset, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 ### criteria
 
@@ -20439,7 +22053,7 @@ Bases: `_Question`, `wire.ChoiceQuestion`
 
 A question that selects between named alternatives.
 
-See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 
 <Note>
   **Show JSON schema:**
@@ -20448,7 +22062,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
     ```json theme={null}
     {
       "$defs": {
-        "JSONContent": {
+        "Content": {
           "anyOf": [
             {
               "type": "string"
@@ -20457,7 +22071,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
               "additionalProperties": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20470,7 +22084,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20481,7 +22095,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
             }
           ]
         },
-        "JSONValue": {
+        "ContentValue": {
           "anyOf": [
             {
               "type": "string"
@@ -20499,7 +22113,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20512,7 +22126,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
               "additionalProperties": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20525,7 +22139,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
         }
       },
       "additionalProperties": false,
-      "description": "A question that selects between named alternatives.\n\nSee the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.",
+      "description": "A question that selects between named alternatives.\n\nSee the [choice primitive](https://docs.typesafe.ai/go/choice) for details.",
       "properties": {
         "type": {
           "const": "choice",
@@ -20536,7 +22150,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
         "instructions": {
           "anyOf": [
             {
-              "$ref": "#/$defs/JSONContent"
+              "$ref": "#/$defs/Content"
             },
             {
               "type": "null"
@@ -20548,7 +22162,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
           "additionalProperties": {
             "anyOf": [
               {
-                "$ref": "#/$defs/JSONContent"
+                "$ref": "#/$defs/Content"
               },
               {
                 "type": "null"
@@ -20572,20 +22186,20 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
 Fields:
 
 * `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['choice']</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Choice.criteria">criteria</a></code> (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a> | None]</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Choice.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a> | None</code>)
+* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Choice.criteria">criteria</a></code> (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None]</code>)
+* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Choice.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
 
 ### criteria
 
 `pydantic-field`
 
-A nonempty mapping of labels to text, object, or array descriptions, or `None` for undescribed labels.
+A nonempty mapping of labels to text, asset, object, or array descriptions, or `None` for undescribed labels.
 
 ### instructions
 
 `pydantic-field`
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
 ## typesafe\_sdk.Score
 
@@ -20595,7 +22209,7 @@ Bases: `_Question`, `wire.ScoreQuestion`
 
 A question that assigns a score using an ordered rubric.
 
-See the [score primitive](https://docs.typesafe.ai/primitives/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 
 <Note>
   **Show JSON schema:**
@@ -20604,7 +22218,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
     ```json theme={null}
     {
       "$defs": {
-        "JSONContent": {
+        "Content": {
           "anyOf": [
             {
               "type": "string"
@@ -20613,7 +22227,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
               "additionalProperties": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20626,7 +22240,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20637,7 +22251,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
             }
           ]
         },
-        "JSONValue": {
+        "ContentValue": {
           "anyOf": [
             {
               "type": "string"
@@ -20655,7 +22269,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20668,7 +22282,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
               "additionalProperties": {
                 "anyOf": [
                   {
-                    "$ref": "#/$defs/JSONValue"
+                    "$ref": "#/$defs/ContentValue"
                   },
                   {
                     "type": "null"
@@ -20681,7 +22295,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
         }
       },
       "additionalProperties": false,
-      "description": "A question that assigns a score using an ordered rubric.\n\nSee the [score primitive](https://docs.typesafe.ai/primitives/score) for details.",
+      "description": "A question that assigns a score using an ordered rubric.\n\nSee the [score primitive](https://docs.typesafe.ai/go/score) for details.",
       "properties": {
         "type": {
           "const": "score",
@@ -20692,7 +22306,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
         "instructions": {
           "anyOf": [
             {
-              "$ref": "#/$defs/JSONContent"
+              "$ref": "#/$defs/Content"
             },
             {
               "type": "null"
@@ -20702,7 +22316,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
         },
         "criteria": {
           "items": {
-            "$ref": "#/$defs/JSONContent"
+            "$ref": "#/$defs/Content"
           },
           "minItems": 1,
           "title": "Criteria",
@@ -20722,20 +22336,167 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
 Fields:
 
 * `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['score']</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Score.criteria">criteria</a></code> (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>\[<a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a>]</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Score.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.JSONContent">JSONContent</a> | None</code>)
+* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Score.criteria">criteria</a></code> (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>\[<a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a>]</code>)
+* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Score.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
 
 ### criteria
 
 `pydantic-field`
 
-A nonempty, ordered list of text, object, or array descriptions, one per score from zero.
+A nonempty, ordered list of text, asset, object, or array descriptions, one per score from zero.
 
 ### instructions
 
 `pydantic-field`
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
+
+## typesafe\_sdk.Box
+
+`pydantic-model`
+
+Bases: `_Question`, `wire.BoxQuestion`
+
+A question that locates what its instructions describe in the request's image.
+
+Examples:
+
+```python theme={null}
+from pathlib import Path
+
+from typesafe_sdk import Box, BoxAnswer, Image, TypeSafeClient
+
+
+def locate_dog(client: TypeSafeClient, photo: Path) -> BoxAnswer:
+    result = client.system_one(
+        state=Image(photo),
+        questions={"dog": Box(instructions="The dog")},
+        model="jev-preview",
+    )
+    return result.boxes["dog"]
+```
+
+<Note>
+  **Show JSON schema:**
+
+  <Accordion title="Details">
+    ````json theme={null}
+    {
+      "$defs": {
+        "Content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ContentValue"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ContentValue"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "ContentValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ContentValue"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ContentValue"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "description": "A question that locates what its instructions describe in the request's image.\n\nExamples:\n    ```python\n    from pathlib import Path\n\n    from typesafe_sdk import Box, BoxAnswer, Image, TypeSafeClient\n\n\n    def locate_dog(client: TypeSafeClient, photo: Path) -> BoxAnswer:\n        result = client.system_one(\n            state=Image(photo),\n            questions={\"dog\": Box(instructions=\"The dog\")},\n            model=\"jev-preview\",\n        )\n        return result.boxes[\"dog\"]\n    ```",
+      "properties": {
+        "type": {
+          "const": "box",
+          "default": "box",
+          "title": "Type",
+          "type": "string"
+        },
+        "instructions": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Content"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Box",
+      "type": "object"
+    }
+    ````
+  </Accordion>
+</Note>
+
+Fields:
+
+* `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['box']</code>)
+* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Box.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
+
+### instructions
+
+`pydantic-field`
+
+What to locate in the request's image, expressed as text, an asset, a JSON object, or an array; optional.
 
 ## typesafe\_sdk.Question
 
@@ -20751,7 +22512,7 @@ Question inputs keyed by the names used to identify their answers.
 
 ## Question dictionaries
 
-Question dictionaries include a `type` key: `"noul"`, `"choice"`, or `"score"`. You can mix dictionaries and question objects in the same request.
+Question dictionaries include a `type` key: `"noul"`, `"choice"`, `"score"`, or `"box"`. You can mix dictionaries and question objects in the same request.
 
 ## typesafe\_sdk.NoulModel
 
@@ -20759,7 +22520,7 @@ Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.h
 
 A yes/no question dictionary with `type="noul"`.
 
-See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
 ### type
 
@@ -20769,7 +22530,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
 
 `instance-attribute`
 
-The question to ask, expressed as text, a JSON object, or an array; optional when `criteria` describes an outcome.
+The question to ask, expressed as text, an asset, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 ### criteria
 
@@ -20783,7 +22544,7 @@ Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.h
 
 A choice question dictionary with `type="choice"`.
 
-See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 
 ### type
 
@@ -20793,13 +22554,13 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
 
 `instance-attribute`
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
 ### criteria
 
 `instance-attribute`
 
-A nonempty mapping of labels to text, object, or array descriptions, or `None` for undescribed labels.
+A nonempty mapping of labels to text, asset, object, or array descriptions, or `None` for undescribed labels.
 
 ## typesafe\_sdk.ScoreModel
 
@@ -20807,7 +22568,7 @@ Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.h
 
 A score question dictionary with `type="score"`.
 
-See the [score primitive](https://docs.typesafe.ai/primitives/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 
 ### type
 
@@ -20817,13 +22578,29 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
 
 `instance-attribute`
 
-The question to ask, expressed as text, a JSON object, or an array; optional.
+The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
 ### criteria
 
 `instance-attribute`
 
-A nonempty, ordered list of text, object, or array descriptions, one per score from zero.
+A nonempty, ordered list of text, asset, object, or array descriptions, one per score from zero.
+
+## typesafe\_sdk.BoxModel
+
+Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypedDict">TypedDict</a></code>
+
+A box question dictionary with `type="box"`.
+
+### type
+
+`instance-attribute`
+
+### instructions
+
+`instance-attribute`
+
+What to locate in the request's image, expressed as text, an asset, a JSON object, or an array; optional.
 
 ## typesafe\_sdk.QuestionModel
 
@@ -20847,7 +22624,7 @@ Bases: `Response`
 
 Answers grouped by question type with model and usage metadata.
 
-See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
+See [System One](https://docs.typesafe.ai/go/system-one) for details.
 
 <Note>
   **Show JSON schema:**
@@ -20856,8 +22633,84 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
     ```json theme={null}
     {
       "$defs": {
+        "BoxAnswer": {
+          "description": "A located box with its confidence.",
+          "properties": {
+            "type": {
+              "const": "box",
+              "default": "box",
+              "title": "Type",
+              "type": "string"
+            },
+            "box": {
+              "$ref": "#/$defs/BoxCoordinates"
+            },
+            "confidence": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Confidence"
+            }
+          },
+          "required": [
+            "box",
+            "confidence"
+          ],
+          "title": "BoxAnswer",
+          "type": "object"
+        },
+        "BoxCoordinates": {
+          "description": "A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).",
+          "properties": {
+            "top": {
+              "description": "Top edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.2
+              ],
+              "title": "Top",
+              "type": "number"
+            },
+            "bottom": {
+              "description": "Bottom edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.66
+              ],
+              "title": "Bottom",
+              "type": "number"
+            },
+            "left": {
+              "description": "Left edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.19
+              ],
+              "title": "Left",
+              "type": "number"
+            },
+            "right": {
+              "description": "Right edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.68
+              ],
+              "title": "Right",
+              "type": "number"
+            }
+          },
+          "required": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "title": "BoxCoordinates",
+          "type": "object"
+        },
         "ChoiceAnswer": {
-          "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.",
+          "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/go/choice) for details.",
           "properties": {
             "type": {
               "const": "choice",
@@ -20906,7 +22759,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "type": "object"
         },
         "NoulAnswer": {
-          "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.",
+          "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
           "properties": {
             "type": {
               "const": "noul",
@@ -20930,7 +22783,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "type": "object"
         },
         "ScoreAnswer": {
-          "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/primitives/score) for details.",
+          "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/go/score) for details.",
           "properties": {
             "type": {
               "const": "score",
@@ -21022,7 +22875,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "type": "object"
         }
       },
-      "description": "Answers grouped by question type with model and usage metadata.\n\nSee [System One](https://docs.typesafe.ai/concepts/system-one) for details.",
+      "description": "Answers grouped by question type with model and usage metadata.\n\nSee [System One](https://docs.typesafe.ai/go/system-one) for details.",
       "properties": {
         "model": {
           "title": "Model",
@@ -21035,6 +22888,7 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
           "additionalProperties": {
             "discriminator": {
               "mapping": {
+                "box": "#/$defs/BoxAnswer",
                 "choice": "#/$defs/ChoiceAnswer",
                 "noul": "#/$defs/NoulAnswer",
                 "score": "#/$defs/ScoreAnswer"
@@ -21050,6 +22904,9 @@ See [System One](https://docs.typesafe.ai/concepts/system-one) for details.
               },
               {
                 "$ref": "#/$defs/ScoreAnswer"
+              },
+              {
+                "$ref": "#/$defs/BoxAnswer"
               }
             ]
           },
@@ -21142,6 +22999,12 @@ Choice answers keyed by question name.
 
 Score answers keyed by question name.
 
+### boxes
+
+`cached` `property`
+
+Box answers keyed by question name.
+
 ## typesafe\_sdk.Usage
 
 `pydantic-model`
@@ -21233,7 +23096,7 @@ Bases: `wire.NoulAnswer`
 
 A yes/no answer.
 
-See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
 <Note>
   **Show JSON schema:**
@@ -21241,7 +23104,7 @@ See the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.
   <Accordion title="Details">
     ```json theme={null}
     {
-      "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/primitives/noul) for details.",
+      "description": "A yes/no answer.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
       "properties": {
         "type": {
           "const": "noul",
@@ -21303,7 +23166,7 @@ Bases: `wire.ChoiceAnswer`
 
 A selected label and its probabilities.
 
-See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 
 <Note>
   **Show JSON schema:**
@@ -21311,7 +23174,7 @@ See the [choice primitive](https://docs.typesafe.ai/primitives/choice) for detai
   <Accordion title="Details">
     ```json theme={null}
     {
-      "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/primitives/choice) for details.",
+      "description": "A selected label and its probabilities.\n\nSee the [choice primitive](https://docs.typesafe.ai/go/choice) for details.",
       "properties": {
         "type": {
           "const": "choice",
@@ -21412,7 +23275,7 @@ Bases: `wire.ScoreAnswer`
 
 An expected score with its rubric and probabilities.
 
-See the [score primitive](https://docs.typesafe.ai/primitives/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 
 <Note>
   **Show JSON schema:**
@@ -21420,7 +23283,7 @@ See the [score primitive](https://docs.typesafe.ai/primitives/score) for details
   <Accordion title="Details">
     ```json theme={null}
     {
-      "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/primitives/score) for details.",
+      "description": "An expected score with its rubric and probabilities.\n\nSee the [score primitive](https://docs.typesafe.ai/go/score) for details.",
       "properties": {
         "type": {
           "const": "score",
@@ -21531,6 +23394,244 @@ Rubric descriptions keyed by integer score.
 `pydantic-field`
 
 Probabilities keyed by integer score.
+
+## typesafe\_sdk.BoxAnswer
+
+`pydantic-model`
+
+Bases: `wire.BoxAnswer`
+
+A located box with its confidence.
+
+<Note>
+  **Show JSON schema:**
+
+  <Accordion title="Details">
+    ```json theme={null}
+    {
+      "$defs": {
+        "BoxCoordinates": {
+          "description": "A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).",
+          "properties": {
+            "top": {
+              "description": "Top edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.2
+              ],
+              "title": "Top",
+              "type": "number"
+            },
+            "bottom": {
+              "description": "Bottom edge of the box, as a fraction of image height from the top (0-1).",
+              "examples": [
+                0.66
+              ],
+              "title": "Bottom",
+              "type": "number"
+            },
+            "left": {
+              "description": "Left edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.19
+              ],
+              "title": "Left",
+              "type": "number"
+            },
+            "right": {
+              "description": "Right edge of the box, as a fraction of image width from the left (0-1).",
+              "examples": [
+                0.68
+              ],
+              "title": "Right",
+              "type": "number"
+            }
+          },
+          "required": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "title": "BoxCoordinates",
+          "type": "object"
+        }
+      },
+      "description": "A located box with its confidence.",
+      "properties": {
+        "type": {
+          "const": "box",
+          "default": "box",
+          "title": "Type",
+          "type": "string"
+        },
+        "box": {
+          "$ref": "#/$defs/BoxCoordinates"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confidence"
+        }
+      },
+      "required": [
+        "box",
+        "confidence"
+      ],
+      "title": "BoxAnswer",
+      "type": "object"
+    }
+    ```
+  </Accordion>
+</Note>
+
+Config:
+
+* `extra`: `ignore`
+* `frozen`: `True`
+* `strict`: `True`
+
+Fields:
+
+* `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['box']</code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer.box">box</a></code> (<code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates">BoxCoordinates</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer.confidence">confidence</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a> | None</code>)
+
+### model\_config
+
+`class-attribute` `instance-attribute`
+
+```python theme={null}
+model_config = ConfigDict(
+    extra="ignore", frozen=True, strict=True
+)
+```
+
+### box
+
+`pydantic-field`
+
+The box's edges as fractions of the image's height and width, from 0 to 1.
+
+### confidence
+
+`pydantic-field`
+
+Confidence for the box, from 0 to 1, or `None` when the model does not provide it.
+
+## typesafe\_sdk.BoxCoordinates
+
+`pydantic-model`
+
+Bases: `wire.BoxCoordinates`
+
+A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).
+
+<Note>
+  **Show JSON schema:**
+
+  <Accordion title="Details">
+    ```json theme={null}
+    {
+      "description": "A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).",
+      "properties": {
+        "top": {
+          "description": "Top edge of the box, as a fraction of image height from the top (0-1).",
+          "examples": [
+            0.2
+          ],
+          "title": "Top",
+          "type": "number"
+        },
+        "bottom": {
+          "description": "Bottom edge of the box, as a fraction of image height from the top (0-1).",
+          "examples": [
+            0.66
+          ],
+          "title": "Bottom",
+          "type": "number"
+        },
+        "left": {
+          "description": "Left edge of the box, as a fraction of image width from the left (0-1).",
+          "examples": [
+            0.19
+          ],
+          "title": "Left",
+          "type": "number"
+        },
+        "right": {
+          "description": "Right edge of the box, as a fraction of image width from the left (0-1).",
+          "examples": [
+            0.68
+          ],
+          "title": "Right",
+          "type": "number"
+        }
+      },
+      "required": [
+        "top",
+        "bottom",
+        "left",
+        "right"
+      ],
+      "title": "BoxCoordinates",
+      "type": "object"
+    }
+    ```
+  </Accordion>
+</Note>
+
+Config:
+
+* `extra`: `ignore`
+* `frozen`: `True`
+* `strict`: `True`
+
+Fields:
+
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.top">top</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.bottom">bottom</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.left">left</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates.right">right</a></code> (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>)
+
+### top
+
+`pydantic-field`
+
+Top edge of the box, as a fraction of image height from the top (0-1).
+
+### bottom
+
+`pydantic-field`
+
+Bottom edge of the box, as a fraction of image height from the top (0-1).
+
+### left
+
+`pydantic-field`
+
+Left edge of the box, as a fraction of image width from the left (0-1).
+
+### right
+
+`pydantic-field`
+
+Right edge of the box, as a fraction of image width from the left (0-1).
+
+### model\_config
+
+`class-attribute` `instance-attribute`
+
+```python theme={null}
+model_config = ConfigDict(
+    extra="ignore", frozen=True, strict=True
+)
+```
 
 ## typesafe\_sdk.Answer
 
@@ -21707,6 +23808,27 @@ Source: https://docs.typesafe.ai/sdk/python/changelog
 
 Python clients for the TypeSafe AI API
 
+## v0.7.5 (2026-10-14)
+
+### Documentation
+
+* split usage guide into Basic and Advanced pages
+* add docs for working with images
+* add docs for `Box` type
+
+### Features
+
+* enable request body compression with `zstd` by default (non-official APIs may not support this immediately)
+* support `Image` assets from raw bytes, file paths, base64 strings, and PIL objects
+* support `Box` questions and answers
+* reference assets in text with `attach_assets`
+
+## v0.7.4 (2026-10-09)
+
+### Bug fixes
+
+* serialize non-finite numbers as strings instead of invalid JSON tokens
+
 ## v0.7.3 (2026-10-09)
 
 ### Bug fixes
@@ -21778,11 +23900,292 @@ Python clients for the TypeSafe AI API
 
 ## v0.5.7 (2026-09-14)
 
-This is the initial public release of TypeSafe Python SDK. Learn more in the [documentation](https://docs.typesafe.ai/sdk/python).
+This is the initial public release of TypeSafe Python SDK. Learn more in the [documentation](https://docs.typesafe.ai/go/python-sdk).
 
 
-# Usage
-Source: https://docs.typesafe.ai/sdk/python/usage
+# Advanced usage
+Source: https://docs.typesafe.ai/sdk/python/usage/advanced
+
+Performance tuning, logging, and forward compatibility for the TypeSafe Python SDK.
+
+## Performance
+
+If your application sends hundreds of requests per second, follow these recommendations.
+
+### Reuse clients
+
+Make sure to reuse a client instance when sending multiple requests. Setting up a new client involves the overhead of starting new connections and TLS handshakes.
+
+### Ensure <code>zstd</code> is available
+
+The clients compress request bodies of 1 KiB or more with [zstd](https://facebook.github.io/zstd/), which reduces upload size and time, especially for large states.
+
+Make sure `zstd` is installed on Python versions earlier than 3.14:
+
+```shell theme={null}
+uv add "typesafe-sdk[zstd]"
+```
+
+Compression can be configured or disabled via the `compression` client constructor argument.
+
+### Use <code>aiohttp</code> for async code
+
+For async code at high request rates, pass an [aiohttp](https://docs.aiohttp.org/)-based HTTP client from [`httpx-aiohttp`](https://pypi.org/project/httpx-aiohttp/):
+
+```shell theme={null}
+uv add "httpx-aiohttp[httpx2]"
+```
+
+```python theme={null}
+from httpx_aiohttp.httpx2 import Httpx2AiohttpClient
+
+from typesafe_sdk import AsyncTypeSafeClient
+
+client = AsyncTypeSafeClient(http_client=Httpx2AiohttpClient())
+```
+
+### Create a client per thread
+
+`TypeSafeClient` can be shared between threads, but under heavy load its connection pool becomes the bottleneck. Create one client per thread and reuse it for every request that thread sends.
+
+<Note>
+  **Example**
+
+  ```python theme={null}
+  import threading
+
+  from typesafe_sdk import TypeSafeClient
+
+
+  class ThreadClients(threading.local):
+      def __init__(self) -> None:
+          self.client = TypeSafeClient()
+
+
+  clients = ThreadClients()
+
+  # In any thread, `clients.client` is that thread's own client.
+  ```
+</Note>
+
+### HTTP/2
+
+The clients use HTTP/1.1 by default and can switch to HTTP/2:
+
+* **HTTP/1.1** sends one request at a time per connection and opens a connection for each concurrent request, up to the [connection limit](/sdk/python/usage/advanced#keep-a-connection-limit). Concurrency scales with the number of connections, at the cost of a TLS handshake for each new one.
+* **HTTP/2** multiplexes every request from one client over a single connection. It needs only one handshake and one socket, but that connection caps the client's throughput.
+
+Keep the default HTTP/1.1 for high request rates. Use HTTP/2 for low to moderate concurrency when you want fewer connections, for example behind a proxy or firewall that limits them.
+
+To enable HTTP/2, install the `'typesafe-sdk[http2]'` extra and pass an HTTP/2 client. See the [`httpx2` HTTP/2 guide](https://pydantic.dev/docs/httpx2/guides/http2/) for details.
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    import httpx2
+
+    from typesafe_sdk import AsyncTypeSafeClient
+
+    client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(http2=True))
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    import httpx2
+
+    from typesafe_sdk import TypeSafeClient
+
+    client = TypeSafeClient(http_client=httpx2.Client(http2=True))
+    ```
+  </Tab>
+</Tabs>
+
+### Keep a connection limit
+
+The default clients open at most 100 connections and keep all of them open for 30 seconds while idle, so bursts reuse connections instead of opening new ones. Make sure to set appropriate limits when providing your own `http_client`.
+
+<Note>
+  **Example**
+
+  <Tabs>
+    <Tab title="Async">
+      ```python theme={null}
+      import httpx2
+
+      from typesafe_sdk import AsyncTypeSafeClient
+
+      limits = httpx2.Limits(
+          max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+      )
+      client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(limits=limits))
+      ```
+    </Tab>
+
+    <Tab title="Sync">
+      ```python theme={null}
+      import httpx2
+
+      from typesafe_sdk import TypeSafeClient
+
+      limits = httpx2.Limits(
+          max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+      )
+      client = TypeSafeClient(http_client=httpx2.Client(limits=limits))
+      ```
+    </Tab>
+  </Tabs>
+</Note>
+
+## Logging
+
+The SDK logs to the `typesafe_sdk` logger. Configure it according to [standard logging](https://docs.python.org/3/library/logging.html) guide:
+
+```python theme={null}
+import logging
+
+logging.getLogger("typesafe_sdk").setLevel(logging.DEBUG)
+```
+
+Or set `TYPESAFE_LOG_LEVEL` to one of `debug`, `info`, `warning`, `error`, or `off` before importing the SDK.
+
+`info` logs one summary line per request; `debug` also logs request and response headers and bodies. Secret headers — authorization, API keys, cookies, and any header whose name contains `token` or `secret` — are redacted from log output. Request and response bodies are **not** redacted.
+
+## Forward compatibility
+
+The SDK keeps working as the TypeSafe API evolves, so you can adopt new API features before an SDK release adds first-class support for them.
+
+### Extra request fields
+
+Send additional API request fields with [`extra_body`](/sdk/python/api/clients/sync). The `beam_width` field below is illustrative; only send fields supported by the API.
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    import asyncio
+
+    from typesafe_sdk import AsyncTypeSafeClient, Noul
+
+
+    async def main() -> None:
+        async with AsyncTypeSafeClient() as client:
+            await client.system_one(
+                "I was charged twice.",
+                {"billing": Noul(instructions="About billing?")},
+                extra_body={"beam_width": 4},
+            )
+
+
+    asyncio.run(main())
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from typesafe_sdk import Noul, TypeSafeClient
+
+    with TypeSafeClient() as client:
+        client.system_one(
+            "I was charged twice.",
+            {"billing": Noul(instructions="About billing?")},
+            extra_body={"beam_width": 4},
+        )
+    ```
+  </Tab>
+</Tabs>
+
+### Raw question dictionaries
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    import asyncio
+
+    from typesafe_sdk import AsyncTypeSafeClient
+
+
+    async def main() -> None:
+        async with AsyncTypeSafeClient() as client:
+            await client.system_one(
+                "I was charged twice.",
+                {
+                    "billing": {
+                        "type": "noul",
+                        "instructions": "About billing?",
+                        "weight": 2,
+                    }
+                },
+            )
+
+
+    asyncio.run(main())
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from typesafe_sdk import TypeSafeClient
+
+    with TypeSafeClient() as client:
+        client.system_one(
+            "I was charged twice.",
+            {"billing": {"type": "noul", "instructions": "About billing?", "weight": 2}},
+        )
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  **Tip**
+
+  Unknown fields are a forward-compatibility escape hatch. Ignore their type-checking errors and prefer upgrading the SDK instead.
+</Tip>
+
+### Unknown answer kinds
+
+The SDK logs a warning and skips unrecognized answer kinds. Use `raw_http_response` to inspect the complete API response, including those answers:
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    import asyncio
+
+    from typesafe_sdk import AsyncTypeSafeClient, Noul
+
+
+    async def main() -> None:
+        async with AsyncTypeSafeClient() as client:
+            result = await client.system_one(
+                "I was charged twice.",
+                {"billing": Noul(instructions="Is this about billing?")},
+            )
+            print(result.raw_http_response.json()["answers"])
+
+
+    asyncio.run(main())
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from typesafe_sdk import Noul, TypeSafeClient
+
+    result = TypeSafeClient().system_one(
+        "I was charged twice.",
+        {"billing": Noul(instructions="Is this about billing?")},
+    )
+    raw_answers = result.raw_http_response.json()["answers"]
+    ```
+  </Tab>
+</Tabs>
+
+### Unknown response fields
+
+Unknown extra fields on recognized responses are ignored.
+
+
+# Basic usage
+Source: https://docs.typesafe.ai/sdk/python/usage/basic
 
 Guides and patterns for working with the TypeSafe Python SDK.
 
@@ -21847,6 +24250,256 @@ Guides and patterns for working with the TypeSafe Python SDK.
     ```
   </Tab>
 </Tabs>
+
+## Choosing a model
+
+Inspect the available models:
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    import asyncio
+
+    from typesafe_sdk import AsyncTypeSafeClient
+
+
+    async def main() -> None:
+        async with AsyncTypeSafeClient() as client:
+            print(await client.models.list())
+
+
+    asyncio.run(main())
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from typesafe_sdk import TypeSafeClient
+
+    print(TypeSafeClient().models.list())
+    ```
+  </Tab>
+</Tabs>
+
+Select the model when constructing a client:
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    client = AsyncTypeSafeClient(model="jev")
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    client = TypeSafeClient(model="jev")
+    ```
+  </Tab>
+</Tabs>
+
+See the [Models resource reference](https://docs.typesafe.ai/go/models) for more information on available models, their capabilities, pricing details, and model aliases.
+
+## Attaching Media Assets
+
+System One requests can include media assets.
+
+<Info>
+  **Supported asset types**
+
+  Only images are supported at the moment, with more modalities coming in the future.
+
+  <Warning>
+    **Images are only dreamer-ready**
+
+    As of November 14, 2026, image support is only dreamer-ready. The brave may opt-in to this feature via HTTP headers:
+
+    ```python theme={null}
+    client = TypeSafeClient(headers={"TypeSafe-Danger-Zone-Images": "true"})
+    ```
+  </Warning>
+
+  Learn about support for images:
+
+  * [**API docs**](https://docs.typesafe.ai/go/images): how to enable and use images with TypeSafe's System One API
+  * [**SDK docs**](/sdk/python/api/types/assets#typesafe_sdk.Image): documentation and code examples for using images with `typesafe-sdk`
+</Info>
+
+<Note>
+  **Upload format**
+
+  Requests with assets are sent as `multipart/form-data`, with each asset's raw bytes in its own part.
+</Note>
+
+***
+
+An **asset reference** inside the content of `state` or `questions` will be replaced with the actual asset data, provided to the client separately.
+
+There are two ways to create **asset references**:
+
+1. [Automatic references](/sdk/python/usage/basic#automatic-references): place assets directly in the content, or format them into strings. The SDK then auto-generates a unique reference for each asset.
+2. [Named references](/sdk/python/usage/basic#named-references): choose your own references for assets, passed through the `assets` argument to `system_one`.
+
+Both types of asset references may be used together in the same request.
+
+### Automatic references
+
+#### Assets in structured objects
+
+Place assets directly in `state` or in question instructions and criteria:
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    from pathlib import Path
+
+    from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
+
+
+    async def compare_return(
+        client: AsyncTypeSafeClient, returned: Path, listing: Path, *, model: str
+    ) -> SystemOneResponse:
+        return await client.system_one(
+            state=["The customer returned this item:", Image(returned)],
+            questions={
+                "same_item": Noul(
+                    instructions=["Is it the item in this listing photo?", Image(listing)]
+                )
+            },
+            model=model,
+        )
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from pathlib import Path
+
+    from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+
+
+    def compare_return(
+        client: TypeSafeClient, returned: Path, listing: Path, *, model: str
+    ) -> SystemOneResponse:
+        return client.system_one(
+            state=["The customer returned this item:", Image(returned)],
+            questions={
+                "same_item": Noul(
+                    instructions=["Is it the item in this listing photo?", Image(listing)]
+                )
+            },
+            model=model,
+        )
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  **Note**
+
+  Under the hood, each asset is automatically assigned a unique uuid-like reference.
+</Note>
+
+#### Assets in text
+
+Use `client.attach_assets` to attach assets to the client, and `str(asset)` to reference them in text:
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    from pathlib import Path
+
+    from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
+
+
+    async def check_damage(
+        client: AsyncTypeSafeClient, returned: Path, *, model: str
+    ) -> SystemOneResponse:
+        photo = Image(returned)
+        with client.attach_assets(photo):
+            return await client.system_one(
+                state=f"The customer says {photo} arrived scratched.",
+                questions={"damaged": Noul(instructions="Is the item damaged?")},
+                model=model,
+            )
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from pathlib import Path
+
+    from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+
+
+    def check_damage(
+        client: TypeSafeClient, returned: Path, *, model: str
+    ) -> SystemOneResponse:
+        photo = Image(returned)
+        with client.attach_assets(photo):
+            return client.system_one(
+                state=f"The customer says {photo} arrived scratched.",
+                questions={"damaged": Noul(instructions="Is the item damaged?")},
+                model=model,
+            )
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  **Warning**
+
+  Don't forget the `with client.attach_assets` context manager block! The SDK will not be able to associate text-rendered asset references with the original asset data.
+</Warning>
+
+### Named references
+
+To choose your own reference for an asset, pass it through `assets`, keyed by that reference. Use distinct delimiters (such as `<product>`) to avoid matching ordinary text:
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    from pathlib import Path
+
+    from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
+
+
+    async def inspect_product(
+        client: AsyncTypeSafeClient, photo: Path, *, model: str
+    ) -> SystemOneResponse:
+        return await client.system_one(
+            state="Inspect this returned product: <product>",
+            questions={"damaged": Noul(instructions="Is the product damaged?")},
+            assets={"<product>": Image(photo)},
+            model=model,
+        )
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from pathlib import Path
+
+    from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+
+
+    def inspect_product(
+        client: TypeSafeClient, photo: Path, *, model: str
+    ) -> SystemOneResponse:
+        return client.system_one(
+            state="Inspect this returned product: <product>",
+            questions={"damaged": Noul(instructions="Is the product damaged?")},
+            assets={"<product>": Image(photo)},
+            model=model,
+        )
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  **Tip**
+
+  An asset passed through `assets` may also be placed directly in the content: it is sent once, under its name.
+</Tip>
 
 ## Typed <code>system\_one</code> responses
 
@@ -21963,21 +24616,49 @@ It is also possible to define a completely new response model without inheriting
   </Tab>
 </Tabs>
 
-## Choosing a model
+## Retries
 
-Inspect the available models:
+Pass a custom [`RetryPolicy`](/sdk/python/api/retries) as `retry` on the client or per call. Invalid API keys raise `TypeSafeError` during client creation, before any request or retry.
+
+On the client:
+
+<Tabs>
+  <Tab title="Async">
+    ```python theme={null}
+    from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
+
+    client = AsyncTypeSafeClient(
+        retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
+    )
+    ```
+  </Tab>
+
+  <Tab title="Sync">
+    ```python theme={null}
+    from typesafe_sdk import RetryPolicy, TypeSafeClient
+
+    client = TypeSafeClient(retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0))
+    ```
+  </Tab>
+</Tabs>
+
+Per call:
 
 <Tabs>
   <Tab title="Async">
     ```python theme={null}
     import asyncio
 
-    from typesafe_sdk import AsyncTypeSafeClient
+    from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
 
 
     async def main() -> None:
         async with AsyncTypeSafeClient() as client:
-            print(await client.models.list())
+            await client.system_one(
+                state,
+                questions,
+                retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0),
+            )
 
 
     asyncio.run(main())
@@ -21986,30 +24667,65 @@ Inspect the available models:
 
   <Tab title="Sync">
     ```python theme={null}
-    from typesafe_sdk import TypeSafeClient
+    from typesafe_sdk import RetryPolicy
 
-    print(TypeSafeClient().models.list())
+    client.system_one(
+        state, questions, retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
+    )
     ```
   </Tab>
 </Tabs>
 
-Select the model when constructing a client:
+## Error handling
+
+Handle [exceptions](/sdk/python/api/exceptions) raised by the SDK:
 
 <Tabs>
   <Tab title="Async">
     ```python theme={null}
-    client = AsyncTypeSafeClient(model="jev")
+    import asyncio
+
+    from typesafe_sdk import AsyncTypeSafeClient, TypeSafeAPIError
+
+
+    async def main() -> None:
+        async with AsyncTypeSafeClient() as client:
+            try:
+                await client.system_one(state, questions)
+            except TypeSafeAPIError as error:
+                print(error.status, error.request_id)
+
+
+    asyncio.run(main())
     ```
   </Tab>
 
   <Tab title="Sync">
     ```python theme={null}
-    client = TypeSafeClient(model="jev")
+    from typesafe_sdk import TypeSafeAPIError
+
+    try:
+        client.system_one(state, questions)
+    except TypeSafeAPIError as error:
+        print(error.status, error.request_id)
     ```
   </Tab>
 </Tabs>
 
-See the [Models resource reference](/sdk/python/api/clients/sync#models-resource) for details.
+## Environment variables
+
+The SDK reads and uses the following environment variables:
+
+| Variable | Configures | Default |
+| - | - | - |
+| `TYPESAFE_API_KEY` | API key (required) | — |
+| `TYPESAFE_BASE_URL` | API root URL | `https://api.typesafe.ai` |
+| `TYPESAFE_DEFAULT_MODEL` | Default model | `jev-latest` |
+| `TYPESAFE_LOG_LEVEL` | `typesafe_sdk` logger level, applied once at import | unset |
+
+See the [constants reference](/sdk/python/api/constants) for SDK defaults.
+
+API keys supplied through `api_key` or `TYPESAFE_API_KEY` have leading and trailing whitespace stripped, including newlines from key files. Empty keys, internal whitespace, control characters, and non-ASCII characters are rejected before sending a request. An explicitly empty key does not fall back to the environment.
 
 ## Configuring the base URL
 
@@ -22168,371 +24884,5 @@ For example, connect through an AI gateway using its API key and model ID.
     </Tabs>
   </Tab>
 </Tabs>
-
-## Performance
-
-If your application sends hundreds of requests per second, follow these recommendations.
-
-### Reuse clients
-
-Make sure to reuse a client instance when sending multiple requests. Setting up a new client involves the overhead of starting new connections and TLS handshakes.
-
-### Use <code>aiohttp</code> for async code
-
-For async code at high request rates, pass an [aiohttp](https://docs.aiohttp.org/)-based HTTP client from [`httpx-aiohttp`](https://pypi.org/project/httpx-aiohttp/):
-
-```shell theme={null}
-uv add "httpx-aiohttp[httpx2]"
-```
-
-```python theme={null}
-from httpx_aiohttp.httpx2 import Httpx2AiohttpClient
-
-from typesafe_sdk import AsyncTypeSafeClient
-
-client = AsyncTypeSafeClient(http_client=Httpx2AiohttpClient())
-```
-
-### Create a client per thread
-
-`TypeSafeClient` can be shared between threads, but under heavy load its connection pool becomes the bottleneck. Create one client per thread and reuse it for every request that thread sends.
-
-```python theme={null}
-import threading
-
-from typesafe_sdk import TypeSafeClient
-
-
-class ThreadClients(threading.local):
-    def __init__(self) -> None:
-        self.client = TypeSafeClient()
-
-
-clients = ThreadClients()
-
-# In any thread, `clients.client` is that thread's own client.
-```
-
-### HTTP/2
-
-The clients use HTTP/1.1 by default and can switch to HTTP/2:
-
-* **HTTP/1.1** sends one request at a time per connection and opens a connection for each concurrent request, up to the [connection limit](/sdk/python/usage#keep-a-connection-limit). Concurrency scales with the number of connections, at the cost of a TLS handshake for each new one.
-* **HTTP/2** multiplexes every request from one client over a single connection. It needs only one handshake and one socket, but that connection caps the client's throughput.
-
-Keep the default HTTP/1.1 for high request rates. Use HTTP/2 for low to moderate concurrency when you want fewer connections, for example behind a proxy or firewall that limits them.
-
-To enable HTTP/2, install the `'typesafe-sdk[http2]'` extra and pass an HTTP/2 client. See the [`httpx2` HTTP/2 guide](https://pydantic.dev/docs/httpx2/guides/http2/) for details.
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import httpx2
-
-    from typesafe_sdk import AsyncTypeSafeClient
-
-    client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(http2=True))
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    import httpx2
-
-    from typesafe_sdk import TypeSafeClient
-
-    client = TypeSafeClient(http_client=httpx2.Client(http2=True))
-    ```
-  </Tab>
-</Tabs>
-
-### Keep a connection limit
-
-The default clients open at most 100 connections and keep all of them open for 30 seconds while idle, so bursts reuse connections instead of opening new ones. Make sure to set appropriate limits when providing your own `http_client`.
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import httpx2
-
-    from typesafe_sdk import AsyncTypeSafeClient
-
-    limits = httpx2.Limits(
-        max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
-    )
-    client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(limits=limits))
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    import httpx2
-
-    from typesafe_sdk import TypeSafeClient
-
-    limits = httpx2.Limits(
-        max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
-    )
-    client = TypeSafeClient(http_client=httpx2.Client(limits=limits))
-    ```
-  </Tab>
-</Tabs>
-
-## Retries
-
-Pass a custom [`RetryPolicy`](/sdk/python/api/retries) as `retry` on the client or per call. Invalid API keys raise `TypeSafeError` during client creation, before any request or retry.
-
-On the client:
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
-
-    client = AsyncTypeSafeClient(
-        retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
-    )
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    from typesafe_sdk import RetryPolicy, TypeSafeClient
-
-    client = TypeSafeClient(retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0))
-    ```
-  </Tab>
-</Tabs>
-
-Per call:
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import asyncio
-
-    from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
-
-
-    async def main() -> None:
-        async with AsyncTypeSafeClient() as client:
-            await client.system_one(
-                state,
-                questions,
-                retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0),
-            )
-
-
-    asyncio.run(main())
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    from typesafe_sdk import RetryPolicy
-
-    client.system_one(
-        state, questions, retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
-    )
-    ```
-  </Tab>
-</Tabs>
-
-## Error handling
-
-Handle [exceptions](/sdk/python/api/exceptions) raised by the SDK:
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import asyncio
-
-    from typesafe_sdk import AsyncTypeSafeClient, TypeSafeAPIError
-
-
-    async def main() -> None:
-        async with AsyncTypeSafeClient() as client:
-            try:
-                await client.system_one(state, questions)
-            except TypeSafeAPIError as error:
-                print(error.status, error.request_id)
-
-
-    asyncio.run(main())
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    from typesafe_sdk import TypeSafeAPIError
-
-    try:
-        client.system_one(state, questions)
-    except TypeSafeAPIError as error:
-        print(error.status, error.request_id)
-    ```
-  </Tab>
-</Tabs>
-
-## Logging
-
-The SDK logs to the `typesafe_sdk` logger. Configure it according to [standard logging](https://docs.python.org/3/library/logging.html) guide:
-
-```python theme={null}
-import logging
-
-logging.getLogger("typesafe_sdk").setLevel(logging.DEBUG)
-```
-
-Or set `TYPESAFE_LOG_LEVEL` to one of `debug`, `info`, `warning`, `error`, or `off` before importing the SDK.
-
-`info` logs one summary line per request; `debug` also logs request and response headers and bodies. Secret headers — authorization, API keys, cookies, and any header whose name contains `token` or `secret` — are redacted from log output. Request and response bodies are **not** redacted.
-
-## Environment variables
-
-The SDK reads and uses the following environment variables:
-
-| Variable | Configures | Default |
-| - | - | - |
-| `TYPESAFE_API_KEY` | API key (required) | — |
-| `TYPESAFE_BASE_URL` | API root URL | `https://api.typesafe.ai` |
-| `TYPESAFE_DEFAULT_MODEL` | Default model | `jev-latest` |
-| `TYPESAFE_LOG_LEVEL` | `typesafe_sdk` logger level, applied once at import | unset |
-
-See the [constants reference](/sdk/python/api/constants) for SDK defaults.
-
-API keys supplied through `api_key` or `TYPESAFE_API_KEY` have leading and trailing whitespace stripped, including newlines from key files. Empty keys, internal whitespace, control characters, and non-ASCII characters are rejected before sending a request. An explicitly empty key does not fall back to the environment.
-
-## Forward compatibility
-
-The SDK keeps working as the TypeSafe API evolves, so you can adopt new API features before an SDK release adds first-class support for them.
-
-### Extra request fields
-
-Send additional API request fields with [`extra_body`](/sdk/python/api/clients/sync). The `beam_width` field below is illustrative; only send fields supported by the API.
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import asyncio
-
-    from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-
-    async def main() -> None:
-        async with AsyncTypeSafeClient() as client:
-            await client.system_one(
-                "I was charged twice.",
-                {"billing": Noul(instructions="About billing?")},
-                extra_body={"beam_width": 4},
-            )
-
-
-    asyncio.run(main())
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    from typesafe_sdk import Noul, TypeSafeClient
-
-    with TypeSafeClient() as client:
-        client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="About billing?")},
-            extra_body={"beam_width": 4},
-        )
-    ```
-  </Tab>
-</Tabs>
-
-### Raw question dictionaries
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import asyncio
-
-    from typesafe_sdk import AsyncTypeSafeClient
-
-
-    async def main() -> None:
-        async with AsyncTypeSafeClient() as client:
-            await client.system_one(
-                "I was charged twice.",
-                {
-                    "billing": {
-                        "type": "noul",
-                        "instructions": "About billing?",
-                        "weight": 2,
-                    }
-                },
-            )
-
-
-    asyncio.run(main())
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    from typesafe_sdk import TypeSafeClient
-
-    with TypeSafeClient() as client:
-        client.system_one(
-            "I was charged twice.",
-            {"billing": {"type": "noul", "instructions": "About billing?", "weight": 2}},
-        )
-    ```
-  </Tab>
-</Tabs>
-
-<Tip>
-  **Tip**
-
-  Unknown fields are a forward-compatibility escape hatch. Ignore their type-checking errors and prefer upgrading the SDK instead.
-</Tip>
-
-### Unknown answer kinds
-
-The SDK logs a warning and skips unrecognized answer kinds. Use `raw_http_response` to inspect the complete API response, including those answers:
-
-<Tabs>
-  <Tab title="Async">
-    ```python theme={null}
-    import asyncio
-
-    from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-
-    async def main() -> None:
-        async with AsyncTypeSafeClient() as client:
-            result = await client.system_one(
-                "I was charged twice.",
-                {"billing": Noul(instructions="Is this about billing?")},
-            )
-            print(result.raw_http_response.json()["answers"])
-
-
-    asyncio.run(main())
-    ```
-  </Tab>
-
-  <Tab title="Sync">
-    ```python theme={null}
-    from typesafe_sdk import Noul, TypeSafeClient
-
-    result = TypeSafeClient().system_one(
-        "I was charged twice.",
-        {"billing": Noul(instructions="Is this about billing?")},
-    )
-    raw_answers = result.raw_http_response.json()["answers"]
-    ```
-  </Tab>
-</Tabs>
-
-### Unknown response fields
-
-Unknown extra fields on recognized responses are ignored.
 
 

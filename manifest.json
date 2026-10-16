@@ -276,10 +276,10 @@
       "url": "https://docs.typesafe.ai/images.md",
       "title": "Images",
       "description": "Send images in a System One request: in the state, inside a question's instructions, and as the criteria a question is judged against.",
-      "raw_sha256": "9dfbc3387fb0730435331ef41271287f1d9720ce4f37e09cce25b3643c4901b8",
-      "clean_sha256": "34cb3d89fd545940b608a58eb8e97add3d3ae006665285aab36c6f318f62164c",
-      "bytes": 22161,
-      "changed_at": "2026-10-15T11:36:48.646Z"
+      "raw_sha256": "dff7a319d7232f769da220aa171b9f66884d76c10a0a3232b6c5de35ccdbd7ee",
+      "clean_sha256": "112747f0cb2288e5b4c94f76080ebdb5f868da27e49bd37b8c0aa2e0ff3e4450",
+      "bytes": 22184,
+      "changed_at": "2026-10-16T11:30:49.391Z"
     },
     "introduction.md": {
       "url": "https://docs.typesafe.ai/introduction.md",

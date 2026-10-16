@@ -321,8 +321,8 @@ State, instructions, and criteria accept nested JSON [structure](./primitives/ad
 | - | - |
 | Format | PNG or JPEG, still images only. Animated PNGs are rejected. |
 | File size | 16 MiB per image file. For base64, this is the size after decoding. |
-| Width and height | 256 to 1568 pixels each. |
-| Total pixels (width × height) | 78,400 to 2,458,624, the area of a 280 × 280 to a 1568 × 1568 square. A 256 × 256 image is too small. |
+| Width and height | 280 to 1568 pixels each. An image with either side under 280 pixels is rejected. |
+| Total pixels (width × height) | 78,400 to 2,458,624, the area of a 280 × 280 to a 1568 × 1568 square. |
 | Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](./api.md#compression) doesn't raise the limit. |
 | All images in the request | 32 MiB, shared by every distinct image after the API processes it. Processing re-encodes each image and can make it larger than the file you sent, so a request of small uploads can still go over. |
 | Expanded request | 32 MiB for the text, questions, structure, and images after every reference is replaced by its image. Each use of a reference adds the image again: an image that is 10 MiB after processing, referenced four times, is over the limit. |

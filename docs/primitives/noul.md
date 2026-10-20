@@ -8,7 +8,7 @@ A Noul answer is a single number representing the probability that the answer is
 
 ## Request structure
 
-The POST request body to the [TypeSafe API](../api.md) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Noul question has the following fields:
+The POST request body to the [TypeSafe API](https://docs.typesafe.ai/api) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Noul question has the following fields:
 
 * `type`: Always `"noul"`.
 * `instructions`: The yes/no question the model answers, or a statement for it to judge.

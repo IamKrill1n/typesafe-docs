@@ -47,10 +47,12 @@
 - [Demos](https://docs.typesafe.ai/demos.md): Interactive examples showing what's possible with TypeSafe.
 - [Smart home assistant demo](https://docs.typesafe.ai/demos/smart-home.md): Demo code: a smart home assistant that uses TypeSafe to evaluate user requests.
 - [Models](https://docs.typesafe.ai/models.md)
-- [API reference](https://docs.typesafe.ai/api.md): Full HTTP API reference for the TypeSafe evaluation endpoint.
 - [Agent skill](https://docs.typesafe.ai/agent-skill.md): Drop-in skill for Claude Code, Codex, and other agent environments.
 - [Legal](https://docs.typesafe.ai/legal.md): Legal documents and policies for TypeSafe.
 - [Jev 1.13 jaggedness](https://docs.typesafe.ai/model-jaggedness/jev-1.13.md): Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
+- [System One](https://docs.typesafe.ai/api/system-one.md): Answer one or more questions about the content supplied in `state`.
+- [List models](https://docs.typesafe.ai/api/list-models.md): List the models and aliases available to the authenticated account.
+- [Request rules and errors](https://docs.typesafe.ai/api/errors.md): Request limits, compression, and HTTP status codes
 - [Client SDKs](https://docs.typesafe.ai/sdk.md): Install a TypeSafe client SDK and use typed questions and answers in your application.
 - [TypeSafe Python SDK](https://docs.typesafe.ai/sdk/python.md): Install the TypeSafe Python SDK and get started with asynchronous or synchronous API calls.
 - [Basic usage](https://docs.typesafe.ai/sdk/python/usage/basic.md): Guides and patterns for working with the TypeSafe Python SDK.
@@ -130,6 +132,10 @@
 - [Function: box()](https://docs.typesafe.ai/sdk/javascript/api/functions/box.md)
 - [Function: choice()](https://docs.typesafe.ai/sdk/javascript/api/functions/choice.md)
 - [Function: image()](https://docs.typesafe.ai/sdk/javascript/api/functions/image.md)
+
+## OpenAPI Specs
+
+- [openapi](https://api.typesafe.ai/openapi.json)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

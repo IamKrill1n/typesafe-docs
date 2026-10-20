@@ -1,6 +1,6 @@
 {
   "source": "https://docs.typesafe.ai",
-  "page_count": 132,
+  "page_count": 135,
   "pages": {
     "agent-skill.md": {
       "url": "https://docs.typesafe.ai/agent-skill.md",
@@ -20,6 +20,33 @@
       "bytes": 12905,
       "changed_at": "2026-10-15T11:36:48.670Z"
     },
+    "api/errors.md": {
+      "url": "https://docs.typesafe.ai/api/errors.md",
+      "title": "Request rules and errors",
+      "description": "Request limits, compression, and HTTP status codes",
+      "raw_sha256": "0aee0bfc3052128c4d32c05895c5bec800c9bc0c146af54fdf276dc04414c0de",
+      "clean_sha256": "de868325dd1631de7c9f51f0a9498349ef908095c39d7722f55088d42d2ab236",
+      "bytes": 2695,
+      "changed_at": "2026-10-20T11:45:31.063Z"
+    },
+    "api/list-models.md": {
+      "url": "https://docs.typesafe.ai/api/list-models.md",
+      "title": "List models",
+      "description": "List the models and aliases available to the authenticated account.",
+      "raw_sha256": "58ecfc2de394faaefda60d73252afb813bea3d780ff5eb0adc1a7bfc0ae46ae2",
+      "clean_sha256": "7411b6f019988105d7b22f05a22296457ece53964c8f7b9bf18743e4fb98a9e9",
+      "bytes": 5123,
+      "changed_at": "2026-10-20T11:45:31.063Z"
+    },
+    "api/system-one.md": {
+      "url": "https://docs.typesafe.ai/api/system-one.md",
+      "title": "System One",
+      "description": "Answer one or more questions about the content supplied in `state`.",
+      "raw_sha256": "5e6261f6f6212c6cf75fd55cc2856184b355a6400673b18314e85505e6219820",
+      "clean_sha256": "c69fd038c7a52f4b2405a4854cc5259616097abf5d3878d2f11bb52ae0e4adf1",
+      "bytes": 28858,
+      "changed_at": "2026-10-20T11:45:31.062Z"
+    },
     "concepts/how-to-build-with-system-one.md": {
       "url": "https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md",
       "title": "How to build with TypeSafe",
@@ -34,7 +61,7 @@
       "title": "State",
       "description": "What state is, how to structure it, and how to give a System One model the context it needs.",
       "raw_sha256": "0058f0fc9c583183912061fc57b583ec51a5fc354e0163d01b276d488e98a8d9",
-      "clean_sha256": "657589f89636cc7ea0a782b2de5ee20c8b075d841c4dd2eb0fe5d54d67f54695",
+      "clean_sha256": "b961d73c9331d39959da0bf7bf07aa80dbb3989e377c9b9a8679acc2280381c7",
       "bytes": 3617,
       "changed_at": "2026-10-15T11:36:48.637Z"
     },
@@ -43,7 +70,7 @@
       "title": "System One",
       "description": "System One models make fast, structured decisions for software. Jev is TypeSafe's flagship model and the first System One model.",
       "raw_sha256": "f3ef88c39b3e6a52db708bef199a8d72be5d4f1ae3b58e256d1fae141f1836c2",
-      "clean_sha256": "970db5197d30bd95536c551136ef757a7992c5fe9392fb0f062127c4560533a9",
+      "clean_sha256": "c04954e2107e5816e578af3b3c34c966cd83a9c6e49ef3d920b9de2253b23d70",
       "bytes": 3933,
       "changed_at": "2026-10-15T11:36:48.637Z"
     },
@@ -276,10 +303,10 @@
       "url": "https://docs.typesafe.ai/images.md",
       "title": "Images",
       "description": "Send images in a System One request: in the state, inside a question's instructions, and as the criteria a question is judged against.",
-      "raw_sha256": "dff7a319d7232f769da220aa171b9f66884d76c10a0a3232b6c5de35ccdbd7ee",
-      "clean_sha256": "112747f0cb2288e5b4c94f76080ebdb5f868da27e49bd37b8c0aa2e0ff3e4450",
-      "bytes": 22184,
-      "changed_at": "2026-10-16T11:30:49.391Z"
+      "raw_sha256": "431c82177ee4713f46bf14da1b2f2f8835503a1deb98ea81d3ec9d7d06f183a7",
+      "clean_sha256": "784c3290def08d7cb7e30b8f3c8a1d40e630f698ea6923ff7e049c60ff05457b",
+      "bytes": 22198,
+      "changed_at": "2026-10-20T11:45:31.030Z"
     },
     "introduction.md": {
       "url": "https://docs.typesafe.ai/introduction.md",
@@ -313,7 +340,7 @@
       "title": "Quick start",
       "description": "Get up and running with Jev in 5 minutes.",
       "raw_sha256": "ea75cde163d62593569c9284a7931800b5cf4f6d2c094c5c0a81b93db274effc",
-      "clean_sha256": "8e0cbbe28670962a218bf50648dc99757ef4647c98153015e7268f1717cbf60b",
+      "clean_sha256": "62cd4af9bb370b13f79e8e9db3f7333dea140400c5e363cf214ea7aac4b99022",
       "bytes": 15088,
       "changed_at": "2026-10-15T11:36:48.635Z"
     },
@@ -339,10 +366,10 @@
       "url": "https://docs.typesafe.ai/models.md",
       "title": "Models",
       "description": "",
-      "raw_sha256": "02b7682a7176d2d6649a2fa4588df45cbbaa3c3460f721828d632a7577e606df",
-      "clean_sha256": "fdbd7e3b06bc0e88cd7c4f6833a36ccb80ba51ff362cd256fe419f8c281e5e54",
-      "bytes": 7971,
-      "changed_at": "2026-10-15T11:36:48.668Z"
+      "raw_sha256": "b643bc957614bbefaaf49c7a08deed930264b8c1bb1eaba8310ba0b980271d61",
+      "clean_sha256": "848a46eeb59f3006436884bd7a999b297efeeb4ea9abb56d2709fa2a0b89a1a6",
+      "bytes": 7978,
+      "changed_at": "2026-10-20T11:45:31.056Z"
     },
     "patterns.md": {
       "url": "https://docs.typesafe.ai/patterns.md",
@@ -420,17 +447,17 @@
       "url": "https://docs.typesafe.ai/primitives/choice.md",
       "title": "Choice",
       "description": "A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.",
-      "raw_sha256": "ae9c49b815ee30b28ed851e22b63041130fba50ae41368d41a5d80b571f383bb",
-      "clean_sha256": "3510acbedc0a4bff18291c407904bd5bbdce27d134fabf7ad396bd7d854152b4",
-      "bytes": 26907,
-      "changed_at": "2026-10-02T12:43:50.465Z"
+      "raw_sha256": "bfa3abb0a3991a67b722b19a068ef82a4decdf092301008685f0eebfddefb717",
+      "clean_sha256": "4a80a7fc21260aed46dcb06ec1dbcb86e9fff3eb2cb79fa2070843d1eaccd9dc",
+      "bytes": 27220,
+      "changed_at": "2026-10-20T11:45:31.023Z"
     },
     "primitives/noul.md": {
       "url": "https://docs.typesafe.ai/primitives/noul.md",
       "title": "Noul",
       "description": "A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.",
       "raw_sha256": "bf5d8c6700fbd9272ce27b53a6439d598e7915cdf505704ac7c827c6175ecb88",
-      "clean_sha256": "92b1e7dd20ab69a58694380e17065b8207f83d15986d6da6a18d238c483d7455",
+      "clean_sha256": "fcadba8f6feb19286940d0f65435a7e8af658e6212a07eb518257199e48ca2c7",
       "bytes": 26498,
       "changed_at": "2026-10-02T12:43:50.469Z"
     },
@@ -438,17 +465,17 @@
       "url": "https://docs.typesafe.ai/primitives/score.md",
       "title": "Score",
       "description": "A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.",
-      "raw_sha256": "a0a39b9c01f5ac3616efae071bf23f879bbe3fb12b0af2169932dbb71dd83d32",
-      "clean_sha256": "91f2806065133f116448e88c18e2f8b330747f5a8aaaf471c1f221c82a4289a4",
-      "bytes": 43770,
-      "changed_at": "2026-10-02T12:43:50.467Z"
+      "raw_sha256": "a6ed8f5021eb82bc82e0c77b893a0234c2a99e760917355c38037fd11176c5e0",
+      "clean_sha256": "5ea7b45440993d88a6b6b07d4270c5beda8e5a53bbcf7d748f935862ff2ed160",
+      "bytes": 43749,
+      "changed_at": "2026-10-20T11:45:31.027Z"
     },
     "sdk.md": {
       "url": "https://docs.typesafe.ai/sdk.md",
       "title": "Client SDKs",
       "description": "Install a TypeSafe client SDK and use typed questions and answers in your application.",
       "raw_sha256": "874e852726f1aa5567e69e2b748d7432b691d45a755b0cdbfb4fddcc5e838d35",
-      "clean_sha256": "7193368c78f141481cd79511bdc92e14ff14794731613254afc1a9ebab4f13f7",
+      "clean_sha256": "d360ce7e13ad173c20cd8f5b33237cc1cbf05794b2cfc9d1c0d73484fbf73f80",
       "bytes": 936,
       "changed_at": "2026-10-02T12:43:50.524Z"
     },

@@ -107,55 +107,10 @@ The most important thing for humans to review is the questions and any threshold
 A stale skill can cause this. Update it using your installation method above and retry.
 
 
-# API reference
-Source: https://docs.typesafe.ai/api
+# Request rules and errors
+Source: https://docs.typesafe.ai/api/errors
 
-Full HTTP API reference for the TypeSafe evaluation endpoint.
-
-Evaluate a `state` against a map of typed `questions` and get back structured `answers`, one per question. For a guided introduction, start with the [primitives](/primitives).
-
-## Evaluation endpoint
-
-```http theme={null}
-POST https://api.typesafe.ai/v1/systemone
-Authorization: Bearer <API_KEY>
-Content-Type: application/json
-```
-
-## Request body
-
-The top-level shape of every request. Each entry in the `questions` map is a typed question you name.
-
-<ParamField type="string | object | array">
-  The content to evaluate. A plain string for text, or structured data (object/array) for things like chat logs, records, or the current state of your application. See [State](/concepts/state) for formats and best practices.
-</ParamField>
-
-<ParamField type="string">
-  The model that handles the request. Use `"jev-latest"`, TypeSafe's flagship model. See [Models](/models) for the available models and aliases.
-</ParamField>
-
-<ParamField type="map<string, Question>">
-  A map of typed [Question](#question-types) objects. You choose each key; answers come back under the same keys.
-
-  <Expandable title="map entries">
-    <ParamField type="Question">
-      A key you choose. The matching [Answer](#answer-types) is returned under this same id. The key is not sent to the underlying model and is not used in inference.
-    </ParamField>
-  </Expandable>
-</ParamField>
-
-```json Example request theme={null}
-{
-  "state": "Help! My payouts have been failing for 3 days.",
-  "model": "jev-latest",
-  "questions": {
-    "is_urgent": {
-      "type": "noul",
-      "instructions": "Does this convey urgency?"
-    }
-  }
-}
-```
+Request limits, compression, and HTTP status codes
 
 ## Request rules
 
@@ -172,278 +127,7 @@ A body over 32 MiB returns `413`; the other rules return `400`.
 
 ### Compression
 
-You can compress the body with `Content-Encoding: gzip` (or `x-gzip`) or `zstd`. The SDKs compress request bodies of 1 KiB or more with zstd when the runtime supports it. Use one compression layer, and keep zstd's window at most 8 MiB. The 32 MiB limit applies to both the compressed and the decompressed body. An unsupported `Content-Encoding` or more than one layer returns `415`; a malformed compressed body returns `400`.
-
-## Question types
-
-A `Question`'s type is set by its `type` field. Every question has `type` and `instructions`, and most types also take `criteria`; each type's page says what it accepts.
-
-The `instructions` property can be a string, an object, or an array. You can break up a long question that has extra context, or data it needs to reference, into a structured object. Put the question in one field and the data in the others, and refer to the data fields by name in backticks, the same way you point a question at a nested `state` value:
-
-```json theme={null}
-"instructions": {
-  "potential_duplicate": {
-    "name": "John Smith",
-    "location": "Oakland, California",
-    "last_employer": "Google"
-  },
-  "question": "Is the resume for the same person as `potential_duplicate`?"
-}
-```
-
-See [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) to learn more.
-
-### Noul
-
-A yes/no question. Returns the probability the answer is yes.
-
-<ParamField type="&#x22;noul&#x22;" />
-
-<ParamField type="string | object | array">
-  The yes/no question to evaluate. An object can hold the question in one field and data it refers to in others; see [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions).
-</ParamField>
-
-<ParamField type="object">
-  Optional descriptions of what a yes and a no mean.
-
-  <Expandable title="properties">
-    <ParamField type="string | object | array">
-      What a yes (value near 1) means.
-    </ParamField>
-
-    <ParamField type="string | object | array">
-      What a no (value near 0) means.
-    </ParamField>
-  </Expandable>
-</ParamField>
-
-```json Example request focus={5-12} theme={null}
-{
-  "state": "Help! My payouts have been failing for 3 days.",
-  "model": "jev-latest",
-  "questions": {
-    "is_urgent": {
-      "type": "noul",
-      "instructions": "Does this convey urgency?",
-      "criteria": {
-        "true": "Explicitly time-sensitive",
-        "false": "No urgency expressed"
-      }
-    }
-  }
-}
-```
-
-### Choice
-
-Picks one option from a set you define. Returns the chosen option and the full probability distribution.
-
-<ParamField type="&#x22;choice&#x22;" />
-
-<ParamField type="string | object | array">
-  What the model should decide. An object can hold the question in one field and data it refers to in others; see [Structured instructions and criteria](/primitives/choice#structured-instructions-and-criteria).
-</ParamField>
-
-<ParamField type="map<string, string | object | array | null>">
-  A map of option to rubric description; use null when an option needs no extra detail. You can have a maximum of 255 options per Choice.
-
-  <Expandable title="map entries">
-    <ParamField type="string | object | array | null">
-      A key you choose. A description of this option.
-    </ParamField>
-  </Expandable>
-</ParamField>
-
-```json Example request focus={5-13} theme={null}
-{
-  "state": "Help! My payouts have been failing for 3 days.",
-  "model": "jev-latest",
-  "questions": {
-    "department": {
-      "type": "choice",
-      "instructions": "Which team should handle this?",
-      "criteria": {
-        "billing": "Payments, invoicing, refunds",
-        "technical": "Bugs, outages, integrations",
-        "sales": "Pricing, upgrades, new accounts"
-      }
-    }
-  }
-}
-```
-
-### Score
-
-Rates the state along a rubric you define. Returns a probability-weighted value across your levels.
-
-<ParamField type="&#x22;score&#x22;" />
-
-<ParamField type="string | object | array">
-  What the model should rate. An object can hold the question in one field and data it refers to in others; see [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions).
-</ParamField>
-
-<ParamField type="array<string | object | array>">
-  An ordered array of level descriptions. A Score should have at least two levels; the API accepts up to 10.
-</ParamField>
-
-```json Example request focus={5-9} theme={null}
-{
-  "state": "Help! My payouts have been failing for 3 days.",
-  "model": "jev-latest",
-  "questions": {
-    "frustration": {
-      "type": "score",
-      "instructions": "How frustrated is the customer?",
-      "criteria": ["Calm", "Frustrated", "Very angry"]
-    }
-  }
-}
-```
-
-## Response body
-
-One answer per question, returned under the same ids you provided.
-
-<ResponseField name="model" type="string">
-  The model that performed the evaluation.
-</ResponseField>
-
-<ResponseField name="answers" type="map<string, Answer>">
-  One [Answer](#answer-types) per question, keyed by the same ids you used in questions.
-
-  <Expandable title="map entries">
-    <ResponseField name="‹question id›" type="Answer">
-      The same id you chose in questions.
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="usage" type="object">
-  Token usage for the request.
-
-  <Expandable title="properties">
-    <ResponseField name="input_tokens" type="integer" />
-
-    <ResponseField name="output_tokens" type="integer" />
-  </Expandable>
-</ResponseField>
-
-```json Example response theme={null}
-{
-  "model": "jev-1.13.0",
-  "answers": {
-    "is_urgent": {
-      "type": "noul",
-      "noul": 0.95
-    }
-  },
-  "usage": { "input_tokens": 296, "output_tokens": 20 }
-}
-```
-
-## Answer types
-
-Every answer carries a `type` matching its question. Some answer types also carry a `confidence` between 0 and 1; each type's page lists the fields its answers include. See [Confidence](/confidence).
-
-### Noul answer
-
-<ResponseField name="type" type="&#x22;noul&#x22;" />
-
-<ResponseField name="noul" type="number">
-  The yes/no answer on a scale from 0 (no) to 1 (yes).
-</ResponseField>
-
-```json Example response focus={4-7} theme={null}
-{
-  "model": "jev-1.13.0",
-  "answers": {
-    "is_urgent": {
-      "type": "noul",
-      "noul": 0.95
-    }
-  },
-  "usage": { "input_tokens": 307, "output_tokens": 20 }
-}
-```
-
-### Choice answer
-
-<ResponseField name="type" type="&#x22;choice&#x22;" />
-
-<ResponseField name="choice" type="string">
-  The highest-probability option.
-</ResponseField>
-
-<ResponseField name="probabilities" type="map<string, number>">
-  Every option mapped to its probability (floats that sum to 1).
-
-  <Expandable title="map entries">
-    <ResponseField name="‹option›" type="number">
-      An option you defined in criteria.
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="confidence" type="number">
-  How certain the model is, derived from probabilities.
-</ResponseField>
-
-```json Example response focus={4-9} theme={null}
-{
-  "model": "jev-1.13.0",
-  "answers": {
-    "department": {
-      "type": "choice",
-      "choice": "billing",
-      "probabilities": { "billing": 0.88, "technical": 0.12, "sales": 0.0 },
-      "confidence": 0.81
-    }
-  },
-  "usage": { "input_tokens": 318, "output_tokens": 34 }
-}
-```
-
-### Score answer
-
-<ResponseField name="type" type="&#x22;score&#x22;" />
-
-<ResponseField name="score" type="number">
-  The probability-weighted answer across the levels; can land between levels.
-</ResponseField>
-
-<ResponseField name="legend" type="map<string, string>">
-  Each level number mapped back to its description.
-</ResponseField>
-
-<ResponseField name="probabilities" type="map<string, number>">
-  Each level (string key) mapped to its probability (floats that sum to 1).
-
-  <Expandable title="map entries">
-    <ResponseField name="‹level›" type="number">
-      A level index, as a string key matching legend.
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="confidence" type="number">
-  How certain the model is, derived from probabilities.
-</ResponseField>
-
-```json Example response focus={4-10} theme={null}
-{
-  "model": "jev-1.13.0",
-  "answers": {
-    "frustration": {
-      "type": "score",
-      "score": 1.05,
-      "legend": { "0": "Calm", "1": "Frustrated", "2": "Very angry" },
-      "probabilities": { "0": 0.0, "1": 0.95, "2": 0.05 },
-      "confidence": 0.92
-    }
-  },
-  "usage": { "input_tokens": 304, "output_tokens": 18 }
-}
-```
+You can compress the body with `Content-Encoding: gzip` (or `x-gzip`) or `zstd`. Use one compression layer, and keep zstd's window at most 8 MiB. The 32 MiB limit applies to both the compressed and the decompressed body. An unsupported `Content-Encoding` or more than one layer returns `415`; a malformed compressed body returns `400`.
 
 ## Errors
 
@@ -459,9 +143,31 @@ Errors use standard HTTP status codes with a JSON body describing what went wron
 | `429 Too Many Requests` | You have exceeded your rate limit. Back off and retry after a short delay. |
 | `529 Overloaded` | TypeSafe is temporarily overloaded. Retry after a short delay. |
 
-### Handling rate limits
+## Handling rate limits
 
 When you receive a `429 Too Many Requests` or `529 Overloaded` response, retry the request with exponential backoff instead of retrying immediately. Our client SDKs handle this automatically, so no extra handling is needed if you use one of our SDKs with its default retry policy.
+
+
+# List models
+Source: https://docs.typesafe.ai/api/list-models
+
+https://api.typesafe.ai/openapi.json get /v1/models
+List the models and aliases available to the authenticated account.
+
+Pass a returned model name as `model` in a POST /v1/systemone request.
+
+
+
+# System One
+Source: https://docs.typesafe.ai/api/system-one
+
+https://api.typesafe.ai/openapi.json post /v1/systemone
+Answer one or more questions about the content supplied in `state`.
+
+You can mix question types in one request. Answers use the same names as the
+questions, so you can match each result to its question. The response also includes
+the model used and token usage.
+
 
 
 # How to build with TypeSafe
@@ -13902,13 +13608,13 @@ State, instructions, and criteria accept nested JSON [structure](/primitives/adv
 | File size | 16 MiB per image file. For base64, this is the size after decoding. |
 | Width and height | 280 to 1568 pixels each. An image with either side under 280 pixels is rejected. |
 | Total pixels (width × height) | 78,400 to 2,458,624, the area of a 280 × 280 to a 1568 × 1568 square. |
-| Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](/api#compression) doesn't raise the limit. |
+| Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](/api/errors#compression) doesn't raise the limit. |
 | All images in the request | 32 MiB, shared by every distinct image after the API processes it. Processing re-encodes each image and can make it larger than the file you sent, so a request of small uploads can still go over. |
 | Expanded request | 32 MiB for the text, questions, structure, and images after every reference is replaced by its image. Each use of a reference adds the image again: an image that is 10 MiB after processing, referenced four times, is over the limit. |
 
 All limits include both ends of the range. An image outside them is rejected, never resized to fit. If any image in a request is rejected, the whole request fails: there are no partial answers. See [Errors](#errors) for the status codes.
 
-How many images fit in one request depends on these limits and on the [context length](/models). Images have no separate [rate limits](/api#handling-rate-limits): a request with images counts against the same limits as any other request.
+How many images fit in one request depends on these limits and on the [context length](/models). Images have no separate [rate limits](/api/errors#handling-rate-limits): a request with images counts against the same limits as any other request.
 
 To stay under the request limits, send fewer images, send smaller images, put an image that several questions use in the `state` once instead of in each question's `instructions`, or split the work across requests.
 
@@ -14779,7 +14485,7 @@ Long context costs the same per token as any other request. It is slower and les
 
 Rate limits are set per organization. Your organization's current limits are in the [developer console](https://console.typesafe.ai/rate-limits).
 
-Limits are measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry these requests by default, waiting longer between each attempt, and follow the `retry-after` header when the response includes one. If you call the HTTP API directly, see [Handling rate limits](/api#handling-rate-limits).
+Limits are measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry these requests by default, waiting longer between each attempt, and follow the `retry-after` header when the response includes one. If you call the HTTP API directly, see [Handling rate limits](/api/errors#handling-rate-limits).
 
 Higher limits are available on custom and enterprise plans. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai).
 
@@ -15689,7 +15395,7 @@ Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoi
 Use one of our [client SDKs](/sdk) or call the [HTTP API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
 
 <Note>
-  `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](/api#param-instructions-1).
+  `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](/api).
 </Note>
 
 ## Response structure
@@ -15731,6 +15437,10 @@ This ticket is an easy one, so all of the probability is on `returns` and confid
 Ask every Choice question your code might need in a single request rather than one request per question. Questions are evaluated in parallel. Adding questions barely changes the response time, and the code can ignore answers it doesn't need. Extra questions still cost tokens. [Ask multiple questions together](/primitives#ask-multiple-questions-together) explains this in full; the next section shows five Choice questions in one call.
 
 The same logic applies to the options inside a single Choice question. A Choice question accepts up to 255 options, and adding options costs a few tokens each, so give the model the full list of teams, categories, or products rather than a shortlist. Add an `other` or `none of the above` option when the list might not cover every input, so the model can say none of the others fit.
+
+<Tip>
+  A `none of the above` option may not work well in many use cases. As an alternative, ask a companion [Noul](/primitives/noul) question in the same request that checks whether anything fits at all, such as "Does `message` name any of `our_products`?" Your code then reads the Choice answer only when the Noul says yes.
+</Tip>
 
 To classify documents through a deep hierarchy or large taxonomy, chain Choice questions level by level. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification) shows how to run a beam search over Choice probabilities, keeping the best `K` candidate paths at each level instead of committing to a single greedy path.
 
@@ -16292,7 +16002,7 @@ Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoi
 Use one of our [client SDKs](/sdk) or call the [TypeSafe API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
 
 <Note>
-  `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](/api#param-instructions-2).
+  `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](/api).
 </Note>
 
 ## Response structure

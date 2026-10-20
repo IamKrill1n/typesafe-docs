@@ -21,7 +21,7 @@ Example questions:
 
 ## Request structure
 
-The POST request body to the [TypeSafe API](../api.md) has a specific structure. The top level has three fields: `state`, the content to evaluate; `model`; and `questions`, a map from question ids you choose to question objects. Each Choice question has the following fields:
+The POST request body to the [TypeSafe API](https://docs.typesafe.ai/api) has a specific structure. The top level has three fields: `state`, the content to evaluate; `model`; and `questions`, a map from question ids you choose to question objects. Each Choice question has the following fields:
 
 * `type`: Always `"choice"`.
 * `instructions`: The question the model answers.
@@ -76,10 +76,10 @@ with TypeSafeClient() as client:
 
 Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](../concepts/how-to-build-with-system-one.md) covers where in your code to call it.
 
-Use one of our [client SDKs](../sdk.md) or call the [HTTP API](../api.md) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](../agent-skill.md#installation) first so it knows the request and response shapes.
+Use one of our [client SDKs](../sdk.md) or call the [HTTP API](https://docs.typesafe.ai/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](../agent-skill.md#installation) first so it knows the request and response shapes.
 
 > **Note:**
-> `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](../api.md#param-instructions-1).
+> `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](https://docs.typesafe.ai/api).
 
 ## Response structure
 
@@ -120,6 +120,9 @@ This ticket is an easy one, so all of the probability is on `returns` and confid
 Ask every Choice question your code might need in a single request rather than one request per question. Questions are evaluated in parallel. Adding questions barely changes the response time, and the code can ignore answers it doesn't need. Extra questions still cost tokens. [Ask multiple questions together](../primitives.md#ask-multiple-questions-together) explains this in full; the next section shows five Choice questions in one call.
 
 The same logic applies to the options inside a single Choice question. A Choice question accepts up to 255 options, and adding options costs a few tokens each, so give the model the full list of teams, categories, or products rather than a shortlist. Add an `other` or `none of the above` option when the list might not cover every input, so the model can say none of the others fit.
+
+> **Tip:**
+> A `none of the above` option may not work well in many use cases. As an alternative, ask a companion [Noul](./noul.md) question in the same request that checks whether anything fits at all, such as "Does `message` name any of `our_products`?" Your code then reads the Choice answer only when the Noul says yes.
 
 To classify documents through a deep hierarchy or large taxonomy, chain Choice questions level by level. The [Hierarchical Classification cookbook](../cookbooks/hierarchical_classification.md) shows how to run a beam search over Choice probabilities, keeping the best `K` candidate paths at each level instead of committing to a single greedy path.
 

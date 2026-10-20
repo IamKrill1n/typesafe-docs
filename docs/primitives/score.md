@@ -12,7 +12,7 @@ The numbers in front of each step are positions, explained under [Levels](#level
 
 ## Request structure
 
-The POST request body to the [TypeSafe API](../api.md) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Score question has the following fields:
+The POST request body to the [TypeSafe API](https://docs.typesafe.ai/api) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Score question has the following fields:
 
 * `type`: Always `"score"`.
 * `instructions`: The question the model answers. What it's rating.
@@ -75,10 +75,10 @@ with TypeSafeClient() as client:
 
 Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](../concepts/how-to-build-with-system-one.md) covers where in your code to call it.
 
-Use one of our [client SDKs](../sdk.md) or call the [TypeSafe API](../api.md) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](../agent-skill.md#installation) first so it knows the request and response shapes.
+Use one of our [client SDKs](../sdk.md) or call the [TypeSafe API](https://docs.typesafe.ai/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](../agent-skill.md#installation) first so it knows the request and response shapes.
 
 > **Note:**
-> `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](../api.md#param-instructions-2).
+> `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](https://docs.typesafe.ai/api).
 
 ## Response structure
 

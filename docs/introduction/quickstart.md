@@ -365,7 +365,7 @@ Content-Type: application/json
 }
 ```
 
-The [API Reference](../api.md) lists every request field, question type, and answer type.
+The [API Reference](https://docs.typesafe.ai/api) lists every request field, question type, and answer type.
 
 ## Try it: the Playground
 

@@ -338,13 +338,13 @@ State, instructions, and criteria accept nested JSON [structure](/primitives/adv
 | File size | 16 MiB per image file. For base64, this is the size after decoding. |
 | Width and height | 280 to 1568 pixels each. An image with either side under 280 pixels is rejected. |
 | Total pixels (width × height) | 78,400 to 2,458,624, the area of a 280 × 280 to a 1568 × 1568 square. |
-| Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](/api#compression) doesn't raise the limit. |
+| Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](/api/errors#compression) doesn't raise the limit. |
 | All images in the request | 32 MiB, shared by every distinct image after the API processes it. Processing re-encodes each image and can make it larger than the file you sent, so a request of small uploads can still go over. |
 | Expanded request | 32 MiB for the text, questions, structure, and images after every reference is replaced by its image. Each use of a reference adds the image again: an image that is 10 MiB after processing, referenced four times, is over the limit. |
 
 All limits include both ends of the range. An image outside them is rejected, never resized to fit. If any image in a request is rejected, the whole request fails: there are no partial answers. See [Errors](#errors) for the status codes.
 
-How many images fit in one request depends on these limits and on the [context length](/models). Images have no separate [rate limits](/api#handling-rate-limits): a request with images counts against the same limits as any other request.
+How many images fit in one request depends on these limits and on the [context length](/models). Images have no separate [rate limits](/api/errors#handling-rate-limits): a request with images counts against the same limits as any other request.
 
 To stay under the request limits, send fewer images, send smaller images, put an image that several questions use in the `state` once instead of in each question's `instructions`, or split the work across requests.
 

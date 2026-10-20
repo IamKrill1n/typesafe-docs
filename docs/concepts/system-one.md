@@ -44,7 +44,7 @@ Answers to some question types also include [confidence](../confidence.md) (each
 
 ## Call a System One model
 
-Call a System One model through one of our [client SDKs](../sdk.md) or `POST /v1/systemone` in the [HTTP API](../api.md). The `model` field selects which model handles the request. The examples in these docs use `jev-latest`, which is also the SDK default. See [Models](../models.md) for the available models, their prices, and their aliases.
+Call a System One model through one of our [client SDKs](../sdk.md) or `POST /v1/systemone` in the [HTTP API](https://docs.typesafe.ai/api). The `model` field selects which model handles the request. The examples in these docs use `jev-latest`, which is also the SDK default. See [Models](../models.md) for the available models, their prices, and their aliases.
 
 Start with [State](./state.md) to prepare the input and [Primitives (Questions)](../primitives.md) to explore the types of questions you can ask.
 

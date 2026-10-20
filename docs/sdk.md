@@ -12,6 +12,6 @@ Choose a client SDK for installation instructions, examples, and API details.
 - **JavaScript / TypeScript** —
   Install the JavaScript client SDK and make your first typed request.
 
-You can also call the [HTTP API](./api.md) directly from any language.
+You can also call the [HTTP API](https://docs.typesafe.ai/api) directly from any language.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -19,9 +19,9 @@ This section assumes you know the [TypeSafe primitives](/primitives) and underst
 | [Composite Scoring](/patterns/composite-scoring) | Combine several dimensions of analysis into a single score | Cost, Reliability, Speed |
 | [Intent Routing](/patterns/intent-routing) | Classify a user's intent and route to the appropriate handler | Cost, Speed |
 
-<Tip>
-  We're always keen to learn how people are making use of our primitives. If you've found a killer use case you think should be mentioned here, feel free to drop us a note!
-</Tip>
+> [!TIP]
+>
+> We're always keen to learn how people are making use of our primitives. If you've found a killer use case you think should be mentioned here, feel free to drop us a note!
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

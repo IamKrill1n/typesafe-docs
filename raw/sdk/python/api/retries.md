@@ -6,44 +6,29 @@
 
 > Configure retries with RetryPolicy — attempt count, retryable statuses, backoff, and retry headers handling.
 
-export function SdkSignature({children}) {
-  async function copy(event) {
-    const button = event.currentTarget;
-    const code = button.parentElement.querySelector("pre code");
-    try {
-      await navigator.clipboard.writeText(code.textContent);
-      button.setAttribute("aria-label", "Signature copied");
-      button.dataset.copied = "true";
-    } catch {
-      button.setAttribute("aria-label", "Copy failed; select the signature to copy");
-    }
-    setTimeout(() => {
-      button.setAttribute("aria-label", "Copy signature");
-      delete button.dataset.copied;
-    }, 2000);
-  }
-  return <div className="sdk-signature not-prose">
-      <button type="button" className="sdk-signature-copy" aria-label="Copy signature" onClick={copy}>
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="8" y="8" width="12" height="12" rx="2" />
-          <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
-        </svg>
-      </button>
-      <pre tabIndex={0} aria-label="SDK signature"><code>{children}</code></pre>
-    </div>;
-}
-
-<a id="retries" />
-
-<h2 id="typesafe_sdk.RetryPolicy">
-  typesafe\_sdk.RetryPolicy
-</h2>
+## typesafe\_sdk.RetryPolicy
 
 `dataclass`
 
-<SdkSignature>
-  <span className="nf">{"RetryPolicy"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"max_retries"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#int">{"int"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="mi">{"2"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"backoff_initial"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="mf">{"0.5"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"backoff_max"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="mf">{"5.0"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"backoff_jitter"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="mf">{"0.25"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"http_statuses"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#set">{"set"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/functions.html#int">{"int"}</a></span><span className="p">{"]"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="p">{"("}</span>{"\n"}{"        "}<span className="k">{"lambda"}</span><span className="p">{":"}</span>{" "}<span className="p">{"{"}</span><span className="mi">{"408"}</span><span className="p">{","}</span>{" "}<span className="mi">{"429"}</span><span className="p">{","}</span>{" "}<span className="o">{"*"}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#range">{"range"}</a></span><span className="p">{"("}</span><span className="mi">{"500"}</span><span className="p">{","}</span>{" "}<span className="mi">{"600"}</span><span className="p">{")}"}</span>{"\n"}{"    "}<span className="p">{")(),"}</span>{"\n"}{"    "}<span className="n">{"respect_retry_after"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#bool">{"bool"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"True"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"api_connection_error"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#bool">{"bool"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"True"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"api_timeout_error"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#bool">{"bool"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"True"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"exceptions"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#set">{"set"}</a></span><span className="p">{"["}</span>{"\n"}{"        "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#type">{"type"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/exceptions.html#BaseException">{"BaseException"}</a></span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="p">{"]"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#set">{"set"}</a></span><span className="p">{"(),"}</span>{"\n"}{"    "}<span className="n">{"predicate"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">{"Callable"}</a></span><span className="p">{"[["}</span><span className="n"><a href="https://docs.python.org/3/builtins/exceptions.html#BaseException">{"BaseException"}</a></span><span className="p">{"],"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#bool">{"bool"}</a></span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"timeout"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="mf">{"30.0"}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`RetryPolicy(
+&#x20;   max\_retries: [int](https://docs.python.org/3/builtins/functions.html#int) = 2,
+&#x20;   backoff\_initial: [float](https://docs.python.org/3/builtins/functions.html#float) = 0.5,
+&#x20;   backoff\_max: [float](https://docs.python.org/3/builtins/functions.html#float) = 5.0,
+&#x20;   backoff\_jitter: [float](https://docs.python.org/3/builtins/functions.html#float) = 0.25,
+&#x20;   http\_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = (
+&#x20;       lambda: \{408, 429, \*[range](https://docs.python.org/3/builtins/stdtypes.html#range)(500, 600)}
+&#x20;   )(),
+&#x20;   respect\_retry\_after: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
+&#x20;   api\_connection\_error: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
+&#x20;   api\_timeout\_error: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
+&#x20;   exceptions: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[
+&#x20;       [type](https://docs.python.org/3/builtins/functions.html#type)\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]
+&#x20;   ] = [set](https://docs.python.org/3/builtins/stdtypes.html#set)(),
+&#x20;   predicate: [Callable](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)\[\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)], [bool](https://docs.python.org/3/builtins/functions.html#bool)]
+&#x20;   | None = None,
+&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float) | None = 30.0,
+)`</pre>
 
 Configuration for SDK retry behavior.
 
@@ -59,371 +44,256 @@ client = TypeSafeClient(
 )
 ```
 
-<h3 id="typesafe_sdk.RetryPolicy.max_retries">
-  max\_retries
-</h3>
+### max\_retries
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"max_retries"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`max\_retries
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#int">
-      {"int"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [int](https://docs.python.org/3/builtins/functions.html#int)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="mi">
-    {"2"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  2\`
+</pre>
 
 Maximum retries after the initial attempt; `0` disables retries.
 
-<h3 id="typesafe_sdk.RetryPolicy.backoff_initial">
-  backoff\_initial
-</h3>
+### backoff\_initial
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"backoff_initial"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`backoff\_initial
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#float">
-      {"float"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [float](https://docs.python.org/3/builtins/functions.html#float)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="mf">
-    {"0.5"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  0.5\`
+</pre>
 
 First backoff delay in seconds, doubled each attempt up to `backoff_max`; zero disables backoff.
 
-<h3 id="typesafe_sdk.RetryPolicy.backoff_max">
-  backoff\_max
-</h3>
+### backoff\_max
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"backoff_max"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`backoff\_max
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#float">
-      {"float"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [float](https://docs.python.org/3/builtins/functions.html#float)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="mf">
-    {"5.0"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  5.0\`
+</pre>
 
 Maximum backoff delay in seconds; zero disables backoff.
 
-<h3 id="typesafe_sdk.RetryPolicy.backoff_jitter">
-  backoff\_jitter
-</h3>
+### backoff\_jitter
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"backoff_jitter"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`backoff\_jitter
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#float">
-      {"float"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [float](https://docs.python.org/3/builtins/functions.html#float)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="mf">
-    {"0.25"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  0.25\`
+</pre>
 
 Fraction of each backoff delay randomly subtracted, between 0 and 1.
 
-<h3 id="typesafe_sdk.RetryPolicy.http_statuses">
-  http\_statuses
-</h3>
+### http\_statuses
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">{"http_statuses"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#set">{"set"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/functions.html#int">{"int"}</a></span><span className="p">{"]"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/dataclasses.html#dataclasses.field">{"field"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"default_factory"}</span><span className="o">{"="}</span><span className="k">{"lambda"}</span><span className="p">{":"}</span>{" "}<span className="p">{"{"}</span>{"\n"}{"        "}<span className="mi">{"408"}</span><span className="p">{","}</span>{"\n"}{"        "}<span className="mi">{"429"}</span><span className="p">{","}</span>{"\n"}{"        "}<span className="o">{"*"}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#range">{"range"}</a></span><span className="p">{"("}</span><span className="mi">{"500"}</span><span className="p">{","}</span>{" "}<span className="mi">{"600"}</span><span className="p">{"),"}</span>{"\n"}{"    "}<span className="p">{"}"}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`http\_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
+&#x20;   default\_factory=lambda: \{
+&#x20;       408,
+&#x20;       429,
+&#x20;       \*[range](https://docs.python.org/3/builtins/stdtypes.html#range)(500, 600),
+&#x20;   }
+)`</pre>
 
 HTTP status codes that are retried.
 
-<h3 id="typesafe_sdk.RetryPolicy.respect_retry_after">
-  respect\_retry\_after
-</h3>
+### respect\_retry\_after
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"respect_retry_after"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`respect\_retry\_after
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#bool">
-      {"bool"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="kc">
-    {"True"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  True\`
+</pre>
 
 Whether to honor `Retry-After` and `retry-after-ms` response headers.
 
-<h3 id="typesafe_sdk.RetryPolicy.api_connection_error">
-  api\_connection\_error
-</h3>
+### api\_connection\_error
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"api_connection_error"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`api\_connection\_error
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#bool">
-      {"bool"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="kc">
-    {"True"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  True\`
+</pre>
 
 Whether to retry `TypeSafeAPIConnectionError`, raised when the request cannot reach or read from the server.
 
-<h3 id="typesafe_sdk.RetryPolicy.api_timeout_error">
-  api\_timeout\_error
-</h3>
+### api\_timeout\_error
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"api_timeout_error"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`api\_timeout\_error
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#bool">
-      {"bool"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [bool](https://docs.python.org/3/builtins/functions.html#bool)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="kc">
-    {"True"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  True\`
+</pre>
 
 Whether to retry `TypeSafeAPITimeoutError`, raised when the request exceeds its timeout.
 
-<h3 id="typesafe_sdk.RetryPolicy.exceptions">
-  exceptions
-</h3>
+### exceptions
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">{"exceptions"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#set">{"set"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/functions.html#type">{"type"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/exceptions.html#BaseException">{"BaseException"}</a></span><span className="p">{"]]"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/dataclasses.html#dataclasses.field">{"field"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"default_factory"}</span><span className="o">{"="}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#set">{"set"}</a></span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`exceptions: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[type](https://docs.python.org/3/builtins/functions.html#type)\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
+&#x20;   default\_factory=[set](https://docs.python.org/3/builtins/stdtypes.html#set)
+)`</pre>
 
 Additional exception types that trigger a retry, on top of the built-in rules.
 
-<h3 id="typesafe_sdk.RetryPolicy.predicate">
-  predicate
-</h3>
+### predicate
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">{"predicate"}</span><span className="p">{":"}</span>{" "}<span className="p">{"("}</span>{"\n"}{"    "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">{"Callable"}</a></span><span className="p">{"[["}</span><span className="n"><a href="https://docs.python.org/3/builtins/exceptions.html#BaseException">{"BaseException"}</a></span><span className="p">{"],"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#bool">{"bool"}</a></span><span className="p">{"]"}</span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{"\n"}<span className="p">{")"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`predicate: (
+&#x20;   [Callable](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)\[\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)], [bool](https://docs.python.org/3/builtins/functions.html#bool)] | None
+) = None`</pre>
 
 An optional predicate called with the raised exception; returning `True` triggers a retry in addition to the other rules.
 
-<h3 id="typesafe_sdk.RetryPolicy.timeout">
-  timeout
-</h3>
+### timeout
 
 `class-attribute` `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"timeout"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`timeout
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/functions.html#float">
-      {"float"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [float](https://docs.python.org/3/builtins/functions.html#float)
 
-  <span className="o">
-    {"|"}
-  </span>
+  &#x20;
 
-  {" "}
+  |
 
-  <span className="kc">
-    {"None"}
-  </span>
+  &#x20;
 
-  {" "}
+  None
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="mf">
-    {"30.0"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  30.0\`
+</pre>
 
 Total retry budget in seconds per SDK call, including the initial attempt and delays; `None` disables the limit.
 

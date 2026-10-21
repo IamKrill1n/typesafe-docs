@@ -38,33 +38,7 @@ flowchart LR
 
 ### Step 1: classify intent and complexity
 
-> Interactive example: questions — [view it on docs.typesafe.ai](https://docs.typesafe.ai/patterns/intent-routing)
-
-```js
-{
-questions: {
-  intent: {
-    type: 'choice',
-    instructions: 'The primary intent of this customer message',
-    criteria: {
-      order_status: 'Asking about an existing order',
-      product_question: 'Asking about a product before buying',
-      return_exchange: 'Wants to return or exchange something',
-      complaint: 'Unhappy with experience, wants resolution',
-    },
-  },
-  complexity: {
-    type: 'score',
-    instructions: 'How complex is this request to resolve',
-    criteria: [
-      'Simple lookup or standard procedure',
-      'Requires some judgment or multi-step process',
-      'Unusual situation, edge case, or escalation needed',
-    ],
-  },
-},
-}
-```
+Try it in the Playground →
 
 ### Step 2: route to the optimal handler
 

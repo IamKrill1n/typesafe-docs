@@ -6,7 +6,37 @@ Use a Score when the answer is a position on a spectrum you can describe in step
 
 A Score answer is a position along your levels in `score`, which can fall between two levels. The model also returns a probability for every level in `probabilities`, and a `confidence` value for the answer.
 
-> Interactive score explorer — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/score)
+Example Score question
+
+Example questions
+
+Levels
+
+State (content to evaluate)
+
+Answer
+
+Probability of each level
+
+Confidence
+
+<output aria-label="Confidence" />
+
+score
+
+<details>
+  <summary>How the score and confidence are calculated</summary>
+
+  Score:
+
+  Multiply each level number by its probability, then add the results:
+
+  ≈
+
+  Confidence:
+
+  TypeSafe computes this from how the probability is spread across the levels. All of it on one level gives 1.0; the more evenly it spreads, the lower the confidence.
+</details>
 
 The numbers in front of each step are positions, explained under [Levels](#levels).
 
@@ -20,25 +50,7 @@ The POST request body to the [TypeSafe API](https://docs.typesafe.ai/api) has th
 
 Below is a request where the state is a bug report and the question is how severe the bug is:
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/score)
-
-```js
-{
-state: 'The export button crashes the settings page in Safari. It works in Chrome, but a few of our customers only use Safari.',
-selectedModels: ['jev-latest'],
-questions: {
-  bug_severity: {
-    type: 'score',
-    instructions: 'How severe is the reported issue?',
-    criteria: [
-      'Cosmetic; no impact to functionality',
-      'Broken or degraded feature, but workaround exists',
-      'Blocking issue; no workaround exists',
-    ],
-  },
-},
-}
-```
+Try it in the Playground →
 
 You choose the question id, `bug_severity` in this case. This id is not sent to the model. The answer is returned under the same id.
 
@@ -77,7 +89,8 @@ Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoi
 
 Use one of our [client SDKs](../sdk.md) or call the [TypeSafe API](https://docs.typesafe.ai/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](../agent-skill.md#installation) first so it knows the request and response shapes.
 
-> **Note:**
+> [!NOTE]
+>
 > `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](https://docs.typesafe.ai/api).
 
 ## Response structure
@@ -141,16 +154,16 @@ We can see how different bug reports change the score:
     <tr>
       <th colSpan={3} />
 
-      <th colSpan={3} style={{ textAlign: 'left' }}><code>probabilities</code></th>
+      <th colSpan={3}>`probabilities`</th>
     </tr>
 
     <tr>
-      <th style={{ width: '44%' }}>State</th>
-      <th style={{ width: '12%', whiteSpace: 'nowrap' }}><code>score</code></th>
-      <th style={{ width: '16%', whiteSpace: 'nowrap' }}><code>confidence</code></th>
-      <th style={{ width: '9%', whiteSpace: 'nowrap' }}>Level 0</th>
-      <th style={{ width: '9%', whiteSpace: 'nowrap' }}>Level 1</th>
-      <th style={{ width: '10%', whiteSpace: 'nowrap' }}>Level 2</th>
+      <th>State</th>
+      <th>`score`</th>
+      <th>`confidence`</th>
+      <th>Level 0</th>
+      <th>Level 1</th>
+      <th>Level 2</th>
     </tr>
   </thead>
 
@@ -220,44 +233,7 @@ A complex judgment, one that depends on several things, is best split into one S
 
 The request below is the spinner ticket from the table above with some more context. It asks three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with.
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/score)
-
-```js
-{
-state: 'Export to PDF fails with a spinner that never finishes. Some of our team say CSV export still works for them, others say it fails too. This is the third time I\'m writing in and honestly I\'m done. Steps: open any report, click Export, choose PDF. Chrome 128 on macOS.',
-selectedModels: ['jev-latest'],
-questions: {
-  severity: {
-    type: 'score',
-    instructions: 'How severe is the reported issue?',
-    criteria: [
-      'Cosmetic; no impact to functionality',
-      'Broken or degraded feature, but workaround exists',
-      'Blocking issue; no workaround exists',
-    ],
-  },
-  frustration: {
-    type: 'score',
-    instructions: 'How frustrated is the customer?',
-    criteria: [
-      'Calm, just stating facts',
-      'Frustrated but civil',
-      'Very angry, strong language or threatening to leave',
-    ],
-  },
-  report_quality: {
-    type: 'score',
-    instructions: 'How much does the report give an engineer to work with?',
-    criteria: [
-      'No detail; just says something is broken',
-      'Names the feature but no steps or environment',
-      'Steps to reproduce or environment, but not both',
-      'Steps to reproduce and environment',
-    ],
-  },
-},
-}
-```
+Try it in the Playground →
 
 TypeSafe's response:
 
@@ -392,34 +368,7 @@ Start with a basic text description for each level. When the model keeps scoring
 
 The request below is the spinner ticket that we used earlier, but with examples on each level:
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/score)
-
-```js
-{
-state: 'Export to PDF fails with a spinner that never finishes. Some of our team say CSV export still works for them, others say it fails too.',
-selectedModels: ['jev-latest'],
-questions: {
-  bug_severity: {
-    type: 'score',
-    instructions: 'How severe is the reported issue?',
-    criteria: [
-      {
-        what: 'Cosmetic; no impact to functionality',
-        examples: ['typo in a label', 'misaligned icon'],
-      },
-      {
-        what: 'Broken or degraded feature, but workaround exists',
-        examples: ['export fails in one browser but works in another'],
-      },
-      {
-        what: 'Blocking issue; no workaround exists',
-        examples: ['cannot log in', 'data loss'],
-      },
-    ],
-  },
-},
-}
-```
+Try it in the Playground →
 
 The response:
 

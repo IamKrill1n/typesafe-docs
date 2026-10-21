@@ -32,23 +32,7 @@ flowchart LR
 
 ### Step 1: determine the user's intent
 
-> Interactive example: questions — [view it on docs.typesafe.ai](https://docs.typesafe.ai/patterns/confidence-routing)
-
-```js
-{
-questions: {
-  intent: {
-    type: 'choice',
-    instructions: 'What action is the user requesting?',
-    criteria: {
-      check_balance: 'Check the balance of an account',
-      approve_transfer: 'Approve the pending transfer request',
-      other: 'Something else',
-    },
-  },
-},
-}
-```
+Try it in the Playground →
 
 ### Step 2: confidence-gated routing
 

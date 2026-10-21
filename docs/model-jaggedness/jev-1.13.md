@@ -2,7 +2,8 @@
 
 > Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
 
-> **Note:**
+> [!NOTE]
+>
 > **Applies to `jev-1.13`.** Last reviewed 2026-10-02.
 
 `jev-1.13` is fast, calibrated, and good at common-sense judgment but it is not perfect. `jev-1.13` does the best on [System One](../concepts/system-one.md) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
@@ -92,7 +93,8 @@ Accuracy falls as the state grows with content unrelated to the decision. Unrela
 
 **Instead:** retrieve and filter in code first, and send only the fields the question needs. When it's not possible to filter in state, you can use a [Noul](../primitives/noul.md) to filter for relevance. The [classifying RAG passages cookbook](../cookbooks/classifying_rag_passages.md) has a worked example.
 
-> **Note:**
+> [!NOTE]
+>
 > **Context length limit.** The `state` counts once against each of `jev-1.13`'s context limits, the [per-request context and the per-question context](../models.md#context-length).
 
 ## Adversarial content
@@ -119,7 +121,8 @@ In some cases, we observed that the order of a [Choice](../primitives/choice.md)
 
 **Instead:** when the answer space is bounded, turn extraction into a [Choice](../primitives/choice.md) over the options rather than asking for the value itself. If you really need to generate text... there are other models for that.
 
-> **Info:**
+> [!NOTE]
+>
 > **As a reminder, avoid the following:**
 >
 > * Asking the model something code can compute exactly.
@@ -127,7 +130,8 @@ In some cases, we observed that the order of a [Choice](../primitives/choice.md)
 > * System Two tasks: more layers of indirections
 > * Giving it more context in `state` than the question needs. Jev suffers from context rot, so unrelated material in the `state` costs you accuracy.
 
-> **Tip:**
+> [!TIP]
+>
 > Found a failure mode that belongs on this list? We want to hear about it. Reach us on [Discord](https://discord.com/invite/WUujKYBp8s).
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

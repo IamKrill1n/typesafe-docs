@@ -8,8 +8,6 @@ A box's edges as fractions of the image's height (`top`, `bottom`) and width (`l
 
 ## Properties
 
-<a id="sdk-bottom" />
-
 ### bottom
 
 ```ts theme={null}
@@ -19,8 +17,6 @@ readonly bottom: number;
 Bottom edge, as a fraction of image height from the top, from zero to one.
 
 ***
-
-<a id="sdk-left" />
 
 ### left
 
@@ -32,8 +28,6 @@ Left edge, as a fraction of image width from the left, from zero to one.
 
 ***
 
-<a id="sdk-right" />
-
 ### right
 
 ```ts theme={null}
@@ -43,8 +37,6 @@ readonly right: number;
 Right edge, as a fraction of image width from the left, from zero to one.
 
 ***
-
-<a id="sdk-top" />
 
 ### top
 

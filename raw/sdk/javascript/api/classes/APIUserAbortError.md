@@ -12,8 +12,6 @@ The caller cancelled the request through an `AbortSignal`.
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts theme={null}

@@ -10,170 +10,166 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 ## Example use case categories
 
-<Columns cols={2}>
-  <Card title="AI Automation Software" icon="blocks">
-    Interleave AI with reliable software in a way where you can run it a million times in the background without a human co-pilot. Code owns control flow (not markdown files) while TypeSafe handles the semantic decisions and language understanding.
-  </Card>
+> **AI Automation Software**
+>
+> Interleave AI with reliable software in a way where you can run it a million times in the background without a human co-pilot. Code owns control flow (not markdown files) while TypeSafe handles the semantic decisions and language understanding.
 
-  <Card title="Real-time applications" icon="zap">
-    Frontier intelligence at real-time speeds (150ms) means AI can make decisions faster than human perception. Fast and smart enough to be programmed to play games or embedded into a UI.
-  </Card>
+> **Real-time applications**
+>
+> Frontier intelligence at real-time speeds (150ms) means AI can make decisions faster than human perception. Fast and smart enough to be programmed to play games or embedded into a UI.
 
-  <Card title="AI Map Reduce over Big Data" icon="database-zap">
-    100x cheaper means you can process giant datasets. Search for relevant information over giant corpuses, classify giant agent traces, and extract features to make predictions.
-  </Card>
+> **AI Map Reduce over Big Data**
+>
+> 100x cheaper means you can process giant datasets. Search for relevant information over giant corpuses, classify giant agent traces, and extract features to make predictions.
 
-  <Card title="Universal Verification" icon="badge-check">
-    Verify the input prompt, extractions, reasoning traces, tool calls, or inputs of any other AI. Detect jailbreaks, citation errors, hallucinations, mistakes, or other error-modes that other AIs or LLMs make at a fraction of the cost for the actual LLM call.
-  </Card>
+> **Universal Verification**
+>
+> Verify the input prompt, extractions, reasoning traces, tool calls, or inputs of any other AI. Detect jailbreaks, citation errors, hallucinations, mistakes, or other error-modes that other AIs or LLMs make at a fraction of the cost for the actual LLM call.
 
-  <Card title="Harness Engineering" icon="wrench">
-    Use Jev queries to make your harness smarter - model routing, semantic context retrieval, LLM error detection and guardrails, reasoning trace classification at lightspeed and a fraction of the cost.
-  </Card>
-</Columns>
+> **Harness Engineering**
+>
+> Use Jev queries to make your harness smarter - model routing, semantic context retrieval, LLM error detection and guardrails, reasoning trace classification at lightspeed and a fraction of the cost.
 
 ## Example automation use cases
 
-<AccordionGroup>
-  <Accordion title="Search and retrieval" icon="search">
-    * Replace or supplement embeddings in RAG pipelines with semantic search, scoring, and ranking.
-    * Score query-to-candidate relevance.
-    * Rerank results with pairwise comparisons.
-    * Cross-encode queries and candidates for higher precision.
-    * Select useful context for downstream AI workflows.
-  </Accordion>
+> **Search and retrieval**
+>
+> * Replace or supplement embeddings in RAG pipelines with semantic search, scoring, and ranking.
+> * Score query-to-candidate relevance.
+> * Rerank results with pairwise comparisons.
+> * Cross-encode queries and candidates for higher precision.
+> * Select useful context for downstream AI workflows.
 
-  <Accordion title="Scientific discovery" icon="flask-conical">
-    * Screen papers against inclusion and exclusion criteria for systematic reviews.
-    * Label passages in interview transcripts, open-ended survey responses, and field notes using predefined themes or categories.
-    * Check whether cited passages support claims in manuscripts and generated summaries.
-    * Flag missing methodological details, such as controls, dataset descriptions, and experimental settings.
-    * Identify entities and relationships across papers to build research knowledge graphs, linking findings to supporting passages.
-  </Accordion>
+> **Scientific discovery**
+>
+> * Screen papers against inclusion and exclusion criteria for systematic reviews.
+> * Label passages in interview transcripts, open-ended survey responses, and field notes using predefined themes or categories.
+> * Check whether cited passages support claims in manuscripts and generated summaries.
+> * Flag missing methodological details, such as controls, dataset descriptions, and experimental settings.
+> * Identify entities and relationships across papers to build research knowledge graphs, linking findings to supporting passages.
 
-  <Accordion title="Model routing" icon="route">
-    * Use Jev to build a custom router that chooses which LLM receives each prompt.
-    * Set routing rules and thresholds for your specific workflow.
-    * Classify intent and domain.
-    * Estimate difficulty and risk.
-    * Escalate requests that need a more expensive model.
-  </Accordion>
+> **Model routing**
+>
+> * Use Jev to build a custom router that chooses which LLM receives each prompt.
+> * Set routing rules and thresholds for your specific workflow.
+> * Classify intent and domain.
+> * Estimate difficulty and risk.
+> * Escalate requests that need a more expensive model.
 
-  <Accordion title="LLM guardrails" icon="shield">
-    * Place semantic checks on every LLM input, output, and tool call at a fraction of the cost of the LLM call.
-    * Detect jailbreaks and prompt injection.
-    * Identify policy violations and sensitive-data exposure.
-    * Detect tool-call errors and response-quality failures in real time.
-    * Log structured check results and probabilities to make AI system and harness failures easier to trace.
-  </Accordion>
+> **LLM guardrails**
+>
+> * Place semantic checks on every LLM input, output, and tool call at a fraction of the cost of the LLM call.
+> * Detect jailbreaks and prompt injection.
+> * Identify policy violations and sensitive-data exposure.
+> * Detect tool-call errors and response-quality failures in real time.
+> * Log structured check results and probabilities to make AI system and harness failures easier to trace.
 
-  <Accordion title="Semantic code linting" icon="code">
-    * Use Jev queries to add automated semantic lints to code and writing.
-    * Define checks for your team's coding conventions and writing guidelines.
-    * Run these checks in CI and flag violations for review.
-  </Accordion>
+> **Semantic code linting**
+>
+> * Use Jev queries to add automated semantic lints to code and writing.
+> * Define checks for your team's coding conventions and writing guidelines.
+> * Run these checks in CI and flag violations for review.
 
-  <Accordion title="Feature extraction for predictive modeling" icon="chart-spline">
-    * Use Jev to extract probabilistic features from natural-language data.
-    * Combine these features with structured data to train models for tasks with ground-truth outcomes.
-    * Use autoresearch workflows to propose feature definitions and evaluate their predictive value against held-out ground truth.
-  </Accordion>
+> **Feature extraction for predictive modeling**
+>
+> * Use Jev to extract probabilistic features from natural-language data.
+> * Combine these features with structured data to train models for tasks with ground-truth outcomes.
+> * Use autoresearch workflows to propose feature definitions and evaluate their predictive value against held-out ground truth.
 
-  <Accordion title="Recruiting" icon="users">
-    * Evaluate resumes, applications, and interview feedback against explicit, job-related criteria.
-    * Identify relevant experience.
-    * Score evidence for required competencies.
-    * Match candidates to roles.
-    * Route candidates to hiring managers or recruiters.
-    * Escalate uncertain cases for human review.
-  </Accordion>
+> **Recruiting**
+>
+> * Evaluate resumes, applications, and interview feedback against explicit, job-related criteria.
+> * Identify relevant experience.
+> * Score evidence for required competencies.
+> * Match candidates to roles.
+> * Route candidates to hiring managers or recruiters.
+> * Escalate uncertain cases for human review.
 
-  <Accordion title="Lead generation" icon="user-round-search">
-    * Match company profiles, executive biographies, and inbound messages to an ideal customer profile.
-    * Score industry fit and company maturity.
-    * Detect buyer relevance, pain points, and purchase intent.
-    * Prioritize and route leads.
-  </Accordion>
+> **Lead generation**
+>
+> * Match company profiles, executive biographies, and inbound messages to an ideal customer profile.
+> * Score industry fit and company maturity.
+> * Detect buyer relevance, pain points, and purchase intent.
+> * Prioritize and route leads.
 
-  <Accordion title="Customer support" icon="headset">
-    * Classify incoming tickets by issue, product area, and customer intent.
-    * Process call transcripts to extract customer issues, commitments, and follow-up actions.
-    * Detect urgency, frustration, churn risk, and refund requests.
-    * Route cases to the right team, queue, or automated workflow.
-    * Verify support responses against policies and the customer's request.
-  </Accordion>
+> **Customer support**
+>
+> * Classify incoming tickets by issue, product area, and customer intent.
+> * Process call transcripts to extract customer issues, commitments, and follow-up actions.
+> * Detect urgency, frustration, churn risk, and refund requests.
+> * Route cases to the right team, queue, or automated workflow.
+> * Verify support responses against policies and the customer's request.
 
-  <Accordion title="Insurance claims" icon="clipboard-check">
-    * Classify first-notice-of-loss reports, adjuster notes, and supporting documents.
-    * Detect claim complexity, missing information, and potential fraud indicators.
-    * Prioritize claims for straight-through processing or specialist review.
-    * Escalate uncertain or high-risk cases to a human adjuster.
-  </Accordion>
+> **Insurance claims**
+>
+> * Classify first-notice-of-loss reports, adjuster notes, and supporting documents.
+> * Detect claim complexity, missing information, and potential fraud indicators.
+> * Prioritize claims for straight-through processing or specialist review.
+> * Escalate uncertain or high-risk cases to a human adjuster.
 
-  <Accordion title="Financial crime" icon="landmark">
-    * Evaluate transaction narratives, KYC documents, and alert histories for suspicious characteristics.
-    * Match entities across inconsistent names, profiles, and records.
-    * Prioritize alerts by risk, relevance, and evidence quality.
-    * Route ambiguous cases to investigators for review.
-  </Accordion>
+> **Financial crime**
+>
+> * Evaluate transaction narratives, KYC documents, and alert histories for suspicious characteristics.
+> * Match entities across inconsistent names, profiles, and records.
+> * Prioritize alerts by risk, relevance, and evidence quality.
+> * Route ambiguous cases to investigators for review.
 
-  <Accordion title="Legal and compliance" icon="scale">
-    * Classify contracts, policies, regulatory filings, and marketing claims.
-    * Detect missing clauses, prohibited claims, and policy violations.
-    * Verify documents against explicit legal or compliance requirements.
-    * Escalate high-risk or uncertain findings to counsel or compliance teams.
-  </Accordion>
+> **Legal and compliance**
+>
+> * Classify contracts, policies, regulatory filings, and marketing claims.
+> * Detect missing clauses, prohibited claims, and policy violations.
+> * Verify documents against explicit legal or compliance requirements.
+> * Escalate high-risk or uncertain findings to counsel or compliance teams.
 
-  <Accordion title="E-commerce marketplaces" icon="store">
-    * Classify and normalize product listings across inconsistent seller catalogs.
-    * Extract product attributes from titles and descriptions.
-    * Detect prohibited listings, counterfeit signals, review abuse, and policy violations.
-    * Rank products and route uncertain listings for human review.
-  </Accordion>
+> **E-commerce marketplaces**
+>
+> * Classify and normalize product listings across inconsistent seller catalogs.
+> * Extract product attributes from titles and descriptions.
+> * Detect prohibited listings, counterfeit signals, review abuse, and policy violations.
+> * Rank products and route uncertain listings for human review.
 
-  <Accordion title="Moderation and trust and safety" icon="shield-check">
-    * Apply company-specific, nuanced criteria to decide which posts meet your moderation standards.
-    * Moderate user content and automated conversations across communities, customer support, and SDR workflows.
-    * Detect toxicity, harassment, spam, fraud, unsafe advice, personal-data exposure, opt-out requests, and policy-violating claims.
-    * Combine severity and confidence to allow, warn, review, or block content.
-  </Accordion>
+> **Moderation and trust and safety**
+>
+> * Apply company-specific, nuanced criteria to decide which posts meet your moderation standards.
+> * Moderate user content and automated conversations across communities, customer support, and SDR workflows.
+> * Detect toxicity, harassment, spam, fraud, unsafe advice, personal-data exposure, opt-out requests, and policy-violating claims.
+> * Combine severity and confidence to allow, warn, review, or block content.
 
-  <Accordion title="Advertising" icon="megaphone">
-    * Evaluate creative assets, campaign copy, landing pages, and placement context.
-    * Classify brand safety and audience suitability.
-    * Check regulatory compliance and prohibited claims.
-    * Evaluate creative quality and ad-to-landing-page alignment.
-  </Accordion>
+> **Advertising**
+>
+> * Evaluate creative assets, campaign copy, landing pages, and placement context.
+> * Classify brand safety and audience suitability.
+> * Check regulatory compliance and prohibited claims.
+> * Evaluate creative quality and ad-to-landing-page alignment.
 
-  <Accordion title="Gaming" icon="gamepad-2">
-    * Evaluate player reports, in-game chat, reviews, and support conversations.
-    * Moderate chat and detect abuse, toxicity, or suspicious behavior.
-    * Annotate content and score frustration or engagement.
-    * Detect churn signals and route player-support requests.
-  </Accordion>
+> **Gaming**
+>
+> * Evaluate player reports, in-game chat, reviews, and support conversations.
+> * Moderate chat and detect abuse, toxicity, or suspicious behavior.
+> * Annotate content and score frustration or engagement.
+> * Detect churn signals and route player-support requests.
 
-  <Accordion title="Risk assessment" icon="triangle-alert">
-    * Convert incident reports, claims notes, transaction descriptions, and vendor assessments into probabilistic risk indicators.
-    * Use these indicators in insurance and underwriting workflows.
-    * Classify risk types and detect suspicious characteristics.
-    * Score severity and prioritize review.
-    * Extract features for broader risk models.
-  </Accordion>
+> **Risk assessment**
+>
+> * Convert incident reports, claims notes, transaction descriptions, and vendor assessments into probabilistic risk indicators.
+> * Use these indicators in insurance and underwriting workflows.
+> * Classify risk types and detect suspicious characteristics.
+> * Score severity and prioritize review.
+> * Extract features for broader risk models.
 
-  <Accordion title="Demand forecasting" icon="chart-spline">
-    * Enrich forecasting models with semantic signals from customer inquiries, sales notes, product reviews, support tickets, and market reports.
-    * Extract purchase intent, urgency, and product interest.
-    * Detect supply concerns, competitive pressure, and emerging demand themes.
-    * Feed those features into a forecasting model alongside historical time-series data.
-  </Accordion>
+> **Demand forecasting**
+>
+> * Enrich forecasting models with semantic signals from customer inquiries, sales notes, product reviews, support tickets, and market reports.
+> * Extract purchase intent, urgency, and product interest.
+> * Detect supply concerns, competitive pressure, and emerging demand themes.
+> * Feed those features into a forecasting model alongside historical time-series data.
 
-  <Accordion title="Graphs and knowledge graphs" icon="network">
-    * Annotate and verify knowledge graphs with typed semantic decisions.
-    * Classify relationships and entity types.
-    * Detect contradictions between records or claims.
-    * Support probabilistic traversal and hierarchical classification.
-  </Accordion>
-</AccordionGroup>
+> **Graphs and knowledge graphs**
+>
+> * Annotate and verify knowledge graphs with typed semantic decisions.
+> * Classify relationships and entity types.
+> * Detect contradictions between records or claims.
+> * Support probabilistic traversal and hierarchical classification.
 
 ## Example task categories
 

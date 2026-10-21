@@ -12,8 +12,6 @@ HTTP 403: access is denied.
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts theme={null}
@@ -53,8 +51,6 @@ new PermissionDeniedError(
 
 ## Properties
 
-<a id="sdk-body" />
-
 ### body
 
 ```ts theme={null}
@@ -68,8 +64,6 @@ Parsed JSON, response text, or `undefined` for an empty body.
 [`APIError`](/sdk/javascript/api/classes/APIError).[`body`](/sdk/javascript/api/classes/APIError#sdk-body)
 
 ***
-
-<a id="sdk-headers" />
 
 ### headers
 
@@ -85,8 +79,6 @@ HTTP response headers.
 
 ***
 
-<a id="sdk-requestid" />
-
 ### requestId
 
 ```ts theme={null}
@@ -101,8 +93,6 @@ Request ID from `x-typesafe-request-id`, or `undefined` when absent.
 
 ***
 
-<a id="sdk-status" />
-
 ### status
 
 ```ts theme={null}
@@ -116,8 +106,6 @@ HTTP response status code.
 [`APIError`](/sdk/javascript/api/classes/APIError).[`status`](/sdk/javascript/api/classes/APIError#sdk-status)
 
 ## Methods
-
-<a id="sdk-fromresponse" />
 
 ### fromResponse()
 

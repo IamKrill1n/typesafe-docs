@@ -14,8 +14,6 @@ Parsed data with its HTTP response and request ID.
 
 ## Properties
 
-<a id="sdk-data" />
-
 ### data
 
 ```ts theme={null}
@@ -26,8 +24,6 @@ The parsed response body.
 
 ***
 
-<a id="sdk-requestid" />
-
 ### requestId
 
 ```ts theme={null}
@@ -37,8 +33,6 @@ requestId: string | undefined;
 Request ID from `x-typesafe-request-id`, or `undefined` when absent.
 
 ***
-
-<a id="sdk-response" />
 
 ### response
 

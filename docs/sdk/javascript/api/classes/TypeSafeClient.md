@@ -4,8 +4,6 @@ Client for the TypeSafe AI API.
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts
@@ -34,8 +32,6 @@ unsupported, or the runtime lacks the requested compression.
 
 ## Properties
 
-<a id="sdk-baseurl" />
-
 ### baseURL
 
 ```ts
@@ -45,8 +41,6 @@ readonly baseURL: string;
 API root with trailing slashes removed.
 
 ***
-
-<a id="sdk-compression" />
 
 ### compression
 
@@ -58,8 +52,6 @@ Request body compression, or `false` when bodies are sent uncompressed.
 
 ***
 
-<a id="sdk-defaultheaders" />
-
 ### defaultHeaders
 
 ```ts
@@ -69,8 +61,6 @@ readonly defaultHeaders: Readonly<Record<string, string>>;
 Additional headers sent with each request.
 
 ***
-
-<a id="sdk-defaultmodel" />
 
 ### defaultModel
 
@@ -82,8 +72,6 @@ Model used when a request omits `model`.
 
 ***
 
-<a id="sdk-fetch" />
-
 ### fetch
 
 ```ts
@@ -93,8 +81,6 @@ readonly fetch: Fetch;
 HTTP fetch implementation.
 
 ***
-
-<a id="sdk-logger" />
 
 ### logger
 
@@ -106,8 +92,6 @@ The configured logger, filtered to `logLevel`.
 
 ***
 
-<a id="sdk-loglevel" />
-
 ### logLevel
 
 ```ts
@@ -117,8 +101,6 @@ readonly logLevel: LogLevel;
 Configured log verbosity.
 
 ***
-
-<a id="sdk-models" />
 
 ### models
 
@@ -130,8 +112,6 @@ The models available to the account.
 
 ***
 
-<a id="sdk-retry" />
-
 ### retry
 
 ```ts
@@ -142,8 +122,6 @@ Retry settings with constructor overrides applied.
 
 ***
 
-<a id="sdk-timeout" />
-
 ### timeout
 
 ```ts
@@ -153,8 +131,6 @@ readonly timeout: number;
 Timeout per attempt in milliseconds.
 
 ## Methods
-
-<a id="sdk-systemone" />
 
 ### systemOne()
 

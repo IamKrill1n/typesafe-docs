@@ -28,9 +28,9 @@ State can also be a JSON object or array containing related context, examples, a
 
 Use an object for most requests so each part of the state has a descriptive name and its relationships remain clear. A string is suitable when the use case is simple and requires only one piece of text.
 
-<Note>
-  State is a string, JSON object, or array. Audio and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
-</Note>
+> [!NOTE]
+>
+> State is a string, JSON object, or array. Audio and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
 
 ```json title="A support conversation as state" theme={null}
 {

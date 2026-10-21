@@ -6,296 +6,6 @@
 
 > How TypeSafe reports certainty, how it differs from probability, and how to use it to control system behavior.
 
-export function ScoreConfidenceExplorer() {
-  const [probabilities, setProbabilities] = useState([0, 5, 90, 5, 0]);
-  const levels = [0, 1, 2, 3, 4];
-  function changeProbability(index, value) {
-    setProbabilities(current => {
-      const others = levels.filter(i => i !== index);
-      const remaining = 100 - value;
-      const previousRemaining = others.reduce((sum, i) => sum + current[i], 0);
-      const next = [...current];
-      next[index] = value;
-      for (const i of others) {
-        next[i] = previousRemaining > 0 ? remaining * current[i] / previousRemaining : remaining / others.length;
-      }
-      return next;
-    });
-  }
-  function formatProbability(value) {
-    return `${Number(value.toFixed(1))}%`;
-  }
-  function scoreConfidence(values) {
-    const count = values.length;
-    const total = values.reduce((sum, value) => sum + value, 0);
-    const p = values.map(value => value / total);
-    const peak = p.indexOf(Math.max(...p));
-    const spread = p.reduce((sum, value, i) => sum + value * Math.abs(i - peak), 0);
-    const evenSpread = p.reduce((sum, _, i) => sum + Math.abs(i - (count - 1) / 2), 0) / count;
-    return Math.max(0, Math.min(1, 1 - spread / evenSpread));
-  }
-  function choiceConfidence(values) {
-    const count = values.length;
-    const peak = Math.max(...values) / 100;
-    return Math.max(0, Math.min(1, (count * peak - 1) / (count - 1)));
-  }
-  const confidence = scoreConfidence(probabilities);
-  const choiceComparison = choiceConfidence(probabilities);
-  const score = probabilities.reduce((sum, value, i) => sum + i * value / 100, 0);
-  const peak = probabilities.indexOf(Math.max(...probabilities));
-  const buttonClass = "border px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-500";
-  const buttonStyle = {
-    borderColor: "#71717a"
-  };
-  const eyebrow = {
-    fontSize: "0.6875rem",
-    fontWeight: 700,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase"
-  };
-  return <section aria-label="Explore Score probabilities and confidence" className="not-prose my-6 border border-zinc-300 dark:border-zinc-700 p-5 sm:p-6 text-zinc-800 dark:text-zinc-200">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-zinc-600 dark:text-zinc-400" style={eyebrow}>Score question with five levels</div>
-          <div className="mt-2 text-base font-semibold">See how distance between levels changes confidence</div>
-        </div>
-        <div className="text-right" role="status" aria-live="polite" aria-atomic="true">
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">Confidence</div>
-          <output className="block text-3xl font-semibold tabular-nums" style={{
-    color: "#E551BA"
-  }}>
-            {confidence.toFixed(2)}
-          </output>
-        </div>
-      </div>
-
-      <div role="img" aria-label={`Probability distribution: ${levels.map(level => `level ${level} ${formatProbability(probabilities[level])}`).join(", ")}. Most likely level ${peak}.`} className="my-6">
-        <div className="text-xs text-zinc-600 dark:text-zinc-400">Probability</div>
-        <div aria-hidden="true" style={{
-    position: "relative",
-    height: "180px",
-    margin: "34px 0 52px 44px"
-  }}>
-          {[0, 50, 100].map(tick => <div key={tick} style={{
-    position: "absolute",
-    bottom: `${tick}%`,
-    width: "100%",
-    borderBottom: "1px solid",
-    borderColor: "color-mix(in srgb, currentColor 18%, transparent)"
-  }}>
-              <span className="text-xs" style={{
-    position: "absolute",
-    right: "calc(100% + 8px)",
-    transform: "translateY(-50%)"
-  }}>{tick}%</span>
-            </div>)}
-          <div style={{
-    position: "absolute",
-    inset: 0,
-    display: "flex",
-    justifyContent: "space-around",
-    alignItems: "flex-end"
-  }}>
-            {levels.map(level => <div key={level} style={{
-    position: "relative",
-    width: "14%",
-    height: `${probabilities[level]}%`
-  }}>
-                <span className="text-sm font-semibold tabular-nums" style={{
-    position: "absolute",
-    bottom: "calc(100% + 6px)",
-    left: "50%",
-    transform: "translateX(-50%)",
-    whiteSpace: "nowrap"
-  }}>{formatProbability(probabilities[level])}</span>
-                <div style={{
-    height: "100%",
-    background: level === peak ? "#E551BA" : "currentColor",
-    opacity: level === peak ? 1 : 0.45
-  }} />
-                <span className="text-sm" style={{
-    position: "absolute",
-    top: "calc(100% + 8px)",
-    left: "50%",
-    transform: "translateX(-50%)"
-  }}>{level}</span>
-                <span className="text-xs text-zinc-600 dark:text-zinc-400" style={{
-    position: "absolute",
-    top: "calc(100% + 28px)",
-    left: "50%",
-    transform: "translateX(-50%)",
-    whiteSpace: "nowrap"
-  }}>
-                  {level === peak ? "peak" : `${Math.abs(level - peak)} away`}
-                </span>
-              </div>)}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {levels.map(level => <label key={level} className="flex items-center gap-3 text-sm">
-            <span className="w-5 font-semibold">{level}</span>
-            <input type="range" min="0" max="100" step="1" value={probabilities[level]} onChange={event => changeProbability(level, Number(event.target.value))} aria-label={`Probability of level ${level}`} aria-valuetext={formatProbability(probabilities[level])} className="min-w-0 flex-1 cursor-pointer" style={{
-    accentColor: "#E551BA",
-    minHeight: "44px"
-  }} />
-            <output className="w-16 text-right tabular-nums">{formatProbability(probabilities[level])}</output>
-          </label>)}
-      </div>
-      <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">Move a slider to change a level's probability. The other probabilities adjust to keep the total at 100%.</p>
-
-      <div className="mt-4 flex flex-wrap gap-2" aria-label="Example distributions">
-        <button type="button" className={buttonClass} style={buttonStyle} onClick={() => setProbabilities([0, 5, 90, 5, 0])}>Clear peak</button>
-        <button type="button" className={buttonClass} style={buttonStyle} onClick={() => setProbabilities([0, 55, 45, 0, 0])}>Split between neighbors</button>
-        <button type="button" className={buttonClass} style={buttonStyle} onClick={() => setProbabilities([55, 0, 0, 0, 45])}>Split between ends</button>
-        <button type="button" className={buttonClass} style={buttonStyle} onClick={() => setProbabilities([20, 20, 20, 20, 20])}>Even spread</button>
-      </div>
-      <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm" aria-live="polite">
-        <div className="flex gap-2"><dt className="text-zinc-600 dark:text-zinc-400">Score</dt><dd className="tabular-nums">{score.toFixed(2)}</dd></div>
-        <div className="flex gap-2"><dt className="text-zinc-600 dark:text-zinc-400">Choice formula on the same probabilities</dt><dd className="tabular-nums">{choiceComparison.toFixed(2)}</dd></div>
-      </dl>
-      <details className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-        <summary className="cursor-pointer">How this demo calculates Confidence</summary>
-        <p className="mt-3">This demo uses the <a href="#score">Score formula</a>. It takes the average distance, in levels, between the answer and the peak, weighted by probability. It divides that by 1.2, the same average for an even spread over five levels measured from the middle level, and subtracts the result from 1, stopping at 0. Probability on a level next to the peak lowers confidence less than probability far from it, which the Choice formula does not take into account.</p>
-      </details>
-    </section>;
-}
-
-export function ConfidenceExplorer() {
-  const [probabilities, setProbabilities] = useState([90, 6, 4]);
-  const options = ["A", "B", "C"];
-  function changeProbability(index, value) {
-    setProbabilities(current => {
-      const others = [0, 1, 2].filter(i => i !== index);
-      const remaining = 100 - value;
-      const previousRemaining = current[others[0]] + current[others[1]];
-      const next = [...current];
-      next[index] = value;
-      next[others[0]] = previousRemaining > 0 ? remaining * current[others[0]] / previousRemaining : remaining / 2;
-      next[others[1]] = remaining - next[others[0]];
-      return next;
-    });
-  }
-  function formatProbability(value) {
-    if (Math.abs(value - 100 / 3) < 0.000001) return "33⅓%";
-    return `${Number(value.toFixed(1))}%`;
-  }
-  function choiceConfidence(values) {
-    const count = values.length;
-    const peak = Math.max(...values) / 100;
-    return Math.max(0, Math.min(1, (count * peak - 1) / (count - 1)));
-  }
-  const confidence = choiceConfidence(probabilities);
-  const maximum = Math.max(...probabilities);
-  const winners = options.filter((option, i) => Math.abs(probabilities[i] - maximum) < 0.000001);
-  const selected = winners.length === 1 ? `Option ${winners[0]}` : `Tie: ${winners.join(", ")}`;
-  const buttonClass = "border px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-500";
-  const buttonStyle = {
-    borderColor: "#71717a"
-  };
-  const eyebrow = {
-    fontSize: "0.6875rem",
-    fontWeight: 700,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase"
-  };
-  return <section aria-label="Explore probabilities and confidence" className="not-prose my-6 border border-zinc-300 dark:border-zinc-700 p-5 sm:p-6 text-zinc-800 dark:text-zinc-200">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-zinc-600 dark:text-zinc-400" style={eyebrow}>Choice question with three options</div>
-          <div className="mt-2 text-base font-semibold">See how probability distribution changes confidence</div>
-        </div>
-        <div className="text-right" role="status" aria-live="polite" aria-atomic="true">
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">Confidence</div>
-          <output className="block text-3xl font-semibold tabular-nums" style={{
-    color: "#E551BA"
-  }}>
-            {confidence.toFixed(2)}
-          </output>
-        </div>
-      </div>
-
-      <div role="img" aria-label={`Probability distribution: ${options.map((option, i) => `${option} ${formatProbability(probabilities[i])}`).join(", ")}. ${selected}.`} className="my-6">
-        <div className="text-xs text-zinc-600 dark:text-zinc-400">Probability</div>
-        <div aria-hidden="true" style={{
-    position: "relative",
-    height: "180px",
-    margin: "34px 0 36px 44px"
-  }}>
-          {[0, 50, 100].map(tick => <div key={tick} style={{
-    position: "absolute",
-    bottom: `${tick}%`,
-    width: "100%",
-    borderBottom: "1px solid",
-    borderColor: "color-mix(in srgb, currentColor 18%, transparent)"
-  }}>
-              <span className="text-xs" style={{
-    position: "absolute",
-    right: "calc(100% + 8px)",
-    transform: "translateY(-50%)"
-  }}>{tick}%</span>
-            </div>)}
-          <div style={{
-    position: "absolute",
-    inset: 0,
-    display: "flex",
-    justifyContent: "space-around",
-    alignItems: "flex-end"
-  }}>
-            {options.map((option, index) => <div key={option} style={{
-    position: "relative",
-    width: "21%",
-    height: `${probabilities[index]}%`
-  }}>
-                <span className="text-sm font-semibold tabular-nums" style={{
-    position: "absolute",
-    bottom: "calc(100% + 6px)",
-    left: "50%",
-    transform: "translateX(-50%)",
-    whiteSpace: "nowrap"
-  }}>{formatProbability(probabilities[index])}</span>
-                <div style={{
-    height: "100%",
-    background: winners.length === 1 && winners[0] === option ? "#E551BA" : "currentColor",
-    opacity: winners.length === 1 && winners[0] === option ? 1 : 0.45
-  }} />
-                <span className="text-sm" style={{
-    position: "absolute",
-    top: "calc(100% + 8px)",
-    left: "50%",
-    transform: "translateX(-50%)"
-  }}>{option}</span>
-              </div>)}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {options.map((option, index) => <label key={option} className="flex items-center gap-3 text-sm">
-            <span className="w-5 font-semibold">{option}</span>
-            <input type="range" min="0" max="100" step="1" value={probabilities[index]} onChange={event => changeProbability(index, Number(event.target.value))} aria-label={`Probability of ${option}`} aria-valuetext={formatProbability(probabilities[index])} className="min-w-0 flex-1 cursor-pointer" style={{
-    accentColor: "#E551BA",
-    minHeight: "44px"
-  }} />
-            <output className="w-16 text-right tabular-nums">{formatProbability(probabilities[index])}</output>
-          </label>)}
-      </div>
-      <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">Move a slider to change an option's probability. The other probabilities adjust to keep the total at 100%.</p>
-
-      <div className="mt-4 flex flex-wrap gap-2" aria-label="Example distributions">
-        <button type="button" className={buttonClass} style={buttonStyle} onClick={() => setProbabilities([90, 6, 4])}>Clear winner</button>
-        <button type="button" className={buttonClass} style={buttonStyle} onClick={() => setProbabilities([40, 33, 27])}>Spread out</button>
-        <button type="button" className={buttonClass} style={buttonStyle} onClick={() => setProbabilities([100 / 3, 100 / 3, 100 / 3])}>Even split</button>
-      </div>
-      <div className="mt-4 text-sm" aria-live="polite">{winners.length === 1 ? `Selected: ${selected}` : selected}</div>
-      <details className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-        <summary className="cursor-pointer">How this demo calculates Confidence</summary>
-        <p className="mt-3">TypeSafe computes confidence from how the probability is spread across the options. All of it on one option gives 1.0; the more evenly it spreads, the lower the confidence. With three options, the <a href="#choice">Choice formula</a> is <code>(3 × largest probability − 1) / 2</code>, which is what this demo shows.</p>
-      </details>
-    </section>;
-}
-
 All Score and Choice answers from TypeSafe include a `probabilities` property representing the probability distribution across the options (for Choice) or levels (for Score). The *shape* of that distribution is what tells you how certain the model is: concentrated on one outcome means a confident answer, spread out means an uncertain one.
 
 The answer's `confidence` property collapses that shape into a single number from 0 to 1, so you can threshold on it without doing the math yourself. It is 1 when all the probability is on one outcome and 0 when the probability is spread evenly. (Noul answers don't carry one; see [Noul](#noul) below.)
@@ -304,7 +14,27 @@ The answer's `confidence` property collapses that shape into a single number fro
 
 `confidence` is a statistic computed from the probability distribution the answer already gives you. TypeSafe computes it for you and returns it on every Choice and Score answer, so the common case needs no extra work on your side.
 
-<ConfidenceExplorer />
+Choice question with three options
+
+See how probability distribution changes confidence
+
+Confidence
+
+<output />
+
+Probability
+
+Move a slider to change an option's probability. The other probabilities adjust to keep the total at 100%.
+
+Clear winner
+Spread out
+Even split
+
+<details>
+  <summary>How this demo calculates Confidence</summary>
+
+  TypeSafe computes confidence from how the probability is spread across the options. All of it on one option gives 1.0; the more evenly it spreads, the lower the confidence. With three options, the [Choice formula](#choice) is `(3 × largest probability − 1) / 2`, which is what this demo shows.
+</details>
 
 For a [Choice](/primitives/choice), the distribution is `probabilities` across your options. For a [Score](/primitives/score), it is the distribution across your levels. In both cases a flatter distribution means lower confidence: low confidence on a Choice often means none of the options are a clear winner over the others, and low confidence on a Score often means the levels are ambiguous, multi-dimensional, or the state doesn't contain enough to go on.
 
@@ -369,9 +99,9 @@ elif action.choice == "approve_transfer":
 
 The 0.5 confidence floor catches anything the model reports as genuinely uncertain. Above that, the threshold for acting without confirmation is higher for a destructive operation than for a read-only one. Your code encodes the risk tolerance.
 
-<Note>
-  The correct threshold values depend on your domain and the performance of the model for your use case. Start with conservative thresholds, test with your own data, and adjust as you observe results.
-</Note>
+> [!NOTE]
+>
+> The correct threshold values depend on your domain and the performance of the model for your use case. Start with conservative thresholds, test with your own data, and adjust as you observe results.
 
 ## How confidence is calculated
 
@@ -431,7 +161,34 @@ The sum in the numerator is the probability-weighted average distance, in levels
 
 Probability on a neighboring level lowers confidence less than the same probability on a level further away. With three levels, $(0, 0.5, 0.5)$ has confidence 0.25, because the model is torn between two adjacent levels. $(0.5, 0, 0.5)$ has confidence 0, because it is torn between opposite ends. The Choice formula would give both distributions 0.25.
 
-<ScoreConfidenceExplorer />
+Score question with five levels
+
+See how distance between levels changes confidence
+
+Confidence
+
+<output />
+
+Probability
+
+Move a slider to change a level's probability. The other probabilities adjust to keep the total at 100%.
+
+Clear peak
+Split between neighbors
+Split between ends
+Even spread
+
+<dl aria-live="polite">
+  <dt>Score</dt><dd />
+
+  <dt>Choice formula on the same probabilities</dt><dd />
+</dl>
+
+<details>
+  <summary>How this demo calculates Confidence</summary>
+
+  This demo uses the [Score formula](#score). It takes the average distance, in levels, between the answer and the peak, weighted by probability. It divides that by 1.2, the same average for an even spread over five levels measured from the middle level, and subtracts the result from 1, stopping at 0. Probability on a level next to the peak lowers confidence less than probability far from it, which the Choice formula does not take into account.
+</details>
 
 ```python theme={null}
 def score_confidence(probabilities: list[float]) -> float:

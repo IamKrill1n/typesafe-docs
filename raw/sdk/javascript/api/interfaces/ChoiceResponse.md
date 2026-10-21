@@ -14,8 +14,6 @@ A selected label and its probabilities.
 
 ## Properties
 
-<a id="sdk-choice" />
-
 ### choice
 
 ```ts theme={null}
@@ -25,8 +23,6 @@ readonly choice: keyof T & string;
 The selected label.
 
 ***
-
-<a id="sdk-confidence" />
 
 ### confidence
 
@@ -38,8 +34,6 @@ Reported confidence in the selected label.
 
 ***
 
-<a id="sdk-probabilities" />
-
 ### probabilities
 
 ```ts theme={null}
@@ -49,8 +43,6 @@ readonly probabilities: { readonly [label in string | number | symbol]: number }
 Probabilities keyed by label.
 
 ***
-
-<a id="sdk-type" />
 
 ### type
 

@@ -10,8 +10,6 @@ A question that selects between named alternatives.
 
 ## Properties
 
-<a id="sdk-criteria" />
-
 ### criteria
 
 ```ts
@@ -22,8 +20,6 @@ Descriptions of the available outcomes; at least one label is required.
 
 ***
 
-<a id="sdk-instructions" />
-
 ### instructions?
 
 ```ts
@@ -33,8 +29,6 @@ optional instructions?: EntryType;
 The question as text, a JSON object, or an array; optional or `null`.
 
 ***
-
-<a id="sdk-type" />
 
 ### type
 

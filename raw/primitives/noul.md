@@ -6,235 +6,6 @@
 
 > A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.
 
-export function TypesafeExample({example, display, title}) {
-  const keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
-  function compressToEncodedURIComponent(input) {
-    if (input == null) return "";
-    return _compress(input, 6, function (a) {
-      return keyStrUriSafe.charAt(a);
-    });
-  }
-  function _compress(uncompressed, bitsPerChar, getCharFromInt) {
-    if (uncompressed == null) return "";
-    var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
-    for (ii = 0; ii < uncompressed.length; ii += 1) {
-      context_c = uncompressed.charAt(ii);
-      if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-        context_dictionary[context_c] = context_dictSize++;
-        context_dictionaryToCreate[context_c] = true;
-      }
-      context_wc = context_w + context_c;
-      if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
-        context_w = context_wc;
-      } else {
-        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-          if (context_w.charCodeAt(0) < 256) {
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 8; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          } else {
-            value = 1;
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1 | value;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = 0;
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 16; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          }
-          context_enlargeIn--;
-          if (context_enlargeIn == 0) {
-            context_enlargeIn = Math.pow(2, context_numBits);
-            context_numBits++;
-          }
-          delete context_dictionaryToCreate[context_w];
-        } else {
-          value = context_dictionary[context_w];
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        context_dictionary[context_wc] = context_dictSize++;
-        context_w = String(context_c);
-      }
-    }
-    if (context_w !== "") {
-      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-        if (context_w.charCodeAt(0) < 256) {
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 8; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        } else {
-          value = 1;
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = 0;
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 16; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        delete context_dictionaryToCreate[context_w];
-      } else {
-        value = context_dictionary[context_w];
-        for (i = 0; i < context_numBits; i++) {
-          context_data_val = context_data_val << 1 | value & 1;
-          if (context_data_position == bitsPerChar - 1) {
-            context_data_position = 0;
-            context_data.push(getCharFromInt(context_data_val));
-            context_data_val = 0;
-          } else {
-            context_data_position++;
-          }
-          value = value >> 1;
-        }
-      }
-      context_enlargeIn--;
-      if (context_enlargeIn == 0) {
-        context_enlargeIn = Math.pow(2, context_numBits);
-        context_numBits++;
-      }
-    }
-    value = 2;
-    for (i = 0; i < context_numBits; i++) {
-      context_data_val = context_data_val << 1 | value & 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data_position = 0;
-        context_data.push(getCharFromInt(context_data_val));
-        context_data_val = 0;
-      } else {
-        context_data_position++;
-      }
-      value = value >> 1;
-    }
-    while (true) {
-      context_data_val = context_data_val << 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data.push(getCharFromInt(context_data_val));
-        break;
-      } else context_data_position++;
-    }
-    return context_data.join("");
-  }
-  function buildHref(ex) {
-    const documentText = ex.state === undefined ? "" : typeof ex.state === "string" ? ex.state : JSON.stringify(ex.state, null, 2);
-    return "https://console.typesafe.ai/decode#share/" + compressToEncodedURIComponent(JSON.stringify({
-      apiVersion: "v1",
-      documentText,
-      promptsText: JSON.stringify(ex.questions, null, 2),
-      selectedModels: ex.selectedModels
-    }));
-  }
-  const displayedExample = display === "questions" ? example.questions : example.state === undefined ? {
-    questions: example.questions
-  } : {
-    state: example.state,
-    questions: example.questions
-  };
-  const code = JSON.stringify(displayedExample, null, 2);
-  const href = buildHref(example);
-  return <div style={{
-    margin: "1.25rem 0"
-  }}>
-      <CodeBlock language="json" filename={title ?? "request"}>
-        {code}
-      </CodeBlock>
-      <div className="pb-8">
-        <a href={href} target="_blank" rel="noreferrer" className="text-primary">
-          Try it in the Playground →
-        </a>
-      </div>
-    </div>;
-}
-
 Use a Noul when the answer is yes or no. For example, does this message ask for a refund, does this resume mention distributed systems, does this comment contain personal data. If the answer is one of several options, use a [Choice](/primitives/choice). If it's a position on a spectrum, use a [Score](/primitives/score). [Choose a question type](/primitives#choose-a-question-type) compares all three.
 
 A Noul answer is a single number representing the probability that the answer is yes where 0 means no and 1 means yes.
@@ -249,27 +20,7 @@ The POST request body to the [TypeSafe API](/api) has the same three top-level f
 
 Below is a request where the state is a support message and the two questions are whether the customer wants a person and whether they have contacted support before:
 
-<TypesafeExample
-  display="request"
-  example={{
-state: 'I have asked three times now. Can I please just talk to a real person?',
-selectedModels: ['jev-latest'],
-questions: {
-  is_human_escalation: {
-    type: 'noul',
-    instructions: 'Is the customer asking for a human agent?',
-  },
-  is_repeat_contact: {
-    type: 'noul',
-    instructions: 'Has the customer contacted support about this before?',
-    criteria: {
-      true: 'Mentions a prior attempt, ticket, or that they have asked before',
-      false: 'No sign of any previous contact',
-    },
-  },
-},
-}}
-/>
+Try it in the Playground →
 
 You choose the question ids, `is_human_escalation` and `is_repeat_contact` here. The ids are not sent to the model. Each answer is returned under the same id. The first question relies on `instructions` alone. The second adds `criteria` to say what counts as a yes and what counts as a no.
 
@@ -304,9 +55,9 @@ The `system_one` method and the `https://api.typesafe.ai/v1/systemone` endpoint 
 
 If you're using a coding agent, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
 
-<Note>
-  `instructions` can be a string, an object, or an array. Start with a string. Use an object when the question needs data alongside it, such as a record to compare the state against, or when part of the question is built by your code. [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) explains when structure helps, and [the example below](#structured-instructions) shows it with questions built in code.
-</Note>
+> [!NOTE]
+>
+> `instructions` can be a string, an object, or an array. Start with a string. Use an object when the question needs data alongside it, such as a record to compare the state against, or when part of the question is built by your code. [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) explains when structure helps, and [the example below](#structured-instructions) shows it with questions built in code.
 
 ## Response structure
 
@@ -447,46 +198,7 @@ The thresholds live in your code. If reviewers see too many messages, narrow the
 
 Instructions can be an object instead of a string, with the question in one field and supplementary data in the others. [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) covers when that helps. Here it's used for a question built using code: a resume that has just arrived is compared against records in a candidate database that might be the same person. Each record goes into a `potential_duplicate` field as it is, the `question` is the same for every record, and all the records are checked in one request. The code-generated question keys contain each record's database ID:
 
-<TypesafeExample
-  display="request"
-  example={{
-state: {
-  resume: {
-    name: 'John Smith',
-    location: 'Oakland, CA',
-    summary: 'Backend engineer with eight years of Python and Go experience.',
-    experience: [
-      { employer: 'Google', title: 'Senior Backend Engineer', years: '2021-2025' },
-      { employer: 'Microsoft', title: 'Software Engineer', years: '2017-2021' },
-    ],
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  same_as_record_18: {
-    type: 'noul',
-    instructions: {
-      potential_duplicate: { name: 'Jon Smith', location: 'Oakland, CA', last_employer: 'Google' },
-      question: 'Is the resume for the same person as `potential_duplicate`?',
-    },
-  },
-  same_as_record_42: {
-    type: 'noul',
-    instructions: {
-      potential_duplicate: { name: 'John Smith', location: 'Austin, TX', last_employer: 'Lone Star Freight' },
-      question: 'Is the resume for the same person as `potential_duplicate`?',
-    },
-  },
-  same_as_record_77: {
-    type: 'noul',
-    instructions: {
-      potential_duplicate: { name: 'John Smithers', location: 'Oakland, CA', last_employer: 'Bay Health Clinic' },
-      question: 'Is the resume for the same person as `potential_duplicate`?',
-    },
-  },
-},
-}}
-/>
+Try it in the Playground →
 
 The response:
 

@@ -33,8 +33,6 @@ untagged template literal. To write a list of assets with a separator, use
 
 [`TextWithAssets`](/sdk/javascript/api/interfaces/TextWithAssets)
 
-<a id="sdk-join" />
-
 ### join()
 
 ```ts theme={null}

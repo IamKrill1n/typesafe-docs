@@ -4,8 +4,6 @@ Text from a `withAssets` tagged template, with the assets interpolated into it.
 
 ## Properties
 
-<a id="sdk-assets" />
-
 ### assets
 
 ```ts
@@ -16,8 +14,6 @@ The assets interpolated into the text, including those in nested `withAssets` te
 
 ***
 
-<a id="sdk-text" />
-
 ### text
 
 ```ts
@@ -27,8 +23,6 @@ readonly text: string;
 The text, with each asset replaced by its reference.
 
 ## Methods
-
-<a id="sdk-tojson" />
 
 ### toJSON()
 
@@ -43,8 +37,6 @@ The text, written by `JSON.stringify` wherever this value appears in a request.
 `string`
 
 ***
-
-<a id="sdk-tostring" />
 
 ### toString()
 

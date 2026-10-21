@@ -8,8 +8,6 @@ The full response did not arrive within the timeout. A kind of `APIConnectionErr
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts
@@ -35,8 +33,6 @@ new APITimeoutError(timeoutMs, options?): APITimeoutError;
 [`APIConnectionError`](./APIConnectionError.md).[`constructor`](./APIConnectionError.md#sdk-constructor)
 
 ## Properties
-
-<a id="sdk-timeoutms" />
 
 ### timeoutMs
 

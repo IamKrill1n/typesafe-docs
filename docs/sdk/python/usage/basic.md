@@ -2,13 +2,9 @@
 
 > Guides and patterns for working with the TypeSafe Python SDK.
 
-<a id="basic-usage" />
+## Calling the System One API
 
-<h2 id="calling-the-system-one-api">
-  Calling the System One API
-</h2>
-
-#### Async
+**Async**
 
 ```python
 import asyncio
@@ -16,31 +12,31 @@ import asyncio
 from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
 
 async def main() -> None:
-  async with AsyncTypeSafeClient() as client:
-      result = await client.system_one(
-          "I was charged twice. Please help ASAP.",
-          {
-              "billing": Noul(instructions="Is this about billing?"),
-              "tone": Choice(
-                  instructions="What is the tone?",
-                  criteria={"calm": None, "angry": None},
-              ),
-              "urgency": Score(
-                  instructions="How urgent is this?",
-                  criteria=["low", "medium", "high"],
-              ),
-          },
-      )
-      print(
-          result.nouls["billing"].noul,
-          result.choices["tone"].choice,
-          result.scores["urgency"].score,
-      )
+    async with AsyncTypeSafeClient() as client:
+        result = await client.system_one(
+            "I was charged twice. Please help ASAP.",
+            {
+                "billing": Noul(instructions="Is this about billing?"),
+                "tone": Choice(
+                    instructions="What is the tone?",
+                    criteria={"calm": None, "angry": None},
+                ),
+                "urgency": Score(
+                    instructions="How urgent is this?",
+                    criteria=["low", "medium", "high"],
+                ),
+            },
+        )
+        print(
+            result.nouls["billing"].noul,
+            result.choices["tone"].choice,
+            result.scores["urgency"].score,
+        )
 
 asyncio.run(main())
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
@@ -48,29 +44,27 @@ from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
 client = TypeSafeClient()
 state = "I was charged twice. Please help ASAP."
 questions = {
-  "billing": Noul(instructions="Is this about billing?"),
-  "tone": Choice(
-      instructions="What is the tone?", criteria={"calm": None, "angry": None}
-  ),
-  "urgency": Score(
-      instructions="How urgent is this?", criteria=["low", "medium", "high"]
-  ),
+    "billing": Noul(instructions="Is this about billing?"),
+    "tone": Choice(
+        instructions="What is the tone?", criteria={"calm": None, "angry": None}
+    ),
+    "urgency": Score(
+        instructions="How urgent is this?", criteria=["low", "medium", "high"]
+    ),
 }
 result = client.system_one(state, questions)
 print(
-  result.nouls["billing"].noul,
-  result.choices["tone"].choice,
-  result.scores["urgency"].score,
+    result.nouls["billing"].noul,
+    result.choices["tone"].choice,
+    result.scores["urgency"].score,
 )
 ```
 
-<h2 id="choosing-a-model">
-  Choosing a model
-</h2>
+## Choosing a model
 
 Inspect the available models:
 
-#### Async
+**Async**
 
 ```python
 import asyncio
@@ -78,13 +72,13 @@ import asyncio
 from typesafe_sdk import AsyncTypeSafeClient
 
 async def main() -> None:
-  async with AsyncTypeSafeClient() as client:
-      print(await client.models.list())
+    async with AsyncTypeSafeClient() as client:
+        print(await client.models.list())
 
 asyncio.run(main())
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from typesafe_sdk import TypeSafeClient
@@ -94,13 +88,13 @@ print(TypeSafeClient().models.list())
 
 Select the model when constructing a client:
 
-#### Async
+**Async**
 
 ```python
 client = AsyncTypeSafeClient(model="jev")
 ```
 
-#### Sync
+**Sync**
 
 ```python
 client = TypeSafeClient(model="jev")
@@ -108,22 +102,22 @@ client = TypeSafeClient(model="jev")
 
 See the [Models resource reference](https://docs.typesafe.ai/go/models) for more information on available models, their capabilities, pricing details, and model aliases.
 
-<h2 id="attaching-media-assets">
-  Attaching Media Assets
-</h2>
+## Attaching Media Assets
 
 System One requests can include media assets.
 
-> **Info:**
+> [!NOTE]
+>
 > **Supported asset types**
 >
 > Only images are supported at the moment, with more modalities coming in the future.
 >
-> > **Warning:**
+> > [!WARNING]
+> >
 > > **Images are only dreamer-ready**
->>
+> >
 > > As of November 14, 2026, image support is only dreamer-ready. The brave may opt-in to this feature via HTTP headers:
->>
+> >
 > > ```python
 > > client = TypeSafeClient(headers={"TypeSafe-Danger-Zone-Images": "true"})
 > > ```
@@ -133,7 +127,8 @@ System One requests can include media assets.
 > * [**API docs**](https://docs.typesafe.ai/go/images): how to enable and use images with TypeSafe's System One API
 > * [**SDK docs**](../api/types/assets.md#typesafe_sdk.Image): documentation and code examples for using images with `typesafe-sdk`
 
-> **Note:**
+> [!NOTE]
+>
 > **Upload format**
 >
 > Requests with assets are sent as `multipart/form-data`, with each asset's raw bytes in its own part.
@@ -149,17 +144,13 @@ There are two ways to create **asset references**:
 
 Both types of asset references may be used together in the same request.
 
-<h3 id="automatic-references">
-  Automatic references
-</h3>
+### Automatic references
 
-<h4 id="assets-in-structured-objects">
-  Assets in structured objects
-</h4>
+#### Assets in structured objects
 
 Place assets directly in `state` or in question instructions and criteria:
 
-#### Async
+**Async**
 
 ```python
 from pathlib import Path
@@ -167,20 +158,20 @@ from pathlib import Path
 from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
 
 async def compare_return(
-  client: AsyncTypeSafeClient, returned: Path, listing: Path, *, model: str
+    client: AsyncTypeSafeClient, returned: Path, listing: Path, *, model: str
 ) -> SystemOneResponse:
-  return await client.system_one(
-      state=["The customer returned this item:", Image(returned)],
-      questions={
-          "same_item": Noul(
-              instructions=["Is it the item in this listing photo?", Image(listing)]
-          )
-      },
-      model=model,
-  )
+    return await client.system_one(
+        state=["The customer returned this item:", Image(returned)],
+        questions={
+            "same_item": Noul(
+                instructions=["Is it the item in this listing photo?", Image(listing)]
+            )
+        },
+        model=model,
+    )
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from pathlib import Path
@@ -188,31 +179,30 @@ from pathlib import Path
 from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
 
 def compare_return(
-  client: TypeSafeClient, returned: Path, listing: Path, *, model: str
+    client: TypeSafeClient, returned: Path, listing: Path, *, model: str
 ) -> SystemOneResponse:
-  return client.system_one(
-      state=["The customer returned this item:", Image(returned)],
-      questions={
-          "same_item": Noul(
-              instructions=["Is it the item in this listing photo?", Image(listing)]
-          )
-      },
-      model=model,
-  )
+    return client.system_one(
+        state=["The customer returned this item:", Image(returned)],
+        questions={
+            "same_item": Noul(
+                instructions=["Is it the item in this listing photo?", Image(listing)]
+            )
+        },
+        model=model,
+    )
 ```
 
-> **Note:**
+> [!NOTE]
+>
 > **Note**
 >
 > Under the hood, each asset is automatically assigned a unique uuid-like reference.
 
-<h4 id="assets-in-text">
-  Assets in text
-</h4>
+#### Assets in text
 
 Use `client.attach_assets` to attach assets to the client, and `str(asset)` to reference them in text:
 
-#### Async
+**Async**
 
 ```python
 from pathlib import Path
@@ -220,18 +210,18 @@ from pathlib import Path
 from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
 
 async def check_damage(
-  client: AsyncTypeSafeClient, returned: Path, *, model: str
+    client: AsyncTypeSafeClient, returned: Path, *, model: str
 ) -> SystemOneResponse:
-  photo = Image(returned)
-  with client.attach_assets(photo):
-      return await client.system_one(
-          state=f"The customer says {photo} arrived scratched.",
-          questions={"damaged": Noul(instructions="Is the item damaged?")},
-          model=model,
-      )
+    photo = Image(returned)
+    with client.attach_assets(photo):
+        return await client.system_one(
+            state=f"The customer says {photo} arrived scratched.",
+            questions={"damaged": Noul(instructions="Is the item damaged?")},
+            model=model,
+        )
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from pathlib import Path
@@ -239,29 +229,28 @@ from pathlib import Path
 from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
 
 def check_damage(
-  client: TypeSafeClient, returned: Path, *, model: str
+    client: TypeSafeClient, returned: Path, *, model: str
 ) -> SystemOneResponse:
-  photo = Image(returned)
-  with client.attach_assets(photo):
-      return client.system_one(
-          state=f"The customer says {photo} arrived scratched.",
-          questions={"damaged": Noul(instructions="Is the item damaged?")},
-          model=model,
-      )
+    photo = Image(returned)
+    with client.attach_assets(photo):
+        return client.system_one(
+            state=f"The customer says {photo} arrived scratched.",
+            questions={"damaged": Noul(instructions="Is the item damaged?")},
+            model=model,
+        )
 ```
 
-> **Warning:**
+> [!WARNING]
+>
 > **Warning**
 >
 > Don't forget the `with client.attach_assets` context manager block! The SDK will not be able to associate text-rendered asset references with the original asset data.
 
-<h3 id="named-references">
-  Named references
-</h3>
+### Named references
 
 To choose your own reference for an asset, pass it through `assets`, keyed by that reference. Use distinct delimiters (such as `<product>`) to avoid matching ordinary text:
 
-#### Async
+**Async**
 
 ```python
 from pathlib import Path
@@ -269,17 +258,17 @@ from pathlib import Path
 from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
 
 async def inspect_product(
-  client: AsyncTypeSafeClient, photo: Path, *, model: str
+    client: AsyncTypeSafeClient, photo: Path, *, model: str
 ) -> SystemOneResponse:
-  return await client.system_one(
-      state="Inspect this returned product: <product>",
-      questions={"damaged": Noul(instructions="Is the product damaged?")},
-      assets={"<product>": Image(photo)},
-      model=model,
-  )
+    return await client.system_one(
+        state="Inspect this returned product: <product>",
+        questions={"damaged": Noul(instructions="Is the product damaged?")},
+        assets={"<product>": Image(photo)},
+        model=model,
+    )
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from pathlib import Path
@@ -287,28 +276,27 @@ from pathlib import Path
 from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
 
 def inspect_product(
-  client: TypeSafeClient, photo: Path, *, model: str
+    client: TypeSafeClient, photo: Path, *, model: str
 ) -> SystemOneResponse:
-  return client.system_one(
-      state="Inspect this returned product: <product>",
-      questions={"damaged": Noul(instructions="Is the product damaged?")},
-      assets={"<product>": Image(photo)},
-      model=model,
-  )
+    return client.system_one(
+        state="Inspect this returned product: <product>",
+        questions={"damaged": Noul(instructions="Is the product damaged?")},
+        assets={"<product>": Image(photo)},
+        model=model,
+    )
 ```
 
-> **Tip:**
+> [!TIP]
+>
 > **Tip**
 >
 > An asset passed through `assets` may also be placed directly in the content: it is sent once, under its name.
 
-<h2 id="typed-system_one-responses">
-  Typed <code>system_one</code> responses
-</h2>
+## Typed `system_one` responses
 
 It is possible to provide a response model to `system_one` to make using the response more *type-safe*:
 
-#### Async
+**Async**
 
 ```python
 import asyncio
@@ -316,48 +304,46 @@ import asyncio
 from typesafe_sdk import AsyncTypeSafeClient, Noul, NoulAnswer, SystemOneResponse
 
 class BillingResponse(SystemOneResponse):
-  billing: NoulAnswer
+    billing: NoulAnswer
 
 async def main() -> None:
-  async with AsyncTypeSafeClient() as client:
-      result = await client.system_one(
-          "I was charged twice.",
-          {"billing": Noul(instructions="Is this about billing?")},
-          response_model=BillingResponse,
-      )
-      assert 0 <= result.billing.noul <= 1
-      assert result.billing == result.nouls["billing"]
-      print(result.request_id)
+    async with AsyncTypeSafeClient() as client:
+        result = await client.system_one(
+            "I was charged twice.",
+            {"billing": Noul(instructions="Is this about billing?")},
+            response_model=BillingResponse,
+        )
+        assert 0 <= result.billing.noul <= 1
+        assert result.billing == result.nouls["billing"]
+        print(result.request_id)
 
 asyncio.run(main())
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from typesafe_sdk import Noul, NoulAnswer, SystemOneResponse, TypeSafeClient
 
 class BillingResponse(SystemOneResponse):
-  billing: NoulAnswer
+    billing: NoulAnswer
 
 with TypeSafeClient() as client:
-  result = client.system_one(
-      "I was charged twice.",
-      {"billing": Noul(instructions="Is this about billing?")},
-      response_model=BillingResponse,
-  )
-  assert 0 <= result.billing.noul <= 1
-  assert result.billing == result.nouls["billing"]
-  print(result.request_id)
+    result = client.system_one(
+        "I was charged twice.",
+        {"billing": Noul(instructions="Is this about billing?")},
+        response_model=BillingResponse,
+    )
+    assert 0 <= result.billing.noul <= 1
+    assert result.billing == result.nouls["billing"]
+    print(result.request_id)
 ```
 
-<h3 id="custom-response-types">
-  Custom response types
-</h3>
+### Custom response types
 
 It is also possible to define a completely new response model without inheriting from `SystemOneResponse`:
 
-#### Async
+**Async**
 
 ```python
 import asyncio
@@ -367,24 +353,24 @@ from pydantic import BaseModel
 from typesafe_sdk import AsyncTypeSafeClient, Noul, NoulAnswer
 
 class BillingAnswers(BaseModel):
-  billing: NoulAnswer
+    billing: NoulAnswer
 
 class BillingResponse(BaseModel):
-  answers: BillingAnswers
+    answers: BillingAnswers
 
 async def main() -> None:
-  async with AsyncTypeSafeClient() as client:
-      result = await client.system_one(
-          "I was charged twice.",
-          {"billing": Noul(instructions="Is this about billing?")},
-          response_model=BillingResponse,
-      )
-      assert 0 <= result.answers.billing.noul <= 1
+    async with AsyncTypeSafeClient() as client:
+        result = await client.system_one(
+            "I was charged twice.",
+            {"billing": Noul(instructions="Is this about billing?")},
+            response_model=BillingResponse,
+        )
+        assert 0 <= result.answers.billing.noul <= 1
 
 asyncio.run(main())
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from pydantic import BaseModel
@@ -392,38 +378,36 @@ from pydantic import BaseModel
 from typesafe_sdk import Noul, NoulAnswer, TypeSafeClient
 
 class BillingAnswers(BaseModel):
-  billing: NoulAnswer
+    billing: NoulAnswer
 
 class BillingResponse(BaseModel):
-  answers: BillingAnswers
+    answers: BillingAnswers
 
 result = TypeSafeClient().system_one(
-  "I was charged twice.",
-  {"billing": Noul(instructions="Is this about billing?")},
-  response_model=BillingResponse,
+    "I was charged twice.",
+    {"billing": Noul(instructions="Is this about billing?")},
+    response_model=BillingResponse,
 )
 assert 0 <= result.answers.billing.noul <= 1
 ```
 
-<h2 id="retries">
-  Retries
-</h2>
+## Retries
 
 Pass a custom [`RetryPolicy`](../api/retries.md) as `retry` on the client or per call. Invalid API keys raise `TypeSafeError` during client creation, before any request or retry.
 
 On the client:
 
-#### Async
+**Async**
 
 ```python
 from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
 
 client = AsyncTypeSafeClient(
-  retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
+    retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
 )
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from typesafe_sdk import RetryPolicy, TypeSafeClient
@@ -433,7 +417,7 @@ client = TypeSafeClient(retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeou
 
 Per call:
 
-#### Async
+**Async**
 
 ```python
 import asyncio
@@ -441,33 +425,31 @@ import asyncio
 from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
 
 async def main() -> None:
-  async with AsyncTypeSafeClient() as client:
-      await client.system_one(
-          state,
-          questions,
-          retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0),
-      )
+    async with AsyncTypeSafeClient() as client:
+        await client.system_one(
+            state,
+            questions,
+            retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0),
+        )
 
 asyncio.run(main())
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from typesafe_sdk import RetryPolicy
 
 client.system_one(
-  state, questions, retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
+    state, questions, retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
 )
 ```
 
-<h2 id="error-handling">
-  Error handling
-</h2>
+## Error handling
 
 Handle [exceptions](../api/exceptions.md) raised by the SDK:
 
-#### Async
+**Async**
 
 ```python
 import asyncio
@@ -475,29 +457,27 @@ import asyncio
 from typesafe_sdk import AsyncTypeSafeClient, TypeSafeAPIError
 
 async def main() -> None:
-  async with AsyncTypeSafeClient() as client:
-      try:
-          await client.system_one(state, questions)
-      except TypeSafeAPIError as error:
-          print(error.status, error.request_id)
+    async with AsyncTypeSafeClient() as client:
+        try:
+            await client.system_one(state, questions)
+        except TypeSafeAPIError as error:
+            print(error.status, error.request_id)
 
 asyncio.run(main())
 ```
 
-#### Sync
+**Sync**
 
 ```python
 from typesafe_sdk import TypeSafeAPIError
 
 try:
-  client.system_one(state, questions)
+    client.system_one(state, questions)
 except TypeSafeAPIError as error:
-  print(error.status, error.request_id)
+    print(error.status, error.request_id)
 ```
 
-<h2 id="environment-variables">
-  Environment variables
-</h2>
+## Environment variables
 
 The SDK reads and uses the following environment variables:
 
@@ -512,19 +492,17 @@ See the [constants reference](../api/constants.md) for SDK defaults.
 
 API keys supplied through `api_key` or `TYPESAFE_API_KEY` have leading and trailing whitespace stripped, including newlines from key files. Empty keys, internal whitespace, control characters, and non-ASCII characters are rejected before sending a request. An explicitly empty key does not fall back to the environment.
 
-<h2 id="configuring-the-base-url">
-  Configuring the base URL
-</h2>
+## Configuring the base URL
 
 In order to use the SDK with a different API url, set `base_url` on the client or the `TYPESAFE_BASE_URL` environment variable. This requires the alternative API to follow the [TypeSafe OpenAPI spec](https://api.typesafe.ai/docs/).
 
 For example, connect through an AI gateway using its API key and model ID.
 
-#### OpenRouter
+**OpenRouter**
 
 Use an OpenRouter API key and an [OpenRouter model ID](https://openrouter.ai/~typesafe/jev-latest/):
 
-#### Async client
+**Async client**
 
 ```python
 import asyncio
@@ -533,21 +511,21 @@ import os
 from typesafe_sdk import AsyncTypeSafeClient, Noul
 
 async def main() -> None:
-async with AsyncTypeSafeClient(
-api_key=os.environ["OPENROUTER_API_KEY"],
-base_url="https://openrouter.ai/api",
-model="~typesafe/jev-latest",
-) as client:
-result = await client.system_one(
-"I was charged twice.",
-{"billing": Noul(instructions="Is this about billing?")},
-)
-print(result.nouls["billing"].noul)
+    async with AsyncTypeSafeClient(
+        api_key=os.environ["OPENROUTER_API_KEY"],
+        base_url="https://openrouter.ai/api",
+        model="~typesafe/jev-latest",
+    ) as client:
+        result = await client.system_one(
+            "I was charged twice.",
+            {"billing": Noul(instructions="Is this about billing?")},
+        )
+        print(result.nouls["billing"].noul)
 
 asyncio.run(main())
 ```
 
-#### Sync client
+**Sync client**
 
 ```python
 import os
@@ -555,22 +533,22 @@ import os
 from typesafe_sdk import Noul, TypeSafeClient
 
 with TypeSafeClient(
-api_key=os.environ["OPENROUTER_API_KEY"],
-base_url="https://openrouter.ai/api",
-model="~typesafe/jev-latest",
+    api_key=os.environ["OPENROUTER_API_KEY"],
+    base_url="https://openrouter.ai/api",
+    model="~typesafe/jev-latest",
 ) as client:
-result = client.system_one(
-"I was charged twice.",
-{"billing": Noul(instructions="Is this about billing?")},
-)
-print(result.nouls["billing"].noul)
+    result = client.system_one(
+        "I was charged twice.",
+        {"billing": Noul(instructions="Is this about billing?")},
+    )
+    print(result.nouls["billing"].noul)
 ```
 
-#### Vercel AI Gateway
+**Vercel AI Gateway**
 
 [Vercel's TypeSafe-compatible API](https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe) can be used with the SDK:
 
-#### Async client
+**Async client**
 
 ```python
 import asyncio
@@ -579,21 +557,21 @@ import os
 from typesafe_sdk import AsyncTypeSafeClient, Noul
 
 async def main() -> None:
-async with AsyncTypeSafeClient(
-api_key=os.environ["AI_GATEWAY_API_KEY"],
-base_url="https://ai-gateway.vercel.sh/typesafe",
-model="typesafe-ai/jev",
-) as client:
-result = await client.system_one(
-"I was charged twice.",
-{"billing": Noul(instructions="Is this about billing?")},
-)
-print(result.nouls["billing"].noul)
+    async with AsyncTypeSafeClient(
+        api_key=os.environ["AI_GATEWAY_API_KEY"],
+        base_url="https://ai-gateway.vercel.sh/typesafe",
+        model="typesafe-ai/jev",
+    ) as client:
+        result = await client.system_one(
+            "I was charged twice.",
+            {"billing": Noul(instructions="Is this about billing?")},
+        )
+        print(result.nouls["billing"].noul)
 
 asyncio.run(main())
 ```
 
-#### Sync client
+**Sync client**
 
 ```python
 import os
@@ -601,22 +579,22 @@ import os
 from typesafe_sdk import Noul, TypeSafeClient
 
 with TypeSafeClient(
-api_key=os.environ["AI_GATEWAY_API_KEY"],
-base_url="https://ai-gateway.vercel.sh/typesafe",
-model="typesafe-ai/jev",
+    api_key=os.environ["AI_GATEWAY_API_KEY"],
+    base_url="https://ai-gateway.vercel.sh/typesafe",
+    model="typesafe-ai/jev",
 ) as client:
-result = client.system_one(
-"I was charged twice.",
-{"billing": Noul(instructions="Is this about billing?")},
-)
-print(result.nouls["billing"].noul)
+    result = client.system_one(
+        "I was charged twice.",
+        {"billing": Noul(instructions="Is this about billing?")},
+    )
+    print(result.nouls["billing"].noul)
 ```
 
-#### Pydantic AI Gateway
+**Pydantic AI Gateway**
 
 Use a [Pydantic AI Gateway API key](https://pydantic.dev/articles/jev-pydantic-ai-gateway):
 
-#### Async client
+**Async client**
 
 ```python
 import asyncio
@@ -625,21 +603,21 @@ import os
 from typesafe_sdk import AsyncTypeSafeClient, Noul
 
 async def main() -> None:
-async with AsyncTypeSafeClient(
-api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
-base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
-model="jev-latest",
-) as client:
-result = await client.system_one(
-"I was charged twice.",
-{"billing": Noul(instructions="Is this about billing?")},
-)
-print(result.nouls["billing"].noul)
+    async with AsyncTypeSafeClient(
+        api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
+        base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
+        model="jev-latest",
+    ) as client:
+        result = await client.system_one(
+            "I was charged twice.",
+            {"billing": Noul(instructions="Is this about billing?")},
+        )
+        print(result.nouls["billing"].noul)
 
 asyncio.run(main())
 ```
 
-#### Sync client
+**Sync client**
 
 ```python
 import os
@@ -647,15 +625,15 @@ import os
 from typesafe_sdk import Noul, TypeSafeClient
 
 with TypeSafeClient(
-api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
-base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
-model="jev-latest",
+    api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
+    base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
+    model="jev-latest",
 ) as client:
-result = client.system_one(
-"I was charged twice.",
-{"billing": Noul(instructions="Is this about billing?")},
-)
-print(result.nouls["billing"].noul)
+    result = client.system_one(
+        "I was charged twice.",
+        {"billing": Noul(instructions="Is this about billing?")},
+    )
+    print(result.nouls["billing"].noul)
 ```
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

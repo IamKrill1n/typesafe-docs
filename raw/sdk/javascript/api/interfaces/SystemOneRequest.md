@@ -16,8 +16,6 @@ Additional properties on a request variable are forwarded, including `null` valu
 
 ## Properties
 
-<a id="sdk-assets" />
-
 ### assets?
 
 ```ts theme={null}
@@ -34,8 +32,6 @@ rejects before sending.
 
 ***
 
-<a id="sdk-model" />
-
 ### model?
 
 ```ts theme={null}
@@ -46,8 +42,6 @@ Model override; omitted values inherit `defaultModel`.
 
 ***
 
-<a id="sdk-questions" />
-
 ### questions
 
 ```ts theme={null}
@@ -57,8 +51,6 @@ questions: Q;
 Nonempty questions keyed by the names used to identify their answers.
 
 ***
-
-<a id="sdk-state" />
 
 ### state
 

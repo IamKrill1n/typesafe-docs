@@ -4,8 +4,6 @@ Access to the Models API resource.
 
 ## Methods
 
-<a id="sdk-list" />
-
 ### list()
 
 ```ts

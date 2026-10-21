@@ -39,7 +39,7 @@ The fastest way to add Jev to your project is to have your coding agent write th
 
 1. **[Install the TypeSafe skill](../agent-skill.md#installation)** using the Claude Code plugin or `npx skills add typesafe-ai/skills --skill typesafe-ai`. You can also [read SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md).
 
-#### Claude Code
+**Claude Code**
 
 Run these two commands in your terminal:
 
@@ -48,7 +48,7 @@ claude plugin marketplace add typesafe-ai/skills
 claude plugin install typesafe@typesafe-ai
 ```
 
-#### Other agents
+**Other agents**
 
 ```bash
 npx skills add typesafe-ai/skills --skill typesafe-ai
@@ -56,7 +56,7 @@ npx skills add typesafe-ai/skills --skill typesafe-ai
 
 Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
 
-#### Copy to your agent
+**Copy to your agent**
 
 Paste this prompt into your coding agent:
 
@@ -70,7 +70,8 @@ Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketp
 Let's build a simple CLI that uses Jev to evaluate a set of supplied texts on multiple dimensions. Use the TypeSafe skill to understand how to use the TypeSafe API and how to structure the system. Ask me questions about what kinds of texts I want to evaluate and on what dimensions.
 ```
 
-> **Note:**
+> [!NOTE]
+>
 > We suggest that you generate and store your TypeSafe API key in an environment variable (e.g. `TYPESAFE_API_KEY`).
 
 The [Agent Skill](../agent-skill.md) page has more example prompts and fixes for common issues, such as an agent that isn't using the skill.
@@ -89,11 +90,11 @@ export TYPESAFE_API_KEY="your-api-key"
 
 The example sends a customer support ticket and asks Jev three questions in one request: which team should handle it, how frustrated the customer sounds, and whether the issue is urgent.
 
-#### Python
+**Python**
 
 Requires Python 3.10 or later. Choose a package manager to install the SDK:
 
-#### pip
+**pip**
 
 With [pip installed](https://pip.pypa.io/en/stable/installation/), create a virtual environment and add the SDK:
 
@@ -102,7 +103,7 @@ python3 -m venv .venv
 .venv/bin/pip install typesafe-sdk
 ```
 
-#### uv
+**uv**
 
 With [uv installed](https://docs.astral.sh/uv/getting-started/installation/), initialize a project and add the SDK:
 
@@ -119,30 +120,30 @@ from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
 ticket = "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed."
 
 with TypeSafeClient(model="jev-latest") as client:  # Reads TYPESAFE_API_KEY.
-  response = client.system_one(
-      state=ticket,
-      questions={
-          "department": Choice(
-              instructions="Which team should handle this",
-              criteria={
-                  "billing": "Payment or subscription issues",
-                  "technical": "Bugs or integration problems",
-                  "sales": "Pricing or account questions",
-              },
-          ),
-          "frustration": Score(
-              instructions="How frustrated the customer appears",
-              criteria=[
-                  "Calm, just stating facts",
-                  "Frustrated but civil",
-                  "Very angry, strong language",
-              ],
-          ),
-          "is_urgent": Noul(
-              instructions="The message conveys urgency or time-sensitivity",
-          ),
-      },
-  )
+    response = client.system_one(
+        state=ticket,
+        questions={
+            "department": Choice(
+                instructions="Which team should handle this",
+                criteria={
+                    "billing": "Payment or subscription issues",
+                    "technical": "Bugs or integration problems",
+                    "sales": "Pricing or account questions",
+                },
+            ),
+            "frustration": Score(
+                instructions="How frustrated the customer appears",
+                criteria=[
+                    "Calm, just stating facts",
+                    "Frustrated but civil",
+                    "Very angry, strong language",
+                ],
+            ),
+            "is_urgent": Noul(
+                instructions="The message conveys urgency or time-sensitivity",
+            ),
+        },
+    )
 
 print(response.choices["department"].choice)
 print(response.scores["frustration"].score)
@@ -155,7 +156,7 @@ Run it with either installation method:
 .venv/bin/python route_ticket.py
 ```
 
-#### JavaScript
+**JavaScript**
 
 Requires Node.js 20 or later. Install the SDK and mark the project as an ES module:
 
@@ -173,20 +174,20 @@ const ticket = "Our API integration started returning 500 errors on every reques
 
 const client = new TypeSafeClient({ defaultModel: "jev-latest" }); // Reads TYPESAFE_API_KEY.
 const response = await client.systemOne({
-state: ticket,
-questions: {
-  department: choice("Which team should handle this", {
-    billing: "Payment or subscription issues",
-    technical: "Bugs or integration problems",
-    sales: "Pricing or account questions",
-  }),
-  frustration: score("How frustrated the customer appears", [
-    "Calm, just stating facts",
-    "Frustrated but civil",
-    "Very angry, strong language",
-  ]),
-  is_urgent: noul("The message conveys urgency or time-sensitivity"),
-},
+  state: ticket,
+  questions: {
+    department: choice("Which team should handle this", {
+      billing: "Payment or subscription issues",
+      technical: "Bugs or integration problems",
+      sales: "Pricing or account questions",
+    }),
+    frustration: score("How frustrated the customer appears", [
+      "Calm, just stating facts",
+      "Frustrated but civil",
+      "Very angry, strong language",
+    ]),
+    is_urgent: noul("The message conveys urgency or time-sensitivity"),
+  },
 });
 
 console.log(response.answers.department.choice);
@@ -200,7 +201,7 @@ Run it:
 node route_ticket.js
 ```
 
-#### TypeScript
+**TypeScript**
 
 Requires Node.js 22.18 or later to run TypeScript directly. Install the SDK and mark the project as an ES module:
 
@@ -218,20 +219,20 @@ const ticket = "Our API integration started returning 500 errors on every reques
 
 const client = new TypeSafeClient({ defaultModel: "jev-latest" }); // Reads TYPESAFE_API_KEY.
 const response = await client.systemOne({
-state: ticket,
-questions: {
-  department: choice("Which team should handle this", {
-    billing: "Payment or subscription issues",
-    technical: "Bugs or integration problems",
-    sales: "Pricing or account questions",
-  }),
-  frustration: score("How frustrated the customer appears", [
-    "Calm, just stating facts",
-    "Frustrated but civil",
-    "Very angry, strong language",
-  ]),
-  is_urgent: noul("The message conveys urgency or time-sensitivity"),
-},
+  state: ticket,
+  questions: {
+    department: choice("Which team should handle this", {
+      billing: "Payment or subscription issues",
+      technical: "Bugs or integration problems",
+      sales: "Pricing or account questions",
+    }),
+    frustration: score("How frustrated the customer appears", [
+      "Calm, just stating facts",
+      "Frustrated but civil",
+      "Very angry, strong language",
+    ]),
+    is_urgent: noul("The message conveys urgency or time-sensitivity"),
+  },
 });
 
 console.log(response.answers.department.choice);
@@ -247,7 +248,7 @@ node route_ticket.ts
 
 The SDK infers answer types from your questions, so `response.answers.department.choice` has the type `"billing" | "technical" | "sales"`.
 
-#### Bash
+**Bash**
 
 Requires curl 7.76 or later. Save as `route_ticket.sh`:
 
@@ -257,37 +258,37 @@ set -euo pipefail
 : "${TYPESAFE_API_KEY:?Set TYPESAFE_API_KEY first.}"
 
 curl --fail-with-body --silent --show-error \
-https://api.typesafe.ai/v1/systemone \
--H "Authorization: Bearer $TYPESAFE_API_KEY" \
--H "Content-Type: application/json" \
---data-binary @- <<'JSON'
+  https://api.typesafe.ai/v1/systemone \
+  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+  -H "Content-Type: application/json" \
+  --data-binary @- <<'JSON'
 {
-"state": "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.",
-"model": "jev-latest",
-"questions": {
-  "department": {
-    "type": "choice",
-    "instructions": "Which team should handle this",
-    "criteria": {
-      "billing": "Payment or subscription issues",
-      "technical": "Bugs or integration problems",
-      "sales": "Pricing or account questions"
+  "state": "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.",
+  "model": "jev-latest",
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "Which team should handle this",
+      "criteria": {
+        "billing": "Payment or subscription issues",
+        "technical": "Bugs or integration problems",
+        "sales": "Pricing or account questions"
+      }
+    },
+    "frustration": {
+      "type": "score",
+      "instructions": "How frustrated the customer appears",
+      "criteria": [
+        "Calm, just stating facts",
+        "Frustrated but civil",
+        "Very angry, strong language"
+      ]
+    },
+    "is_urgent": {
+      "type": "noul",
+      "instructions": "The message conveys urgency or time-sensitivity"
     }
-  },
-  "frustration": {
-    "type": "score",
-    "instructions": "How frustrated the customer appears",
-    "criteria": [
-      "Calm, just stating facts",
-      "Frustrated but civil",
-      "Very angry, strong language"
-    ]
-  },
-  "is_urgent": {
-    "type": "noul",
-    "instructions": "The message conveys urgency or time-sensitivity"
   }
-}
 }
 JSON
 ```
@@ -322,48 +323,48 @@ Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
-#### Raw Response
-
-```json
-{
-  "model": "jev-1.13.0",
-  "answers": {
-    "department": {
-      "type": "choice",
-      "choice": "technical",
-      "confidence": 1.0,
-      "probabilities": {
-        "technical": 1.0,
-        "billing": 0.0,
-        "sales": 0.0
-      }
-    },
-    "frustration": {
-      "type": "score",
-      "score": 0.67,
-      "confidence": 0.5,
-      "legend": {
-        "0": "Calm, just stating facts",
-        "1": "Frustrated but civil",
-        "2": "Very angry, strong language"
-      },
-      "probabilities": {
-        "0": 0.33,
-        "1": 0.67,
-        "2": 0.0
-      }
-    },
-    "is_urgent": {
-      "type": "noul",
-      "noul": 0.99
-    }
-  },
-  "usage": {
-    "input_tokens": 428,
-    "output_tokens": 73
-  }
-}
-```
+> **Raw Response**
+>
+> ```json
+> {
+>   "model": "jev-1.13.0",
+>   "answers": {
+>     "department": {
+>       "type": "choice",
+>       "choice": "technical",
+>       "confidence": 1.0,
+>       "probabilities": {
+>         "technical": 1.0,
+>         "billing": 0.0,
+>         "sales": 0.0
+>       }
+>     },
+>     "frustration": {
+>       "type": "score",
+>       "score": 0.67,
+>       "confidence": 0.5,
+>       "legend": {
+>         "0": "Calm, just stating facts",
+>         "1": "Frustrated but civil",
+>         "2": "Very angry, strong language"
+>       },
+>       "probabilities": {
+>         "0": 0.33,
+>         "1": 0.67,
+>         "2": 0.0
+>       }
+>     },
+>     "is_urgent": {
+>       "type": "noul",
+>       "noul": 0.99
+>     }
+>   },
+>   "usage": {
+>     "input_tokens": 428,
+>     "output_tokens": 73
+>   }
+> }
+> ```
 
 The [API Reference](https://docs.typesafe.ai/api) lists every request field, question type, and answer type.
 

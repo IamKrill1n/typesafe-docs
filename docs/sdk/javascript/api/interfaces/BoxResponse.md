@@ -4,8 +4,6 @@ The answer to a `box` question.
 
 ## Properties
 
-<a id="sdk-box" />
-
 ### box
 
 ```ts
@@ -16,8 +14,6 @@ Where the instructions' subject is in the image.
 
 ***
 
-<a id="sdk-confidence" />
-
 ### confidence
 
 ```ts
@@ -27,8 +23,6 @@ readonly confidence: number | null;
 Confidence in the box, from zero to one, or `null` when the API didn't report it.
 
 ***
-
-<a id="sdk-type" />
 
 ### type
 

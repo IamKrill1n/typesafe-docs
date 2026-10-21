@@ -8,8 +8,6 @@ Log methods accepting a message and structured values; compatible with `console`
 
 ## Methods
 
-<a id="sdk-debug" />
-
 ### debug()
 
 ```ts theme={null}
@@ -31,8 +29,6 @@ debug(message, ...args): void;
 `void`
 
 ***
-
-<a id="sdk-error" />
 
 ### error()
 
@@ -56,8 +52,6 @@ error(message, ...args): void;
 
 ***
 
-<a id="sdk-info" />
-
 ### info()
 
 ```ts theme={null}
@@ -79,8 +73,6 @@ info(message, ...args): void;
 `void`
 
 ***
-
-<a id="sdk-warn" />
 
 ### warn()
 

@@ -94,48 +94,46 @@ Jev is not trained on customer requests or responses. See [Legal](/legal) for th
 
 `GET /v1/models` returns the names your account can send in the `model` field, each with a description and a release date. It currently lists the aliases. Versioned IDs such as `jev-1.14.0` are accepted by the `model` field whether or not they appear in the list.
 
-<CodeGroup>
-  ```bash cURL theme={null}
-  curl https://api.typesafe.ai/v1/models \
-    -H "Authorization: Bearer $TYPESAFE_API_KEY"
-  ```
+```bash cURL theme={null}
+curl https://api.typesafe.ai/v1/models \
+  -H "Authorization: Bearer $TYPESAFE_API_KEY"
+```
 
-  ```python Python theme={null}
-  from typesafe_sdk import TypeSafeClient
+```python Python theme={null}
+from typesafe_sdk import TypeSafeClient
 
-  with TypeSafeClient() as client:
-      for model in client.models.list().models:
-          print(model.name, model.release_date, model.description)
-  ```
+with TypeSafeClient() as client:
+    for model in client.models.list().models:
+        print(model.name, model.release_date, model.description)
+```
 
-  ```typescript JavaScript theme={null}
-  import { TypeSafeClient } from "@typesafe-ai/sdk";
+```typescript JavaScript theme={null}
+import { TypeSafeClient } from "@typesafe-ai/sdk";
 
-  const client = new TypeSafeClient();
-  const models = await client.models.list();
-  for (const model of models) {
-    console.log(model.name, model.release_date, model.description);
-  }
-  ```
-</CodeGroup>
+const client = new TypeSafeClient();
+const models = await client.models.list();
+for (const model of models) {
+  console.log(model.name, model.release_date, model.description);
+}
+```
 
-<ResponseField name="models" type="array" required>
-  One entry per model or alias.
+**models** `array` *required*
 
-  <Expandable title="properties">
-    <ResponseField name="name" type="string" required>
-      The model ID or alias, as accepted by the `model` field.
-    </ResponseField>
+One entry per model or alias.
 
-    <ResponseField name="description" type="string" required>
-      What the model is for.
-    </ResponseField>
+**properties**
 
-    <ResponseField name="release_date" type="string" required>
-      When the model or alias was released.
-    </ResponseField>
-  </Expandable>
-</ResponseField>
+**name** `string` *required*
+
+The model ID or alias, as accepted by the `model` field.
+
+**description** `string` *required*
+
+What the model is for.
+
+**release\_date** `string` *required*
+
+When the model or alias was released.
 
 See the [Python](/sdk/python/api/clients/sync#typesafe_sdk.Models.list) and [JavaScript](/sdk/javascript/api/interfaces/Models) SDK references for the full method signatures.
 

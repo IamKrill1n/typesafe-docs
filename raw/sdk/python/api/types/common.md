@@ -6,80 +6,51 @@
 
 > Common types for TypeSafe API SDK.
 
-export function SdkSignature({children}) {
-  async function copy(event) {
-    const button = event.currentTarget;
-    const code = button.parentElement.querySelector("pre code");
-    try {
-      await navigator.clipboard.writeText(code.textContent);
-      button.setAttribute("aria-label", "Signature copied");
-      button.dataset.copied = "true";
-    } catch {
-      button.setAttribute("aria-label", "Copy failed; select the signature to copy");
-    }
-    setTimeout(() => {
-      button.setAttribute("aria-label", "Copy signature");
-      delete button.dataset.copied;
-    }, 2000);
-  }
-  return <div className="sdk-signature not-prose">
-      <button type="button" className="sdk-signature-copy" aria-label="Copy signature" onClick={copy}>
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="8" y="8" width="12" height="12" rx="2" />
-          <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
-        </svg>
-      </button>
-      <pre tabIndex={0} aria-label="SDK signature"><code>{children}</code></pre>
-    </div>;
-}
-
-<a id="common-types" />
-
-<h2 id="typesafe_sdk.JSONValue">
-  typesafe\_sdk.JSONValue
-</h2>
+## typesafe\_sdk.JSONValue
 
 `module-attribute`
 
-<SdkSignature>
-  <span className="n">{"JSONValue"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType">{"TypeAliasType"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="s2">{"\"JSONValue\""}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="s2">{"\"str | int | float | bool | Sequence[JSONValue | None] | Mapping[str, JSONValue | None]\""}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`JSONValue = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
+&#x20;   "JSONValue",
+&#x20;   "str | int | float | bool | Sequence\[JSONValue | None] | Mapping\[str, JSONValue | None]",
+)`</pre>
 
 A JSON-like value. May be nested and contain `None`.
 
-<h2 id="typesafe_sdk.JSONContent">
-  typesafe\_sdk.JSONContent
-</h2>
+## typesafe\_sdk.JSONContent
 
 `module-attribute`
 
-<SdkSignature>
-  <span className="n">{"JSONContent"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType">{"TypeAliasType"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="s2">{"\"JSONContent\""}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="s2">{"\"str | Mapping[str, JSONValue | None] | Sequence[JSONValue | None]\""}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`JSONContent = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
+&#x20;   "JSONContent",
+&#x20;   "str | Mapping\[str, JSONValue | None] | Sequence\[JSONValue | None]",
+)`</pre>
 
 Either a plain string or a mapping/sequence of [`JSONValue`](/sdk/python/api/types/common#typesafe_sdk.JSONValue) entries.
 
-<h2 id="typesafe_sdk.ContentValue">
-  typesafe\_sdk.ContentValue
-</h2>
+## typesafe\_sdk.ContentValue
 
 `module-attribute`
 
-<SdkSignature>
-  <span className="n">{"ContentValue"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType">{"TypeAliasType"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="s2">{"\"ContentValue\""}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="s2">{"\"str | int | float | bool | Sequence[ContentValue | None] | Mapping[str, ContentValue | None] | Asset\""}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`ContentValue = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
+&#x20;   "ContentValue",
+&#x20;   "str | int | float | bool | Sequence\[ContentValue | None] | Mapping\[str, ContentValue | None] | Asset",
+)`</pre>
 
 A JSON-like value that may also hold [assets](/sdk/python/api/types/assets#typesafe_sdk.Asset). May be nested and contain `None`.
 
-<h2 id="typesafe_sdk.Content">
-  typesafe\_sdk.Content
-</h2>
+## typesafe\_sdk.Content
 
 `module-attribute`
 
-<SdkSignature>
-  <span className="n">{"Content"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="n"><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType">{"TypeAliasType"}</a></span><span className="p">{"("}</span>{"\n"}{"    "}<span className="s2">{"\"Content\""}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="s2">{"\"str | Mapping[str, ContentValue | None] | Sequence[ContentValue | None] | Asset\""}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`Content = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
+&#x20;   "Content",
+&#x20;   "str | Mapping\[str, ContentValue | None] | Sequence\[ContentValue | None] | Asset",
+)`</pre>
 
 Text, an [asset](/sdk/python/api/types/assets#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](/sdk/python/api/types/common#typesafe_sdk.ContentValue) entries.
 

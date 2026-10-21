@@ -10,32 +10,30 @@ The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe
 
 ## Installation
 
-<Tabs>
-  <Tab title="Claude Code">
-    Run these two commands in your terminal:
+**Claude Code**
 
-    ```bash theme={null}
-    claude plugin marketplace add typesafe-ai/skills
-    claude plugin install typesafe@typesafe-ai
-    ```
-  </Tab>
+Run these two commands in your terminal:
 
-  <Tab title="Other agents">
-    ```bash theme={null}
-    npx skills add typesafe-ai/skills --skill typesafe-ai
-    ```
+```bash theme={null} theme={null}
+claude plugin marketplace add typesafe-ai/skills
+claude plugin install typesafe@typesafe-ai
+```
 
-    Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
-  </Tab>
+**Other agents**
 
-  <Tab title="Copy to your agent">
-    Paste this prompt into your coding agent:
+```bash theme={null} theme={null}
+npx skills add typesafe-ai/skills --skill typesafe-ai
+```
 
-    ```text wrap theme={null}
-    Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
-    ```
-  </Tab>
-</Tabs>
+Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
+
+**Copy to your agent**
+
+Paste this prompt into your coding agent:
+
+```text wrap theme={null} theme={null}
+Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
+```
 
 Read [SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md) or fetch the [raw Markdown](https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md) directly. For manual installation, copy the entire [skills/typesafe-ai directory](https://github.com/typesafe-ai/skills/tree/main/skills/typesafe-ai), including its reference files, into your agent's skills directory.
 
@@ -76,7 +74,7 @@ Naming the skill in your prompt — "use the TypeSafe skill" — works in any ag
 
   ```text theme={null}
   Using the TypeSafe skill, analyze my code and see if there are any applicable
-  cookbooks (https://console.typesafe.ai/docs/cookbooks) that show how I could
+  cookbooks (https://docs.typesafe.ai/cookbooks) that show how I could
   refactor my code to be less fragile or complex.
   ```
 

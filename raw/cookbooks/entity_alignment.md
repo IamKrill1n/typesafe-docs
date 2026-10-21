@@ -337,7 +337,7 @@ curator queue      50  (11.1%)
 leave unlinked    360  (80.0%)
 ```
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=0a5cc0e7eb280ca54d6bd823fb5d2a43" alt="output" width="944" height="562" data-path="cookbooks/entity_alignment/entity_alignment.executed.1.png" />
+![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=0a5cc0e7eb280ca54d6bd823fb5d2a43)
 
 The two score values where `route()` changes its answer are the cut points. Most pairs
 settle: 360 score below the lower cut point and 40 above the upper one, leaving 50 for the
@@ -374,7 +374,7 @@ display(
 )
 ```
 
-<a href="https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiMigJYoCeA+gIakEkhL2JP6kCCcARgBsEAZwpgE+XnwQAnSUNIAaLiD4yEAd1nVOpAEIyxAcwkHNFJEfwBhCHAAO9JDpDLSwmgrwresilCdJfll8AHp8ACUEMHkEJRV6PgA3XRAAVgA6AGYABnwAUlIAXzcyVCo6Pk4WNg5vfUMwEyDBETEJKRDuIXwAWnwABTsEIxknehQJADJ8AHF6ITZ8AAkIe2F40jVNbVSDY1N1DQsrWwcnF1KPai8CHmC5brjXBOTUzNyC4qKXkHsZOz2FDCDDYbxEUgCCwAa1oHgmz2YpBo9kRKmEUAg6k2IAsHhkMCglAgSA29RAqw0+Eg+BQAAsJCgNBB8OQKtSRFBDECKCThPh1AIEfh6Pz-hAwITgQB+HFcqh+RjeADapDQDOoHIxhmktOZ1IoADNDbJyPhxZKicIMjj1QhNeJtRRdVABBBhAgBJrBQiYhapfz6RN8HB6JqsSGw-gkBAUPhdfSJMJ2BISQgCPR8El6IYnChlJnhKioBQFqywFReUhlBHM7VGXTg5iYAI-UKYKJBN6ECa5CgWQgqAyZDaXmqNVr5bq0yKkDFE-hk4hzQDLShRwBdErolO0evVZHUVGpGMtnF4lAEolVsl3EAAERZC6ZA-KlBEi5QwoXS4k0hC9ayiA27uLu2xaDILhIiAKJoqQp4COepKXlKN6pNw6i0gyeqvpQ778oaAJwFhSYpvGRzaEBIEgL+cKeGiLCwSeEBnmOuLIVexKkqkj4kThrJvhQH6OlODakcu-5yNcQhUT8yggPQ9gUAAarIogkuCSQAIy-B6QhEtEACyEqesIKogAAVggSS9FpGRaQATCAW5AA" target="_blank" rel="noreferrer" className="text-primary">Open this pair + questions in the TypeSafe playground →</a>
+[Open this pair + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiMigJYoCeA+gIakEkhL2JP6kCCcARgBsEAZwpgE+XnwQAnSUNIAaLiD4yEAd1nVOpAEIyxAcwkHNFJEfwBhCHAAO9JDpDLSwmgrwresilCdJfll8AHp8ACUEMHkEJRV6PgA3XRAAVgA6AGYABnwAUlIAXzcyVCo6Pk4WNg5vfUMwEyDBETEJKRDuIXwAWnwABTsEIxknehQJADJ8AHF6ITZ8AAkIe2F40jVNbVSDY1N1DQsrWwcnF1KPai8CHmC5brjXBOTUzNyC4qKXkHsZOz2FDCDDYbxEUgCCwAa1oHgmz2YpBo9kRKmEUAg6k2IAsHhkMCglAgSA29RAqw0+Eg+BQAAsJCgNBB8OQKtSRFBDECKCThPh1AIEfh6Pz-hAwITgQB+HFcqh+RjeADapDQDOoHIxhmktOZ1IoADNDbJyPhxZKicIMjj1QhNeJtRRdVABBBhAgBJrBQiYhapfz6RN8HB6JqsSGw-gkBAUPhdfSJMJ2BISQgCPR8El6IYnChlJnhKioBQFqywFReUhlBHM7VGXTg5iYAI-UKYKJBN6ECa5CgWQgqAyZDaXmqNVr5bq0yKkDFE-hk4hzQDLShRwBdErolO0evVZHUVGpGMtnF4lAEolVsl3EAAERZC6ZA-KlBEi5QwoXS4k0hC9ayiA27uLu2xaDILhIiAKJoqQp4COepKXlKN6pNw6i0gyeqvpQ778oaAJwFhSYpvGRzaEBIEgL+cKeGiLCwSeEBnmOuLIVexKkqkj4kThrJvhQH6OlODakcu-5yNcQhUT8yggPQ9gUAAarIogkuCSQAIy-B6QhEtEACyEqesIKogAAVggSS9FpGRaQATCAW5AA)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

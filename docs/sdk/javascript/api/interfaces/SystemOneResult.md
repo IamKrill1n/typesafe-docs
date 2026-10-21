@@ -10,8 +10,6 @@ Answers keyed by question name, with model and usage metadata.
 
 ## Properties
 
-<a id="sdk-answers" />
-
 ### answers
 
 ```ts
@@ -22,8 +20,6 @@ Answers with types inferred from the supplied questions.
 
 ***
 
-<a id="sdk-model" />
-
 ### model
 
 ```ts
@@ -33,8 +29,6 @@ readonly model: string;
 The model used to answer the request.
 
 ***
-
-<a id="sdk-usage" />
 
 ### usage
 

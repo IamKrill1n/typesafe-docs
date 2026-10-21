@@ -8,7 +8,8 @@ Jev is TypeSafe's flagship model and the first System One model.
 
 Like an LLM, a System One model understands natural-language input. It returns typed decisions and probabilities rather than generated text.
 
-> **Note:**
+> [!NOTE]
+>
 > Jev currently accepts text input only. It evaluates strings, JSON objects, and arrays of text. Images, audio, and video are not supported (yet).
 
 ## How it differs from an LLM
@@ -27,7 +28,8 @@ These are illustrative configurations and values. The primitive pages describe t
 
 Read the [AI primer](../introduction/machine-learning-primer.md) to learn how System One models work and how they are trained.
 
-> **Note:**
+> [!NOTE]
+>
 > The System One name comes from the concept Daniel Kahneman popularized in his book *Thinking, Fast and Slow*. System 1 thinking is fast and intuitive. System 2 is slower and more deliberate. Here, the emphasis is on fast, focused judgments.
 
 ## Fast judgments inside a larger workflow

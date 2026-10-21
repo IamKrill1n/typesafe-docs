@@ -6,62 +6,23 @@
 
 > Handle TypeSafe API errors, rate limits, connection failures, and timeouts.
 
-export function SdkSignature({children}) {
-  async function copy(event) {
-    const button = event.currentTarget;
-    const code = button.parentElement.querySelector("pre code");
-    try {
-      await navigator.clipboard.writeText(code.textContent);
-      button.setAttribute("aria-label", "Signature copied");
-      button.dataset.copied = "true";
-    } catch {
-      button.setAttribute("aria-label", "Copy failed; select the signature to copy");
-    }
-    setTimeout(() => {
-      button.setAttribute("aria-label", "Copy signature");
-      delete button.dataset.copied;
-    }, 2000);
-  }
-  return <div className="sdk-signature not-prose">
-      <button type="button" className="sdk-signature-copy" aria-label="Copy signature" onClick={copy}>
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="8" y="8" width="12" height="12" rx="2" />
-          <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
-        </svg>
-      </button>
-      <pre tabIndex={0} aria-label="SDK signature"><code>{children}</code></pre>
-    </div>;
-}
+## Base exception
 
-<a id="exceptions" />
+## typesafe\_sdk.TypeSafeError
 
-<h2 id="base-exception">
-  Base exception
-</h2>
-
-<h2 id="typesafe_sdk.TypeSafeError">
-  typesafe\_sdk.TypeSafeError
-</h2>
-
-Bases: <code><a href="https://docs.python.org/3/builtins/exceptions.html#Exception">Exception</a></code>
+Bases: `Exception`
 
 Base exception for SDK failures.
 
-<h2 id="http-errors">
-  HTTP errors
-</h2>
+## HTTP errors
 
-<h2 id="typesafe_sdk.TypeSafeAPIError">
-  typesafe\_sdk.TypeSafeAPIError
-</h2>
+## typesafe\_sdk.TypeSafeAPIError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code>
+Bases: `TypeSafeError`
 
 An unsuccessful HTTP response with its body and request metadata.
 
-<h3 id="typesafe_sdk.TypeSafeAPIError.status">
-  status
-</h3>
+### status
 
 `instance-attribute`
 
@@ -71,9 +32,7 @@ status = status
 
 HTTP response status code.
 
-<h3 id="typesafe_sdk.TypeSafeAPIError.body">
-  body
-</h3>
+### body
 
 `instance-attribute`
 
@@ -83,9 +42,7 @@ body = body
 
 The server's JSON error body, plain response text, or `None` for an empty body.
 
-<h3 id="typesafe_sdk.TypeSafeAPIError.headers">
-  headers
-</h3>
+### headers
 
 `instance-attribute`
 
@@ -95,9 +52,7 @@ headers = headers
 
 HTTP response headers.
 
-<h3 id="typesafe_sdk.TypeSafeAPIError.endpoint">
-  endpoint
-</h3>
+### endpoint
 
 `instance-attribute`
 
@@ -107,97 +62,69 @@ endpoint = endpoint
 
 The request method and URL, without credentials, query parameters, or fragment, when available.
 
-<h3 id="typesafe_sdk.TypeSafeAPIError.request_id">
-  request\_id
-</h3>
+### request\_id
 
 `property`
 
-<SdkSignature>
-  <span className="n">
-    {"request_id"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`request\_id
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/stdtypes.html#str">
-      {"str"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-  <span className="o">
-    {"|"}
-  </span>
+  &#x20;
 
-  {" "}
+  |
 
-  <span className="kc">
-    {"None"}
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  None\`
+</pre>
 
 The `x-typesafe-request-id` response header, or `None` if absent.
 
-<h2 id="typesafe_sdk.TypeSafeBadRequestError">
-  typesafe\_sdk.TypeSafeBadRequestError
-</h2>
+## typesafe\_sdk.TypeSafeBadRequestError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 The request was invalid (400).
 
-<h2 id="typesafe_sdk.TypeSafeAuthenticationError">
-  typesafe\_sdk.TypeSafeAuthenticationError
-</h2>
+## typesafe\_sdk.TypeSafeAuthenticationError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 Authentication failed (401).
 
-<h2 id="typesafe_sdk.TypeSafePermissionDeniedError">
-  typesafe\_sdk.TypeSafePermissionDeniedError
-</h2>
+## typesafe\_sdk.TypeSafePermissionDeniedError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 Access was denied (403).
 
-<h2 id="typesafe_sdk.TypeSafeNotFoundError">
-  typesafe\_sdk.TypeSafeNotFoundError
-</h2>
+## typesafe\_sdk.TypeSafeNotFoundError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 The resource was not found (404).
 
-<h2 id="typesafe_sdk.TypeSafeUnprocessableEntityError">
-  typesafe\_sdk.TypeSafeUnprocessableEntityError
-</h2>
+## typesafe\_sdk.TypeSafeUnprocessableEntityError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 The request failed server validation (422).
 
-<h2 id="typesafe_sdk.TypeSafeRateLimitError">
-  typesafe\_sdk.TypeSafeRateLimitError
-</h2>
+## typesafe\_sdk.TypeSafeRateLimitError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 The rate limit was exceeded (429).
 
-<h3 id="typesafe_sdk.TypeSafeRateLimitError.retry_after_ms">
-  retry\_after\_ms
-</h3>
+### retry\_after\_ms
 
 `instance-attribute`
 
@@ -207,37 +134,27 @@ retry_after_ms = parse_retry_after(headers)
 
 The server's requested wait in milliseconds, or `None` if unavailable.
 
-<h2 id="typesafe_sdk.TypeSafeInternalServerError">
-  typesafe\_sdk.TypeSafeInternalServerError
-</h2>
+## typesafe\_sdk.TypeSafeInternalServerError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 The server failed to process the request (5xx).
 
-<h2 id="connection-errors">
-  Connection errors
-</h2>
+## Connection errors
 
-<h2 id="typesafe_sdk.TypeSafeAPIConnectionError">
-  typesafe\_sdk.TypeSafeAPIConnectionError
-</h2>
+## typesafe\_sdk.TypeSafeAPIConnectionError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code>, <code><a href="https://docs.python.org/3/builtins/exceptions.html#ConnectionError">ConnectionError</a></code>
+Bases: `TypeSafeError`, `ConnectionError`
 
 A request failed without an HTTP response.
 
-<h2 id="typesafe_sdk.TypeSafeAPITimeoutError">
-  typesafe\_sdk.TypeSafeAPITimeoutError
-</h2>
+## typesafe\_sdk.TypeSafeAPITimeoutError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIConnectionError">TypeSafeAPIConnectionError</a></code>, <code><a href="https://docs.python.org/3/builtins/exceptions.html#TimeoutError">TimeoutError</a></code>
+Bases: `TypeSafeAPIConnectionError`, `TimeoutError`
 
 A request exceeded its configured timeout.
 
-<h3 id="typesafe_sdk.TypeSafeAPITimeoutError.timeout">
-  timeout
-</h3>
+### timeout
 
 `instance-attribute`
 
@@ -247,21 +164,15 @@ timeout = timeout
 
 The timeout setting used for the request, in seconds or as an `httpx2.Timeout`.
 
-<h2 id="response-validation">
-  Response validation
-</h2>
+## Response validation
 
-<h2 id="typesafe_sdk.TypeSafeAPIResponseValidationError">
-  typesafe\_sdk.TypeSafeAPIResponseValidationError
-</h2>
+## typesafe\_sdk.TypeSafeAPIResponseValidationError
 
-Bases: <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code>
+Bases: `TypeSafeAPIError`
 
 A successful HTTP response whose body was missing or structurally invalid required data.
 
-<h3 id="typesafe_sdk.TypeSafeAPIResponseValidationError.field_path">
-  field\_path
-</h3>
+### field\_path
 
 `instance-attribute`
 
@@ -271,9 +182,7 @@ field_path = field_path
 
 Dotted path to the offending field, such as `answers.tone.confidence`.
 
-<h3 id="typesafe_sdk.TypeSafeAPIResponseValidationError.args">
-  args
-</h3>
+### args
 
 `instance-attribute`
 

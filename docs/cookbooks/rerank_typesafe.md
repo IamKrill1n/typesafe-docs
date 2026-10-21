@@ -40,15 +40,9 @@ performance with a two-step approach:
    run on the whole pile.
 2. Apply a more accurate step to that short list, to find the exact right answer.
 
-<img
-  src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/two-step-search-intro-diagram.svg?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=796d5d4efd82f8396f380f2e1e14a9de"
-  alt="Animated diagram: a pile of documents narrows to a fast search shortlist, then re-ranking
+![Animated diagram: a pile of documents narrows to a fast search shortlist, then re-ranking
 reorders that shortlist so the correct answer rises to the
-top"
-  width="1560"
-  height="560"
-  data-path="cookbooks/rerank_typesafe/two-step-search-intro-diagram.svg"
-/>
+top](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/two-step-search-intro-diagram.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=796d5d4efd82f8396f380f2e1e14a9de)
 
 This cookbook tests that setup on a dataset of court opinions, in
 [A re-ranking example](#a-re-ranking-example) below.
@@ -72,15 +66,9 @@ Instead of comparing the query against the whole corpus at once, it compares the
 against each candidate on the shortlist individually, and sorts the shortlist by that
 score.
 
-<img
-  src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank-diagram.png?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=f302253df43240e6ad7ea788cf3ba02e"
-  alt="Diagram: a ranked shortlist on the left, an arrow labeled &#x22;re-rank,&#x22; and the re-ordered
+![Diagram: a ranked shortlist on the left, an arrow labeled "re-rank," and the re-ordered
 version on the right with the true answer moving from the middle to the
-top"
-  width="2400"
-  height="1186"
-  data-path="cookbooks/rerank_typesafe/rerank-diagram.png"
-/>
+top](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank-diagram.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=f302253df43240e6ad7ea788cf3ba02e)
 
 The score can come from a language model. Give it the query and one candidate together
 and ask how well the candidate answers the query. Re-ranking then finds the best match
@@ -356,7 +344,7 @@ bar_chart(
 )
 ```
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.1.png?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=db0d74ddf1659968b52bfda0cdf8b030" alt="output" width="940" height="462" data-path="cookbooks/rerank_typesafe/rerank_typesafe.executed.1.png" />
+![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=db0d74ddf1659968b52bfda0cdf8b030)
 
 ### Fast search is unlikely to rank the right passage first
 
@@ -514,7 +502,7 @@ print(
 1200 TypeSafe calls used 1,536,002 input and 25,200 output tokens, costing $0.0645.
 ```
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=46bea6ecf0dbb89f8df634eb6cda16b7" alt="output" width="957" height="524" data-path="cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png" />
+![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=46bea6ecf0dbb89f8df634eb6cda16b7)
 
 ### Re-ranking moves the right answer toward the top
 

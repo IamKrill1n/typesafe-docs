@@ -29,25 +29,7 @@ The POST request body to the [TypeSafe API](https://docs.typesafe.ai/api) has a 
 
 Below is a request where the state is a support ticket from an online shoe store and the question is which team should handle it:
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/choice)
-
-```js
-{
-state: 'My running shoes arrived in the wrong size. Can I swap them for a size 10?',
-selectedModels: ['jev-latest'],
-questions: {
-  department: {
-    type: 'choice',
-    instructions: 'Which team should handle this?',
-    criteria: {
-      returns: 'Exchanges, wrong or damaged items',
-      shipping: 'Delivery status, delays, lost packages',
-      billing: 'Charges, invoices, payment problems',
-    },
-  },
-},
-}
-```
+Try it in the Playground →
 
 You choose the question id, `department` in this case. The answer is returned under the same id. The model never sees the question id. The option names and their descriptions are both sent to the model, so write descriptions that separate the options from each other.
 
@@ -78,7 +60,8 @@ Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoi
 
 Use one of our [client SDKs](../sdk.md) or call the [HTTP API](https://docs.typesafe.ai/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](../agent-skill.md#installation) first so it knows the request and response shapes.
 
-> **Note:**
+> [!NOTE]
+>
 > `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](https://docs.typesafe.ai/api).
 
 ## Response structure
@@ -121,7 +104,8 @@ Ask every Choice question your code might need in a single request rather than o
 
 The same logic applies to the options inside a single Choice question. A Choice question accepts up to 255 options, and adding options costs a few tokens each, so give the model the full list of teams, categories, or products rather than a shortlist. Add an `other` or `none of the above` option when the list might not cover every input, so the model can say none of the others fit.
 
-> **Tip:**
+> [!TIP]
+>
 > A `none of the above` option may not work well in many use cases. As an alternative, ask a companion [Noul](./noul.md) question in the same request that checks whether anything fits at all, such as "Does `message` name any of `our_products`?" Your code then reads the Choice answer only when the Noul says yes.
 
 To classify documents through a deep hierarchy or large taxonomy, chain Choice questions level by level. The [Hierarchical Classification cookbook](../cookbooks/hierarchical_classification.md) shows how to run a beam search over Choice probabilities, keeping the best `K` candidate paths at each level instead of committing to a single greedy path.
@@ -132,66 +116,7 @@ The basic example above routes a ticket to a team. A bigger support system might
 
 The request below asks five Choice questions about a ticket that is more ambiguous than the first: it involves three teams and doesn't say what the customer wants.
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/choice)
-
-```js
-{
-state: 'Shoes arrived two weeks late and in the wrong size. Also I see two charges of $120 on my card. What are you going to do about this?',
-selectedModels: ['jev-latest'],
-questions: {
-  department: {
-    type: 'choice',
-    instructions: 'Which team should handle this?',
-    criteria: {
-      returns: 'Exchanges, wrong or damaged items',
-      shipping: 'Delivery status, delays, lost packages',
-      billing: 'Charges, invoices, payment problems',
-    },
-  },
-  return_reason: {
-    type: 'choice',
-    instructions: 'If the customer wants to return something, why?',
-    criteria: {
-      wrong_size: "The item doesn't fit",
-      wrong_item: 'A different product was delivered',
-      damaged: 'The item arrived broken or faulty',
-      changed_mind: 'The item is fine, the customer no longer wants it',
-      other: 'A return reason that fits none of the above',
-    },
-  },
-  shipping_issue: {
-    type: 'choice',
-    instructions: 'If this is a shipping problem, which kind is it?',
-    criteria: {
-      not_delivered: 'The package never arrived',
-      delayed: 'The package is late but still on its way',
-      wrong_address: 'The package went to the wrong place',
-      damaged_in_transit: 'The package arrived damaged',
-      other: 'A shipping problem that fits none of the above',
-    },
-  },
-  requested_resolution: {
-    type: 'choice',
-    instructions: 'What does the customer want to happen?',
-    criteria: {
-      exchange: 'Swap the item for a different one',
-      refund: 'Money back',
-      replacement: 'The same item sent again',
-      information: 'Just an answer, no action needed',
-    },
-  },
-  tone: {
-    type: 'choice',
-    instructions: "What is the customer's tone?",
-    criteria: {
-      calm: null,
-      frustrated: null,
-      angry: null,
-    },
-  },
-},
-}
-```
+Try it in the Playground →
 
 Two of these Choice questions are speculative: `return_reason` only matters if the `department` is `returns`, and `shipping_issue` only matters if it's `shipping`. The `tone` question uses `null` descriptions because the option names are clear on their own.
 
@@ -372,41 +297,7 @@ Start with a one-line description per option. When two options are similar and t
 
 The two answer options below, return_policy and return_status, are easy to confuse. A ticket about either one can mention returns and refunds, so each option says what it is not for.
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/choice)
-
-```js
-{
-state: 'I sent the shoes back a week ago. When do I get my money?',
-selectedModels: ['jev-latest'],
-questions: {
-  return_topic: {
-    type: 'choice',
-    instructions: {
-      question: 'Which returns topic is the customer asking about?',
-      focus: 'Classify the information the customer wants.',
-    },
-    criteria: {
-      return_policy: {
-        what: 'Whether and how an item can be returned',
-        not_for: 'Progress of a return already sent',
-        examples: [
-          "Can I return shoes I've worn once?",
-          'How long do I have to return an order?',
-        ],
-      },
-      return_status: {
-        what: 'Progress of a return already sent',
-        not_for: 'Whether and how an item can be returned',
-        examples: [
-          'Has my return arrived yet?',
-          'When will my refund be paid?',
-        ],
-      },
-    },
-  },
-},
-}
-```
+Try it in the Playground →
 
 The response is `return_status` at confidence 1.0:
 

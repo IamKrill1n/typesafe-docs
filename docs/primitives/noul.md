@@ -16,28 +16,7 @@ The POST request body to the [TypeSafe API](https://docs.typesafe.ai/api) has th
 
 Below is a request where the state is a support message and the two questions are whether the customer wants a person and whether they have contacted support before:
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/noul)
-
-```js
-{
-state: 'I have asked three times now. Can I please just talk to a real person?',
-selectedModels: ['jev-latest'],
-questions: {
-  is_human_escalation: {
-    type: 'noul',
-    instructions: 'Is the customer asking for a human agent?',
-  },
-  is_repeat_contact: {
-    type: 'noul',
-    instructions: 'Has the customer contacted support about this before?',
-    criteria: {
-      true: 'Mentions a prior attempt, ticket, or that they have asked before',
-      false: 'No sign of any previous contact',
-    },
-  },
-},
-}
-```
+Try it in the Playground →
 
 You choose the question ids, `is_human_escalation` and `is_repeat_contact` here. The ids are not sent to the model. Each answer is returned under the same id. The first question relies on `instructions` alone. The second adds `criteria` to say what counts as a yes and what counts as a no.
 
@@ -72,7 +51,8 @@ The `system_one` method and the `https://api.typesafe.ai/v1/systemone` endpoint 
 
 If you're using a coding agent, install the [TypeSafe agent skill](../agent-skill.md#installation) first so it knows the request and response shapes.
 
-> **Note:**
+> [!NOTE]
+>
 > `instructions` can be a string, an object, or an array. Start with a string. Use an object when the question needs data alongside it, such as a record to compare the state against, or when part of the question is built by your code. [Use structure in the questions](../concepts/how-to-build-with-system-one.md#use-structure-in-the-questions) explains when structure helps, and [the example below](#structured-instructions) shows it with questions built in code.
 
 ## Response structure
@@ -213,47 +193,7 @@ The thresholds live in your code. If reviewers see too many messages, narrow the
 
 Instructions can be an object instead of a string, with the question in one field and supplementary data in the others. [Use structure in the questions](../concepts/how-to-build-with-system-one.md#use-structure-in-the-questions) covers when that helps. Here it's used for a question built using code: a resume that has just arrived is compared against records in a candidate database that might be the same person. Each record goes into a `potential_duplicate` field as it is, the `question` is the same for every record, and all the records are checked in one request. The code-generated question keys contain each record's database ID:
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives/noul)
-
-```js
-{
-state: {
-  resume: {
-    name: 'John Smith',
-    location: 'Oakland, CA',
-    summary: 'Backend engineer with eight years of Python and Go experience.',
-    experience: [
-      { employer: 'Google', title: 'Senior Backend Engineer', years: '2021-2025' },
-      { employer: 'Microsoft', title: 'Software Engineer', years: '2017-2021' },
-    ],
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  same_as_record_18: {
-    type: 'noul',
-    instructions: {
-      potential_duplicate: { name: 'Jon Smith', location: 'Oakland, CA', last_employer: 'Google' },
-      question: 'Is the resume for the same person as `potential_duplicate`?',
-    },
-  },
-  same_as_record_42: {
-    type: 'noul',
-    instructions: {
-      potential_duplicate: { name: 'John Smith', location: 'Austin, TX', last_employer: 'Lone Star Freight' },
-      question: 'Is the resume for the same person as `potential_duplicate`?',
-    },
-  },
-  same_as_record_77: {
-    type: 'noul',
-    instructions: {
-      potential_duplicate: { name: 'John Smithers', location: 'Oakland, CA', last_employer: 'Bay Health Clinic' },
-      question: 'Is the resume for the same person as `potential_duplicate`?',
-    },
-  },
-},
-}
-```
+Try it in the Playground →
 
 The response:
 

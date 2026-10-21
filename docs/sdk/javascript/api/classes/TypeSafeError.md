@@ -14,8 +14,6 @@ Base class for SDK errors.
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts

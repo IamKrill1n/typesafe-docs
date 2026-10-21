@@ -33,62 +33,7 @@ flowchart LR
 
 ### Step 1: score each dimension independently
 
-> Interactive example: questions — [view it on docs.typesafe.ai](https://docs.typesafe.ai/patterns/composite-scoring)
-
-```js
-{
-questions: {
-  python_depth: {
-    type: 'score',
-    instructions:
-      'How much depth of python experience does this candidate have, based on the supplied resume?',
-    criteria: [
-      'No Python experience mentioned',
-      'Mentioned but no detail',
-      'Used in projects, some specifics',
-      'Primary language, multiple projects',
-      'Deep expertise: architecture, performance, libraries',
-    ],
-  },
-  team_leadership: {
-    type: 'score',
-    instructions:
-      'How much experience does this candidate have managing or leading engineering teams?',
-    criteria: [
-      'No management experience mentioned',
-      'Informal mentorship or tech lead role',
-      'Led a small team or project',
-      'Managed a team with direct reports',
-      'Managed multiple teams or an engineering org',
-    ],
-  },
-  system_design: {
-    type: 'score',
-    instructions:
-      'How much experience does this candidate have designing large-scale or distributed systems?',
-    criteria: [
-      'No architecture work mentioned',
-      'Contributed to design discussions',
-      'Designed components of a larger system',
-      'Owned architecture of a significant system',
-      'Designed systems at scale across multiple domains',
-    ],
-  },
-  generalist: {
-    type: 'score',
-    instructions:
-      'How much evidence is there that this candidate picks up unfamiliar tools, roles, or domains outside their core specialty?',
-    criteria: [
-      'Only one domain or role mentioned',
-      'Some variety but within a narrow field',
-      'Worked across a few different areas or tech stacks',
-      'Regularly moved between domains, wore many hats',
-      'Track record of ramping up in unfamiliar areas and delivering',
-    ],
-  },
-},
-}
-```
+Try it in the Playground →
 
 ### Step 2: combine with weights
 

@@ -14,8 +14,6 @@ A question that assigns a score using an ordered rubric.
 
 ## Properties
 
-<a id="sdk-criteria" />
-
 ### criteria
 
 ```ts theme={null}
@@ -26,8 +24,6 @@ Descriptions of the available outcomes.
 
 ***
 
-<a id="sdk-instructions" />
-
 ### instructions?
 
 ```ts theme={null}
@@ -37,8 +33,6 @@ optional instructions?: EntryType;
 The question as text, a JSON object, or an array; optional or `null`.
 
 ***
-
-<a id="sdk-type" />
 
 ### type
 

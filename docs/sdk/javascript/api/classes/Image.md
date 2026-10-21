@@ -4,8 +4,6 @@ A PNG or JPEG image asset, created by `image` or `Image.fromBase64`.
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts
@@ -28,8 +26,6 @@ new Image(data): Image;
 
 ## Properties
 
-<a id="sdk-data" />
-
 ### data
 
 ```ts
@@ -40,8 +36,6 @@ The image file bytes, or a `Blob` read when the request is sent.
 
 ***
 
-<a id="sdk-type" />
-
 ### type
 
 ```ts
@@ -49,8 +43,6 @@ readonly type: "image" = "image";
 ```
 
 ## Methods
-
-<a id="sdk-tojson" />
 
 ### toJSON()
 
@@ -66,8 +58,6 @@ The reference, written by `JSON.stringify` wherever the image appears in a reque
 
 ***
 
-<a id="sdk-tostring" />
-
 ### toString()
 
 ```ts
@@ -81,8 +71,6 @@ The unique reference this image is sent under, for referencing it inside text.
 `string`
 
 ***
-
-<a id="sdk-frombase64" />
 
 ### fromBase64()
 

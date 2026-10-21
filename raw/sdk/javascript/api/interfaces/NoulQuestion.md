@@ -8,8 +8,6 @@ A yes/no question with optional descriptions for either outcome.
 
 ## Properties
 
-<a id="sdk-criteria" />
-
 ### criteria?
 
 ```ts theme={null}
@@ -56,8 +54,6 @@ Description of the yes outcome.
 
 ***
 
-<a id="sdk-instructions" />
-
 ### instructions?
 
 ```ts theme={null}
@@ -67,8 +63,6 @@ optional instructions?: EntryType;
 The question as text, a JSON object, or an array; optional when `criteria` describes an outcome.
 
 ***
-
-<a id="sdk-type" />
 
 ### type
 

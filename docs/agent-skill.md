@@ -6,7 +6,7 @@ The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe
 
 ## Installation
 
-#### Claude Code
+**Claude Code**
 
 Run these two commands in your terminal:
 
@@ -15,7 +15,7 @@ claude plugin marketplace add typesafe-ai/skills
 claude plugin install typesafe@typesafe-ai
 ```
 
-#### Other agents
+**Other agents**
 
 ```bash
 npx skills add typesafe-ai/skills --skill typesafe-ai
@@ -23,7 +23,7 @@ npx skills add typesafe-ai/skills --skill typesafe-ai
 
 Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
 
-#### Copy to your agent
+**Copy to your agent**
 
 Paste this prompt into your coding agent:
 
@@ -70,7 +70,7 @@ Naming the skill in your prompt — "use the TypeSafe skill" — works in any ag
 
   ```text
   Using the TypeSafe skill, analyze my code and see if there are any applicable
-  cookbooks (https://console.typesafe.ai/docs/cookbooks) that show how I could
+  cookbooks (https://docs.typesafe.ai/cookbooks) that show how I could
   refactor my code to be less fragile or complex.
   ```
 

@@ -4,7 +4,8 @@
 
 System One is TypeSafe's model for building AI-powered software, not agents. It does not generate code or choose its own next action. It provides AI primitives that embed into software, so code remains in control while the model handles common-sense judgments over unstructured data.
 
-> **Info:**
+> [!NOTE]
+>
 > **Summary:** build a normal software workflow and insert System One only where AI is needed.
 >
 > * Keep control flow, deterministic rules, and side effects in code.
@@ -17,405 +18,104 @@ System One is TypeSafe's model for building AI-powered software, not agents. It 
 
 TypeSafe is designed for building **AI-powered software**, where code owns the workflow and AI handles narrow, structured decisions.
 
-#### Traditional software
+**Traditional software**
 
 Traditional code is a complex decision tree made from simple software primitives. Because each primitive is reliable, developers can compose them into higher-level abstractions.
 
-#### LLM agents
+**LLM agents**
 
 An agent processes instructions and chooses its next step. This works well when a person is monitoring the process, but every loop introduces another opportunity to go off the rails.
 
-#### AI-powered software
+**AI-powered software**
 
 Code handles deterministic work and owns the control flow. The model appears only where the system needs programmable common sense or needs to interpret unstructured data. Each AI task is kept atomic and constrained.
 
-<img className="block dark:hidden" src="https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-light.webp?fit=max&auto=format&n=aFVnpmCIX68NpsV1&q=85&s=35c7622176190d1b1f19dc712f2fbf11" alt="Traditional software, agents, and AI-powered software shown as three different system architectures." width="2048" height="1117" data-path="images/how-to-build-with-typesafe/software-architectures-light.webp" />
-
-<img className="hidden dark:block" src="https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-dark.webp?fit=max&auto=format&n=aFVnpmCIX68NpsV1&q=85&s=8e6c2c73bdd4c9b541c4f9294bd829b5" alt="Traditional software, agents, and AI-powered software shown as three different system architectures." width="2048" height="1117" data-path="images/how-to-build-with-typesafe/software-architectures-dark.webp" />
+![Traditional software, agents, and AI-powered software shown as three different system architectures.](https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-light.webp?fit=max\&auto=format\&n=aFVnpmCIX68NpsV1\&q=85\&s=35c7622176190d1b1f19dc712f2fbf11)
 
 ## What makes System One composable
 
-- **Structured** —
-  System One is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
+> **Structured**
+>
+> System One is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
 
-- **Parallel** —
-  Questions are evaluated independently and in parallel. One primitive's result does not become hidden context that changes another primitive's result.
+> **Parallel**
+>
+> Questions are evaluated independently and in parallel. One primitive's result does not become hidden context that changes another primitive's result.
 
-- **Comparable** —
-  Outputs are sortable and can drive smart `if` statements, thresholds, and comparisons.
+> **Comparable**
+>
+> Outputs are sortable and can drive smart `if` statements, thresholds, and comparisons.
 
-- **Fast** —
-  Most queries complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
+> **Fast**
+>
+> Most queries complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
 
-- **Calibrated confidence** —
-  [RLCD](../introduction/machine-learning-primer.md) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
+> **Calibrated confidence**
+>
+> [RLCD](../introduction/machine-learning-primer.md) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
 
-- **Self-consistent** —
-  System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](../cookbooks/consistency_noul_cookbook.md).
+> **Self-consistent**
+>
+> System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](../cookbooks/consistency_noul_cookbook.md).
 
 Because every output is constrained to the supplied options, the model returns a full probability distribution over those options rather than inventing a value outside the schema. TypeSafe's target is a greater than 100× intelligence-to-speed-and-cost ratio; the underlying bet is that cheaper intelligence will create much more demand.
 
 ## Design a System One workflow
 
-#### Step 1: Use code when you can
+### 1. Use code when you can
 
 Keep deterministic work in code. It is reliable and cheap. Avoid agent `while` loops when a software workflow can express the same behavior.
 
-#### Example: keep deterministic rules in code
-
-```python
-days_overdue = (today - invoice.due_date).days
-
-if days_overdue > 30:
-route_to_collections(invoice)
-```
+> **Example: keep deterministic rules in code**
+>
+> ```python
+> days_overdue = (today - invoice.due_date).days
+>
+> if days_overdue > 30:
+>     route_to_collections(invoice)
+> ```
 
 Browse the [System One patterns](../patterns.md) for bounded ways to compose model decisions with code.
 
-#### Step 2: Decompose the input state
+### 2. Decompose the input state
 
 Include only the context relevant to the current questions. This helps the model avoid distractions and context rot. Do not rely on knowledge stored in model weights when current information can come from your own knowledge base.
 
-#### Example: send only relevant context
+> **Example: send only relevant context**
+>
+> Try it in the Playground →
 
-> Interactive example: request — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
-
-```js
-{
-state: {
-  ticket_message: 'My flight was cancelled. Can I get a refund?',
-  refund_policy: 'Cancelled flights are eligible for a full refund.',
-},
-selectedModels: ['jev-latest'],
-questions: {
-  policy_supports_refund: {
-    type: 'noul',
-    instructions:
-      'Does the refund policy support the refund requested in the ticket?',
-  },
-},
-}
-```
-
-#### Step 3: Use structure in the input state
+### 3. Use structure in the input state
 
 Use nested JSON for the `state` and `questions` fields. Point questions at specific values when that removes ambiguity, and include the backtick characters around each path inside the question.
 
-#### Example: reference a nested value
+> **Example: reference a nested value**
+>
+> Use a backticked dot-and-index path to point a question at a specific nested value, such as `support.tickets[0].message`.
+>
+> Try it in the Playground →
 
-Use a backticked dot-and-index path to point a question at a specific nested value, such as `support.tickets[0].message`.
-
-> Interactive example: request — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
-
-```js
-{
-state: {
-  support: {
-    tickets: [
-      { message: 'I was charged twice for order A-104.' },
-      { message: 'How do I reset my password?' },
-    ],
-  },
-  commerce: {
-    orders: [
-      {
-        id: 'A-104',
-        charges: [
-          { amount_usd: 49, status: 'captured' },
-          { amount_usd: 49, status: 'captured' },
-        ],
-      },
-    ],
-  },
-  account: {
-    security: {
-      password_reset:
-        'Email a reset link to the address on file.',
-    },
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  duplicate_charge: {
-    type: 'noul',
-    instructions:
-      'Do `support.tickets[0].message` and `commerce.orders[0].charges` indicate a duplicate charge?',
-  },
-  password_reset_supported: {
-    type: 'noul',
-    instructions:
-      'Can `account.security.password_reset` resolve the request in `support.tickets[1].message`?',
-  },
-},
-}
-```
-
-#### Step 4: Decompose the questions
+### 4. Decompose the questions
 
 Ask the most explicit, narrow, specific, atomic questions you can. Break down complex or ill-defined questions into separate questions that each evaluate one property.
 
-> **Info:**
+> [!NOTE]
+>
 > This is probably the most important concept in this guide. Broad questions hide several judgments behind one answer. Atomic questions expose those judgments so you can inspect, tune, and combine them in code.
 
-#### Example: decompose spam detection
+> **Example: decompose spam detection**
+>
+> Try it in the Playground →
+>
+> Try it in the Playground →
 
-> Interactive example: One broad question (bad) — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
+> **Example: verify a tool-call trace**
+>
+> Try it in the Playground →
+>
+> Try it in the Playground →
 
-```js
-{
-state: {
-  message: {
-    sender: {
-      display_name: 'Acme Payroll',
-      email: 'rewards@claim-bonus.example',
-    },
-    subject: 'Urgent: claim your employee bonus',
-    body:
-      'You have been selected for a $1,000 bonus. Confirm your payroll password today to receive it.',
-    links: [
-      {
-        text: 'Claim bonus',
-        url: 'http://claim-bonus.example/acme',
-      },
-    ],
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  is_spam: {
-    type: 'noul',
-    instructions: 'Is `message` spam?',
-  },
-},
-}
-```
-
-> Interactive example: Decomposed questions (good) — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
-
-```js
-{
-state: {
-  message: {
-    sender: {
-      display_name: 'Acme Payroll',
-      email: 'rewards@claim-bonus.example',
-    },
-    subject: 'Urgent: claim your employee bonus',
-    body:
-      'You have been selected for a $1,000 bonus. Confirm your payroll password today to receive it.',
-    links: [
-      {
-        text: 'Claim bonus',
-        url: 'http://claim-bonus.example/acme',
-      },
-    ],
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  requests_credentials: {
-    type: 'noul',
-    instructions:
-      'Does `message.body` ask the recipient to provide a password or other login credential?',
-  },
-  offers_unexpected_reward: {
-    type: 'noul',
-    instructions:
-      'Does `message.body` claim the recipient received an unexpected prize, payment, or reward?',
-  },
-  creates_time_pressure: {
-    type: 'noul',
-    instructions:
-      'Does `message.subject` or `message.body` pressure the recipient to act quickly?',
-  },
-  sender_identity_mismatch: {
-    type: 'noul',
-    instructions:
-      'Does the organization named in `message.sender.display_name` conflict with the domain in `message.sender.email`?',
-  },
-  link_domain_mismatch: {
-    type: 'noul',
-    instructions:
-      'Does the domain in `message.links[0].url` conflict with the organization named in `message.sender.display_name`?',
-  },
-  disguises_link_destination: {
-    type: 'noul',
-    instructions:
-      'Does `message.links[0].text` conceal or misrepresent the destination in `message.links[0].url`?',
-  },
-},
-}
-```
-
-#### Example: verify a tool-call trace
-
-> Interactive example: One broad question (bad) — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
-
-```js
-{
-state: {
-  request: {
-    text: "What's the weather in Seattle tomorrow in Fahrenheit?",
-    location: 'Seattle, WA',
-    date: '2026-09-03',
-    unit: 'fahrenheit',
-  },
-  available_tools: {
-    geocode_city: {
-      description: 'Resolve a city to latitude and longitude.',
-      parameters: { city: 'string' },
-    },
-    get_weather: {
-      description: 'Get the forecast for coordinates and a date.',
-      parameters: {
-        latitude: 'number',
-        longitude: 'number',
-        date: 'YYYY-MM-DD',
-        unit: ['fahrenheit', 'celsius'],
-      },
-    },
-  },
-  trace: {
-    tool_calls: [
-      {
-        id: 'call_1',
-        name: 'geocode_city',
-        arguments: { city: 'Seattle, WA' },
-      },
-      {
-        id: 'call_2',
-        name: 'get_weather',
-        arguments: {
-          latitude: 47.6062,
-          longitude: -122.3321,
-          date: '2026-09-03',
-          unit: 'celsius',
-        },
-      },
-    ],
-    tool_results: [
-      {
-        tool_call_id: 'call_1',
-        output: { latitude: 47.6062, longitude: -122.3321 },
-      },
-    ],
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  tool_calls_are_correct: {
-    type: 'noul',
-    instructions:
-      'Is `trace.tool_calls` correct for `request` and `available_tools`?',
-  },
-},
-}
-```
-
-> Interactive example: Decomposed questions (good) — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
-
-```js
-{
-state: {
-  request: {
-    text: "What's the weather in Seattle tomorrow in Fahrenheit?",
-    location: 'Seattle, WA',
-    date: '2026-09-03',
-    unit: 'fahrenheit',
-  },
-  available_tools: {
-    geocode_city: {
-      description: 'Resolve a city to latitude and longitude.',
-      parameters: { city: 'string' },
-    },
-    get_weather: {
-      description: 'Get the forecast for coordinates and a date.',
-      parameters: {
-        latitude: 'number',
-        longitude: 'number',
-        date: 'YYYY-MM-DD',
-        unit: ['fahrenheit', 'celsius'],
-      },
-    },
-  },
-  trace: {
-    tool_calls: [
-      {
-        id: 'call_1',
-        name: 'geocode_city',
-        arguments: { city: 'Seattle, WA' },
-      },
-      {
-        id: 'call_2',
-        name: 'get_weather',
-        arguments: {
-          latitude: 47.6062,
-          longitude: -122.3321,
-          date: '2026-09-03',
-          unit: 'celsius',
-        },
-      },
-    ],
-    tool_results: [
-      {
-        tool_call_id: 'call_1',
-        output: { latitude: 47.6062, longitude: -122.3321 },
-      },
-    ],
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  geocode_tool_is_relevant: {
-    type: 'noul',
-    instructions:
-      'Is `trace.tool_calls[0].name` an appropriate tool for resolving `request.location`?',
-  },
-  geocode_location_matches: {
-    type: 'noul',
-    instructions:
-      'Does `trace.tool_calls[0].arguments.city` match `request.location`?',
-  },
-  geocode_arguments_match_schema: {
-    type: 'noul',
-    instructions:
-      'Does `trace.tool_calls[0].arguments` conform to `available_tools.geocode_city.parameters`?',
-  },
-  geocode_result_matches_call: {
-    type: 'noul',
-    instructions:
-      'Does `trace.tool_results[0].tool_call_id` match `trace.tool_calls[0].id`?',
-  },
-  weather_tool_is_relevant: {
-    type: 'noul',
-    instructions:
-      'Is `trace.tool_calls[1].name` an appropriate tool for answering `request.text`?',
-  },
-  weather_arguments_match_schema: {
-    type: 'noul',
-    instructions:
-      'Does `trace.tool_calls[1].arguments` conform to `available_tools.get_weather.parameters`?',
-  },
-  weather_uses_geocoded_coordinates: {
-    type: 'noul',
-    instructions:
-      'Do the coordinates in `trace.tool_calls[1].arguments` match those in `trace.tool_results[0].output`?',
-  },
-  weather_date_matches: {
-    type: 'noul',
-    instructions:
-      'Does `trace.tool_calls[1].arguments.date` match `request.date`?',
-  },
-  weather_unit_matches: {
-    type: 'noul',
-    instructions:
-      'Does `trace.tool_calls[1].arguments.unit` match `request.unit`?',
-  },
-},
-}
-```
-
-#### Step 5: Use structure in the questions
+### 5. Use structure in the questions
 
 Keep questions short. `instructions` and `criteria` are usually strings, and for a short, unambiguous question a string is all you need. They can also be objects or arrays. Put the question in one field and the data that guides the question in the others.
 
@@ -425,80 +125,19 @@ Structure helps in these situations:
 * Part of the question comes from your code. When a value comes from a database, put it in its own field instead of splicing it into a string template.
 * Several questions have similar instructions. A request takes one state and can include multiple questions. Adding supplementary data can help make questions distinct.
 
-#### Example: reference a record from your code
-
-This Noul compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
-
-> Interactive example: questions — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
-
-```js
-{
-state: {
-  resume: {
-    name: 'John Smith',
-    location: 'Oakland, CA',
-    summary: 'Backend engineer with eight years of Python and Go experience.',
-    experience: [
-      { employer: 'Google', title: 'Senior Backend Engineer', years: '2021-2025' },
-      { employer: 'Microsoft', title: 'Software Engineer', years: '2017-2021' },
-    ],
-  },
-},
-selectedModels: ['jev-latest'],
-questions: {
-  same_as_record_18: {
-    type: 'noul',
-    instructions: {
-      potential_duplicate: { name: 'John Smith', location: 'Oakland, California', last_employer: 'Google' },
-      question: 'Is the resume for the same person as `potential_duplicate`?',
-    },
-  },
-},
-}
-```
+> **Example: reference a record from your code**
+>
+> This Noul compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
+>
+> Try it in the Playground →
 
 The "potential_duplicate" data sourced from code can change over time. The "question" references it using backticks.
 
 The descriptions inside `criteria` can be objects too. For a Choice, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
 
-#### Example: define contrastive Choice criteria
-
-> Interactive example: questions — [view it on docs.typesafe.ai](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
-
-```js
-{
-state: 'How many disposable virtual cards can I make per day?',
-selectedModels: ['jev-latest'],
-questions: {
-  card_help_topic: {
-    type: 'choice',
-    instructions: {
-      question:
-        'Which disposable virtual card topic is the user asking about?',
-      focus: 'Classify the information the user wants.',
-    },
-    criteria: {
-      get_disposable_virtual_card: {
-        what: 'Purpose, eligibility, or setup',
-        not_for: 'Quantity, transaction, or merchant restrictions',
-        examples: [
-          'How can I get a disposable virtual card?',
-          'What are disposable cards for?',
-        ],
-      },
-      disposable_card_limits: {
-        what: 'Quantity, transaction, or merchant restrictions',
-        not_for: 'Purpose, eligibility, or setup',
-        examples: [
-          'How many disposable cards can I make per day?',
-          'Where can I use a disposable card?',
-        ],
-      },
-    },
-  },
-},
-}
-```
+> **Example: define contrastive Choice criteria**
+>
+> Try it in the Playground →
 
 Each question type's page has a worked example:
 
@@ -510,49 +149,50 @@ The [structured-data-extraction cascade cookbook](../cookbooks/sde_cascade.md) s
 
 A short, unambiguous question or criterion can remain a string. Add structure when it separates guidance that would otherwise blur together. For the full set of places structure is accepted, see [Advanced: structure](../primitives/advanced.md).
 
-#### Step 6: Ask a lot of questions
+### 6. Ask a lot of questions
 
 Ask many narrow, independent questions about the same state in one request. This is how you maximize effectiveness and intelligence per dollar with the API: questions run in parallel, and code can combine their signals without adding serial model round trips.
 
 See the [Speculative Fan-Out pattern](../patterns/fan-out.md) and [Parallel questions cookbook](../cookbooks/parallel_questions.md).
 
-#### Step 7: Combine question outputs in code (or feed into a classical ML model)
+### 7. Combine question outputs in code (or feed into a classical ML model)
 
 Combine independent answers with deterministic rules or weighted sums. For learned composition, use the probabilities as features in a downstream classical machine-learning model.
 
-#### Example: combine signals with a weighted score
-
-```python
-answers = response.answers
-
-# Combine independent signals into one application-specific score.
-quality = (
-0.4 * answers["answers_request"].noul
-+ 0.4 * answers["citations_are_supported"].noul
-+ 0.2 * (1 - answers["contradicts_context"].noul)
-)
-```
+> **Example: combine signals with a weighted score**
+>
+> ```python
+> answers = response.answers
+>
+> # Combine independent signals into one application-specific score.
+> quality = (
+>     0.4 * answers["answers_request"].noul
+>     + 0.4 * answers["citations_are_supported"].noul
+>     + 0.2 * (1 - answers["contradicts_context"].noul)
+> )
+> ```
 
 [Composite Scoring](../patterns/composite-scoring.md) shows how to preserve individual judgments while combining them. If you do not have labels for a downstream model, use an ensemble of expensive reasoning models to generate them; the [AutoResearch cookbook](../cookbooks/autoresearch_feature_discovery.md) shows how to train a classical model on System One outputs.
 
-#### Step 8: Route on uncertainty
+### 8. Route on uncertainty
 
 Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data.
 
-#### Example: route by confidence
-
-```python
-answer = response.answers["card_help_topic"]
-
-if answer.confidence < 0.8:
-route_to_human_review(ticket)
-else:
-route_to_handler(answer.choice, ticket)
-```
+> **Example: route by confidence**
+>
+> ```python
+> answer = response.answers["card_help_topic"]
+>
+> if answer.confidence < 0.8:
+>     route_to_human_review(ticket)
+> else:
+>     route_to_handler(answer.choice, ticket)
+> ```
 
 See [Confidence](../confidence.md) and [Confidence-Gated Routing](../patterns/confidence-routing.md) for choosing thresholds and matching them to the risk of each action.
 
-> **Tip:**
+> [!TIP]
+>
 > Decomposition does not require more round trips. Questions over the same state run in parallel.
 
 ## Putting it all together

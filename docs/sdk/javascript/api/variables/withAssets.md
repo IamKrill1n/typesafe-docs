@@ -29,8 +29,6 @@ untagged template literal. To write a list of assets with a separator, use
 
 [`TextWithAssets`](../interfaces/TextWithAssets.md)
 
-<a id="sdk-join" />
-
 ### join()
 
 ```ts

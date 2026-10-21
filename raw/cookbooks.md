@@ -67,9 +67,9 @@ Get more out of any question: repeat it, batch it, or turn its answers into feat
 | [Parallel questions](/cookbooks/parallel_questions) | Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers. | Beginner |
 | [Autoresearch feature discovery](/cookbooks/autoresearch_feature_discovery) | Runs an autoresearch loop that proposes TypeSafe questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor. | Advanced |
 
-<Tip>
-  We're always keen to learn how people are making use of our primitives. If you've built something worth a cookbook, drop us a note!
-</Tip>
+> [!TIP]
+>
+> We're always keen to learn how people are making use of our primitives. If you've built something worth a cookbook, drop us a note!
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

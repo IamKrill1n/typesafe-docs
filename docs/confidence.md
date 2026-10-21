@@ -10,7 +10,27 @@ The answer's `confidence` property collapses that shape into a single number fro
 
 `confidence` is a statistic computed from the probability distribution the answer already gives you. TypeSafe computes it for you and returns it on every Choice and Score answer, so the common case needs no extra work on your side.
 
-> Interactive confidence explorer — [view it on docs.typesafe.ai](https://docs.typesafe.ai/confidence)
+Choice question with three options
+
+See how probability distribution changes confidence
+
+Confidence
+
+<output />
+
+Probability
+
+Move a slider to change an option's probability. The other probabilities adjust to keep the total at 100%.
+
+Clear winner
+Spread out
+Even split
+
+<details>
+  <summary>How this demo calculates Confidence</summary>
+
+  TypeSafe computes confidence from how the probability is spread across the options. All of it on one option gives 1.0; the more evenly it spreads, the lower the confidence. With three options, the [Choice formula](#choice) is `(3 × largest probability − 1) / 2`, which is what this demo shows.
+</details>
 
 For a [Choice](./primitives/choice.md), the distribution is `probabilities` across your options. For a [Score](./primitives/score.md), it is the distribution across your levels. In both cases a flatter distribution means lower confidence: low confidence on a Choice often means none of the options are a clear winner over the others, and low confidence on a Score often means the levels are ambiguous, multi-dimensional, or the state doesn't contain enough to go on.
 
@@ -75,7 +95,8 @@ elif action.choice == "approve_transfer":
 
 The 0.5 confidence floor catches anything the model reports as genuinely uncertain. Above that, the threshold for acting without confirmation is higher for a destructive operation than for a read-only one. Your code encodes the risk tolerance.
 
-> **Note:**
+> [!NOTE]
+>
 > The correct threshold values depend on your domain and the performance of the model for your use case. Start with conservative thresholds, test with your own data, and adjust as you observe results.
 
 ## How confidence is calculated
@@ -135,7 +156,34 @@ The sum in the numerator is the probability-weighted average distance, in levels
 
 Probability on a neighboring level lowers confidence less than the same probability on a level further away. With three levels, $(0, 0.5, 0.5)$ has confidence 0.25, because the model is torn between two adjacent levels. $(0.5, 0, 0.5)$ has confidence 0, because it is torn between opposite ends. The Choice formula would give both distributions 0.25.
 
-<ScoreConfidenceExplorer />
+Score question with five levels
+
+See how distance between levels changes confidence
+
+Confidence
+
+<output />
+
+Probability
+
+Move a slider to change a level's probability. The other probabilities adjust to keep the total at 100%.
+
+Clear peak
+Split between neighbors
+Split between ends
+Even spread
+
+<dl aria-live="polite">
+  <dt>Score</dt><dd />
+
+  <dt>Choice formula on the same probabilities</dt><dd />
+</dl>
+
+<details>
+  <summary>How this demo calculates Confidence</summary>
+
+  This demo uses the [Score formula](#score). It takes the average distance, in levels, between the answer and the peak, weighted by probability. It divides that by 1.2, the same average for an even spread over five levels measured from the middle level, and subtracts the result from 1, stopping at 0. Probability on a level next to the peak lowers confidence less than probability far from it, which the Choice formula does not take into account.
+</details>
 
 ```python
 def score_confidence(probabilities: list[float]) -> float:

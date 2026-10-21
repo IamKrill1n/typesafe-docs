@@ -6,17 +6,11 @@
 
 > Default settings and environment variable names for the TypeSafe Python SDK.
 
-<a id="constants" />
-
-<h2 id="typesafe_sdk.constants">
-  typesafe\_sdk.constants
-</h2>
+## typesafe\_sdk.constants
 
 Public environment-variable names and client defaults.
 
-<h3 id="typesafe_sdk.constants.API_KEY_ENV">
-  API\_KEY\_ENV
-</h3>
+### API\_KEY\_ENV
 
 `module-attribute`
 
@@ -26,9 +20,7 @@ API_KEY_ENV = 'TYPESAFE_API_KEY'
 
 Environment variable for the API key.
 
-<h3 id="typesafe_sdk.constants.BASE_URL_ENV">
-  BASE\_URL\_ENV
-</h3>
+### BASE\_URL\_ENV
 
 `module-attribute`
 
@@ -38,9 +30,7 @@ BASE_URL_ENV = 'TYPESAFE_BASE_URL'
 
 Environment variable for the API base URL.
 
-<h3 id="typesafe_sdk.constants.DEFAULT_MODEL_ENV">
-  DEFAULT\_MODEL\_ENV
-</h3>
+### DEFAULT\_MODEL\_ENV
 
 `module-attribute`
 
@@ -50,9 +40,7 @@ DEFAULT_MODEL_ENV = 'TYPESAFE_DEFAULT_MODEL'
 
 Environment variable for the default model.
 
-<h3 id="typesafe_sdk.constants.LOG_LEVEL_ENV">
-  LOG\_LEVEL\_ENV
-</h3>
+### LOG\_LEVEL\_ENV
 
 `module-attribute`
 
@@ -62,9 +50,7 @@ LOG_LEVEL_ENV = 'TYPESAFE_LOG_LEVEL'
 
 Environment variable for the logging level.
 
-<h3 id="typesafe_sdk.constants.DEFAULT_BASE_URL">
-  DEFAULT\_BASE\_URL
-</h3>
+### DEFAULT\_BASE\_URL
 
 `module-attribute`
 
@@ -74,9 +60,7 @@ DEFAULT_BASE_URL = 'https://api.typesafe.ai'
 
 Default API base URL.
 
-<h3 id="typesafe_sdk.constants.DEFAULT_MODEL">
-  DEFAULT\_MODEL
-</h3>
+### DEFAULT\_MODEL
 
 `module-attribute`
 
@@ -86,9 +70,7 @@ DEFAULT_MODEL = 'jev-latest'
 
 Default model name.
 
-<h3 id="typesafe_sdk.constants.DEFAULT_TIMEOUT">
-  DEFAULT\_TIMEOUT
-</h3>
+### DEFAULT\_TIMEOUT
 
 `module-attribute`
 

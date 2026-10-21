@@ -6,235 +6,6 @@
 
 > The TypeSafe question types, the typed answers they return, how to choose between them, and how to ask several at once.
 
-export function TypesafeExample({example, display, title}) {
-  const keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
-  function compressToEncodedURIComponent(input) {
-    if (input == null) return "";
-    return _compress(input, 6, function (a) {
-      return keyStrUriSafe.charAt(a);
-    });
-  }
-  function _compress(uncompressed, bitsPerChar, getCharFromInt) {
-    if (uncompressed == null) return "";
-    var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
-    for (ii = 0; ii < uncompressed.length; ii += 1) {
-      context_c = uncompressed.charAt(ii);
-      if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-        context_dictionary[context_c] = context_dictSize++;
-        context_dictionaryToCreate[context_c] = true;
-      }
-      context_wc = context_w + context_c;
-      if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
-        context_w = context_wc;
-      } else {
-        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-          if (context_w.charCodeAt(0) < 256) {
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 8; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          } else {
-            value = 1;
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1 | value;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = 0;
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 16; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          }
-          context_enlargeIn--;
-          if (context_enlargeIn == 0) {
-            context_enlargeIn = Math.pow(2, context_numBits);
-            context_numBits++;
-          }
-          delete context_dictionaryToCreate[context_w];
-        } else {
-          value = context_dictionary[context_w];
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        context_dictionary[context_wc] = context_dictSize++;
-        context_w = String(context_c);
-      }
-    }
-    if (context_w !== "") {
-      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-        if (context_w.charCodeAt(0) < 256) {
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 8; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        } else {
-          value = 1;
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = 0;
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 16; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        delete context_dictionaryToCreate[context_w];
-      } else {
-        value = context_dictionary[context_w];
-        for (i = 0; i < context_numBits; i++) {
-          context_data_val = context_data_val << 1 | value & 1;
-          if (context_data_position == bitsPerChar - 1) {
-            context_data_position = 0;
-            context_data.push(getCharFromInt(context_data_val));
-            context_data_val = 0;
-          } else {
-            context_data_position++;
-          }
-          value = value >> 1;
-        }
-      }
-      context_enlargeIn--;
-      if (context_enlargeIn == 0) {
-        context_enlargeIn = Math.pow(2, context_numBits);
-        context_numBits++;
-      }
-    }
-    value = 2;
-    for (i = 0; i < context_numBits; i++) {
-      context_data_val = context_data_val << 1 | value & 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data_position = 0;
-        context_data.push(getCharFromInt(context_data_val));
-        context_data_val = 0;
-      } else {
-        context_data_position++;
-      }
-      value = value >> 1;
-    }
-    while (true) {
-      context_data_val = context_data_val << 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data.push(getCharFromInt(context_data_val));
-        break;
-      } else context_data_position++;
-    }
-    return context_data.join("");
-  }
-  function buildHref(ex) {
-    const documentText = ex.state === undefined ? "" : typeof ex.state === "string" ? ex.state : JSON.stringify(ex.state, null, 2);
-    return "https://console.typesafe.ai/decode#share/" + compressToEncodedURIComponent(JSON.stringify({
-      apiVersion: "v1",
-      documentText,
-      promptsText: JSON.stringify(ex.questions, null, 2),
-      selectedModels: ex.selectedModels
-    }));
-  }
-  const displayedExample = display === "questions" ? example.questions : example.state === undefined ? {
-    questions: example.questions
-  } : {
-    state: example.state,
-    questions: example.questions
-  };
-  const code = JSON.stringify(displayedExample, null, 2);
-  const href = buildHref(example);
-  return <div style={{
-    margin: "1.25rem 0"
-  }}>
-      <CodeBlock language="json" filename={title ?? "request"}>
-        {code}
-      </CodeBlock>
-      <div className="pb-8">
-        <a href={href} target="_blank" rel="noreferrer" className="text-primary">
-          Try it in the Playground →
-        </a>
-      </div>
-    </div>;
-}
-
 TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](/concepts/system-one) to make about a [state](/concepts/state), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. Each question type returns a different shape of answer.
 
 | Type | What it answers | Returns |
@@ -272,9 +43,9 @@ questions = {
 }
 ```
 
-<Tip>
-  Question IDs are for your code. They are not sent to the model. Write the complete question in `instructions`, even when the ID seems self-explanatory.
-</Tip>
+> [!TIP]
+>
+> Question IDs are for your code. They are not sent to the model. Write the complete question in `instructions`, even when the ID seems self-explanatory.
 
 ## Choose a question type
 
@@ -286,11 +57,11 @@ Pick the type that matches the shape of the answer you need.
 
 * **Noul** fits a clean yes/no question where the probability itself is the useful signal: does this message contain personally identifiable information, is the customer requesting a refund, does the resume mention distributed systems.
 
-<Note>
-  Use Noul for a yes/no judgment and Score to measure a position on a spectrum. "Is this candidate strong in Python?" needs a clear definition of "strong". A Noul value of 0.5 means the model gives yes and no equal probability. It does not mean the candidate has a medium skill level. An unclear definition makes that probability hard to interpret.
-
-  If you want to measure skill level, use a Score with defined levels, such as no experience, some familiarity, daily use, and deep expertise. If you need a yes/no decision, define the condition clearly, such as "Does the resume state that the candidate has used Python at work?"
-</Note>
+> [!NOTE]
+>
+> Use Noul for a yes/no judgment and Score to measure a position on a spectrum. "Is this candidate strong in Python?" needs a clear definition of "strong". A Noul value of 0.5 means the model gives yes and no equal probability. It does not mean the candidate has a medium skill level. An unclear definition makes that probability hard to interpret.
+>
+> If you want to measure skill level, use a Score with defined levels, such as no experience, some familiarity, daily use, and deep expertise. If you need a yes/no decision, define the condition clearly, such as "Does the resume state that the candidate has used Python at work?"
 
 If two types both seem to fit, prefer the one whose answer your code can act on directly. A Choice between `refund`, `rebook`, and `information` maps straight onto three code paths. A Score of customer frustration maps onto a threshold. A Noul maps onto an `if`.
 
@@ -363,36 +134,7 @@ Send every question that uses the same state in one request. You can mix questio
 
 This request classifies a customer message, checks for urgency, and scores frustration all at once:
 
-<TypesafeExample
-  example={{
-state:
-  "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.",
-questions: {
-  department: {
-    type: 'choice',
-    instructions: 'Which team should handle this',
-    criteria: {
-      billing: 'Payment or subscription issues',
-      technical: 'Bugs or integration problems',
-      sales: 'Pricing or account questions',
-    },
-  },
-  is_urgent: {
-    type: 'noul',
-    instructions: 'The message conveys urgency or time-sensitivity',
-  },
-  frustration: {
-    type: 'score',
-    instructions: 'How frustrated the customer appears',
-    criteria: [
-      'Calm, just stating facts',
-      'Frustrated but civil',
-      'Very angry, strong language',
-    ],
-  },
-},
-}}
-/>
+Try it in the Playground →
 
 Our [client SDKs](/sdk) provide typed questions and answers. In Python, pass a `questions` dictionary of `Choice`, `Noul`, and `Score` objects to `client.system_one(...)`. This request sends a ticket and a refund policy once and gets a typed answer for each question:
 
@@ -441,9 +183,9 @@ See [client SDKs](/sdk) for installation and usage in your language.
 
 Ask every question your code might need, including ones whose answer only matters for some inputs, and let the code decide which answers to use. If a ticket turns out not to be a bug report, ignore the severity answer. We call this the [Speculative fan-out](/patterns/fan-out) pattern. The [Parallel questions cookbook](/cookbooks/parallel_questions) shows how batching 13 questions into one call is 11.5x cheaper and 9.6x faster than 13 separate calls, with no change in the answers.
 
-<Tip>
-  Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](/agent-skill#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
-</Tip>
+> [!TIP]
+>
+> Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](/agent-skill#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
 
 ### How many questions you can ask
 
@@ -467,19 +209,17 @@ See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) for gui
 
 ## Next steps
 
-<Columns cols={3}>
-  <Card title="Choice" href="/primitives/choice" icon="list">
-    Pick one option from a fixed list.
-  </Card>
+> **[Choice](/primitives/choice)**
+>
+> Pick one option from a fixed list.
 
-  <Card title="Score" href="/primitives/score" icon="gauge">
-    Rate the state along ordered levels.
-  </Card>
+> **[Score](/primitives/score)**
+>
+> Rate the state along ordered levels.
 
-  <Card title="Noul" href="/primitives/noul" icon="circle-check">
-    Get the probability that a statement is true.
-  </Card>
-</Columns>
+> **[Noul](/primitives/noul)**
+>
+> Get the probability that a statement is true.
 
 To see how these compose into system architectures, head to [Patterns](/patterns).
 

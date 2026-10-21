@@ -2,19 +2,15 @@
 
 > A Box is a System One question type for finding where something is in an image. The answer is the four edges of a box around it, as fractions of the image's width and height.
 
-<Callout icon="flask-conical" color="#E551BA">
-  **Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
+**Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
 
-  To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](../images.md#turning-on-images).
-</Callout>
+To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](../images.md#turning-on-images).
 
 Use a Box when you need to know where something is in an image: the mug on the counter, the signature on a scanned form, the person at the door. The answer is a bounding box, the smallest rectangle that contains the target, given as four edges. A Box question needs an image in the request; see [Images](../images.md) for how to send one. Box questions need Jev 1.14: send `jev-preview` or `jev-1.14.0` as the `model`.
 
 Each edge is a fraction of the image's size, measured from the top-left corner. `left` and `right` are fractions of the width, and `top` and `bottom` are fractions of the height, so the same answer works at any image size.
 
-<img className="block dark:hidden mx-auto" style={{ maxWidth: 560 }} src="https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/box-edges-light.webp?fit=max&auto=format&n=OmOS-OoUA_8VxwSR&q=85&s=30d1e2ea5b3abfe929b7a0b9dd8ce0d9" alt="A drawing of a coffee mug inside an image, with a pink box around the mug. The box's left edge is at 0.44 of the image's width and its right edge at 0.84. Its top is at 0.25 of the height and its bottom at 0.82. The image's top-left corner is (0, 0) and its bottom-right corner is (1, 1)." width="960" height="654" data-path="images/images/box-edges-light.webp" />
-
-<img className="hidden dark:block mx-auto" style={{ maxWidth: 560 }} src="https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/box-edges-dark.webp?fit=max&auto=format&n=OmOS-OoUA_8VxwSR&q=85&s=c37bca4d8e5d98c3994a1b286626b6fc" alt="A drawing of a coffee mug inside an image, with a pink box around the mug. The box's left edge is at 0.44 of the image's width and its right edge at 0.84. Its top is at 0.25 of the height and its bottom at 0.82. The image's top-left corner is (0, 0) and its bottom-right corner is (1, 1)." width="960" height="654" data-path="images/images/box-edges-dark.webp" />
+![A drawing of a coffee mug inside an image, with a pink box around the mug. The box's left edge is at 0.44 of the image's width and its right edge at 0.84. Its top is at 0.25 of the height and its bottom at 0.82. The image's top-left corner is (0, 0) and its bottom-right corner is (1, 1).](https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/box-edges-light.webp?fit=max\&auto=format\&n=OmOS-OoUA_8VxwSR\&q=85\&s=30d1e2ea5b3abfe929b7a0b9dd8ce0d9)
 
 ## Request structure
 

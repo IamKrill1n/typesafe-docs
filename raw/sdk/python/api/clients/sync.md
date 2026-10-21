@@ -6,89 +6,72 @@
 
 > Use TypeSafeClient to ask questions, list models, and configure synchronous TypeSafe API requests.
 
-export function SdkSignature({children}) {
-  async function copy(event) {
-    const button = event.currentTarget;
-    const code = button.parentElement.querySelector("pre code");
-    try {
-      await navigator.clipboard.writeText(code.textContent);
-      button.setAttribute("aria-label", "Signature copied");
-      button.dataset.copied = "true";
-    } catch {
-      button.setAttribute("aria-label", "Copy failed; select the signature to copy");
-    }
-    setTimeout(() => {
-      button.setAttribute("aria-label", "Copy signature");
-      delete button.dataset.copied;
-    }, 2000);
-  }
-  return <div className="sdk-signature not-prose">
-      <button type="button" className="sdk-signature-copy" aria-label="Copy signature" onClick={copy}>
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="8" y="8" width="12" height="12" rx="2" />
-          <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
-        </svg>
-      </button>
-      <pre tabIndex={0} aria-label="SDK signature"><code>{children}</code></pre>
-    </div>;
-}
+## typesafe\_sdk.TypeSafeClient
 
-<a id="synchronous-client" />
-
-<h2 id="typesafe_sdk.TypeSafeClient">
-  typesafe\_sdk.TypeSafeClient
-</h2>
-
-<SdkSignature>
-  <span className="nf">{"TypeSafeClient"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="o">{"*"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"api_key"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"model"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"retry"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">{"RetryPolicy"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"timeout"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n">{"httpx2"}</span><span className="o">{"."}</span><span className="n">{"Timeout"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"headers"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{"]"}</span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"transport"}</span><span className="p">{":"}</span>{" "}<span className="n">{"httpx2"}</span><span className="o">{"."}</span><span className="n">{"BaseTransport"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"http_client"}</span><span className="p">{":"}</span>{" "}<span className="n">{"httpx2"}</span><span className="o">{"."}</span><span className="n"><a href="https://pydantic.dev/docs/httpx2/api/api/#httpx2.Client">{"Client"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"base_url"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"compression"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/typing.html#typing.Literal">{"Literal"}</a></span><span className="p">{"["}</span><span className="s2">{"\"zstd\""}</span><span className="p">{","}</span>{" "}<span className="kc">{"False"}</span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`TypeSafeClient(
+&#x20;   \*,
+&#x20;   api\_key: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+&#x20;   | httpx2.Timeout
+&#x20;   | None = None,
+&#x20;   headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)] | None = None,
+&#x20;   transport: httpx2.BaseTransport
+&#x20;   | None = None,
+&#x20;   http\_client: httpx2.[Client](https://pydantic.dev/docs/httpx2/api/api/#httpx2.Client) | None = None,
+&#x20;   base\_url: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   compression: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["zstd", False]
+&#x20;   | None = None,
+)`</pre>
 
 Create an HTTP client for [TypeSafe AI API](https://typesafe.ai).
 
 Explicit options take precedence over environment variables; empty or whitespace-only environment values are ignored.
 
-<Tip>
-  **Logging setup**
-
-  The SDK logs to the `typesafe_sdk` logger; configure it through standard logging, or set `TYPESAFE_LOG_LEVEL` (`debug`, `info`, ...) for a quick default. Secret headers are redacted from log output; request and response bodies are not.
-</Tip>
+> [!TIP]
+>
+> **Logging setup**
+>
+> The SDK logs to the `typesafe_sdk` logger; configure it through standard logging, or set `TYPESAFE_LOG_LEVEL` (`debug`, `info`, ...) for a quick default. Secret headers are redacted from log output; request and response bodies are not.
 
 Parameters:
 
-* **`api_key`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
+* **`api_key`** (`str | None`, default: `None` ) –
 
   Required API key; may be set via the `TYPESAFE_API_KEY` environment variable. Leading and trailing whitespace is stripped. Empty keys, internal whitespace, control characters, and non-ASCII characters are rejected.
-* **`model`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
+* **`model`** (`str | None`, default: `None` ) –
 
   Model name; may be set via the `TYPESAFE_DEFAULT_MODEL` environment variable.
-* **`retry`** (<code><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">RetryPolicy</a> | None</code>, default: `None` ) –
+* **`retry`** (`RetryPolicy | None`, default: `None` ) –
 
   A `RetryPolicy` controlling retry behavior; see `RetryPolicy` for the available options and their defaults. Pass `RetryPolicy(max_retries=0)` to disable retries.
-* **`timeout`** (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a> | httpx2.Timeout | None</code>, default: `None` ) –
+* **`timeout`** (`float | httpx2.Timeout | None`, default: `None` ) –
 
   Timeout for HTTP operations. Inherits `http_client.timeout` when supplied, otherwise the SDK default.
-* **`headers`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | None</code>, default: `None` ) –
+* **`headers`** (`Mapping[str, str] | None`, default: `None` ) –
 
   Additional request headers to set.
 * **`transport`** (`httpx2.BaseTransport | None`, default: `None` ) –
 
   Optional custom HTTP transport, closed when this SDK client closes.
-* **`http_client`** (<code>httpx2.<a href="https://pydantic.dev/docs/httpx2/api/api/#httpx2.Client">Client</a> | None</code>, default: `None` ) –
+* **`http_client`** (`httpx2.Client | None`, default: `None` ) –
 
   Optional `httpx2.Client`; mutually exclusive with `transport`. Closed when this SDK client closes.
-* **`base_url`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
+* **`base_url`** (`str | None`, default: `None` ) –
 
   API root; may be set via the `TYPESAFE_BASE_URL` environment variable.
-* **`compression`** (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['zstd', False] | None</code>, default: `None` ) –
+* **`compression`** (`Literal['zstd', False] | None`, default: `None` ) –
 
   Request body compression: `"zstd"`, or `False` to send bodies uncompressed. Defaults to zstd [when available](/sdk/python/usage/advanced#ensure-zstd-is-available).
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+* `TypeSafeError` –
 
   The API key is missing or invalid, the timeout is invalid, or zstd compression is unavailable.
-* <code><a href="https://docs.python.org/3/builtins/exceptions.html#ValueError">ValueError</a></code> –
+* `ValueError` –
 
   Both `transport` and `http_client` are supplied.
 
@@ -112,31 +95,21 @@ with TypeSafeClient() as client:
     assert result.choices["tone"].choice in {"calm", "angry"}
 ```
 
-<h3 id="typesafe_sdk.TypeSafeClient.models">
-  models
-</h3>
+### models
 
 `cached` `property`
 
-<SdkSignature>
-  <span className="n">
-    {"models"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`models
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="/sdk/python/api/clients/sync#typesafe_sdk.Models">
-      {"Models"}
-    </a>
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  [Models](/sdk/python/api/clients/sync#typesafe_sdk.Models)\`
+</pre>
 
 An accessor for the Models API resource.
 
@@ -147,33 +120,32 @@ with TypeSafeClient() as client:
     models = client.models.list()
 ```
 
-<h3 id="typesafe_sdk.TypeSafeClient.attach_assets">
-  attach\_assets
-</h3>
+### attach\_assets
 
-<SdkSignature>
-  <span className="nf">{"attach_assets"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"assets"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">{"Asset"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">{"Sequence"}</a></span><span className="p">{"["}</span><span className="n"><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">{"Asset"}</a></span><span className="p">{"],"}</span>{"\n"}<span className="p">{")"}</span>{" "}<span className="o">{"->"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager">{"AbstractContextManager"}</a></span><span className="p">{"["}</span><span className="kc">{"None"}</span><span className="p">{"]"}</span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`attach\_assets(
+&#x20;   assets: [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset) | [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)\[[Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)],
+) -> [AbstractContextManager](https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager)\[None]`</pre>
 
 Attach assets to calls made within a `with` block, for referencing them inside strings.
 
 Until the block exits, calls on this client send each attached asset whose reference, `str(asset)`, appears in the request.
 
-<Warning>
-  **Warning**
-
-  The SDK only recognizes references to assets that are attached, passed in `assets`, or placed directly in the content. A reference to any other asset is sent as plain text, without the asset.
-</Warning>
+> [!WARNING]
+>
+> **Warning**
+>
+> The SDK only recognizes references to assets that are attached, passed in `assets`, or placed directly in the content. A reference to any other asset is sent as plain text, without the asset.
 
 Parameters:
 
-* **`assets`** (<code><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a> | <a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>\[<a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>]</code>) –
+* **`assets`** (`Asset | Sequence[Asset]`) –
 
   An asset, or a sequence of them.
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+* `TypeSafeError` –
 
   An attached value is not an asset.
 
@@ -194,29 +166,68 @@ def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
         )
 ```
 
-<h3 id="typesafe_sdk.TypeSafeClient.system_one">
-  system\_one
-</h3>
+### system\_one
 
-<Tabs>
-  <Tab title="Implementation">
-    <SdkSignature>
-      <span className="nf">{"system_one"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"state"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/common#typesafe_sdk.Content">{"Content"}</a></span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"questions"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/questions#typesafe_sdk.Question">{"Question"}</a></span><span className="p">{"],"}</span>{"\n"}{"    "}<span className="o">{"*"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"model"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"assets"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">{"Asset"}</a></span><span className="p">{"]"}</span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"retry"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">{"RetryPolicy"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"timeout"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n">{"httpx2"}</span><span className="o">{"."}</span><span className="n">{"Timeout"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"extra_headers"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"extra_body"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/common#typesafe_sdk.JSONValue">{"JSONValue"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"response_model"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#type">{"type"}</a></span><span className="p">{"["}</span><span className="n">{"ResponseT"}</span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{" "}<span className="o">{"->"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse">{"SystemOneResponse"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="n">{"ResponseT"}</span>{"\n"}
-    </SdkSignature>
-  </Tab>
+**Implementation**
 
-  <Tab title="Overload 1">
-    <SdkSignature>
-      <span className="nf">{"system_one"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"state"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/common#typesafe_sdk.Content">{"Content"}</a></span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"questions"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/questions#typesafe_sdk.Question">{"Question"}</a></span><span className="p">{"],"}</span>{"\n"}{"    "}<span className="o">{"*"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"model"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"assets"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">{"Asset"}</a></span><span className="p">{"]"}</span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"retry"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">{"RetryPolicy"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"timeout"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n">{"httpx2"}</span><span className="o">{"."}</span><span className="n">{"Timeout"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"extra_headers"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"extra_body"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/common#typesafe_sdk.JSONValue">{"JSONValue"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"response_model"}</span><span className="p">{":"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{" "}<span className="o">{"->"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse">{"SystemOneResponse"}</a></span>{"\n"}
-    </SdkSignature>
-  </Tab>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`system\_one(
+&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+&#x20;   \*,
+&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+&#x20;   | httpx2.Timeout
+&#x20;   | None = None,
+&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+&#x20;   | None = None,
+&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+&#x20;   | None = None,
+&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
+&#x20;   | None = None,
+) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
 
-  <Tab title="Overload 2">
-    <SdkSignature>
-      <span className="nf">{"system_one"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"state"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/common#typesafe_sdk.Content">{"Content"}</a></span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"questions"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/questions#typesafe_sdk.Question">{"Question"}</a></span><span className="p">{"],"}</span>{"\n"}{"    "}<span className="o">{"*"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"model"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"assets"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">{"Asset"}</a></span><span className="p">{"]"}</span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"retry"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">{"RetryPolicy"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"timeout"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n">{"httpx2"}</span><span className="o">{"."}</span><span className="n">{"Timeout"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"extra_headers"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"extra_body"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="/sdk/python/api/types/common#typesafe_sdk.JSONValue">{"JSONValue"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"response_model"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#type">{"type"}</a></span><span className="p">{"["}</span><span className="n">{"ResponseT"}</span><span className="p">{"],"}</span>{"\n"}<span className="p">{")"}</span>{" "}<span className="o">{"->"}</span>{" "}<span className="n">{"ResponseT"}</span>{"\n"}
-    </SdkSignature>
-  </Tab>
-</Tabs>
+**Overload 1**
+
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`system\_one(
+&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+&#x20;   \*,
+&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+&#x20;   | httpx2.Timeout
+&#x20;   | None = None,
+&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+&#x20;   | None = None,
+&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+&#x20;   | None = None,
+&#x20;   response\_model: None = None,
+) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)`</pre>
+
+**Overload 2**
+
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`system\_one(
+&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+&#x20;   \*,
+&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+&#x20;   | httpx2.Timeout
+&#x20;   | None = None,
+&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+&#x20;   | None = None,
+&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+&#x20;   | None = None,
+&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
+) -> ResponseT`</pre>
 
 Answer named questions about text, structured state, or assets.
 
@@ -224,55 +235,55 @@ See [System One](https://docs.typesafe.ai/go/system-one) for details.
 
 Parameters:
 
-* **`state`** (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a></code>) –
+* **`state`** (`Content`) –
 
   Text, an asset, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/go/state) for details.
-* **`questions`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/questions#typesafe_sdk.Question">Question</a>]</code>) –
+* **`questions`** (`Mapping[str, Question]`) –
 
   Nonempty mapping of names to question objects or raw dictionaries.
-* **`model`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>, default: `None` ) –
+* **`model`** (`str | None`, default: `None` ) –
 
   Model override; `None` inherits the client default.
-* **`assets`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/assets#typesafe_sdk.Asset">Asset</a>] | None</code>, default: `None` ) –
+* **`assets`** (`Mapping[str, Asset] | None`, default: `None` ) –
 
   Assets keyed by the reference used for them in `state` or questions; see [Attaching media assets](/sdk/python/usage/basic#attaching-media-assets).
-* **`retry`** (<code><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">RetryPolicy</a> | None</code>, default: `None` ) –
+* **`retry`** (`RetryPolicy | None`, default: `None` ) –
 
   An optional retry policy to override the client-level value for this call only.
-* **`timeout`** (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a> | httpx2.Timeout | None</code>, default: `None` ) –
+* **`timeout`** (`float | httpx2.Timeout | None`, default: `None` ) –
 
   An optional timeout for http operations to override the client-level value for this call only, in seconds.
-* **`extra_headers`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | None</code>, default: `None` ) –
+* **`extra_headers`** (`Mapping[str, str] | None`, default: `None` ) –
 
   Additional request headers to set.
-* **`extra_body`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/common#typesafe_sdk.JSONValue">JSONValue</a> | None] | None</code>, default: `None` ) –
+* **`extra_body`** (`Mapping[str, JSONValue | None] | None`, default: `None` ) –
 
   Additional top-level request-body fields, shallow-merged over the body after `state`, `model`, `questions`, and `assets` are set. Merging is last-write-wins: a key that collides with those fields overrides it, and object values are replaced rather than deep-merged.
-* **`response_model`** (<code><a href="https://docs.python.org/3/builtins/functions.html#type">type</a>\[ResponseT] | None</code>, default: `None` ) –
+* **`response_model`** (`type[ResponseT] | None`, default: `None` ) –
 
   Optional Pydantic `BaseModel` type describing the JSON response body, including any nested answer models.
 
 Returns:
 
-* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse">SystemOneResponse</a> | ResponseT</code> –
+* `SystemOneResponse | ResponseT` –
 
   An instance of `response_model`, or `SystemOneResponse` with answers keyed by question
-* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse">SystemOneResponse</a> | ResponseT</code> –
+* `SystemOneResponse | ResponseT` –
 
   name and model and token usage details when no custom model is supplied.
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+* `TypeSafeError` –
 
   The request is invalid before it's sent, such as empty questions or an unreadable asset.
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code> –
+* `TypeSafeAPIError` –
 
   The server returns an unsuccessful HTTP response after any retries.
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIConnectionError">TypeSafeAPIConnectionError</a></code> –
+* `TypeSafeAPIConnectionError` –
 
   The request cannot connect or times out after any retries.
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIResponseValidationError">TypeSafeAPIResponseValidationError</a></code> –
+* `TypeSafeAPIResponseValidationError` –
 
   The response body does not match the response model.
 
@@ -315,9 +326,7 @@ with TypeSafeClient() as client:
     assert result.choices["tone"].choice in {"calm", "angry"}
 ```
 
-<h3 id="typesafe_sdk.TypeSafeClient.close">
-  close
-</h3>
+### close
 
 ```python theme={null}
 close() -> None
@@ -325,55 +334,56 @@ close() -> None
 
 Release network resources and close the underlying HTTP client, including a supplied one.
 
-<h2 id="models-resource">
-  Models resource
-</h2>
+## Models resource
 
 Reached through [`TypeSafeClient.models`](/sdk/python/api/clients/sync#typesafe_sdk.TypeSafeClient.models).
 
-<h3 id="typesafe_sdk.Models">
-  typesafe\_sdk.Models
-</h3>
+### typesafe\_sdk.Models
 
 Access to the models available to the account, reached through `TypeSafeClient.models`.
 
-<h4 id="typesafe_sdk.Models.list">
-  list
-</h4>
+#### list
 
-<SdkSignature>
-  <span className="nf">{"list"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="o">{"*"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"retry"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">{"RetryPolicy"}</a></span>{" "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"timeout"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/functions.html#float">{"float"}</a></span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="n">{"httpx2"}</span><span className="o">{"."}</span><span className="n">{"Timeout"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}{"    "}<span className="n">{"extra_headers"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">{"Mapping"}</a></span><span className="p">{"["}</span><span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{","}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span><span className="p">{"]"}</span>{"\n"}{"    "}<span className="o">{"|"}</span>{" "}<span className="kc">{"None"}</span>{" "}<span className="o">{"="}</span>{" "}<span className="kc">{"None"}</span><span className="p">{","}</span>{"\n"}<span className="p">{")"}</span>{" "}<span className="o">{"->"}</span>{" "}<span className="n"><a href="/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse">{"ListModelsResponse"}</a></span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`list(
+&#x20;   \*,
+&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+&#x20;   | httpx2.Timeout
+&#x20;   | None = None,
+&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+&#x20;   | None = None,
+) -> [ListModelsResponse](/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse)`</pre>
 
 List the models available to the account.
 
 Parameters:
 
-* **`retry`** (<code><a href="/sdk/python/api/retries#typesafe_sdk.RetryPolicy">RetryPolicy</a> | None</code>, default: `None` ) –
+* **`retry`** (`RetryPolicy | None`, default: `None` ) –
 
   An optional retry policy to override the client-level value for this call only.
-* **`timeout`** (<code><a href="https://docs.python.org/3/builtins/functions.html#float">float</a> | httpx2.Timeout | None</code>, default: `None` ) –
+* **`timeout`** (`float | httpx2.Timeout | None`, default: `None` ) –
 
   Per-operation timeout override; `None` inherits the client setting.
-* **`extra_headers`** (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | None</code>, default: `None` ) –
+* **`extra_headers`** (`Mapping[str, str] | None`, default: `None` ) –
 
   Overrides for additional request headers; authentication, SDK identification, and `Accept` remain protected.
 
 Returns:
 
-* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse">ListModelsResponse</a></code> –
+* `ListModelsResponse` –
 
   A `ListModelsResponse` whose `models` holds each model's name, description,
-* <code><a href="/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse">ListModelsResponse</a></code> –
+* `ListModelsResponse` –
 
   and release date.
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIError">TypeSafeAPIError</a></code> –
+* `TypeSafeAPIError` –
 
   The server returns an unsuccessful HTTP response after any retries.
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeAPIConnectionError">TypeSafeAPIConnectionError</a></code> –
+* `TypeSafeAPIConnectionError` –
 
   The request cannot connect or times out after any retries.
 

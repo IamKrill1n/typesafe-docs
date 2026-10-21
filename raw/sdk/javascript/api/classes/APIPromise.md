@@ -20,8 +20,6 @@ Non-2xx responses reject with an `APIError`, including through `asResponse()`.
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts theme={null}
@@ -50,8 +48,6 @@ Promise<T>.constructor
 
 ## Methods
 
-<a id="sdk-asresponse" />
-
 ### asResponse()
 
 ```ts theme={null}
@@ -67,8 +63,6 @@ The caller owns the body; don't also `await` the parsed result on the same promi
 `Promise`\<`Response`>
 
 ***
-
-<a id="sdk-catch" />
 
 ### catch()
 
@@ -106,8 +100,6 @@ Promise.catch
 
 ***
 
-<a id="sdk-finally" />
-
 ### finally()
 
 ```ts theme={null}
@@ -139,8 +131,6 @@ Promise.finally
 
 ***
 
-<a id="sdk-map" />
-
 ### map()
 
 ```ts theme={null}
@@ -166,8 +156,6 @@ Transform the parsed result, sharing the HTTP response and a single body parse.
 `APIPromise`\<`U`>
 
 ***
-
-<a id="sdk-then" />
 
 ### then()
 
@@ -214,8 +202,6 @@ Promise.then
 ```
 
 ***
-
-<a id="sdk-withresponse" />
 
 ### withResponse()
 

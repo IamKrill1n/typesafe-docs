@@ -348,7 +348,8 @@ contradiction test comes before the evidence test because a passage that denies 
 query's premise usually states something usable too; tested the other way round, it would
 land in the accepted block instead of the conflict one.
 
-> **Info:**
+> [!NOTE]
+>
 > We picked these four numbers for this corpus. Treat them as a starting point, not
 > defaults. Moving one is cheap: `THRESHOLDS` holds all four and `route()` reads only the
 > stored answers, so re-routing every passage costs no API calls.
@@ -689,7 +690,7 @@ display(fig)
 plt.close(fig)
 ```
 
-<img src="https://mintcdn.com/ts-docs/5iZnRWRIxyU5JBux/cookbooks/classifying_rag_passages/classifying_rag_passages.executed.1.png?fit=max&auto=format&n=5iZnRWRIxyU5JBux&q=85&s=9257008675e09b97950eaa31f2eec173" alt="output" width="1335" height="525" data-path="cookbooks/classifying_rag_passages/classifying_rag_passages.executed.1.png" />
+![output](https://mintcdn.com/ts-docs/5iZnRWRIxyU5JBux/cookbooks/classifying_rag_passages/classifying_rag_passages.executed.1.png?fit=max\&auto=format\&n=5iZnRWRIxyU5JBux\&q=85\&s=9257008675e09b97950eaa31f2eec173)
 
 Each bar holds the 12 passages retrieved for one query, 72 in all. At least two thirds of
 every bar is excluded. Only the two false-premise queries route anything to conflict, and
@@ -711,6 +712,6 @@ deeplink = make_playground_link(
 display(Markdown(f"🔗 [Open the query + passage and its four questions]({deeplink})"))
 ```
 
-<a href="https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAnqQaQEoIBmVCAzgBb4oQDWyDviwAHAJbt8AQxYpq+AMwAGfGGk1hAWnxcIAdzUR8ASRHZkYXl2kp8+8Ukj6A-KQA0+UqOkcO0gHMEenwSEHEwENIOTg5xCCQOLWUARg8vEBRxFAAbYLwMgFUYqnwYv3jEggB1GztxYWky2Mq3EE9SeWwokABBZoqE-Ab8KHZbBCt9LmQZfBgSsvEAxOGkADp8ACEaNVZpGByUT2z8HN8UYUcwVkdshBzd6Sc5hYUoZ91pADcEGSR5kgcuI4PcrEh4AAjBQQFgyKBZX4DOIJYRDXz4ODPXY3b7iKCcdbEYhIYlIfrlFEAkbsUTsGKoSb4SG7FAzfAAZRgPkhvj+vRgbPhBL8vAEs0c1j+LAgVDg+FhcwAUtU0J5nlYmuw2JweHxBADpvieCMmjAkOIKH8OCgqI4AkSSWTelARcJ9UIZFIbnEVky+MzrXoqHZgb8wJ4FjBpDlHoGUPoELMAKyYxyCzj-KwpXQQGClI15fDa+l68WrJAIX6lMSSP6QwWjT4JOPQ+YxKwJAmbACaeabAKwUBsSCCcxLurFBoVQN2Xb+AaCdialcM0ldsSzxdYpansx8kkdpJJaC4Izp0E3Iw+saZACo7xPuPapcjKusH2TnW+hvI5Y4Jg4TwblESwXyGKAEhYZZ81sSpPGmZBcDJHRTz+N5SigYEoH4YRfQBPMUCPVD2Qw0YRyCd0ZkkfAfD8fRZU7UpQKoGU5UaZpYDtFBdgZOJET+dcsgSYjTDsLJEDRRswEoMU1iE8Q8R40STDscZh0zbJhCxTAQXgM5xBYBAJIQUT+jI-CrgIgFnggNkFFxfFTPSaI8yoAkAH0eNAnpYWgqBxBjDzIFgRBUDghJSAAXyi9pCAvOBREuDBsAKIhSAaDz2Dyb5nhQEIwm8-IGBAJA8xyFzwkSW0YARSoOB6AARCBMzZc9fH8MdpDAMB6So60YEhAArBAEQVOF7PwK1aDaKKOhASDwscDgPOeDhEyoDyqwiZACQKzoaB8gpSDKw5KuWmq6tRJqWqo9q-ECa0UAmNY2KxYSAQWaRISLSUmjAOsxrWjbZvmxbbW6-FLg86aaA8ukEFBGJ9syQ7ioyU6KrijLqqoWqPoa46QGa1qz2EOjOr+RaWGwuwHCFJoWCE6Mclo9gkaeiYrElSbYdBjJwekZb4aoCBEpQDzHBGq7SQKQq0Z6THztx-H6pu0n7spmQUHkcW5PB0XWcmjhNF1-51uoF9ecoGbotizwQGkCQADVqCpNLvhSOKQBiPIEUmABZCAbhyDgCgAbRAEbvi0FJ1hSAAmEAAF0oqAA" target="_blank" rel="noreferrer" className="text-primary">Open the query + passage and its four questions →</a>
+[Open the query + passage and its four questions →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAnqQaQEoIBmVCAzgBb4oQDWyDviwAHAJbt8AQxYpq+AMwAGfGGk1hAWnxcIAdzUR8ASRHZkYXl2kp8+8Ukj6A-KQA0+UqOkcO0gHMEenwSEHEwENIOTg5xCCQOLWUARg8vEBRxFAAbYLwMgFUYqnwYv3jEggB1GztxYWky2Mq3EE9SeWwokABBZoqE-Ab8KHZbBCt9LmQZfBgSsvEAxOGkADp8ACEaNVZpGByUT2z8HN8UYUcwVkdshBzd6Sc5hYUoZ91pADcEGSR5kgcuI4PcrEh4AAjBQQFgyKBZX4DOIJYRDXz4ODPXY3b7iKCcdbEYhIYlIfrlFEAkbsUTsGKoSb4SG7FAzfAAZRgPkhvj+vRgbPhBL8vAEs0c1j+LAgVDg+FhcwAUtU0J5nlYmuw2JweHxBADpvieCMmjAkOIKH8OCgqI4AkSSWTelARcJ9UIZFIbnEVky+MzrXoqHZgb8wJ4FjBpDlHoGUPoELMAKyYxyCzj-KwpXQQGClI15fDa+l68WrJAIX6lMSSP6QwWjT4JOPQ+YxKwJAmbACaeabAKwUBsSCCcxLurFBoVQN2Xb+AaCdialcM0ldsSzxdYpansx8kkdpJJaC4Izp0E3Iw+saZACo7xPuPapcjKusH2TnW+hvI5Y4Jg4TwblESwXyGKAEhYZZ81sSpPGmZBcDJHRTz+N5SigYEoH4YRfQBPMUCPVD2Qw0YRyCd0ZkkfAfD8fRZU7UpQKoGU5UaZpYDtFBdgZOJET+dcsgSYjTDsLJEDRRswEoMU1iE8Q8R40STDscZh0zbJhCxTAQXgM5xBYBAJIQUT+jI-CrgIgFnggNkFFxfFTPSaI8yoAkAH0eNAnpYWgqBxBjDzIFgRBUDghJSAAXyi9pCAvOBREuDBsAKIhSAaDz2Dyb5nhQEIwm8-IGBAJA8xyFzwkSW0YARSoOB6AARCBMzZc9fH8MdpDAMB6So60YEhAArBAEQVOF7PwK1aDaKKOhASDwscDgPOeDhEyoDyqwiZACQKzoaB8gpSDKw5KuWmq6tRJqWqo9q-ECa0UAmNY2KxYSAQWaRISLSUmjAOsxrWjbZvmxbbW6-FLg86aaA8ukEFBGJ9syQ7ioyU6KrijLqqoWqPoa46QGa1qz2EOjOr+RaWGwuwHCFJoWCE6Mclo9gkaeiYrElSbYdBjJwekZb4aoCBEpQDzHBGq7SQKQq0Z6THztx-H6pu0n7spmQUHkcW5PB0XWcmjhNF1-51uoF9ecoGbotizwQGkCQADVqCpNLvhSOKQBiPIEUmABZCAbhyDgCgAbRAEbvi0FJ1hSAAmEAAF0oqAA)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

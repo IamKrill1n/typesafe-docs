@@ -39,52 +39,10 @@ flowchart LR
 
 ### Step 1: speculative fan-out
 
-> Interactive example: questions — [view it on docs.typesafe.ai](https://docs.typesafe.ai/patterns/fan-out)
+Try it in the Playground →
 
-```js
-{
-state:
-  "Hi, I placed an order (#98423) last Thursday and was charged twice. I also can't log in after the site update, and adding Apple Pay would be really helpful. This is getting frustrating.",
-questions: {
-  category: {
-    type: 'choice',
-    instructions: 'Determine the broad category of this support ticket',
-    criteria: {
-      bug_report:
-        'The user is reporting something that is broken or producing errors',
-      billing: 'Charges, invoices, refunds, subscriptions',
-      feature_request: 'The user is requesting new functionality',
-      account: 'Login, permissions, profile, security',
-    },
-  },
-  bug_severity: {
-    type: 'score',
-    instructions: 'How severe is the reported issue',
-    criteria: [
-      'Cosmetic; no impact to functionality',
-      'Broken or degraded feature; workaround exists',
-      'Blocking issue; no workaround exists',
-    ],
-  },
-  has_reproducible_steps: {
-    type: 'noul',
-    instructions:
-      'The user describes specific steps to reproduce the issue',
-  },
-  refund_requested: {
-    type: 'noul',
-    instructions: 'The user is explicitly asking for a refund or credit',
-  },
-  frustration: {
-    type: 'score',
-    instructions: 'How frustrated the user appears',
-    criteria: ['Calm, matter-of-fact', 'Frustrated but civil', 'Very angry'],
-  },
-},
-}
-```
-
-> **Note:**
+> [!NOTE]
+>
 > **Speculative questions:** `bug_severity` and `has_reproducible_steps` only matter if the ticket is a bug report. `refund_requested` only matters for billing. We include all upfront because additional questions usually have little effect on response time. If the ticket turns out to be a feature request, the bug severity result will be irrelevant, in which case your code path simply ignores it.
 
 ### Step 2: route with code

@@ -2,87 +2,119 @@
 
 > Provide state and ask yes/no, choice, and score questions using objects or dictionaries.
 
-<a id="questions" />
-
-<h2 id="state">
-  State
-</h2>
+## State
 
 `state` is the text or JSON object you want to ask questions about. It cannot be `None`, but values inside an object may be `None`.
 
-<h2 id="question-objects">
-  Question objects
-</h2>
+## Question objects
 
 Use `Noul`, `Choice`, `Score`, and `Box` to define questions with named arguments.
 
-<h2 id="typesafe_sdk.NoulCriteria">
-  typesafe_sdk.NoulCriteria
-</h2>
+## typesafe_sdk.NoulCriteria
 
-Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypedDict">TypedDict</a></code>
+Bases: `TypedDict`
 
 Optional descriptions of the yes and no outcomes.
 
 See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
-<h3 id="typesafe_sdk.NoulCriteria.true">
-  true
-</h3>
+### true
 
 `instance-attribute`
 
-```python
-true: Content | None
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`true
+
+  :
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None\`
+</pre>
 
 Description of the yes outcome as text, an asset, a JSON object, or an array; `None` leaves it undescribed.
 
-<h3 id="typesafe_sdk.NoulCriteria.false">
-  false
-</h3>
+### false
 
 `instance-attribute`
 
-```python
-false: Content | None
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`false
+
+  :
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None\`
+</pre>
 
 Description of the no outcome as text, an asset, a JSON object, or an array; `None` leaves it undescribed.
 
-<h2 id="typesafe_sdk.Noul">
-  typesafe_sdk.Noul
-</h2>
+## typesafe_sdk.Noul
 
 `pydantic-model`
 
-#### Implementation
+**Implementation**
 
-```python
-Noul(**data: Any)
-```
+Copy signature
 
-#### Overload 1
+<pre tabIndex={0} aria-label="SDK signature">
+  \`Noul
 
-```python
-Noul(
-    *,
-    type: Literal["noul"] = ...,
-    instructions: Content,
-    criteria: NoulCriteria | None = ...,
-)
-```
+  (
 
-#### Overload 2
+  \*\*
 
-```python
-Noul(
-    *,
-    type: Literal["noul"] = ...,
-    instructions: None = ...,
-    criteria: _DescribedTrue | _DescribedFalse,
-)
-```
+  data
+
+  :
+
+  &#x20;
+
+  [Any](https://docs.python.org/3/library/typing.html#typing.Any)
+
+  )\`
+</pre>
+
+**Overload 1**
+
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`Noul(
+&#x20;   \*,
+&#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
+&#x20;   instructions: [Content](./common.md#typesafe_sdk.Content),
+&#x20;   criteria: [NoulCriteria](./questions.md#typesafe_sdk.NoulCriteria) | None = ...,
+)`</pre>
+
+**Overload 2**
+
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`Noul(
+&#x20;   \*,
+&#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
+&#x20;   instructions: None = ...,
+&#x20;   criteria: _DescribedTrue | _DescribedFalse,
+)`</pre>
 
 Bases: `_Question`, `wire.NoulQuestion`
 
@@ -90,188 +122,231 @@ A yes/no question with optional descriptions for either outcome.
 
 See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
-> **Note:**
+> [!NOTE]
+>
 > **Show JSON schema:**
 >
-> #### Details
-
-> ```json
-> {
-> "$defs": {
->   "Content": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       }
->     ]
->   },
->   "ContentValue": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "type": "integer"
->       },
->       {
->         "type": "number"
->       },
->       {
->         "type": "boolean"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       }
->     ]
->   },
->   "NoulCriteria": {
->     "additionalProperties": false,
->     "description": "Optional descriptions of the yes and no outcomes.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
->     "properties": {
->       "true": {
->         "anyOf": [
->           {
->             "$ref": "#/$defs/Content"
->           },
->           {
->             "type": "null"
->           }
->         ]
->       },
->       "false": {
->         "anyOf": [
->           {
->             "$ref": "#/$defs/Content"
->           },
->           {
->             "type": "null"
->           }
->         ]
->       }
->     },
->     "title": "NoulCriteria",
->     "type": "object"
->   }
-> },
-> "additionalProperties": false,
-> "description": "A yes/no question with optional descriptions for either outcome.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
-> "properties": {
->   "type": {
->     "const": "noul",
->     "default": "noul",
->     "title": "Type",
->     "type": "string"
->   },
->   "instructions": {
->     "anyOf": [
->       {
->         "$ref": "#/$defs/Content"
->       },
->       {
->         "type": "null"
->       }
->     ],
->     "default": null
->   },
->   "criteria": {
->     "anyOf": [
->       {
->         "$ref": "#/$defs/NoulCriteria"
->       },
->       {
->         "type": "null"
->       }
->     ],
->     "default": null
->   }
-> },
-> "title": "Noul",
-> "type": "object"
-> }
-> ```
+> > **Details**
+> >
+> > ```json
+> > {
+> >   "$defs": {
+> >     "Content": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         }
+> >       ]
+> >     },
+> >     "ContentValue": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "type": "integer"
+> >         },
+> >         {
+> >           "type": "number"
+> >         },
+> >         {
+> >           "type": "boolean"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         }
+> >       ]
+> >     },
+> >     "NoulCriteria": {
+> >       "additionalProperties": false,
+> >       "description": "Optional descriptions of the yes and no outcomes.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
+> >       "properties": {
+> >         "true": {
+> >           "anyOf": [
+> >             {
+> >               "$ref": "#/$defs/Content"
+> >             },
+> >             {
+> >               "type": "null"
+> >             }
+> >           ]
+> >         },
+> >         "false": {
+> >           "anyOf": [
+> >             {
+> >               "$ref": "#/$defs/Content"
+> >             },
+> >             {
+> >               "type": "null"
+> >             }
+> >           ]
+> >         }
+> >       },
+> >       "title": "NoulCriteria",
+> >       "type": "object"
+> >     }
+> >   },
+> >   "additionalProperties": false,
+> >   "description": "A yes/no question with optional descriptions for either outcome.\n\nSee the [noul primitive](https://docs.typesafe.ai/go/noul) for details.",
+> >   "properties": {
+> >     "type": {
+> >       "const": "noul",
+> >       "default": "noul",
+> >       "title": "Type",
+> >       "type": "string"
+> >     },
+> >     "instructions": {
+> >       "anyOf": [
+> >         {
+> >           "$ref": "#/$defs/Content"
+> >         },
+> >         {
+> >           "type": "null"
+> >         }
+> >       ],
+> >       "default": null
+> >     },
+> >     "criteria": {
+> >       "anyOf": [
+> >         {
+> >           "$ref": "#/$defs/NoulCriteria"
+> >         },
+> >         {
+> >           "type": "null"
+> >         }
+> >       ],
+> >       "default": null
+> >     }
+> >   },
+> >   "title": "Noul",
+> >   "type": "object"
+> > }
+> > ```
 
 Fields:
 
-* `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['noul']</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Noul.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Noul.criteria">criteria</a></code> (<code><a href="/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria">NoulCriteria</a> | None</code>)
+* `type` (`Literal['noul']`)
+* `instructions` (`Content | None`)
+* `criteria` (`NoulCriteria | None`)
 
-<h3 id="typesafe_sdk.Noul.instructions">
-  instructions
-</h3>
+### instructions
 
 `pydantic-field`
 
-```python
-instructions: Content | None = None
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  &#x20;
+
+  \=
+
+  &#x20;
+
+  None\`
+</pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional when `criteria` describes an outcome.
 
-<h3 id="typesafe_sdk.Noul.criteria">
-  criteria
-</h3>
+### criteria
 
 `pydantic-field`
 
-```python
-criteria: NoulCriteria | None = None
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`criteria
+
+  :
+
+  &#x20;
+
+  [NoulCriteria](./questions.md#typesafe_sdk.NoulCriteria)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  &#x20;
+
+  \=
+
+  &#x20;
+
+  None\`
+</pre>
 
 Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
-<h2 id="typesafe_sdk.Choice">
-  typesafe_sdk.Choice
-</h2>
+## typesafe_sdk.Choice
 
 `pydantic-model`
 
@@ -281,166 +356,213 @@ A question that selects between named alternatives.
 
 See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 
-> **Note:**
+> [!NOTE]
+>
 > **Show JSON schema:**
 >
-> #### Details
-
-> ```json
-> {
-> "$defs": {
->   "Content": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       }
->     ]
->   },
->   "ContentValue": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "type": "integer"
->       },
->       {
->         "type": "number"
->       },
->       {
->         "type": "boolean"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       }
->     ]
->   }
-> },
-> "additionalProperties": false,
-> "description": "A question that selects between named alternatives.\n\nSee the [choice primitive](https://docs.typesafe.ai/go/choice) for details.",
-> "properties": {
->   "type": {
->     "const": "choice",
->     "default": "choice",
->     "title": "Type",
->     "type": "string"
->   },
->   "instructions": {
->     "anyOf": [
->       {
->         "$ref": "#/$defs/Content"
->       },
->       {
->         "type": "null"
->       }
->     ],
->     "default": null
->   },
->   "criteria": {
->     "additionalProperties": {
->       "anyOf": [
->         {
->           "$ref": "#/$defs/Content"
->         },
->         {
->           "type": "null"
->         }
->       ]
->     },
->     "title": "Criteria",
->     "type": "object"
->   }
-> },
-> "required": [
->   "criteria"
-> ],
-> "title": "Choice",
-> "type": "object"
-> }
-> ```
+> > **Details**
+> >
+> > ```json
+> > {
+> >   "$defs": {
+> >     "Content": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         }
+> >       ]
+> >     },
+> >     "ContentValue": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "type": "integer"
+> >         },
+> >         {
+> >           "type": "number"
+> >         },
+> >         {
+> >           "type": "boolean"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         }
+> >       ]
+> >     }
+> >   },
+> >   "additionalProperties": false,
+> >   "description": "A question that selects between named alternatives.\n\nSee the [choice primitive](https://docs.typesafe.ai/go/choice) for details.",
+> >   "properties": {
+> >     "type": {
+> >       "const": "choice",
+> >       "default": "choice",
+> >       "title": "Type",
+> >       "type": "string"
+> >     },
+> >     "instructions": {
+> >       "anyOf": [
+> >         {
+> >           "$ref": "#/$defs/Content"
+> >         },
+> >         {
+> >           "type": "null"
+> >         }
+> >       ],
+> >       "default": null
+> >     },
+> >     "criteria": {
+> >       "additionalProperties": {
+> >         "anyOf": [
+> >           {
+> >             "$ref": "#/$defs/Content"
+> >           },
+> >           {
+> >             "type": "null"
+> >           }
+> >         ]
+> >       },
+> >       "title": "Criteria",
+> >       "type": "object"
+> >     }
+> >   },
+> >   "required": [
+> >     "criteria"
+> >   ],
+> >   "title": "Choice",
+> >   "type": "object"
+> > }
+> > ```
 
 Fields:
 
-* `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['choice']</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Choice.criteria">criteria</a></code> (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a>\[<a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None]</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Choice.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
+* `type` (`Literal['choice']`)
+* `criteria` (`Mapping[str, Content | None]`)
+* `instructions` (`Content | None`)
 
-<h3 id="typesafe_sdk.Choice.criteria">
-  criteria
-</h3>
+### criteria
 
 `pydantic-field`
 
-```python
-criteria: Mapping[str, Content | None]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`criteria
+
+  :
+
+  &#x20;
+
+  [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)
+
+  \[
+
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  ,
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  ]\`
+</pre>
 
 A nonempty mapping of labels to text, asset, object, or array descriptions, or `None` for undescribed labels.
 
-<h3 id="typesafe_sdk.Choice.instructions">
-  instructions
-</h3>
+### instructions
 
 `pydantic-field`
 
-```python
-instructions: Content | None = None
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  &#x20;
+
+  \=
+
+  &#x20;
+
+  None\`
+</pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
-<h2 id="typesafe_sdk.Score">
-  typesafe_sdk.Score
-</h2>
+## typesafe_sdk.Score
 
 `pydantic-model`
 
@@ -450,160 +572,193 @@ A question that assigns a score using an ordered rubric.
 
 See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 
-> **Note:**
+> [!NOTE]
+>
 > **Show JSON schema:**
 >
-> #### Details
-
-> ```json
-> {
-> "$defs": {
->   "Content": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       }
->     ]
->   },
->   "ContentValue": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "type": "integer"
->       },
->       {
->         "type": "number"
->       },
->       {
->         "type": "boolean"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       }
->     ]
->   }
-> },
-> "additionalProperties": false,
-> "description": "A question that assigns a score using an ordered rubric.\n\nSee the [score primitive](https://docs.typesafe.ai/go/score) for details.",
-> "properties": {
->   "type": {
->     "const": "score",
->     "default": "score",
->     "title": "Type",
->     "type": "string"
->   },
->   "instructions": {
->     "anyOf": [
->       {
->         "$ref": "#/$defs/Content"
->       },
->       {
->         "type": "null"
->       }
->     ],
->     "default": null
->   },
->   "criteria": {
->     "items": {
->       "$ref": "#/$defs/Content"
->     },
->     "minItems": 1,
->     "title": "Criteria",
->     "type": "array"
->   }
-> },
-> "required": [
->   "criteria"
-> ],
-> "title": "Score",
-> "type": "object"
-> }
-> ```
+> > **Details**
+> >
+> > ```json
+> > {
+> >   "$defs": {
+> >     "Content": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         }
+> >       ]
+> >     },
+> >     "ContentValue": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "type": "integer"
+> >         },
+> >         {
+> >           "type": "number"
+> >         },
+> >         {
+> >           "type": "boolean"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         }
+> >       ]
+> >     }
+> >   },
+> >   "additionalProperties": false,
+> >   "description": "A question that assigns a score using an ordered rubric.\n\nSee the [score primitive](https://docs.typesafe.ai/go/score) for details.",
+> >   "properties": {
+> >     "type": {
+> >       "const": "score",
+> >       "default": "score",
+> >       "title": "Type",
+> >       "type": "string"
+> >     },
+> >     "instructions": {
+> >       "anyOf": [
+> >         {
+> >           "$ref": "#/$defs/Content"
+> >         },
+> >         {
+> >           "type": "null"
+> >         }
+> >       ],
+> >       "default": null
+> >     },
+> >     "criteria": {
+> >       "items": {
+> >         "$ref": "#/$defs/Content"
+> >       },
+> >       "minItems": 1,
+> >       "title": "Criteria",
+> >       "type": "array"
+> >     }
+> >   },
+> >   "required": [
+> >     "criteria"
+> >   ],
+> >   "title": "Score",
+> >   "type": "object"
+> > }
+> > ```
 
 Fields:
 
-* `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['score']</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Score.criteria">criteria</a></code> (<code><a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>\[<a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a>]</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Score.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
+* `type` (`Literal['score']`)
+* `criteria` (`Sequence[Content]`)
+* `instructions` (`Content | None`)
 
-<h3 id="typesafe_sdk.Score.criteria">
-  criteria
-</h3>
+### criteria
 
 `pydantic-field`
 
-```python
-criteria: Sequence[Content]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`criteria
+
+  :
+
+  &#x20;
+
+  [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)
+
+  \[
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  ]\`
+</pre>
 
 A nonempty, ordered list of text, asset, object, or array descriptions, one per score from zero.
 
-<h3 id="typesafe_sdk.Score.instructions">
-  instructions
-</h3>
+### instructions
 
 `pydantic-field`
 
-```python
-instructions: Content | None = None
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  &#x20;
+
+  \=
+
+  &#x20;
+
+  None\`
+</pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
-<h2 id="typesafe_sdk.Box">
-  typesafe_sdk.Box
-</h2>
+## typesafe_sdk.Box
 
 `pydantic-model`
 
@@ -627,341 +782,560 @@ def locate_dog(client: TypeSafeClient, photo: Path) -> BoxAnswer:
     return result.boxes["dog"]
 ```
 
-> **Note:**
+> [!NOTE]
+>
 > **Show JSON schema:**
 >
-> #### Details
-
-> ````json
-> {
-> "$defs": {
->   "Content": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       }
->     ]
->   },
->   "ContentValue": {
->     "anyOf": [
->       {
->         "type": "string"
->       },
->       {
->         "type": "integer"
->       },
->       {
->         "type": "number"
->       },
->       {
->         "type": "boolean"
->       },
->       {
->         "items": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "array"
->       },
->       {
->         "additionalProperties": {
->           "anyOf": [
->             {
->               "$ref": "#/$defs/ContentValue"
->             },
->             {
->               "type": "null"
->             }
->           ]
->         },
->         "type": "object"
->       }
->     ]
->   }
-> },
-> "additionalProperties": false,
-> "description": "A question that locates what its instructions describe in the request's image.\n\nExamples:\n    ```python\n    from pathlib import Path\n\n    from typesafe_sdk import Box, BoxAnswer, Image, TypeSafeClient\n\n\n    def locate_dog(client: TypeSafeClient, photo: Path) -> BoxAnswer:\n        result = client.system_one(\n            state=Image(photo),\n            questions={\"dog\": Box(instructions=\"The dog\")},\n            model=\"jev-preview\",\n        )\n        return result.boxes[\"dog\"]\n    ```",
-> "properties": {
->   "type": {
->     "const": "box",
->     "default": "box",
->     "title": "Type",
->     "type": "string"
->   },
->   "instructions": {
->     "anyOf": [
->       {
->         "$ref": "#/$defs/Content"
->       },
->       {
->         "type": "null"
->       }
->     ],
->     "default": null
->   }
-> },
-> "title": "Box",
-> "type": "object"
-> }
-> ````
+> > **Details**
+> >
+> > ````json
+> > {
+> >   "$defs": {
+> >     "Content": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         }
+> >       ]
+> >     },
+> >     "ContentValue": {
+> >       "anyOf": [
+> >         {
+> >           "type": "string"
+> >         },
+> >         {
+> >           "type": "integer"
+> >         },
+> >         {
+> >           "type": "number"
+> >         },
+> >         {
+> >           "type": "boolean"
+> >         },
+> >         {
+> >           "items": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "array"
+> >         },
+> >         {
+> >           "additionalProperties": {
+> >             "anyOf": [
+> >               {
+> >                 "$ref": "#/$defs/ContentValue"
+> >               },
+> >               {
+> >                 "type": "null"
+> >               }
+> >             ]
+> >           },
+> >           "type": "object"
+> >         }
+> >       ]
+> >     }
+> >   },
+> >   "additionalProperties": false,
+> >   "description": "A question that locates what its instructions describe in the request's image.\n\nExamples:\n    ```python\n    from pathlib import Path\n\n    from typesafe_sdk import Box, BoxAnswer, Image, TypeSafeClient\n\n\n    def locate_dog(client: TypeSafeClient, photo: Path) -> BoxAnswer:\n        result = client.system_one(\n            state=Image(photo),\n            questions={\"dog\": Box(instructions=\"The dog\")},\n            model=\"jev-preview\",\n        )\n        return result.boxes[\"dog\"]\n    ```",
+> >   "properties": {
+> >     "type": {
+> >       "const": "box",
+> >       "default": "box",
+> >       "title": "Type",
+> >       "type": "string"
+> >     },
+> >     "instructions": {
+> >       "anyOf": [
+> >         {
+> >           "$ref": "#/$defs/Content"
+> >         },
+> >         {
+> >           "type": "null"
+> >         }
+> >       ],
+> >       "default": null
+> >     }
+> >   },
+> >   "title": "Box",
+> >   "type": "object"
+> > }
+> > ````
 
 Fields:
 
-* `type` (<code><a href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>\['box']</code>)
-* <code><a href="/sdk/python/api/types/questions#typesafe_sdk.Box.instructions">instructions</a></code> (<code><a href="/sdk/python/api/types/common#typesafe_sdk.Content">Content</a> | None</code>)
+* `type` (`Literal['box']`)
+* `instructions` (`Content | None`)
 
-<h3 id="typesafe_sdk.Box.instructions">
-  instructions
-</h3>
+### instructions
 
 `pydantic-field`
 
-```python
-instructions: Content | None = None
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  &#x20;
+
+  \=
+
+  &#x20;
+
+  None\`
+</pre>
 
 What to locate in the request's image, expressed as text, an asset, a JSON object, or an array; optional.
 
-<h2 id="typesafe_sdk.Question">
-  typesafe_sdk.Question
-</h2>
+## typesafe_sdk.Question
 
 `module-attribute`
 
-```python
-Question: TypeAlias = (
-    Noul | Choice | Score | Box | QuestionModel
-)
-```
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`Question: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
+&#x20;   [Noul](./questions.md#typesafe_sdk.Noul) | [Choice](./questions.md#typesafe_sdk.Choice) | [Score](./questions.md#typesafe_sdk.Score) | [Box](./questions.md#typesafe_sdk.Box) | [QuestionModel](./questions.md#typesafe_sdk.QuestionModel)
+)`</pre>
 
 A question object or question dictionary.
 
-<h2 id="typesafe_sdk.Questions">
-  typesafe_sdk.Questions
-</h2>
+## typesafe_sdk.Questions
 
 `module-attribute`
 
-```python
-Questions: TypeAlias = Mapping[str, Question]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`Questions
+
+  :
+
+  &#x20;
+
+  [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias)
+
+  &#x20;
+
+  \=
+
+  &#x20;
+
+  [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)
+
+  \[
+
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  ,
+
+  &#x20;
+
+  [Question](./questions.md#typesafe_sdk.Question)
+
+  ]\`
+</pre>
 
 Question inputs keyed by the names used to identify their answers.
 
-<h2 id="question-dictionaries">
-  Question dictionaries
-</h2>
+## Question dictionaries
 
 Question dictionaries include a `type` key: `"noul"`, `"choice"`, `"score"`, or `"box"`. You can mix dictionaries and question objects in the same request.
 
-<h2 id="typesafe_sdk.NoulModel">
-  typesafe_sdk.NoulModel
-</h2>
+## typesafe_sdk.NoulModel
 
-Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypedDict">TypedDict</a></code>
+Bases: `TypedDict`
 
 A yes/no question dictionary with `type="noul"`.
 
 See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
-<h3 id="typesafe_sdk.NoulModel.type">
-  type
-</h3>
+### type
 
 `instance-attribute`
 
-```python
-type: Literal['noul']
-```
+Copy signature
 
-<h3 id="typesafe_sdk.NoulModel.instructions">
-  instructions
-</h3>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`type
+
+  :
+
+  &#x20;
+
+  [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)
+
+  \[
+
+  'noul'
+
+  ]\`
+</pre>
+
+### instructions
 
 `instance-attribute`
 
-```python
-instructions: NotRequired[Content | None]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+
+  \[
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  ]\`
+</pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional when `criteria` describes an outcome.
 
-<h3 id="typesafe_sdk.NoulModel.criteria">
-  criteria
-</h3>
+### criteria
 
 `instance-attribute`
 
-```python
-criteria: NotRequired[NoulCriteria | None]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`criteria
+
+  :
+
+  &#x20;
+
+  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+
+  \[
+
+  [NoulCriteria](./questions.md#typesafe_sdk.NoulCriteria)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  ]\`
+</pre>
 
 Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
-<h2 id="typesafe_sdk.ChoiceModel">
-  typesafe_sdk.ChoiceModel
-</h2>
+## typesafe_sdk.ChoiceModel
 
-Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypedDict">TypedDict</a></code>
+Bases: `TypedDict`
 
 A choice question dictionary with `type="choice"`.
 
 See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 
-<h3 id="typesafe_sdk.ChoiceModel.type">
-  type
-</h3>
+### type
 
 `instance-attribute`
 
-```python
-type: Literal['choice']
-```
+Copy signature
 
-<h3 id="typesafe_sdk.ChoiceModel.instructions">
-  instructions
-</h3>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`type
+
+  :
+
+  &#x20;
+
+  [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)
+
+  \[
+
+  'choice'
+
+  ]\`
+</pre>
+
+### instructions
 
 `instance-attribute`
 
-```python
-instructions: NotRequired[Content | None]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+
+  \[
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  ]\`
+</pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
-<h3 id="typesafe_sdk.ChoiceModel.criteria">
-  criteria
-</h3>
+### criteria
 
 `instance-attribute`
 
-```python
-criteria: Mapping[str, Content | None]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`criteria
+
+  :
+
+  &#x20;
+
+  [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)
+
+  \[
+
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  ,
+
+  &#x20;
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  ]\`
+</pre>
 
 A nonempty mapping of labels to text, asset, object, or array descriptions, or `None` for undescribed labels.
 
-<h2 id="typesafe_sdk.ScoreModel">
-  typesafe_sdk.ScoreModel
-</h2>
+## typesafe_sdk.ScoreModel
 
-Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypedDict">TypedDict</a></code>
+Bases: `TypedDict`
 
 A score question dictionary with `type="score"`.
 
 See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 
-<h3 id="typesafe_sdk.ScoreModel.type">
-  type
-</h3>
+### type
 
 `instance-attribute`
 
-```python
-type: Literal['score']
-```
+Copy signature
 
-<h3 id="typesafe_sdk.ScoreModel.instructions">
-  instructions
-</h3>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`type
+
+  :
+
+  &#x20;
+
+  [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)
+
+  \[
+
+  'score'
+
+  ]\`
+</pre>
+
+### instructions
 
 `instance-attribute`
 
-```python
-instructions: NotRequired[Content | None]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+
+  \[
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  ]\`
+</pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
-<h3 id="typesafe_sdk.ScoreModel.criteria">
-  criteria
-</h3>
+### criteria
 
 `instance-attribute`
 
-```python
-criteria: Sequence[Content]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`criteria
+
+  :
+
+  &#x20;
+
+  [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)
+
+  \[
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  ]\`
+</pre>
 
 A nonempty, ordered list of text, asset, object, or array descriptions, one per score from zero.
 
-<h2 id="typesafe_sdk.BoxModel">
-  typesafe_sdk.BoxModel
-</h2>
+## typesafe_sdk.BoxModel
 
-Bases: <code><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypedDict">TypedDict</a></code>
+Bases: `TypedDict`
 
 A box question dictionary with `type="box"`.
 
-<h3 id="typesafe_sdk.BoxModel.type">
-  type
-</h3>
+### type
 
 `instance-attribute`
 
-```python
-type: Literal['box']
-```
+Copy signature
 
-<h3 id="typesafe_sdk.BoxModel.instructions">
-  instructions
-</h3>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`type
+
+  :
+
+  &#x20;
+
+  [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)
+
+  \[
+
+  'box'
+
+  ]\`
+</pre>
+
+### instructions
 
 `instance-attribute`
 
-```python
-instructions: NotRequired[Content | None]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`instructions
+
+  :
+
+  &#x20;
+
+  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+
+  \[
+
+  [Content](./common.md#typesafe_sdk.Content)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  None
+
+  ]\`
+</pre>
 
 What to locate in the request's image, expressed as text, an asset, a JSON object, or an array; optional.
 
-<h2 id="typesafe_sdk.QuestionModel">
-  typesafe_sdk.QuestionModel
-</h2>
+## typesafe_sdk.QuestionModel
 
 `module-attribute`
 
-```python
-QuestionModel: TypeAlias = (
-    NoulModel
-    | ChoiceModel
-    | ScoreModel
-    | BoxModel
-)
-```
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`QuestionModel: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
+&#x20;   [NoulModel](./questions.md#typesafe_sdk.NoulModel)
+&#x20;   | [ChoiceModel](./questions.md#typesafe_sdk.ChoiceModel)
+&#x20;   | [ScoreModel](./questions.md#typesafe_sdk.ScoreModel)
+&#x20;   | [BoxModel](./questions.md#typesafe_sdk.BoxModel)
+)`</pre>
 
 A question dictionary identified by its `type` key.
 

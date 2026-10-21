@@ -8,8 +8,6 @@ Token usage for a request.
 
 ## Properties
 
-<a id="sdk-input_tokens" />
-
 ### input\_tokens
 
 ```ts theme={null}
@@ -19,8 +17,6 @@ readonly input_tokens: number | null;
 Number of input tokens used, or `null` when the API did not report it.
 
 ***
-
-<a id="sdk-output_tokens" />
 
 ### output\_tokens
 

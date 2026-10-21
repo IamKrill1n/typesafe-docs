@@ -24,7 +24,7 @@ Decomposing the problem into a hierarchy like this has benefits of its own:
   * measure the number of times each node and edge is traversed
 * Testability
   * unit test and measure the impact of hierarchy updates on classification performance
-* <img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/this_is_the_way.jpg?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=15d390074a4f6a97e45f19e2cf039622" alt="this is the way" width="100" height="56" data-path="cookbooks/hierarchical_classification/this_is_the_way.jpg" />
+* ![this is the way](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/this_is_the_way.jpg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=15d390074a4f6a97e45f19e2cf039622)
 
 ### Hierarchies used in this cookbook
 
@@ -832,18 +832,18 @@ The diagrams show why the methods differ. Orange marks the greedy route, green m
 
 ### CPC patents
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/cpc_tree.svg?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=e2e78c257ef946e0e40f49ed0aadddf4" alt="" width="2876" height="2322" data-path="cookbooks/hierarchical_classification/cpc_tree.svg" />
+![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/cpc_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=e2e78c257ef946e0e40f49ed0aadddf4)
 
 ### Shopify products
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/shopify_tree.svg?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=eaeffcf7e76e389ffbe3397a1b6c5d8e" alt="" width="2156" height="2272" data-path="cookbooks/hierarchical_classification/shopify_tree.svg" />
+![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/shopify_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=eaeffcf7e76e389ffbe3397a1b6c5d8e)
 
 ### MeSH biomedical subjects
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/mesh_tree.svg?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=a71b2ce23a81fd3165a67abd09d5e26f" alt="" width="2516" height="2693" data-path="cookbooks/hierarchical_classification/mesh_tree.svg" />
+![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/mesh_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=a71b2ce23a81fd3165a67abd09d5e26f)
 
 ### CookSafe files
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/codebase_tree.svg?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=052f2001a9e5f53a2647eb179ebdafd9" alt="" width="2156" height="1072" data-path="cookbooks/hierarchical_classification/codebase_tree.svg" />
+![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/codebase_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=052f2001a9e5f53a2647eb179ebdafd9)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

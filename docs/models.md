@@ -113,19 +113,23 @@ for (const model of models) {
 }
 ```
 
-- **models** (`array`, required)
-  One entry per model or alias.
+**models** `array` *required*
 
-  #### properties
+One entry per model or alias.
 
-  - **name** (`string`, required)
-    The model ID or alias, as accepted by the `model` field.
+**properties**
 
-  - **description** (`string`, required)
-    What the model is for.
+**name** `string` *required*
 
-  - **release_date** (`string`, required)
-    When the model or alias was released.
+The model ID or alias, as accepted by the `model` field.
+
+**description** `string` *required*
+
+What the model is for.
+
+**release_date** `string` *required*
+
+When the model or alias was released.
 
 See the [Python](./sdk/python/api/clients/sync.md#typesafe_sdk.Models.list) and [JavaScript](./sdk/javascript/api/interfaces/Models.md) SDK references for the full method signatures.
 

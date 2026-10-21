@@ -12,14 +12,8 @@ included queries rank lines with direct answers first. The `exists` thresholds c
 the remaining cases as missing or partial. You end up with `find()`, which returns the
 `exists` probability and one relevance score per line.
 
-<img
-  src="https://mintcdn.com/ts-docs/oDyLjm6qxw13db62/cookbooks/semantic_find/semantic-find-hero.gif?s=60d3456a354bc159ac408e4c1aa8c2d2"
-  alt="A query scans a document and reveals an answer attached to the matching
-line"
-  width="1120"
-  height="520"
-  data-path="cookbooks/semantic_find/semantic-find-hero.gif"
-/>
+![A query scans a document and reveals an answer attached to the matching
+line](https://mintcdn.com/ts-docs/oDyLjm6qxw13db62/cookbooks/semantic_find/semantic-find-hero.gif?s=60d3456a354bc159ac408e4c1aa8c2d2)
 
 The search backend comes together in three parts:
 
@@ -134,10 +128,12 @@ def where_question(query: str) -> Choice:
 The option descriptions are `None` because the document already contains the text for each
 ID. The query goes in `instructions`; the state stays unchanged between searches.
 
-<Info> A `Choice` question accepts up to 255 options, so this recipe searches documents of
-up to 255 lines in one request. Past that, search in two passes: one Choice question picks
-a window
-of lines, and a second ranks the lines inside it. </Info>
+> [!NOTE]
+>
+> A `Choice` question accepts up to 255 options, so this recipe searches documents of
+> up to 255 lines in one request. Past that, search in two passes: one Choice question picks
+> a window
+> of lines, and a second ranks the lines inside it.
 
 ## Step 3: check whether an answer exists
 
@@ -166,15 +162,9 @@ so it can fall near zero when the document has no answer.
 The `system_one` method answers both questions in one pass. The state is sent once, so
 adding the existence check requires only a small amount of extra output.
 
-<img
-  src="https://mintcdn.com/ts-docs/oDyLjm6qxw13db62/cookbooks/semantic_find/recipe.png?fit=max&auto=format&n=oDyLjm6qxw13db62&q=85&s=ec9af9ffa7c5b4eb0946540143678038"
-  alt="A tagged document and user question enter one TypeSafe request. A Choice question scores
+![A tagged document and user question enter one TypeSafe request. A Choice question scores
 every line while a Noul question checks whether an answer exists. Local code then ranks the
-lines and applies the document verdict."
-  width="2170"
-  height="458"
-  data-path="cookbooks/semantic_find/recipe.png"
-/>
+lines and applies the document verdict.](https://mintcdn.com/ts-docs/oDyLjm6qxw13db62/cookbooks/semantic_find/recipe.png?fit=max\&auto=format\&n=oDyLjm6qxw13db62\&q=85\&s=ec9af9ffa7c5b4eb0946540143678038)
 
 ```python theme={null}
 @json_cache

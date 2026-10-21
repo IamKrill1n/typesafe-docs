@@ -26,7 +26,7 @@ Because TypeSafe only ever chooses among the spans the regex found, the value yo
 back is one of those spans, copied unchanged. It cannot invent a value or transpose a
 digit.
 
-<img src="https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/pre_parsed_value_extraction_cookbook/overview.png?fit=max&auto=format&n=2NirYCl-v96cw05F&q=85&s=4df592e42d251f25fe30c2269f2d182a" alt="Overview diagram" width="1351" height="348" data-path="cookbooks/pre_parsed_value_extraction_cookbook/overview.png" />
+![Overview diagram](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/pre_parsed_value_extraction_cookbook/overview.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=4df592e42d251f25fe30c2269f2d182a)
 
 *The regex finds candidate values in the document, TypeSafe picks one, and downstream
 code normalizes it and acts on it.*
@@ -301,7 +301,7 @@ display(
 )
 ```
 
-<a href="https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAYgE4RwEAiAhktfgOoAWAlivgDxi3UB0A7qxQABalEQBaKBBIAHXtLgA+ADpI0EAgCMWAG10skAc1HiEUmfMVqAwlAIywCEgGdTk6XIXk1AJQSyugCeEhoE3HS8ss4uEHS6wkZw1HrecGpqABIs+CgI1HD4EviB+S4I+JBIAOTsMOW5TBU6+oZG+NQG1C74AGYyjSw9cQi8+ADKyGD4cEH4JAhQCCyy7CgQM0Fq0a5xnR1gYAsuPYYuedRgY2hMtADWLgA0+DSRIM8gsmRwqy4Y2HhCMAVCAFksVigQQRgSAUEFolD8CCoEwICwliDniCzigSDAoCgWHEXIiQcx0Ux8AhknoDkcECdKhAGY0KuUkE4SPh+LQ1k0WFywctVvh2WsIAB+TFIkBQEhsZwsaiImERPiCNjucyeKw+QFIGD6LEgFoGYxaixeaz6w26Y2OGIWnVpREGo0ytVRGJ7BJJFK6F0290gpAjUkgAByI3wEF6rIaQ1Z8wQAEcYAy8tMAG6ddO8EEAXyL70I1FkLAAajEiUhASAswBGEsgcq6RaZgCyECcuhcgIA2iAAFYILMSBu8BsAJhAAF0C0A" target="_blank" rel="noreferrer" className="text-primary">Open this thread + selection in the TypeSafe playground →</a>
+[Open this thread + selection in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAYgE4RwEAiAhktfgOoAWAlivgDxi3UB0A7qxQABalEQBaKBBIAHXtLgA+ADpI0EAgCMWAG10skAc1HiEUmfMVqAwlAIywCEgGdTk6XIXk1AJQSyugCeEhoE3HS8ss4uEHS6wkZw1HrecGpqABIs+CgI1HD4EviB+S4I+JBIAOTsMOW5TBU6+oZG+NQG1C74AGYyjSw9cQi8+ADKyGD4cEH4JAhQCCyy7CgQM0Fq0a5xnR1gYAsuPYYuedRgY2hMtADWLgA0+DSRIM8gsmRwqy4Y2HhCMAVCAFksVigQQRgSAUEFolD8CCoEwICwliDniCzigSDAoCgWHEXIiQcx0Ux8AhknoDkcECdKhAGY0KuUkE4SPh+LQ1k0WFywctVvh2WsIAB+TFIkBQEhsZwsaiImERPiCNjucyeKw+QFIGD6LEgFoGYxaixeaz6w26Y2OGIWnVpREGo0ytVRGJ7BJJFK6F0290gpAjUkgAByI3wEF6rIaQ1Z8wQAEcYAy8tMAG6ddO8EEAXyL70I1FkLAAajEiUhASAswBGEsgcq6RaZgCyECcuhcgIA2iAAFYILMSBu8BsAJhAAF0C0A)
 
 ## Two limits
 

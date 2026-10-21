@@ -4,8 +4,6 @@ Token usage for a request.
 
 ## Properties
 
-<a id="sdk-input_tokens" />
-
 ### input_tokens
 
 ```ts
@@ -15,8 +13,6 @@ readonly input_tokens: number | null;
 Number of input tokens used, or `null` when the API did not report it.
 
 ***
-
-<a id="sdk-output_tokens" />
 
 ### output_tokens
 

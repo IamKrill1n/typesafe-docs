@@ -12,8 +12,6 @@ The full response did not arrive within the timeout. A kind of `APIConnectionErr
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts theme={null}
@@ -39,8 +37,6 @@ new APITimeoutError(timeoutMs, options?): APITimeoutError;
 [`APIConnectionError`](/sdk/javascript/api/classes/APIConnectionError).[`constructor`](/sdk/javascript/api/classes/APIConnectionError#sdk-constructor)
 
 ## Properties
-
-<a id="sdk-timeoutms" />
 
 ### timeoutMs
 

@@ -2,43 +2,82 @@
 
 > Attach assets to System One requests and reference them from request content.
 
-<a id="assets" />
-
-> **Note:**
+> [!NOTE]
+>
 > **Note**
 >
 > The API detects each image's format from its bytes.
 
-<h2 id="typesafe_sdk.Asset">
-  typesafe_sdk.Asset
-</h2>
+## typesafe_sdk.Asset
 
 `module-attribute`
 
-```python
-Asset: TypeAlias = Image
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`Asset
+
+  :
+
+  &#x20;
+
+  [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias)
+
+  &#x20;
+
+  \=
+
+  &#x20;
+
+  [Image](./assets.md#typesafe_sdk.Image)\`
+</pre>
 
 An asset referenced from request content; currently only images are supported.
 
-<h2 id="typesafe_sdk.Image">
-  typesafe_sdk.Image
-</h2>
+## typesafe_sdk.Image
 
 `dataclass`
 
-```python
-Image(data: Buffer | PathLike[str])
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`Image
+
+  (
+
+  data
+
+  :
+
+  &#x20;
+
+  [Buffer](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  [PathLike](https://docs.python.org/3/library/os.html#os.PathLike)
+
+  \[
+
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  ])\`
+</pre>
 
 An image asset backed by image file bytes, or a path to an image file.
 
-> **Tip:**
+> [!TIP]
+>
 > **Reusing images**
 >
 > An `Image` is loaded once, on first use, and reused by every request that sends the same `Image` object.
 
-> **Tip:**
+> [!TIP]
+>
 > **Working with `Buffer` objects**
 >
 > `Image` also accepts `Buffer` objects: anything exposing its memory through the [buffer protocol](https://docs.python.org/3/c-api/buffer.html), such as `bytearray`, `memoryview`, `mmap`, or NumPy arrays. Buffers other than `bytes` are copied into memory once, on first use, so the original can change or be closed afterwards.
@@ -92,76 +131,122 @@ def map_photo(path: Path) -> Image:
         return Image(mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ))
 ```
 
-<h3 id="typesafe_sdk.Image.data">
-  data
-</h3>
+### data
 
 `instance-attribute`
 
-```python
-data: Buffer | PathLike[str]
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`data
+
+  :
+
+  &#x20;
+
+  [Buffer](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  [PathLike](https://docs.python.org/3/library/os.html#os.PathLike)
+
+  \[
+
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  ]\`
+</pre>
 
 Image contents, represented as one of:
 
 * raw bytes (anything supporting the [`Buffer` protocol](https://docs.python.org/3/library/stdtypes.html#buffer-objects))
 * [path-like](https://docs.python.org/3/library/os.html#os.PathLike) object pointing at the image on the filesystem
 
-<h3 id="typesafe_sdk.Image.from_base64">
-  from_base64
-</h3>
+### from_base64
 
 `classmethod`
 
-```python
-from_base64(data: str | Buffer) -> Self
-```
+Copy signature
+
+<pre tabIndex={0} aria-label="SDK signature">
+  \`from\_base64
+
+  (
+
+  data
+
+  :
+
+  &#x20;
+
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#x20;
+
+  |
+
+  &#x20;
+
+  [Buffer](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer)
+
+  )
+
+  &#x20;
+
+  ->
+
+  &#x20;
+
+  [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)\`
+</pre>
 
 Create an `Image` instance from a base64-encoded image bytes.
 
 Parameters:
 
-* **`data`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">Buffer</a></code>) –
+* **`data`** (`str | Buffer`) –
 
   The image file bytes, base64-encoded, as text or an ASCII buffer. Whitespace, such as the line breaks of wrapped base64, is ignored.
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+* `TypeSafeError` –
 
   The data isn't valid base64 text.
 
-<h3 id="typesafe_sdk.Image.from_pil">
-  from_pil
-</h3>
+### from_pil
 
 `classmethod`
 
-```python
-from_pil(
-    image: PIL.Image.Image, format: str = "jpeg"
-) -> Self
-```
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`from\_pil(
+&#x20;   image: [PIL](https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image), format: [str](https://docs.python.org/3/builtins/stdtypes.html#str) = "jpeg"
+) -> [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)`</pre>
 
 Create an `Image` instance from a [Pillow](https://pillow.readthedocs.io/) image.
 
-> **Warning:**
+> [!WARNING]
+>
 > **Encoder settings**
 >
 > The image is saved with Pillow's default encoder settings, except that JPEG uses quality 95. JPEG can't store transparency or palettes, so pass `format="png"` for RGBA or P mode images. Encode it yourself if different settings are needed.
 
 Parameters:
 
-* **`image`** (<code><a href="https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL">PIL</a>.<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image">Image</a>.<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image">Image</a></code>) –
+* **`image`** (`PIL.Image.Image`) –
 
   The Pillow image to encode.
-* **`format`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>, default: `'jpeg'` ) –
+* **`format`** (`str`, default: `'jpeg'` ) –
 
   The image format to save as, by its [Pillow name](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html).
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+* `TypeSafeError` –
 
   Pillow can't encode the image in this format.
 

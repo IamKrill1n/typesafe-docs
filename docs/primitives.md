@@ -39,7 +39,8 @@ questions = {
 }
 ```
 
-> **Tip:**
+> [!TIP]
+>
 > Question IDs are for your code. They are not sent to the model. Write the complete question in `instructions`, even when the ID seems self-explanatory.
 
 ## Choose a question type
@@ -52,7 +53,8 @@ Pick the type that matches the shape of the answer you need.
 
 * **Noul** fits a clean yes/no question where the probability itself is the useful signal: does this message contain personally identifiable information, is the customer requesting a refund, does the resume mention distributed systems.
 
-> **Note:**
+> [!NOTE]
+>
 > Use Noul for a yes/no judgment and Score to measure a position on a spectrum. "Is this candidate strong in Python?" needs a clear definition of "strong". A Noul value of 0.5 means the model gives yes and no equal probability. It does not mean the candidate has a medium skill level. An unclear definition makes that probability hard to interpret.
 >
 > If you want to measure skill level, use a Score with defined levels, such as no experience, some familiarity, daily use, and deep expertise. If you need a yes/no decision, define the condition clearly, such as "Does the resume state that the candidate has used Python at work?"
@@ -128,38 +130,7 @@ Send every question that uses the same state in one request. You can mix questio
 
 This request classifies a customer message, checks for urgency, and scores frustration all at once:
 
-> Interactive example — [view it on docs.typesafe.ai](https://docs.typesafe.ai/primitives)
-
-```js
-{
-state:
-  "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.",
-questions: {
-  department: {
-    type: 'choice',
-    instructions: 'Which team should handle this',
-    criteria: {
-      billing: 'Payment or subscription issues',
-      technical: 'Bugs or integration problems',
-      sales: 'Pricing or account questions',
-    },
-  },
-  is_urgent: {
-    type: 'noul',
-    instructions: 'The message conveys urgency or time-sensitivity',
-  },
-  frustration: {
-    type: 'score',
-    instructions: 'How frustrated the customer appears',
-    criteria: [
-      'Calm, just stating facts',
-      'Frustrated but civil',
-      'Very angry, strong language',
-    ],
-  },
-},
-}
-```
+Try it in the Playground →
 
 Our [client SDKs](./sdk.md) provide typed questions and answers. In Python, pass a `questions` dictionary of `Choice`, `Noul`, and `Score` objects to `client.system_one(...)`. This request sends a ticket and a refund policy once and gets a typed answer for each question:
 
@@ -208,7 +179,8 @@ See [client SDKs](./sdk.md) for installation and usage in your language.
 
 Ask every question your code might need, including ones whose answer only matters for some inputs, and let the code decide which answers to use. If a ticket turns out not to be a bug report, ignore the severity answer. We call this the [Speculative fan-out](./patterns/fan-out.md) pattern. The [Parallel questions cookbook](./cookbooks/parallel_questions.md) shows how batching 13 questions into one call is 11.5x cheaper and 9.6x faster than 13 separate calls, with no change in the answers.
 
-> **Tip:**
+> [!TIP]
+>
 > Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](./agent-skill.md#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
 
 ### How many questions you can ask
@@ -233,14 +205,17 @@ See [How to build with TypeSafe](./concepts/how-to-build-with-system-one.md) for
 
 ## Next steps
 
-- **Choice** —
-  Pick one option from a fixed list.
+> **[Choice](./primitives/choice.md)**
+>
+> Pick one option from a fixed list.
 
-- **Score** —
-  Rate the state along ordered levels.
+> **[Score](./primitives/score.md)**
+>
+> Rate the state along ordered levels.
 
-- **Noul** —
-  Get the probability that a statement is true.
+> **[Noul](./primitives/noul.md)**
+>
+> Get the probability that a statement is true.
 
 To see how these compose into system architectures, head to [Patterns](./patterns.md).
 

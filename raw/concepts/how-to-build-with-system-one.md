@@ -6,804 +6,198 @@
 
 > Design AI-powered software by keeping code in control and giving System One narrow, structured decisions.
 
-export function TypesafeExample({example, display, title}) {
-  const keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
-  function compressToEncodedURIComponent(input) {
-    if (input == null) return "";
-    return _compress(input, 6, function (a) {
-      return keyStrUriSafe.charAt(a);
-    });
-  }
-  function _compress(uncompressed, bitsPerChar, getCharFromInt) {
-    if (uncompressed == null) return "";
-    var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
-    for (ii = 0; ii < uncompressed.length; ii += 1) {
-      context_c = uncompressed.charAt(ii);
-      if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-        context_dictionary[context_c] = context_dictSize++;
-        context_dictionaryToCreate[context_c] = true;
-      }
-      context_wc = context_w + context_c;
-      if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
-        context_w = context_wc;
-      } else {
-        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-          if (context_w.charCodeAt(0) < 256) {
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 8; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          } else {
-            value = 1;
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1 | value;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = 0;
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 16; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          }
-          context_enlargeIn--;
-          if (context_enlargeIn == 0) {
-            context_enlargeIn = Math.pow(2, context_numBits);
-            context_numBits++;
-          }
-          delete context_dictionaryToCreate[context_w];
-        } else {
-          value = context_dictionary[context_w];
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        context_dictionary[context_wc] = context_dictSize++;
-        context_w = String(context_c);
-      }
-    }
-    if (context_w !== "") {
-      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-        if (context_w.charCodeAt(0) < 256) {
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 8; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        } else {
-          value = 1;
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = 0;
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 16; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        delete context_dictionaryToCreate[context_w];
-      } else {
-        value = context_dictionary[context_w];
-        for (i = 0; i < context_numBits; i++) {
-          context_data_val = context_data_val << 1 | value & 1;
-          if (context_data_position == bitsPerChar - 1) {
-            context_data_position = 0;
-            context_data.push(getCharFromInt(context_data_val));
-            context_data_val = 0;
-          } else {
-            context_data_position++;
-          }
-          value = value >> 1;
-        }
-      }
-      context_enlargeIn--;
-      if (context_enlargeIn == 0) {
-        context_enlargeIn = Math.pow(2, context_numBits);
-        context_numBits++;
-      }
-    }
-    value = 2;
-    for (i = 0; i < context_numBits; i++) {
-      context_data_val = context_data_val << 1 | value & 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data_position = 0;
-        context_data.push(getCharFromInt(context_data_val));
-        context_data_val = 0;
-      } else {
-        context_data_position++;
-      }
-      value = value >> 1;
-    }
-    while (true) {
-      context_data_val = context_data_val << 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data.push(getCharFromInt(context_data_val));
-        break;
-      } else context_data_position++;
-    }
-    return context_data.join("");
-  }
-  function buildHref(ex) {
-    const documentText = ex.state === undefined ? "" : typeof ex.state === "string" ? ex.state : JSON.stringify(ex.state, null, 2);
-    return "https://console.typesafe.ai/decode#share/" + compressToEncodedURIComponent(JSON.stringify({
-      apiVersion: "v1",
-      documentText,
-      promptsText: JSON.stringify(ex.questions, null, 2),
-      selectedModels: ex.selectedModels
-    }));
-  }
-  const displayedExample = display === "questions" ? example.questions : example.state === undefined ? {
-    questions: example.questions
-  } : {
-    state: example.state,
-    questions: example.questions
-  };
-  const code = JSON.stringify(displayedExample, null, 2);
-  const href = buildHref(example);
-  return <div style={{
-    margin: "1.25rem 0"
-  }}>
-      <CodeBlock language="json" filename={title ?? "request"}>
-        {code}
-      </CodeBlock>
-      <div className="pb-8">
-        <a href={href} target="_blank" rel="noreferrer" className="text-primary">
-          Try it in the Playground →
-        </a>
-      </div>
-    </div>;
-}
-
 System One is TypeSafe's model for building AI-powered software, not agents. It does not generate code or choose its own next action. It provides AI primitives that embed into software, so code remains in control while the model handles common-sense judgments over unstructured data.
 
-<Info>
-  **Summary:** build a normal software workflow and insert System One only where AI is needed.
-
-  * Keep control flow, deterministic rules, and side effects in code.
-  * Break broad judgments into narrow, typed questions with explicit instructions and criteria.
-  * Give each question only the context it needs.
-  * Use probabilities and confidence to act, ask for review, or escalate.
-  * Ask independent questions together, then compose their answers in code.
-</Info>
+> [!NOTE]
+>
+> **Summary:** build a normal software workflow and insert System One only where AI is needed.
+>
+> * Keep control flow, deterministic rules, and side effects in code.
+> * Break broad judgments into narrow, typed questions with explicit instructions and criteria.
+> * Give each question only the context it needs.
+> * Use probabilities and confidence to act, ask for review, or escalate.
+> * Ask independent questions together, then compose their answers in code.
 
 ## Three software architectures
 
 TypeSafe is designed for building **AI-powered software**, where code owns the workflow and AI handles narrow, structured decisions.
 
-<Tabs>
-  <Tab title="Traditional software">
-    Traditional code is a complex decision tree made from simple software primitives. Because each primitive is reliable, developers can compose them into higher-level abstractions.
-  </Tab>
+**Traditional software**
 
-  <Tab title="LLM agents">
-    An agent processes instructions and chooses its next step. This works well when a person is monitoring the process, but every loop introduces another opportunity to go off the rails.
-  </Tab>
+Traditional code is a complex decision tree made from simple software primitives. Because each primitive is reliable, developers can compose them into higher-level abstractions.
 
-  <Tab title="AI-powered software">
-    Code handles deterministic work and owns the control flow. The model appears only where the system needs programmable common sense or needs to interpret unstructured data. Each AI task is kept atomic and constrained.
-  </Tab>
-</Tabs>
+**LLM agents**
 
-<Frame>
-  <img className="block dark:hidden" src="https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-light.webp?fit=max&auto=format&n=aFVnpmCIX68NpsV1&q=85&s=35c7622176190d1b1f19dc712f2fbf11" alt="Traditional software, agents, and AI-powered software shown as three different system architectures." width="2048" height="1117" data-path="images/how-to-build-with-typesafe/software-architectures-light.webp" />
+An agent processes instructions and chooses its next step. This works well when a person is monitoring the process, but every loop introduces another opportunity to go off the rails.
 
-  <img className="hidden dark:block" src="https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-dark.webp?fit=max&auto=format&n=aFVnpmCIX68NpsV1&q=85&s=8e6c2c73bdd4c9b541c4f9294bd829b5" alt="Traditional software, agents, and AI-powered software shown as three different system architectures." width="2048" height="1117" data-path="images/how-to-build-with-typesafe/software-architectures-dark.webp" />
-</Frame>
+**AI-powered software**
+
+Code handles deterministic work and owns the control flow. The model appears only where the system needs programmable common sense or needs to interpret unstructured data. Each AI task is kept atomic and constrained.
+
+![Traditional software, agents, and AI-powered software shown as three different system architectures.](https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-light.webp?fit=max\&auto=format\&n=aFVnpmCIX68NpsV1\&q=85\&s=35c7622176190d1b1f19dc712f2fbf11)
 
 ## What makes System One composable
 
-<Columns cols={2}>
-  <Card title="Structured" icon="braces">
-    System One is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
-  </Card>
+> **Structured**
+>
+> System One is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
 
-  <Card title="Parallel" icon="split">
-    Questions are evaluated independently and in parallel. One primitive's result does not become hidden context that changes another primitive's result.
-  </Card>
+> **Parallel**
+>
+> Questions are evaluated independently and in parallel. One primitive's result does not become hidden context that changes another primitive's result.
 
-  <Card title="Comparable" icon="arrow-up-down">
-    Outputs are sortable and can drive smart `if` statements, thresholds, and comparisons.
-  </Card>
+> **Comparable**
+>
+> Outputs are sortable and can drive smart `if` statements, thresholds, and comparisons.
 
-  <Card title="Fast" icon="gauge">
-    Most queries complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
-  </Card>
+> **Fast**
+>
+> Most queries complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
 
-  <Card title="Calibrated confidence" icon="chart-no-axes-combined">
-    [RLCD](/introduction/machine-learning-primer) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
-  </Card>
+> **Calibrated confidence**
+>
+> [RLCD](/introduction/machine-learning-primer) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
 
-  <Card title="Self-consistent" icon="repeat-2">
-    System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](/cookbooks/consistency_noul_cookbook).
-  </Card>
-</Columns>
+> **Self-consistent**
+>
+> System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](/cookbooks/consistency_noul_cookbook).
 
 Because every output is constrained to the supplied options, the model returns a full probability distribution over those options rather than inventing a value outside the schema. TypeSafe's target is a greater than 100× intelligence-to-speed-and-cost ratio; the underlying bet is that cheaper intelligence will create much more demand.
 
 ## Design a System One workflow
 
-<Steps titleSize="h3">
-  <Step title="Use code when you can">
-    Keep deterministic work in code. It is reliable and cheap. Avoid agent `while` loops when a software workflow can express the same behavior.
+### 1. Use code when you can
 
-    <Accordion title="Example: keep deterministic rules in code">
-      ```python theme={null}
-      days_overdue = (today - invoice.due_date).days
+Keep deterministic work in code. It is reliable and cheap. Avoid agent `while` loops when a software workflow can express the same behavior.
 
-      if days_overdue > 30:
-          route_to_collections(invoice)
-      ```
-    </Accordion>
+> **Example: keep deterministic rules in code**
+>
+> ```python theme={null}
+> days_overdue = (today - invoice.due_date).days
+>
+> if days_overdue > 30:
+>     route_to_collections(invoice)
+> ```
 
-    Browse the [System One patterns](/patterns) for bounded ways to compose model decisions with code.
-  </Step>
+Browse the [System One patterns](/patterns) for bounded ways to compose model decisions with code.
 
-  <Step title="Decompose the input state">
-    Include only the context relevant to the current questions. This helps the model avoid distractions and context rot. Do not rely on knowledge stored in model weights when current information can come from your own knowledge base.
+### 2. Decompose the input state
 
-    <Accordion title="Example: send only relevant context">
-      <TypesafeExample
-        title="request"
-        display="request"
-        example={{
-      state: {
-        ticket_message: 'My flight was cancelled. Can I get a refund?',
-        refund_policy: 'Cancelled flights are eligible for a full refund.',
-      },
-      selectedModels: ['jev-latest'],
-      questions: {
-        policy_supports_refund: {
-          type: 'noul',
-          instructions:
-            'Does the refund policy support the refund requested in the ticket?',
-        },
-      },
-    }}
-      />
-    </Accordion>
-  </Step>
+Include only the context relevant to the current questions. This helps the model avoid distractions and context rot. Do not rely on knowledge stored in model weights when current information can come from your own knowledge base.
 
-  <Step title="Use structure in the input state">
-    Use nested JSON for the `state` and `questions` fields. Point questions at specific values when that removes ambiguity, and include the backtick characters around each path inside the question.
+> **Example: send only relevant context**
+>
+> Try it in the Playground →
 
-    <Accordion title="Example: reference a nested value">
-      Use a backticked dot-and-index path to point a question at a specific nested value, such as `support.tickets[0].message`.
+### 3. Use structure in the input state
 
-      <TypesafeExample
-        title="request"
-        display="request"
-        example={{
-      state: {
-        support: {
-          tickets: [
-            { message: 'I was charged twice for order A-104.' },
-            { message: 'How do I reset my password?' },
-          ],
-        },
-        commerce: {
-          orders: [
-            {
-              id: 'A-104',
-              charges: [
-                { amount_usd: 49, status: 'captured' },
-                { amount_usd: 49, status: 'captured' },
-              ],
-            },
-          ],
-        },
-        account: {
-          security: {
-            password_reset:
-              'Email a reset link to the address on file.',
-          },
-        },
-      },
-      selectedModels: ['jev-latest'],
-      questions: {
-        duplicate_charge: {
-          type: 'noul',
-          instructions:
-            'Do `support.tickets[0].message` and `commerce.orders[0].charges` indicate a duplicate charge?',
-        },
-        password_reset_supported: {
-          type: 'noul',
-          instructions:
-            'Can `account.security.password_reset` resolve the request in `support.tickets[1].message`?',
-        },
-      },
-    }}
-      />
-    </Accordion>
-  </Step>
+Use nested JSON for the `state` and `questions` fields. Point questions at specific values when that removes ambiguity, and include the backtick characters around each path inside the question.
 
-  <Step title="Decompose the questions">
-    Ask the most explicit, narrow, specific, atomic questions you can. Break down complex or ill-defined questions into separate questions that each evaluate one property.
+> **Example: reference a nested value**
+>
+> Use a backticked dot-and-index path to point a question at a specific nested value, such as `support.tickets[0].message`.
+>
+> Try it in the Playground →
 
-    <Info>
-      This is probably the most important concept in this guide. Broad questions hide several judgments behind one answer. Atomic questions expose those judgments so you can inspect, tune, and combine them in code.
-    </Info>
+### 4. Decompose the questions
 
-    <Accordion title="Example: decompose spam detection">
-      <TypesafeExample
-        title="One broad question (bad)"
-        display="questions"
-        example={{
-      state: {
-        message: {
-          sender: {
-            display_name: 'Acme Payroll',
-            email: 'rewards@claim-bonus.example',
-          },
-          subject: 'Urgent: claim your employee bonus',
-          body:
-            'You have been selected for a $1,000 bonus. Confirm your payroll password today to receive it.',
-          links: [
-            {
-              text: 'Claim bonus',
-              url: 'http://claim-bonus.example/acme',
-            },
-          ],
-        },
-      },
-      selectedModels: ['jev-latest'],
-      questions: {
-        is_spam: {
-          type: 'noul',
-          instructions: 'Is `message` spam?',
-        },
-      },
-    }}
-      />
+Ask the most explicit, narrow, specific, atomic questions you can. Break down complex or ill-defined questions into separate questions that each evaluate one property.
 
-      <TypesafeExample
-        title="Decomposed questions (good)"
-        display="questions"
-        example={{
-      state: {
-        message: {
-          sender: {
-            display_name: 'Acme Payroll',
-            email: 'rewards@claim-bonus.example',
-          },
-          subject: 'Urgent: claim your employee bonus',
-          body:
-            'You have been selected for a $1,000 bonus. Confirm your payroll password today to receive it.',
-          links: [
-            {
-              text: 'Claim bonus',
-              url: 'http://claim-bonus.example/acme',
-            },
-          ],
-        },
-      },
-      selectedModels: ['jev-latest'],
-      questions: {
-        requests_credentials: {
-          type: 'noul',
-          instructions:
-            'Does `message.body` ask the recipient to provide a password or other login credential?',
-        },
-        offers_unexpected_reward: {
-          type: 'noul',
-          instructions:
-            'Does `message.body` claim the recipient received an unexpected prize, payment, or reward?',
-        },
-        creates_time_pressure: {
-          type: 'noul',
-          instructions:
-            'Does `message.subject` or `message.body` pressure the recipient to act quickly?',
-        },
-        sender_identity_mismatch: {
-          type: 'noul',
-          instructions:
-            'Does the organization named in `message.sender.display_name` conflict with the domain in `message.sender.email`?',
-        },
-        link_domain_mismatch: {
-          type: 'noul',
-          instructions:
-            'Does the domain in `message.links[0].url` conflict with the organization named in `message.sender.display_name`?',
-        },
-        disguises_link_destination: {
-          type: 'noul',
-          instructions:
-            'Does `message.links[0].text` conceal or misrepresent the destination in `message.links[0].url`?',
-        },
-      },
-    }}
-      />
-    </Accordion>
+> [!NOTE]
+>
+> This is probably the most important concept in this guide. Broad questions hide several judgments behind one answer. Atomic questions expose those judgments so you can inspect, tune, and combine them in code.
 
-    <Accordion title="Example: verify a tool-call trace">
-      <TypesafeExample
-        title="One broad question (bad)"
-        display="questions"
-        example={{
-      state: {
-        request: {
-          text: "What's the weather in Seattle tomorrow in Fahrenheit?",
-          location: 'Seattle, WA',
-          date: '2026-09-03',
-          unit: 'fahrenheit',
-        },
-        available_tools: {
-          geocode_city: {
-            description: 'Resolve a city to latitude and longitude.',
-            parameters: { city: 'string' },
-          },
-          get_weather: {
-            description: 'Get the forecast for coordinates and a date.',
-            parameters: {
-              latitude: 'number',
-              longitude: 'number',
-              date: 'YYYY-MM-DD',
-              unit: ['fahrenheit', 'celsius'],
-            },
-          },
-        },
-        trace: {
-          tool_calls: [
-            {
-              id: 'call_1',
-              name: 'geocode_city',
-              arguments: { city: 'Seattle, WA' },
-            },
-            {
-              id: 'call_2',
-              name: 'get_weather',
-              arguments: {
-                latitude: 47.6062,
-                longitude: -122.3321,
-                date: '2026-09-03',
-                unit: 'celsius',
-              },
-            },
-          ],
-          tool_results: [
-            {
-              tool_call_id: 'call_1',
-              output: { latitude: 47.6062, longitude: -122.3321 },
-            },
-          ],
-        },
-      },
-      selectedModels: ['jev-latest'],
-      questions: {
-        tool_calls_are_correct: {
-          type: 'noul',
-          instructions:
-            'Is `trace.tool_calls` correct for `request` and `available_tools`?',
-        },
-      },
-    }}
-      />
+> **Example: decompose spam detection**
+>
+> Try it in the Playground →
+>
+> Try it in the Playground →
 
-      <TypesafeExample
-        title="Decomposed questions (good)"
-        display="questions"
-        example={{
-      state: {
-        request: {
-          text: "What's the weather in Seattle tomorrow in Fahrenheit?",
-          location: 'Seattle, WA',
-          date: '2026-09-03',
-          unit: 'fahrenheit',
-        },
-        available_tools: {
-          geocode_city: {
-            description: 'Resolve a city to latitude and longitude.',
-            parameters: { city: 'string' },
-          },
-          get_weather: {
-            description: 'Get the forecast for coordinates and a date.',
-            parameters: {
-              latitude: 'number',
-              longitude: 'number',
-              date: 'YYYY-MM-DD',
-              unit: ['fahrenheit', 'celsius'],
-            },
-          },
-        },
-        trace: {
-          tool_calls: [
-            {
-              id: 'call_1',
-              name: 'geocode_city',
-              arguments: { city: 'Seattle, WA' },
-            },
-            {
-              id: 'call_2',
-              name: 'get_weather',
-              arguments: {
-                latitude: 47.6062,
-                longitude: -122.3321,
-                date: '2026-09-03',
-                unit: 'celsius',
-              },
-            },
-          ],
-          tool_results: [
-            {
-              tool_call_id: 'call_1',
-              output: { latitude: 47.6062, longitude: -122.3321 },
-            },
-          ],
-        },
-      },
-      selectedModels: ['jev-latest'],
-      questions: {
-        geocode_tool_is_relevant: {
-          type: 'noul',
-          instructions:
-            'Is `trace.tool_calls[0].name` an appropriate tool for resolving `request.location`?',
-        },
-        geocode_location_matches: {
-          type: 'noul',
-          instructions:
-            'Does `trace.tool_calls[0].arguments.city` match `request.location`?',
-        },
-        geocode_arguments_match_schema: {
-          type: 'noul',
-          instructions:
-            'Does `trace.tool_calls[0].arguments` conform to `available_tools.geocode_city.parameters`?',
-        },
-        geocode_result_matches_call: {
-          type: 'noul',
-          instructions:
-            'Does `trace.tool_results[0].tool_call_id` match `trace.tool_calls[0].id`?',
-        },
-        weather_tool_is_relevant: {
-          type: 'noul',
-          instructions:
-            'Is `trace.tool_calls[1].name` an appropriate tool for answering `request.text`?',
-        },
-        weather_arguments_match_schema: {
-          type: 'noul',
-          instructions:
-            'Does `trace.tool_calls[1].arguments` conform to `available_tools.get_weather.parameters`?',
-        },
-        weather_uses_geocoded_coordinates: {
-          type: 'noul',
-          instructions:
-            'Do the coordinates in `trace.tool_calls[1].arguments` match those in `trace.tool_results[0].output`?',
-        },
-        weather_date_matches: {
-          type: 'noul',
-          instructions:
-            'Does `trace.tool_calls[1].arguments.date` match `request.date`?',
-        },
-        weather_unit_matches: {
-          type: 'noul',
-          instructions:
-            'Does `trace.tool_calls[1].arguments.unit` match `request.unit`?',
-        },
-      },
-    }}
-      />
-    </Accordion>
-  </Step>
+> **Example: verify a tool-call trace**
+>
+> Try it in the Playground →
+>
+> Try it in the Playground →
 
-  <Step title="Use structure in the questions">
-    Keep questions short. `instructions` and `criteria` are usually strings, and for a short, unambiguous question a string is all you need. They can also be objects or arrays. Put the question in one field and the data that guides the question in the others.
+### 5. Use structure in the questions
 
-    Structure helps in these situations:
+Keep questions short. `instructions` and `criteria` are usually strings, and for a short, unambiguous question a string is all you need. They can also be objects or arrays. Put the question in one field and the data that guides the question in the others.
 
-    * The question needs context or examples. A long sentence of background information or a list of example inputs belongs in named fields next to the question, where your code can add to them or swap them without rewriting the question.
-    * Part of the question comes from your code. When a value comes from a database, put it in its own field instead of splicing it into a string template.
-    * Several questions have similar instructions. A request takes one state and can include multiple questions. Adding supplementary data can help make questions distinct.
+Structure helps in these situations:
 
-    <Accordion title="Example: reference a record from your code">
-      This Noul compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
+* The question needs context or examples. A long sentence of background information or a list of example inputs belongs in named fields next to the question, where your code can add to them or swap them without rewriting the question.
+* Part of the question comes from your code. When a value comes from a database, put it in its own field instead of splicing it into a string template.
+* Several questions have similar instructions. A request takes one state and can include multiple questions. Adding supplementary data can help make questions distinct.
 
-      <TypesafeExample
-        title="questions"
-        display="questions"
-        example={{
-      state: {
-        resume: {
-          name: 'John Smith',
-          location: 'Oakland, CA',
-          summary: 'Backend engineer with eight years of Python and Go experience.',
-          experience: [
-            { employer: 'Google', title: 'Senior Backend Engineer', years: '2021-2025' },
-            { employer: 'Microsoft', title: 'Software Engineer', years: '2017-2021' },
-          ],
-        },
-      },
-      selectedModels: ['jev-latest'],
-      questions: {
-        same_as_record_18: {
-          type: 'noul',
-          instructions: {
-            potential_duplicate: { name: 'John Smith', location: 'Oakland, California', last_employer: 'Google' },
-            question: 'Is the resume for the same person as `potential_duplicate`?',
-          },
-        },
-      },
-    }}
-      />
-    </Accordion>
+> **Example: reference a record from your code**
+>
+> This Noul compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
+>
+> Try it in the Playground →
 
-    The "potential\_duplicate" data sourced from code can change over time. The "question" references it using backticks.
+The "potential\_duplicate" data sourced from code can change over time. The "question" references it using backticks.
 
-    The descriptions inside `criteria` can be objects too. For a Choice, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
+The descriptions inside `criteria` can be objects too. For a Choice, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
 
-    <Accordion title="Example: define contrastive Choice criteria">
-      <TypesafeExample
-        title="questions"
-        display="questions"
-        example={{
-      state: 'How many disposable virtual cards can I make per day?',
-      selectedModels: ['jev-latest'],
-      questions: {
-        card_help_topic: {
-          type: 'choice',
-          instructions: {
-            question:
-              'Which disposable virtual card topic is the user asking about?',
-            focus: 'Classify the information the user wants.',
-          },
-          criteria: {
-            get_disposable_virtual_card: {
-              what: 'Purpose, eligibility, or setup',
-              not_for: 'Quantity, transaction, or merchant restrictions',
-              examples: [
-                'How can I get a disposable virtual card?',
-                'What are disposable cards for?',
-              ],
-            },
-            disposable_card_limits: {
-              what: 'Quantity, transaction, or merchant restrictions',
-              not_for: 'Purpose, eligibility, or setup',
-              examples: [
-                'How many disposable cards can I make per day?',
-                'Where can I use a disposable card?',
-              ],
-            },
-          },
-        },
-      },
-    }}
-      />
-    </Accordion>
+> **Example: define contrastive Choice criteria**
+>
+> Try it in the Playground →
 
-    Each question type's page has a worked example:
+Each question type's page has a worked example:
 
-    * [Noul](/primitives/noul#structured-instructions) compares one resume against several candidate records, one question per record, with the questions built in code.
-    * [Choice](/primitives/choice#structured-instructions-and-criteria) describes two easily confused options with what each covers, what it's not for, and examples.
-    * [Score](/primitives/score#structured-level-descriptions) gives each level a description and example situations.
+* [Noul](/primitives/noul#structured-instructions) compares one resume against several candidate records, one question per record, with the questions built in code.
+* [Choice](/primitives/choice#structured-instructions-and-criteria) describes two easily confused options with what each covers, what it's not for, and examples.
+* [Score](/primitives/score#structured-level-descriptions) gives each level a description and example situations.
 
-    The [structured-data-extraction cascade cookbook](/cookbooks/sde_cascade) shows the shared-wording case, asking the same battery of questions about every field of an extracted record.
+The [structured-data-extraction cascade cookbook](/cookbooks/sde_cascade) shows the shared-wording case, asking the same battery of questions about every field of an extracted record.
 
-    A short, unambiguous question or criterion can remain a string. Add structure when it separates guidance that would otherwise blur together. For the full set of places structure is accepted, see [Advanced: structure](/primitives/advanced).
-  </Step>
+A short, unambiguous question or criterion can remain a string. Add structure when it separates guidance that would otherwise blur together. For the full set of places structure is accepted, see [Advanced: structure](/primitives/advanced).
 
-  <Step title="Ask a lot of questions">
-    Ask many narrow, independent questions about the same state in one request. This is how you maximize effectiveness and intelligence per dollar with the API: questions run in parallel, and code can combine their signals without adding serial model round trips.
+### 6. Ask a lot of questions
 
-    See the [Speculative Fan-Out pattern](/patterns/fan-out) and [Parallel questions cookbook](/cookbooks/parallel_questions).
-  </Step>
+Ask many narrow, independent questions about the same state in one request. This is how you maximize effectiveness and intelligence per dollar with the API: questions run in parallel, and code can combine their signals without adding serial model round trips.
 
-  <Step title="Combine question outputs in code (or feed into a classical ML model)">
-    Combine independent answers with deterministic rules or weighted sums. For learned composition, use the probabilities as features in a downstream classical machine-learning model.
+See the [Speculative Fan-Out pattern](/patterns/fan-out) and [Parallel questions cookbook](/cookbooks/parallel_questions).
 
-    <Accordion title="Example: combine signals with a weighted score">
-      ```python theme={null}
-      answers = response.answers
+### 7. Combine question outputs in code (or feed into a classical ML model)
 
-      # Combine independent signals into one application-specific score.
-      quality = (
-          0.4 * answers["answers_request"].noul
-          + 0.4 * answers["citations_are_supported"].noul
-          + 0.2 * (1 - answers["contradicts_context"].noul)
-      )
-      ```
-    </Accordion>
+Combine independent answers with deterministic rules or weighted sums. For learned composition, use the probabilities as features in a downstream classical machine-learning model.
 
-    [Composite Scoring](/patterns/composite-scoring) shows how to preserve individual judgments while combining them. If you do not have labels for a downstream model, use an ensemble of expensive reasoning models to generate them; the [AutoResearch cookbook](/cookbooks/autoresearch_feature_discovery) shows how to train a classical model on System One outputs.
-  </Step>
+> **Example: combine signals with a weighted score**
+>
+> ```python theme={null}
+> answers = response.answers
+>
+> # Combine independent signals into one application-specific score.
+> quality = (
+>     0.4 * answers["answers_request"].noul
+>     + 0.4 * answers["citations_are_supported"].noul
+>     + 0.2 * (1 - answers["contradicts_context"].noul)
+> )
+> ```
 
-  <Step title="Route on uncertainty">
-    Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data.
+[Composite Scoring](/patterns/composite-scoring) shows how to preserve individual judgments while combining them. If you do not have labels for a downstream model, use an ensemble of expensive reasoning models to generate them; the [AutoResearch cookbook](/cookbooks/autoresearch_feature_discovery) shows how to train a classical model on System One outputs.
 
-    <Accordion title="Example: route by confidence">
-      ```python theme={null}
-      answer = response.answers["card_help_topic"]
+### 8. Route on uncertainty
 
-      if answer.confidence < 0.8:
-          route_to_human_review(ticket)
-      else:
-          route_to_handler(answer.choice, ticket)
-      ```
-    </Accordion>
+Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data.
 
-    See [Confidence](/confidence) and [Confidence-Gated Routing](/patterns/confidence-routing) for choosing thresholds and matching them to the risk of each action.
-  </Step>
-</Steps>
+> **Example: route by confidence**
+>
+> ```python theme={null}
+> answer = response.answers["card_help_topic"]
+>
+> if answer.confidence < 0.8:
+>     route_to_human_review(ticket)
+> else:
+>     route_to_handler(answer.choice, ticket)
+> ```
 
-<Tip>
-  Decomposition does not require more round trips. Questions over the same state run in parallel.
-</Tip>
+See [Confidence](/confidence) and [Confidence-Gated Routing](/patterns/confidence-routing) for choosing thresholds and matching them to the risk of each action.
+
+> [!TIP]
+>
+> Decomposition does not require more round trips. Questions over the same state run in parallel.
 
 ## Putting it all together
 

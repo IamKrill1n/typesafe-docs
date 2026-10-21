@@ -19,16 +19,12 @@ answers into what the viewer sees.
 The video demo below shows a Jev-powered Chrome extension filtering a live Twitch
 chat:
 
-<Frame>
-  <iframe src="https://player.vimeo.com/video/1230896366" title="Twitch chat filtering Chrome extension demo" className="w-full aspect-video" allow="fullscreen; picture-in-picture" />
-</Frame>
+[Twitch chat filtering Chrome extension demo](https://player.vimeo.com/video/1230896366)
 
 This cookbook covers how messages are categorized and filtered by Jev using 29
 example chat messages. Seven were hidden, two blurred, and six highlighted as questions.
 
-<img className="block dark:hidden" src="https://mintcdn.com/ts-docs/TYTnI8jOLDlVpJfa/cookbooks/twitch_chat_filter/twitch-chat-filter-hero-light.gif?s=b2b03e7fd60ef3d43c74bb21cc7404f4" alt="Five chat messages go to Jev at once, each in its own request with the stream's game. The category, toxic, and spoiler answers come back, and decide() shows, highlights, hides, or blurs each message in the viewer's chat" width="1120" height="520" data-path="cookbooks/twitch_chat_filter/twitch-chat-filter-hero-light.gif" />
-
-<img className="hidden dark:block" src="https://mintcdn.com/ts-docs/TYTnI8jOLDlVpJfa/cookbooks/twitch_chat_filter/twitch-chat-filter-hero.gif?s=03dbb45a89b33b923ee60f97ea6e33a6" alt="Five chat messages go to Jev at once, each in its own request with the stream's game. The category, toxic, and spoiler answers come back, and decide() shows, highlights, hides, or blurs each message in the viewer's chat" width="1120" height="520" data-path="cookbooks/twitch_chat_filter/twitch-chat-filter-hero.gif" />
+![Five chat messages go to Jev at once, each in its own request with the stream's game. The category, toxic, and spoiler answers come back, and decide() shows, highlights, hides, or blurs each message in the viewer's chat](https://mintcdn.com/ts-docs/TYTnI8jOLDlVpJfa/cookbooks/twitch_chat_filter/twitch-chat-filter-hero-light.gif?s=b2b03e7fd60ef3d43c74bb21cc7404f4)
 
 By the end of this cookbook you will have `classify()`, which asks the three questions
 about one message, and `decide()`, which turns the answers into show, highlight, dim,
@@ -466,7 +462,7 @@ else:
     display(Markdown(f"🔗 [Open the state + questions in the TypeSafe playground]({playground_link})"))
 ```
 
-<a href="https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAfQSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkABaW140dZxBXoiA-1yUw6IY4NrQch0HmdJ8XzIOSVTlASNy-IcRx8psY3wOMVXPa0Wkva8XQYlIAkCFwUAgTBqIpZhvWeZUb0nISbhEh5UJwgBJJoNBYJofwiLUyBvVgJGce8fnS61716UIgw4v8NzAJp9MQDtCTQqcwR3FhyVKfYbh9OrHk6o9TD4uQak0LCmj5I45ACl0MhQDCjtFJiqGlDy+Q-FUoVlKiEHcuI5qkZ17GeAAxMFkDAdgVCVBAYCoZ03yC3QeSSVAPL-NhPmVEYNwiEpJkKMwLCsIqDiOUrtHYCrtSqvVngAEUgxrBha2lMQ5BA50ClolDC8wxB5PkgZGzo4JIgEEBGjUVGNWbJmmEAaH3AA1edHVWGcAEYpeshA7mNABZCBBHYMhSgAbRAAArZnbOVrFlYAZixAAGEAAF1-CAA" target="_blank" rel="noreferrer" className="text-primary">Open the state + questions in the TypeSafe playground →</a>
+[Open the state + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAfQSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkABaW140dZxBXoiA-1yUw6IY4NrQch0HmdJ8XzIOSVTlASNy-IcRx8psY3wOMVXPa0Wkva8XQYlIAkCFwUAgTBqIpZhvWeZUb0nISbhEh5UJwgBJJoNBYJofwiLUyBvVgJGce8fnS61716UIgw4v8NzAJp9MQDtCTQqcwR3FhyVKfYbh9OrHk6o9TD4uQak0LCmj5I45ACl0MhQDCjtFJiqGlDy+Q-FUoVlKiEHcuI5qkZ17GeAAxMFkDAdgVCVBAYCoZ03yC3QeSSVAPL-NhPmVEYNwiEpJkKMwLCsIqDiOUrtHYCrtSqvVngAEUgxrBha2lMQ5BA50ClolDC8wxB5PkgZGzo4JIgEEBGjUVGNWbJmmEAaH3AA1edHVWGcAEYpeshA7mNABZCBBHYMhSgAbRAAArZnbOVrFlYAZixAAGEAAF1-CAA)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -6,158 +6,85 @@
 
 > Attach assets to System One requests and reference them from request content.
 
-export function SdkSignature({children}) {
-  async function copy(event) {
-    const button = event.currentTarget;
-    const code = button.parentElement.querySelector("pre code");
-    try {
-      await navigator.clipboard.writeText(code.textContent);
-      button.setAttribute("aria-label", "Signature copied");
-      button.dataset.copied = "true";
-    } catch {
-      button.setAttribute("aria-label", "Copy failed; select the signature to copy");
-    }
-    setTimeout(() => {
-      button.setAttribute("aria-label", "Copy signature");
-      delete button.dataset.copied;
-    }, 2000);
-  }
-  return <div className="sdk-signature not-prose">
-      <button type="button" className="sdk-signature-copy" aria-label="Copy signature" onClick={copy}>
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="8" y="8" width="12" height="12" rx="2" />
-          <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
-        </svg>
-      </button>
-      <pre tabIndex={0} aria-label="SDK signature"><code>{children}</code></pre>
-    </div>;
-}
+> [!NOTE]
+>
+> **Note**
+>
+> The API detects each image's format from its bytes.
 
-<a id="assets" />
-
-<Note>
-  **Note**
-
-  The API detects each image's format from its bytes.
-</Note>
-
-<h2 id="typesafe_sdk.Asset">
-  typesafe\_sdk.Asset
-</h2>
+## typesafe\_sdk.Asset
 
 `module-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"Asset"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`Asset
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/library/typing.html#typing.TypeAlias">
-      {"TypeAlias"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias)
 
-  <span className="o">
-    {"="}
-  </span>
+  &#x20;
 
-  {" "}
+  \=
 
-  <span className="n">
-    <a href="/sdk/python/api/types/assets#typesafe_sdk.Image">
-      {"Image"}
-    </a>
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  [Image](/sdk/python/api/types/assets#typesafe_sdk.Image)\`
+</pre>
 
 An asset referenced from request content; currently only images are supported.
 
-<h2 id="typesafe_sdk.Image">
-  typesafe\_sdk.Image
-</h2>
+## typesafe\_sdk.Image
 
 `dataclass`
 
-<SdkSignature>
-  <span className="nf">
-    {"Image"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {"("}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`Image
 
-  <span className="n">
-    {"data"}
-  </span>
+  (
 
-  <span className="p">
-    {":"}
-  </span>
+  data
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">
-      {"Buffer"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [Buffer](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer)
 
-  <span className="o">
-    {"|"}
-  </span>
+  &#x20;
 
-  {" "}
+  |
 
-  <span className="n">
-    <a href="https://docs.python.org/3/library/os.html#os.PathLike">
-      {"PathLike"}
-    </a>
-  </span>
+  &#x20;
 
-  <span className="p">
-    {"["}
-  </span>
+  [PathLike](https://docs.python.org/3/library/os.html#os.PathLike)
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/stdtypes.html#str">
-      {"str"}
-    </a>
-  </span>
+  \[
 
-  <span className="p">
-    {"])"}
-  </span>
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-  {"\n"}
-</SdkSignature>
+  ])\`
+</pre>
 
 An image asset backed by image file bytes, or a path to an image file.
 
-<Tip>
-  **Reusing images**
+> [!TIP]
+>
+> **Reusing images**
+>
+> An `Image` is loaded once, on first use, and reused by every request that sends the same `Image` object.
 
-  An `Image` is loaded once, on first use, and reused by every request that sends the same `Image` object.
-</Tip>
-
-<Tip>
-  **Working with `Buffer` objects**
-
-  `Image` also accepts `Buffer` objects: anything exposing its memory through the [buffer protocol](https://docs.python.org/3/c-api/buffer.html), such as `bytearray`, `memoryview`, `mmap`, or NumPy arrays. Buffers other than `bytes` are copied into memory once, on first use, so the original can change or be closed afterwards.
-</Tip>
+> [!TIP]
+>
+> **Working with `Buffer` objects**
+>
+> `Image` also accepts `Buffer` objects: anything exposing its memory through the [buffer protocol](https://docs.python.org/3/c-api/buffer.html), such as `bytearray`, `memoryview`, `mmap`, or NumPy arrays. Buffers other than `bytes` are copied into memory once, on first use, so the original can change or be closed afterwards.
 
 Examples:
 
@@ -209,175 +136,122 @@ def map_photo(path: Path) -> Image:
         return Image(mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ))
 ```
 
-<h3 id="typesafe_sdk.Image.data">
-  data
-</h3>
+### data
 
 `instance-attribute`
 
-<SdkSignature>
-  <span className="n">
-    {"data"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {":"}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`data
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">
-      {"Buffer"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [Buffer](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer)
 
-  <span className="o">
-    {"|"}
-  </span>
+  &#x20;
 
-  {" "}
+  |
 
-  <span className="n">
-    <a href="https://docs.python.org/3/library/os.html#os.PathLike">
-      {"PathLike"}
-    </a>
-  </span>
+  &#x20;
 
-  <span className="p">
-    {"["}
-  </span>
+  [PathLike](https://docs.python.org/3/library/os.html#os.PathLike)
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/stdtypes.html#str">
-      {"str"}
-    </a>
-  </span>
+  \[
 
-  <span className="p">
-    {"]"}
-  </span>
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-  {"\n"}
-</SdkSignature>
+  ]\`
+</pre>
 
 Image contents, represented as one of:
 
 * raw bytes (anything supporting the [`Buffer` protocol](https://docs.python.org/3/library/stdtypes.html#buffer-objects))
 * [path-like](https://docs.python.org/3/library/os.html#os.PathLike) object pointing at the image on the filesystem
 
-<h3 id="typesafe_sdk.Image.from_base64">
-  from\_base64
-</h3>
+### from\_base64
 
 `classmethod`
 
-<SdkSignature>
-  <span className="nf">
-    {"from_base64"}
-  </span>
+Copy signature
 
-  <span className="p">
-    {"("}
-  </span>
+<pre tabIndex={0} aria-label="SDK signature">
+  \`from\_base64
 
-  <span className="n">
-    {"data"}
-  </span>
+  (
 
-  <span className="p">
-    {":"}
-  </span>
+  data
 
-  {" "}
+  :
 
-  <span className="n">
-    <a href="https://docs.python.org/3/builtins/stdtypes.html#str">
-      {"str"}
-    </a>
-  </span>
+  &#x20;
 
-  {" "}
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-  <span className="o">
-    {"|"}
-  </span>
+  &#x20;
 
-  {" "}
+  |
 
-  <span className="n">
-    <a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">
-      {"Buffer"}
-    </a>
-  </span>
+  &#x20;
 
-  <span className="p">
-    {")"}
-  </span>
+  [Buffer](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer)
 
-  {" "}
+  )
 
-  <span className="o">
-    {"->"}
-  </span>
+  &#x20;
 
-  {" "}
+  ->
 
-  <span className="n">
-    <a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self">
-      {"Self"}
-    </a>
-  </span>
+  &#x20;
 
-  {"\n"}
-</SdkSignature>
+  [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)\`
+</pre>
 
 Create an `Image` instance from a base64-encoded image bytes.
 
 Parameters:
 
-* **`data`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Buffer">Buffer</a></code>) –
+* **`data`** (`str | Buffer`) –
 
   The image file bytes, base64-encoded, as text or an ASCII buffer. Whitespace, such as the line breaks of wrapped base64, is ignored.
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+* `TypeSafeError` –
 
   The data isn't valid base64 text.
 
-<h3 id="typesafe_sdk.Image.from_pil">
-  from\_pil
-</h3>
+### from\_pil
 
 `classmethod`
 
-<SdkSignature>
-  <span className="nf">{"from_pil"}</span><span className="p">{"("}</span>{"\n"}{"    "}<span className="n">{"image"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL">{"PIL"}</a></span><span className="o">{"."}</span><span className="n"><a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image">{"Image"}</a></span><span className="o">{"."}</span><span className="n"><a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image">{"Image"}</a></span><span className="p">{","}</span>{" "}<span className="nb">{"format"}</span><span className="p">{":"}</span>{" "}<span className="n"><a href="https://docs.python.org/3/builtins/stdtypes.html#str">{"str"}</a></span>{" "}<span className="o">{"="}</span>{" "}<span className="s2">{"\"jpeg\""}</span>{"\n"}<span className="p">{")"}</span>{" "}<span className="o">{"->"}</span>{" "}<span className="n"><a href="https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self">{"Self"}</a></span>{"\n"}
-</SdkSignature>
+Copy signature
+<pre tabIndex={0} aria-label="SDK signature">`from\_pil(
+&#x20;   image: [PIL](https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image), format: [str](https://docs.python.org/3/builtins/stdtypes.html#str) = "jpeg"
+) -> [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)`</pre>
 
 Create an `Image` instance from a [Pillow](https://pillow.readthedocs.io/) image.
 
-<Warning>
-  **Encoder settings**
-
-  The image is saved with Pillow's default encoder settings, except that JPEG uses quality 95. JPEG can't store transparency or palettes, so pass `format="png"` for RGBA or P mode images. Encode it yourself if different settings are needed.
-</Warning>
+> [!WARNING]
+>
+> **Encoder settings**
+>
+> The image is saved with Pillow's default encoder settings, except that JPEG uses quality 95. JPEG can't store transparency or palettes, so pass `format="png"` for RGBA or P mode images. Encode it yourself if different settings are needed.
 
 Parameters:
 
-* **`image`** (<code><a href="https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL">PIL</a>.<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image">Image</a>.<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image">Image</a></code>) –
+* **`image`** (`PIL.Image.Image`) –
 
   The Pillow image to encode.
-* **`format`** (<code><a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>, default: `'jpeg'` ) –
+* **`format`** (`str`, default: `'jpeg'` ) –
 
   The image format to save as, by its [Pillow name](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html).
 
 Raises:
 
-* <code><a href="/sdk/python/api/exceptions#typesafe_sdk.TypeSafeError">TypeSafeError</a></code> –
+* `TypeSafeError` –
 
   Pillow can't encode the image in this format.
 

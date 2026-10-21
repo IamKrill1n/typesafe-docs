@@ -4,7 +4,7 @@
 
 ## Check it out in action
 
-<iframe src="https://player.vimeo.com/video/1230923853" title="Smart home assistant demo video" allow="fullscreen; picture-in-picture" style={{ width: '100%', aspectRatio: '16 / 9', border: 'none' }} />
+[Smart home assistant demo video](https://player.vimeo.com/video/1230923853)
 
 ## How it works
 

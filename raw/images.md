@@ -6,19 +6,13 @@
 
 > Send images in a System One request: in the state, inside a question's instructions, and as the criteria a question is judged against.
 
-<Callout icon="flask-conical" color="#E551BA">
-  **Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
+**Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
 
-  To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](/images#turning-on-images).
-</Callout>
+To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](/images#turning-on-images).
 
 An image can go anywhere text can go in a System One request: in the `state`, in a question's `instructions`, and in its `criteria`. Every question type accepts images, and the [Box](/primitives/box) question type returns where something is in an image.
 
-<Frame>
-  <img className="block dark:hidden mx-auto" style={{ maxWidth: 480 }} src="https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/anatomy-light.webp?fit=max&auto=format&n=OmOS-OoUA_8VxwSR&q=85&s=7d5e99842cb8a482309f65a6d4aa195e" alt="A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs_up option in a Choice question's criteria. The images themselves are listed in the request's assets." width="960" height="1048" data-path="images/images/anatomy-light.webp" />
-
-  <img className="hidden dark:block mx-auto" style={{ maxWidth: 480 }} src="https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/anatomy-dark.webp?fit=max&auto=format&n=OmOS-OoUA_8VxwSR&q=85&s=13804f2b47a23dc560f322bc2e5df981" alt="A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs_up option in a Choice question's criteria. The images themselves are listed in the request's assets." width="960" height="1048" data-path="images/images/anatomy-dark.webp" />
-</Frame>
+![A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs\_up option in a Choice question's criteria. The images themselves are listed in the request's assets.](https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/anatomy-light.webp?fit=max\&auto=format\&n=OmOS-OoUA_8VxwSR\&q=85\&s=7d5e99842cb8a482309f65a6d4aa195e)
 
 ## Turning on images
 
@@ -68,27 +62,27 @@ Jev 1.13 and Jev 1.14 both accept images. [Box](/primitives/box) questions need 
 
 ### Asset fields
 
-<ParamField body="assets" type="map<string, Asset>">
-  The images in the request, keyed by reference string. Every reference must appear somewhere in the `state`, `instructions`, or `criteria`.
+**assets** `map\<string, Asset\>`
 
-  <Expandable title="Asset properties">
-    <ParamField body="type" type="&#x22;image&#x22;">
-      The kind of asset. Optional. If you send it, it must be `"image"`.
-    </ParamField>
+The images in the request, keyed by reference string. Every reference must appear somewhere in the `state`, `instructions`, or `criteria`.
 
-    <ParamField body="part" type="string">
-      In a multipart request, the name of the file part that holds the image. See [Uploading images](#uploading-images).
-    </ParamField>
+**Asset properties**
 
-    <ParamField body="data_base64" type="string">
-      The image file, base64-encoded. Required unless `part` is set. Use the standard base64 alphabet with `=` padding, no line breaks or other whitespace, and no `data:` prefix.
-    </ParamField>
+**type** `"image"`
 
-    <ParamField body="format" type="&#x22;png&#x22; | &#x22;jpg&#x22; | &#x22;jpeg&#x22;">
-      The image's format, in lowercase. Required with `data_base64`. Optional with `part`. `"jpeg"` is another name for `"jpg"`.
-    </ParamField>
-  </Expandable>
-</ParamField>
+The kind of asset. Optional. If you send it, it must be `"image"`.
+
+**part** `string`
+
+In a multipart request, the name of the file part that holds the image. See [Uploading images](#uploading-images).
+
+**data\_base64** `string`
+
+The image file, base64-encoded. Required unless `part` is set. Use the standard base64 alphabet with `=` padding, no line breaks or other whitespace, and no `data:` prefix.
+
+**format** `"png" | "jpg" | "jpeg"`
+
+The image's format, in lowercase. Required with `data_base64`. Optional with `part`. `"jpeg"` is another name for `"jpg"`.
 
 Send each image one way, with `part` or `data_base64`. If an asset has both, the API uses `part`.
 
@@ -109,55 +103,53 @@ The Python and JavaScript SDKs create references for you. See [Uploading images]
 
 With the latest Python or JavaScript SDK, put an image object anywhere text can go. The SDK creates a reference for it and uploads the file. This example sends one doorbell photo as the state and asks two questions about it:
 
-<CodeGroup>
-  ```python Python theme={null}
-  from pathlib import Path
+```python Python theme={null}
+from pathlib import Path
 
-  from typesafe_sdk import Choice, Image, Noul, TypeSafeClient
+from typesafe_sdk import Choice, Image, Noul, TypeSafeClient
 
-  with TypeSafeClient() as client:
-      result = client.system_one(
-          state={"door": Image(Path("door-camera.jpg"))},
-          questions={
-              "person_present": Noul(instructions="Is there a person in `door`?"),
-              "carrying": Choice(
-                  instructions="What is the person in `door` carrying?",
-                  criteria={
-                      "package": "A box or parcel.",
-                      "bag": "A bag of groceries or shopping.",
-                      "nothing": "Empty hands.",
-                  },
-              ),
-          },
-          extra_headers={"TypeSafe-Danger-Zone-Images": "true"},
-      )
-      print(result.answers)
-  ```
+with TypeSafeClient() as client:
+    result = client.system_one(
+        state={"door": Image(Path("door-camera.jpg"))},
+        questions={
+            "person_present": Noul(instructions="Is there a person in `door`?"),
+            "carrying": Choice(
+                instructions="What is the person in `door` carrying?",
+                criteria={
+                    "package": "A box or parcel.",
+                    "bag": "A bag of groceries or shopping.",
+                    "nothing": "Empty hands.",
+                },
+            ),
+        },
+        extra_headers={"TypeSafe-Danger-Zone-Images": "true"},
+    )
+    print(result.answers)
+```
 
-  ```typescript JavaScript theme={null}
-  import { openAsBlob } from "node:fs";
-  import { choice, image, noul, TypeSafeClient } from "@typesafe-ai/sdk";
+```typescript JavaScript theme={null}
+import { openAsBlob } from "node:fs";
+import { choice, image, noul, TypeSafeClient } from "@typesafe-ai/sdk";
 
-  const client = new TypeSafeClient();
-  const door = image(await openAsBlob("door-camera.jpg"));
+const client = new TypeSafeClient();
+const door = image(await openAsBlob("door-camera.jpg"));
 
-  const { answers } = await client.systemOne(
-    {
-      state: { door },
-      questions: {
-        person_present: noul("Is there a person in `door`?"),
-        carrying: choice("What is the person in `door` carrying?", {
-          package: "A box or parcel.",
-          bag: "A bag of groceries or shopping.",
-          nothing: "Empty hands.",
-        }),
-      },
+const { answers } = await client.systemOne(
+  {
+    state: { door },
+    questions: {
+      person_present: noul("Is there a person in `door`?"),
+      carrying: choice("What is the person in `door` carrying?", {
+        package: "A box or parcel.",
+        bag: "A bag of groceries or shopping.",
+        nothing: "Empty hands.",
+      }),
     },
-    { headers: { "TypeSafe-Danger-Zone-Images": "true" } },
-  );
-  console.log(answers);
-  ```
-</CodeGroup>
+  },
+  { headers: { "TypeSafe-Danger-Zone-Images": "true" } },
+);
+console.log(answers);
+```
 
 To put an image inside a sentence, or to choose your own references, see the [SDK guides](/sdk).
 
@@ -165,85 +157,83 @@ To put an image inside a sentence, or to choose your own references, see the [SD
 
 Without an SDK, send each image as a file part in a `multipart/form-data` request. Multipart is the better choice: it sends the file as it is, while base64 makes each image about a third larger, and that extra size counts toward the 32 MiB [request body limit](#limits). Base64-encode images into the JSON only when you can't send multipart.
 
-<Tabs>
-  <Tab title="Multipart (recommended)">
-    Send the JSON body as the first part, named `request`, with content type `application/json`. Send each image as its own file part, and set that image's `part` in `assets` to the file part's name:
+**Multipart (recommended)**
 
-    ```bash theme={null}
-    curl https://api.typesafe.ai/v1/systemone \
-      -H "Authorization: Bearer $TYPESAFE_API_KEY" \
-      -H "TypeSafe-Danger-Zone-Images: true" \
-      -F 'request={
+Send the JSON body as the first part, named `request`, with content type `application/json`. Send each image as its own file part, and set that image's `part` in `assets` to the file part's name:
+
+```bash theme={null}
+curl https://api.typesafe.ai/v1/systemone \
+  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+  -H "TypeSafe-Danger-Zone-Images: true" \
+  -F 'request={
+    "model": "jev-latest",
+    "state": {"door": "a3f1c2e8-door"},
+    "assets": {"a3f1c2e8-door": {"type": "image", "part": "door-photo"}},
+    "questions": {
+      "person_present": {"type": "noul", "instructions": "Is there a person in `door`?"}
+    }
+  };type=application/json' \
+  -F 'door-photo=@door-camera.jpg;type=image/jpeg'
+```
+
+The rules for multipart requests:
+
+* The first part is named `request` and holds the JSON body.
+* Part names are unique and not empty. `request` is reserved for the JSON body.
+* Each image part has content type `image/png`, `image/jpeg`, `image/jpg`, or `application/octet-stream`, or no content type. Any other content type returns `400`.
+* Each file part belongs to exactly one asset. A part that no asset names, two assets that name the same part, and an asset whose part is missing all return `400`.
+
+To use the same image in several places, write its reference in each of them.
+
+**Base64 in JSON**
+
+Base64-encode the file into `data_base64` and set `format`, following the rules in [Asset fields](#asset-fields). Python's `base64.b64encode` produces the right encoding. This Python example sends one photo and asks two questions about it:
+
+```python theme={null}
+import base64
+import os
+import uuid
+
+import requests
+
+def image_asset(path: str) -> tuple[str, dict]:
+    """Return a new reference and the asset entry for one image file."""
+    fmt = "png" if path.lower().endswith(".png") else "jpg"
+    with open(path, "rb") as f:
+        data = base64.b64encode(f.read()).decode("ascii")
+    return str(uuid.uuid4()), {"type": "image", "format": fmt, "data_base64": data}
+
+photo_key, photo = image_asset("door-camera.jpg")
+
+response = requests.post(
+    "https://api.typesafe.ai/v1/systemone",
+    headers={
+        "Authorization": f"Bearer {os.environ['TYPESAFE_API_KEY']}",
+        "TypeSafe-Danger-Zone-Images": "true",
+    },
+    json={
         "model": "jev-latest",
-        "state": {"door": "a3f1c2e8-door"},
-        "assets": {"a3f1c2e8-door": {"type": "image", "part": "door-photo"}},
+        "state": {"door": photo_key},
+        "assets": {photo_key: photo},
         "questions": {
-          "person_present": {"type": "noul", "instructions": "Is there a person in `door`?"}
-        }
-      };type=application/json' \
-      -F 'door-photo=@door-camera.jpg;type=image/jpeg'
-    ```
-
-    The rules for multipart requests:
-
-    * The first part is named `request` and holds the JSON body.
-    * Part names are unique and not empty. `request` is reserved for the JSON body.
-    * Each image part has content type `image/png`, `image/jpeg`, `image/jpg`, or `application/octet-stream`, or no content type. Any other content type returns `400`.
-    * Each file part belongs to exactly one asset. A part that no asset names, two assets that name the same part, and an asset whose part is missing all return `400`.
-
-    To use the same image in several places, write its reference in each of them.
-  </Tab>
-
-  <Tab title="Base64 in JSON">
-    Base64-encode the file into `data_base64` and set `format`, following the rules in [Asset fields](#asset-fields). Python's `base64.b64encode` produces the right encoding. This Python example sends one photo and asks two questions about it:
-
-    ```python theme={null}
-    import base64
-    import os
-    import uuid
-
-    import requests
-
-    def image_asset(path: str) -> tuple[str, dict]:
-        """Return a new reference and the asset entry for one image file."""
-        fmt = "png" if path.lower().endswith(".png") else "jpg"
-        with open(path, "rb") as f:
-            data = base64.b64encode(f.read()).decode("ascii")
-        return str(uuid.uuid4()), {"type": "image", "format": fmt, "data_base64": data}
-
-    photo_key, photo = image_asset("door-camera.jpg")
-
-    response = requests.post(
-        "https://api.typesafe.ai/v1/systemone",
-        headers={
-            "Authorization": f"Bearer {os.environ['TYPESAFE_API_KEY']}",
-            "TypeSafe-Danger-Zone-Images": "true",
-        },
-        json={
-            "model": "jev-latest",
-            "state": {"door": photo_key},
-            "assets": {photo_key: photo},
-            "questions": {
-                "person_present": {
-                    "type": "noul",
-                    "instructions": "Is there a person in `door`?",
-                },
-                "carrying": {
-                    "type": "choice",
-                    "instructions": "What is the person in `door` carrying?",
-                    "criteria": {
-                        "package": "A box or parcel.",
-                        "bag": "A bag of groceries or shopping.",
-                        "nothing": "Empty hands.",
-                    },
+            "person_present": {
+                "type": "noul",
+                "instructions": "Is there a person in `door`?",
+            },
+            "carrying": {
+                "type": "choice",
+                "instructions": "What is the person in `door` carrying?",
+                "criteria": {
+                    "package": "A box or parcel.",
+                    "bag": "A bag of groceries or shopping.",
+                    "nothing": "Empty hands.",
                 },
             },
         },
-    )
-    print(response.json()["answers"])
-    ```
-  </Tab>
-</Tabs>
+    },
+)
+print(response.json()["answers"])
+```
 
 ## Image placement
 

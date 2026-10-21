@@ -22,8 +22,6 @@ An unsuccessful HTTP response from the API.
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts theme={null}
@@ -63,8 +61,6 @@ new APIError(
 
 ## Properties
 
-<a id="sdk-body" />
-
 ### body
 
 ```ts theme={null}
@@ -74,8 +70,6 @@ readonly body: unknown;
 Parsed JSON, response text, or `undefined` for an empty body.
 
 ***
-
-<a id="sdk-headers" />
 
 ### headers
 
@@ -87,8 +81,6 @@ HTTP response headers.
 
 ***
 
-<a id="sdk-requestid" />
-
 ### requestId
 
 ```ts theme={null}
@@ -99,8 +91,6 @@ Request ID from `x-typesafe-request-id`, or `undefined` when absent.
 
 ***
 
-<a id="sdk-status" />
-
 ### status
 
 ```ts theme={null}
@@ -110,8 +100,6 @@ readonly status: number;
 HTTP response status code.
 
 ## Methods
-
-<a id="sdk-fromresponse" />
 
 ### fromResponse()
 

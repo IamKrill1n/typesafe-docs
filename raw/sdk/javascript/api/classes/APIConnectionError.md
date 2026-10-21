@@ -16,8 +16,6 @@ The request or response-body delivery failed (DNS, TLS, connection closed, etc.)
 
 ## Constructors
 
-<a id="sdk-constructor" />
-
 ### Constructor
 
 ```ts theme={null}

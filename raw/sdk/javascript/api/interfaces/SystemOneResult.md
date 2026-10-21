@@ -14,8 +14,6 @@ Answers keyed by question name, with model and usage metadata.
 
 ## Properties
 
-<a id="sdk-answers" />
-
 ### answers
 
 ```ts theme={null}
@@ -26,8 +24,6 @@ Answers with types inferred from the supplied questions.
 
 ***
 
-<a id="sdk-model" />
-
 ### model
 
 ```ts theme={null}
@@ -37,8 +33,6 @@ readonly model: string;
 The model used to answer the request.
 
 ***
-
-<a id="sdk-usage" />
 
 ### usage
 

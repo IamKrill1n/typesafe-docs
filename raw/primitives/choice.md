@@ -6,235 +6,6 @@
 
 > A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.
 
-export function TypesafeExample({example, display, title}) {
-  const keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
-  function compressToEncodedURIComponent(input) {
-    if (input == null) return "";
-    return _compress(input, 6, function (a) {
-      return keyStrUriSafe.charAt(a);
-    });
-  }
-  function _compress(uncompressed, bitsPerChar, getCharFromInt) {
-    if (uncompressed == null) return "";
-    var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
-    for (ii = 0; ii < uncompressed.length; ii += 1) {
-      context_c = uncompressed.charAt(ii);
-      if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-        context_dictionary[context_c] = context_dictSize++;
-        context_dictionaryToCreate[context_c] = true;
-      }
-      context_wc = context_w + context_c;
-      if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
-        context_w = context_wc;
-      } else {
-        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-          if (context_w.charCodeAt(0) < 256) {
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 8; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          } else {
-            value = 1;
-            for (i = 0; i < context_numBits; i++) {
-              context_data_val = context_data_val << 1 | value;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = 0;
-            }
-            value = context_w.charCodeAt(0);
-            for (i = 0; i < 16; i++) {
-              context_data_val = context_data_val << 1 | value & 1;
-              if (context_data_position == bitsPerChar - 1) {
-                context_data_position = 0;
-                context_data.push(getCharFromInt(context_data_val));
-                context_data_val = 0;
-              } else {
-                context_data_position++;
-              }
-              value = value >> 1;
-            }
-          }
-          context_enlargeIn--;
-          if (context_enlargeIn == 0) {
-            context_enlargeIn = Math.pow(2, context_numBits);
-            context_numBits++;
-          }
-          delete context_dictionaryToCreate[context_w];
-        } else {
-          value = context_dictionary[context_w];
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        context_dictionary[context_wc] = context_dictSize++;
-        context_w = String(context_c);
-      }
-    }
-    if (context_w !== "") {
-      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-        if (context_w.charCodeAt(0) < 256) {
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 8; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        } else {
-          value = 1;
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = 0;
-          }
-          value = context_w.charCodeAt(0);
-          for (i = 0; i < 16; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-        }
-        context_enlargeIn--;
-        if (context_enlargeIn == 0) {
-          context_enlargeIn = Math.pow(2, context_numBits);
-          context_numBits++;
-        }
-        delete context_dictionaryToCreate[context_w];
-      } else {
-        value = context_dictionary[context_w];
-        for (i = 0; i < context_numBits; i++) {
-          context_data_val = context_data_val << 1 | value & 1;
-          if (context_data_position == bitsPerChar - 1) {
-            context_data_position = 0;
-            context_data.push(getCharFromInt(context_data_val));
-            context_data_val = 0;
-          } else {
-            context_data_position++;
-          }
-          value = value >> 1;
-        }
-      }
-      context_enlargeIn--;
-      if (context_enlargeIn == 0) {
-        context_enlargeIn = Math.pow(2, context_numBits);
-        context_numBits++;
-      }
-    }
-    value = 2;
-    for (i = 0; i < context_numBits; i++) {
-      context_data_val = context_data_val << 1 | value & 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data_position = 0;
-        context_data.push(getCharFromInt(context_data_val));
-        context_data_val = 0;
-      } else {
-        context_data_position++;
-      }
-      value = value >> 1;
-    }
-    while (true) {
-      context_data_val = context_data_val << 1;
-      if (context_data_position == bitsPerChar - 1) {
-        context_data.push(getCharFromInt(context_data_val));
-        break;
-      } else context_data_position++;
-    }
-    return context_data.join("");
-  }
-  function buildHref(ex) {
-    const documentText = ex.state === undefined ? "" : typeof ex.state === "string" ? ex.state : JSON.stringify(ex.state, null, 2);
-    return "https://console.typesafe.ai/decode#share/" + compressToEncodedURIComponent(JSON.stringify({
-      apiVersion: "v1",
-      documentText,
-      promptsText: JSON.stringify(ex.questions, null, 2),
-      selectedModels: ex.selectedModels
-    }));
-  }
-  const displayedExample = display === "questions" ? example.questions : example.state === undefined ? {
-    questions: example.questions
-  } : {
-    state: example.state,
-    questions: example.questions
-  };
-  const code = JSON.stringify(displayedExample, null, 2);
-  const href = buildHref(example);
-  return <div style={{
-    margin: "1.25rem 0"
-  }}>
-      <CodeBlock language="json" filename={title ?? "request"}>
-        {code}
-      </CodeBlock>
-      <div className="pb-8">
-        <a href={href} target="_blank" rel="noreferrer" className="text-primary">
-          Try it in the Playground →
-        </a>
-      </div>
-    </div>;
-}
-
 Use a Choice when the answer is one of a fixed set of options. For example, which team handles a ticket, which category a product belongs to, or which language a code snippet is written in. If the answer is a position on a spectrum, use a [Score](/primitives/score). If it's a yes or no, use a [Noul](/primitives/noul). [Choose a question type](/primitives#choose-a-question-type) compares all three.
 
 A Choice answer is the selected option in `choice`. The model also returns a probability for every option in `probabilities`, and a `confidence` value for the selected option.
@@ -262,24 +33,7 @@ The POST request body to the [TypeSafe API](/api) has a specific structure. The 
 
 Below is a request where the state is a support ticket from an online shoe store and the question is which team should handle it:
 
-<TypesafeExample
-  display="request"
-  example={{
-state: 'My running shoes arrived in the wrong size. Can I swap them for a size 10?',
-selectedModels: ['jev-latest'],
-questions: {
-  department: {
-    type: 'choice',
-    instructions: 'Which team should handle this?',
-    criteria: {
-      returns: 'Exchanges, wrong or damaged items',
-      shipping: 'Delivery status, delays, lost packages',
-      billing: 'Charges, invoices, payment problems',
-    },
-  },
-},
-}}
-/>
+Try it in the Playground →
 
 You choose the question id, `department` in this case. The answer is returned under the same id. The model never sees the question id. The option names and their descriptions are both sent to the model, so write descriptions that separate the options from each other.
 
@@ -310,9 +64,9 @@ Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoi
 
 Use one of our [client SDKs](/sdk) or call the [HTTP API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
 
-<Note>
-  `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](/api).
-</Note>
+> [!NOTE]
+>
+> `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](/api).
 
 ## Response structure
 
@@ -354,9 +108,9 @@ Ask every Choice question your code might need in a single request rather than o
 
 The same logic applies to the options inside a single Choice question. A Choice question accepts up to 255 options, and adding options costs a few tokens each, so give the model the full list of teams, categories, or products rather than a shortlist. Add an `other` or `none of the above` option when the list might not cover every input, so the model can say none of the others fit.
 
-<Tip>
-  A `none of the above` option may not work well in many use cases. As an alternative, ask a companion [Noul](/primitives/noul) question in the same request that checks whether anything fits at all, such as "Does `message` name any of `our_products`?" Your code then reads the Choice answer only when the Noul says yes.
-</Tip>
+> [!TIP]
+>
+> A `none of the above` option may not work well in many use cases. As an alternative, ask a companion [Noul](/primitives/noul) question in the same request that checks whether anything fits at all, such as "Does `message` name any of `our_products`?" Your code then reads the Choice answer only when the Noul says yes.
 
 To classify documents through a deep hierarchy or large taxonomy, chain Choice questions level by level. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification) shows how to run a beam search over Choice probabilities, keeping the best `K` candidate paths at each level instead of committing to a single greedy path.
 
@@ -366,65 +120,7 @@ The basic example above routes a ticket to a team. A bigger support system might
 
 The request below asks five Choice questions about a ticket that is more ambiguous than the first: it involves three teams and doesn't say what the customer wants.
 
-<TypesafeExample
-  display="request"
-  example={{
-state: 'Shoes arrived two weeks late and in the wrong size. Also I see two charges of $120 on my card. What are you going to do about this?',
-selectedModels: ['jev-latest'],
-questions: {
-  department: {
-    type: 'choice',
-    instructions: 'Which team should handle this?',
-    criteria: {
-      returns: 'Exchanges, wrong or damaged items',
-      shipping: 'Delivery status, delays, lost packages',
-      billing: 'Charges, invoices, payment problems',
-    },
-  },
-  return_reason: {
-    type: 'choice',
-    instructions: 'If the customer wants to return something, why?',
-    criteria: {
-      wrong_size: "The item doesn't fit",
-      wrong_item: 'A different product was delivered',
-      damaged: 'The item arrived broken or faulty',
-      changed_mind: 'The item is fine, the customer no longer wants it',
-      other: 'A return reason that fits none of the above',
-    },
-  },
-  shipping_issue: {
-    type: 'choice',
-    instructions: 'If this is a shipping problem, which kind is it?',
-    criteria: {
-      not_delivered: 'The package never arrived',
-      delayed: 'The package is late but still on its way',
-      wrong_address: 'The package went to the wrong place',
-      damaged_in_transit: 'The package arrived damaged',
-      other: 'A shipping problem that fits none of the above',
-    },
-  },
-  requested_resolution: {
-    type: 'choice',
-    instructions: 'What does the customer want to happen?',
-    criteria: {
-      exchange: 'Swap the item for a different one',
-      refund: 'Money back',
-      replacement: 'The same item sent again',
-      information: 'Just an answer, no action needed',
-    },
-  },
-  tone: {
-    type: 'choice',
-    instructions: "What is the customer's tone?",
-    criteria: {
-      calm: null,
-      frustrated: null,
-      angry: null,
-    },
-  },
-},
-}}
-/>
+Try it in the Playground →
 
 Two of these Choice questions are speculative: `return_reason` only matters if the `department` is `returns`, and `shipping_issue` only matters if it's `shipping`. The `tone` question uses `null` descriptions because the option names are clear on their own.
 
@@ -606,40 +302,7 @@ Start with a one-line description per option. When two options are similar and t
 
 The two answer options below, return\_policy and return\_status, are easy to confuse. A ticket about either one can mention returns and refunds, so each option says what it is not for.
 
-<TypesafeExample
-  display="request"
-  example={{
-state: 'I sent the shoes back a week ago. When do I get my money?',
-selectedModels: ['jev-latest'],
-questions: {
-  return_topic: {
-    type: 'choice',
-    instructions: {
-      question: 'Which returns topic is the customer asking about?',
-      focus: 'Classify the information the customer wants.',
-    },
-    criteria: {
-      return_policy: {
-        what: 'Whether and how an item can be returned',
-        not_for: 'Progress of a return already sent',
-        examples: [
-          "Can I return shoes I've worn once?",
-          'How long do I have to return an order?',
-        ],
-      },
-      return_status: {
-        what: 'Progress of a return already sent',
-        not_for: 'Whether and how an item can be returned',
-        examples: [
-          'Has my return arrived yet?',
-          'When will my refund be paid?',
-        ],
-      },
-    },
-  },
-},
-}}
-/>
+Try it in the Playground →
 
 The response is `return_status` at confidence 1.0:
 

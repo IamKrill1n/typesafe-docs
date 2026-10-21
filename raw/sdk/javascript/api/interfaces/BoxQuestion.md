@@ -8,8 +8,6 @@ A question that locates what its instructions describe in the request's image.
 
 ## Properties
 
-<a id="sdk-instructions" />
-
 ### instructions?
 
 ```ts theme={null}
@@ -19,8 +17,6 @@ optional instructions?: EntryType;
 What to locate, as text, an asset, a JSON object, or an array; optional or `null`.
 
 ***
-
-<a id="sdk-type" />
 
 ### type
 

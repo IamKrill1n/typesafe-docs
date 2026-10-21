@@ -4,8 +4,6 @@ Metadata for an available model.
 
 ## Properties
 
-<a id="sdk-description" />
-
 ### description
 
 ```ts
@@ -14,8 +12,6 @@ readonly description: string;
 
 ***
 
-<a id="sdk-name" />
-
 ### name
 
 ```ts
@@ -23,8 +19,6 @@ readonly name: string;
 ```
 
 ***
-
-<a id="sdk-release_date" />
 
 ### release_date
 

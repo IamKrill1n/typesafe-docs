@@ -24,7 +24,7 @@ See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`true
 
   :
@@ -50,7 +50,7 @@ Description of the yes outcome as text, an asset, a JSON object, or an array; `N
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`false
 
   :
@@ -78,7 +78,7 @@ Description of the no outcome as text, an asset, a JSON object, or an array; `No
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`Noul
 
   (
@@ -99,7 +99,7 @@ Copy signature
 **Overload 1**
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`Noul(
+<pre tabIndex="0" aria-label="SDK signature">`Noul(
 &#x20;   \*,
 &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
 &#x20;   instructions: [Content](./common.md#typesafe_sdk.Content),
@@ -109,7 +109,7 @@ Copy signature
 **Overload 2**
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`Noul(
+<pre tabIndex="0" aria-label="SDK signature">`Noul(
 &#x20;   \*,
 &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
 &#x20;   instructions: None = ...,
@@ -284,7 +284,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -318,7 +318,7 @@ The question to ask, expressed as text, an asset, a JSON object, or an array; op
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`criteria
 
   :
@@ -496,7 +496,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`criteria
 
   :
@@ -534,7 +534,7 @@ A nonempty mapping of labels to text, asset, object, or array descriptions, or `
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -706,7 +706,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`criteria
 
   :
@@ -730,7 +730,7 @@ A nonempty, ordered list of text, asset, object, or array descriptions, one per 
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -904,7 +904,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -937,7 +937,7 @@ What to locate in the request's image, expressed as text, an asset, a JSON objec
 `module-attribute`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`Question: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
+<pre tabIndex="0" aria-label="SDK signature">`Question: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
 &#x20;   [Noul](./questions.md#typesafe_sdk.Noul) | [Choice](./questions.md#typesafe_sdk.Choice) | [Score](./questions.md#typesafe_sdk.Score) | [Box](./questions.md#typesafe_sdk.Box) | [QuestionModel](./questions.md#typesafe_sdk.QuestionModel)
 )`</pre>
 
@@ -949,7 +949,7 @@ A question object or question dictionary.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`Questions
 
   :
@@ -999,7 +999,7 @@ See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`type
 
   :
@@ -1021,7 +1021,7 @@ Copy signature
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -1053,7 +1053,7 @@ The question to ask, expressed as text, an asset, a JSON object, or an array; op
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`criteria
 
   :
@@ -1093,7 +1093,7 @@ See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`type
 
   :
@@ -1115,7 +1115,7 @@ Copy signature
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -1147,7 +1147,7 @@ The question to ask, expressed as text, an asset, a JSON object, or an array; op
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`criteria
 
   :
@@ -1193,7 +1193,7 @@ See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`type
 
   :
@@ -1215,7 +1215,7 @@ Copy signature
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -1247,7 +1247,7 @@ The question to ask, expressed as text, an asset, a JSON object, or an array; op
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`criteria
 
   :
@@ -1277,7 +1277,7 @@ A box question dictionary with `type="box"`.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`type
 
   :
@@ -1299,7 +1299,7 @@ Copy signature
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`instructions
 
   :
@@ -1330,7 +1330,7 @@ What to locate in the request's image, expressed as text, an asset, a JSON objec
 `module-attribute`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`QuestionModel: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
+<pre tabIndex="0" aria-label="SDK signature">`QuestionModel: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
 &#x20;   [NoulModel](./questions.md#typesafe_sdk.NoulModel)
 &#x20;   | [ChoiceModel](./questions.md#typesafe_sdk.ChoiceModel)
 &#x20;   | [ScoreModel](./questions.md#typesafe_sdk.ScoreModel)

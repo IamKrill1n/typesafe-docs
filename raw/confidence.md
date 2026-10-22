@@ -20,8 +20,6 @@ See how probability distribution changes confidence
 
 Confidence
 
-<output />
-
 Probability
 
 Move a slider to change an option's probability. The other probabilities adjust to keep the total at 100%.
@@ -166,8 +164,6 @@ Score question with five levels
 See how distance between levels changes confidence
 
 Confidence
-
-<output />
 
 Probability
 

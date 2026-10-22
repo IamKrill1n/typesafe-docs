@@ -335,7 +335,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`request\_id
 
   :
@@ -373,7 +373,7 @@ model_config = ConfigDict(
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`model
 
   :
@@ -391,7 +391,7 @@ The model used to answer the request.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`usage
 
   :
@@ -409,7 +409,7 @@ Token usage for the request.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`answers
 
   :
@@ -439,7 +439,7 @@ All answer objects keyed by question name.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`nouls
 
   :
@@ -469,7 +469,7 @@ Yes/no answers keyed by question name.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`choices
 
   :
@@ -499,7 +499,7 @@ Choice answers keyed by question name.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`scores
 
   :
@@ -529,7 +529,7 @@ Score answers keyed by question name.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`boxes
 
   :
@@ -628,7 +628,7 @@ model_config = ConfigDict(
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`input\_tokens
 
   :
@@ -662,7 +662,7 @@ Number of input tokens used, or `None` when the API did not report it.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`output\_tokens
 
   :
@@ -752,7 +752,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`noul
 
   :
@@ -861,7 +861,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`choice
 
   :
@@ -879,7 +879,7 @@ The name of the choice with the highest probability among the question's criteri
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`confidence
 
   :
@@ -897,7 +897,7 @@ Confidence in the selected choice, from 0 to 1. Higher values indicate greater c
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`probabilities
 
   :
@@ -1031,7 +1031,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`score
 
   :
@@ -1049,7 +1049,7 @@ Expected score: the probability-weighted average of the rubric levels. May fall 
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`confidence
 
   :
@@ -1076,7 +1076,7 @@ model_config = ConfigDict(
 `pydantic-field`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`legend: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)\[
+<pre tabIndex="0" aria-label="SDK signature">`legend: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)\[
 &#x20;   [int](https://docs.python.org/3/builtins/functions.html#int), [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Any](https://docs.python.org/3/library/typing.html#typing.Any)] | [list](https://docs.python.org/3/builtins/stdtypes.html#list)\[[Any](https://docs.python.org/3/library/typing.html#typing.Any)]
 ]`</pre>
 
@@ -1088,7 +1088,7 @@ Rubric descriptions keyed by integer score.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`probabilities
 
   :
@@ -1235,7 +1235,7 @@ model_config = ConfigDict(
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`box
 
   :
@@ -1253,7 +1253,7 @@ The box's edges as fractions of the image's height and width, from 0 to 1.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`confidence
 
   :
@@ -1354,7 +1354,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`top
 
   :
@@ -1372,7 +1372,7 @@ Top edge of the box, as a fraction of image height from the top (0-1).
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`bottom
 
   :
@@ -1390,7 +1390,7 @@ Bottom edge of the box, as a fraction of image height from the top (0-1).
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`left
 
   :
@@ -1408,7 +1408,7 @@ Left edge of the box, as a fraction of image width from the left (0-1).
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`right
 
   :
@@ -1435,7 +1435,7 @@ model_config = ConfigDict(
 `module-attribute`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`Answer: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = [Annotated](https://docs.python.org/3/library/typing.html#typing.Annotated)\[
+<pre tabIndex="0" aria-label="SDK signature">`Answer: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = [Annotated](https://docs.python.org/3/library/typing.html#typing.Annotated)\[
 &#x20;   [NoulAnswer](/sdk/python/api/types/responses#typesafe_sdk.NoulAnswer)
 &#x20;   | [ChoiceAnswer](/sdk/python/api/types/responses#typesafe_sdk.ChoiceAnswer)
 &#x20;   | [ScoreAnswer](/sdk/python/api/types/responses#typesafe_sdk.ScoreAnswer)
@@ -1517,7 +1517,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`request\_id
 
   :
@@ -1555,7 +1555,7 @@ model_config = ConfigDict(
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`models
 
   :
@@ -1632,7 +1632,7 @@ Fields:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`name
 
   :
@@ -1650,7 +1650,7 @@ Model name or alias accepted by a request's model field.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`description
 
   :
@@ -1668,7 +1668,7 @@ Human-readable description of the model and its capabilities.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`release\_date
 
   :

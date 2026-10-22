@@ -7,7 +7,7 @@
 `dataclass`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`RetryPolicy(
+<pre tabIndex="0" aria-label="SDK signature">`RetryPolicy(
 &#x20;   max_retries: [int](https://docs.python.org/3/builtins/functions.html#int) = 2,
 &#x20;   backoff_initial: [float](https://docs.python.org/3/builtins/functions.html#float) = 0.5,
 &#x20;   backoff_max: [float](https://docs.python.org/3/builtins/functions.html#float) = 5.0,
@@ -46,7 +46,7 @@ client = TypeSafeClient(
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`max\_retries
 
   :
@@ -72,7 +72,7 @@ Maximum retries after the initial attempt; `0` disables retries.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`backoff\_initial
 
   :
@@ -98,7 +98,7 @@ First backoff delay in seconds, doubled each attempt up to `backoff_max`; zero d
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`backoff\_max
 
   :
@@ -124,7 +124,7 @@ Maximum backoff delay in seconds; zero disables backoff.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`backoff\_jitter
 
   :
@@ -149,7 +149,7 @@ Fraction of each backoff delay randomly subtracted, between 0 and 1.
 `class-attribute` `instance-attribute`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`http\_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
+<pre tabIndex="0" aria-label="SDK signature">`http\_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
 &#x20;   default_factory=lambda: \{
 &#x20;       408,
 &#x20;       429,
@@ -165,7 +165,7 @@ HTTP status codes that are retried.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`respect\_retry\_after
 
   :
@@ -191,7 +191,7 @@ Whether to honor `Retry-After` and `retry-after-ms` response headers.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`api\_connection\_error
 
   :
@@ -217,7 +217,7 @@ Whether to retry `TypeSafeAPIConnectionError`, raised when the request cannot re
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`api\_timeout\_error
 
   :
@@ -242,7 +242,7 @@ Whether to retry `TypeSafeAPITimeoutError`, raised when the request exceeds its 
 `class-attribute` `instance-attribute`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`exceptions: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[type](https://docs.python.org/3/builtins/functions.html#type)\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
+<pre tabIndex="0" aria-label="SDK signature">`exceptions: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[type](https://docs.python.org/3/builtins/functions.html#type)\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
 &#x20;   default_factory=[set](https://docs.python.org/3/builtins/stdtypes.html#set)
 )`</pre>
 
@@ -253,7 +253,7 @@ Additional exception types that trigger a retry, on top of the built-in rules.
 `class-attribute` `instance-attribute`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`predicate: (
+<pre tabIndex="0" aria-label="SDK signature">`predicate: (
 &#x20;   [Callable](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)\[\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)], [bool](https://docs.python.org/3/builtins/functions.html#bool)] | None
 ) = None`</pre>
 
@@ -265,7 +265,7 @@ An optional predicate called with the raised exception; returning `True` trigger
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`timeout
 
   :

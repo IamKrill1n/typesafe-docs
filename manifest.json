@@ -6,10 +6,10 @@
       "url": "https://docs.typesafe.ai/agent-skill.md",
       "title": "Agent skill",
       "description": "Drop-in skill for Claude Code, Codex, and other agent environments.",
-      "raw_sha256": "20eb1a8490593976e4dda99267d4cff8aedbec4c324c53333308a73afc7b766c",
+      "raw_sha256": "7027a0aa1ee5b538177d05c48fd52eec13d084b3b2b9308a67175207b570d958",
       "clean_sha256": "0d7e9d69f863a6014e661afdbcc37efb7393543aed448b91d48880873d7245a5",
-      "bytes": 5809,
-      "changed_at": "2026-10-21T11:57:41.017Z"
+      "bytes": 5770,
+      "changed_at": "2026-10-22T11:59:42.601Z"
     },
     "api.md": {
       "url": "https://docs.typesafe.ai/api.md",
@@ -87,10 +87,10 @@
       "url": "https://docs.typesafe.ai/confidence.md",
       "title": "Confidence",
       "description": "How TypeSafe reports certainty, how it differs from probability, and how to use it to control system behavior.",
-      "raw_sha256": "ff8338dfc8572889d399536fae720069cca3d5455f58445edbf5debfcee5bef0",
-      "clean_sha256": "9a6c8a470b4bad563f6280a0f6e145a253301b15626374c43064fc7116033b35",
-      "bytes": 11310,
-      "changed_at": "2026-10-21T11:57:40.964Z"
+      "raw_sha256": "f06c0d1bf579fd51bf582d3309bf1e75b917e5a747890e104b18621f3d5fb414",
+      "clean_sha256": "be996a96e53645bf4884a1e61b38db93696bf2a3008c56306450f64a7776ef48",
+      "bytes": 11286,
+      "changed_at": "2026-10-22T11:59:42.567Z"
     },
     "cookbooks.md": {
       "url": "https://docs.typesafe.ai/cookbooks.md",
@@ -465,10 +465,10 @@
       "url": "https://docs.typesafe.ai/primitives/score.md",
       "title": "Score",
       "description": "A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.",
-      "raw_sha256": "350ce08644c52eee816431c99e67f81de330b02871960c14a15f031689f27598",
-      "clean_sha256": "7aa34f05e0d8219a5a9105c1bd226f8768949ad09bb0799780858b8dbe417e0e",
-      "bytes": 20251,
-      "changed_at": "2026-10-21T11:57:40.957Z"
+      "raw_sha256": "b29e3969fe632a3d19417740d4225605c75e2dd4a7df5f673f4059873879f4e1",
+      "clean_sha256": "99eaebea7ef1ee0437e6c65fe1f7888ec6037afb23444b33b2bd154ee496cc40",
+      "bytes": 20215,
+      "changed_at": "2026-10-22T11:59:42.563Z"
     },
     "sdk.md": {
       "url": "https://docs.typesafe.ai/sdk.md",
@@ -1104,19 +1104,19 @@
       "url": "https://docs.typesafe.ai/sdk/python/api/clients/async.md",
       "title": "Asynchronous client",
       "description": "Use AsyncTypeSafeClient to ask questions, list models, and configure asynchronous TypeSafe API requests.",
-      "raw_sha256": "21ba9548c262eae1af069be3f7e1224ed60d0f7faa0fafb8060168b521a2e689",
-      "clean_sha256": "8854660b4474073944154f50f84cdade1aa8a5a28336332594d2610e1ff63872",
+      "raw_sha256": "58ac60888473f9b45b57ad7085c900c5c350b9c319f15a3da7cca1a7e43b87aa",
+      "clean_sha256": "a959b4fe26b189bdfb01aca0f5ed16425b8e6667c9b264d24752207f989f8452",
       "bytes": 17602,
-      "changed_at": "2026-10-21T11:57:41.030Z"
+      "changed_at": "2026-10-22T11:59:42.608Z"
     },
     "sdk/python/api/clients/sync.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/clients/sync.md",
       "title": "Synchronous client",
       "description": "Use TypeSafeClient to ask questions, list models, and configure synchronous TypeSafe API requests.",
-      "raw_sha256": "e14f05a6f021469ef119dd18ff47b8e5e9fb578bd7085dadb52d69f9aa3de61f",
-      "clean_sha256": "bbcbf4f2269cbe3f8602e4df005281affa6e28ac21caf02f8d1128976758be82",
+      "raw_sha256": "1eb59b9bd937b069a530e84005cec92b5355cd92ae43f3b53d472b0d93c8f6b6",
+      "clean_sha256": "8aab7accc0eedd334c3829dd2228a814f8f029c52a31c21571a36e4dc63a9324",
       "bytes": 17009,
-      "changed_at": "2026-10-21T11:57:41.033Z"
+      "changed_at": "2026-10-22T11:59:42.610Z"
     },
     "sdk/python/api/constants.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/constants.md",
@@ -1131,55 +1131,55 @@
       "url": "https://docs.typesafe.ai/sdk/python/api/exceptions.md",
       "title": "Exceptions",
       "description": "Handle TypeSafe API errors, rate limits, connection failures, and timeouts.",
-      "raw_sha256": "1227a3546b3e9b1c3c3ad28400f874550c6ecddea4b910a0df0e9f3f2ce6e9b9",
-      "clean_sha256": "8d0ebd77f49f31eb6f59191d3d3ad21f1084334c267b4dadc9cdb596b6890f94",
+      "raw_sha256": "5f7fa99b80679b71791540d260bf6d803ae2cd72c88bcb91cccd50283a3df342",
+      "clean_sha256": "6a0d20c53ab7f55e8d51a088f9e57d93ae5046d8889b689245e98d39cbff1179",
       "bytes": 3363,
-      "changed_at": "2026-10-21T11:57:41.043Z"
+      "changed_at": "2026-10-22T11:59:42.622Z"
     },
     "sdk/python/api/retries.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/retries.md",
       "title": "Retries",
       "description": "Configure retries with RetryPolicy — attempt count, retryable statuses, backoff, and retry headers handling.",
-      "raw_sha256": "f4742dcb379c9549d55d0094b34fb6e61d4d45f9fd79d57aa9ec5f2cba17e855",
-      "clean_sha256": "1291121781e6947a095732c7fa207892b7073eb73286e371aaa31c096dbc3f0c",
+      "raw_sha256": "6ef903204ee1bfd976e443027d6c27278898574f51df4592c4e3fdc076204305",
+      "clean_sha256": "400b184b6229e5ec3766862dd00576c521767098761093c72eca16ea802d91fa",
       "bytes": 7121,
-      "changed_at": "2026-10-21T11:57:41.041Z"
+      "changed_at": "2026-10-22T11:59:42.620Z"
     },
     "sdk/python/api/types/assets.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/assets.md",
       "title": "Assets",
       "description": "Attach assets to System One requests and reference them from request content.",
-      "raw_sha256": "47af1b9213a6c8259b9bc76cecaa2e54afc03fdaa1d66c3584cba47259045124",
-      "clean_sha256": "17f38b300260caeda489c863743a09ecaa8d8bd9d1ae283d3473fdb1e3547c66",
+      "raw_sha256": "1b86174a3d6fced288b42e972bd42c06be40a0c9962284f378a1e7dd87c50ad3",
+      "clean_sha256": "9b67110b3868aee8ae38787d1f1d3aaa9ab9297fcaebdf0397ce76660929dbf3",
       "bytes": 5568,
-      "changed_at": "2026-10-21T11:57:41.037Z"
+      "changed_at": "2026-10-22T11:59:42.615Z"
     },
     "sdk/python/api/types/common.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/common.md",
       "title": "Common types",
       "description": "Common types for TypeSafe API SDK.",
-      "raw_sha256": "29befb7452cabdadba6d2d1f90ad2bf309da9141c148f81cdedf1f51a4fc6adf",
-      "clean_sha256": "2eacfbf083aad8b56a8faf3bc67d90c90f410972210f7fe7b7f7436a75c1ab83",
+      "raw_sha256": "397cecb926e263ce5b132c6903e401f65d9f8221ddb668b0ba8cb50906947fd7",
+      "clean_sha256": "0abf3800e033891750cc3825e0cad2e0357f247574c2f429d87a147fa4c0dc9e",
       "bytes": 2373,
-      "changed_at": "2026-10-21T11:57:41.042Z"
+      "changed_at": "2026-10-22T11:59:42.621Z"
     },
     "sdk/python/api/types/questions.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/questions.md",
       "title": "Questions",
       "description": "Provide state and ask yes/no, choice, and score questions using objects or dictionaries.",
-      "raw_sha256": "ed8800eb7f13403f1a57f8aa56d0c1ec65a69e556c4b0e619a848f25cdd72e0a",
-      "clean_sha256": "7812bfc97872157c2a5bb31f9ec2474b94298571cced82cc478647501d896b1a",
+      "raw_sha256": "b003bb00a4a1d18dbc9f409b6d2c4edd8f603ae6dadd680a13dcae6ba345cf77",
+      "clean_sha256": "9bf07b838deb4910321ffa9f60a61c7cc3c8f41d5c93d58298f3e455c896e131",
       "bytes": 25402,
-      "changed_at": "2026-10-21T11:57:41.036Z"
+      "changed_at": "2026-10-22T11:59:42.614Z"
     },
     "sdk/python/api/types/responses.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/responses.md",
       "title": "Answers and responses",
       "description": "Read answers, confidence scores, token usage, and available models returned by the TypeSafe API.",
-      "raw_sha256": "08b198a7d70e499d726a9f9f3b1ac8ef852e2321c54e4945fe65db13eac2d4cb",
-      "clean_sha256": "6998d196ccd57979b76c06b760abe6df98bd0cf697d921b31fc6efb371dcf0d5",
+      "raw_sha256": "db555b83d24b9afe4eb760d308b4587362e7e3baecdf60528a7168ae54881370",
+      "clean_sha256": "4ca346a20ee791d74fd75fd3a00a6897d9efd07cb3339032c4c20bc11f040473",
       "bytes": 34486,
-      "changed_at": "2026-10-21T11:57:41.040Z"
+      "changed_at": "2026-10-22T11:59:42.618Z"
     },
     "sdk/python/changelog.md": {
       "url": "https://docs.typesafe.ai/sdk/python/changelog.md",

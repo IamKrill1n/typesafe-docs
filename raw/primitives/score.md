@@ -24,8 +24,6 @@ Probability of each level
 
 Confidence
 
-<output aria-label="Confidence" />
-
 score
 
 <details>
@@ -156,9 +154,9 @@ We can see how different bug reports change the score:
 <table>
   <thead>
     <tr>
-      <th colSpan={3} />
+      <th colSpan="3" />
 
-      <th colSpan={3}>`probabilities`</th>
+      <th colSpan="3">`probabilities`</th>
     </tr>
 
     <tr>

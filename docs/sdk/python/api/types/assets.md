@@ -14,7 +14,7 @@
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`Asset
 
   :
@@ -40,7 +40,7 @@ An asset referenced from request content; currently only images are supported.
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`Image
 
   (
@@ -137,7 +137,7 @@ def map_photo(path: Path) -> Image:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`data
 
   :
@@ -172,7 +172,7 @@ Image contents, represented as one of:
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`from\_base64
 
   (
@@ -223,7 +223,7 @@ Raises:
 `classmethod`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`from\_pil(
+<pre tabIndex="0" aria-label="SDK signature">`from\_pil(
 &#x20;   image: [PIL](https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image), format: [str](https://docs.python.org/3/builtins/stdtypes.html#str) = "jpeg"
 ) -> [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)`</pre>
 

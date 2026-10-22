@@ -9,7 +9,7 @@
 ## typesafe\_sdk.AsyncTypeSafeClient
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`AsyncTypeSafeClient(
+<pre tabIndex="0" aria-label="SDK signature">`AsyncTypeSafeClient(
 &#x20;   \*,
 &#x20;   api\_key: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
@@ -109,7 +109,7 @@ asyncio.run(main())
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`models
 
   :
@@ -132,7 +132,7 @@ async def main() -> None:
 ### attach\_assets
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`attach\_assets(
+<pre tabIndex="0" aria-label="SDK signature">`attach\_assets(
 &#x20;   assets: [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset) | [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)\[[Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)],
 ) -> [AbstractContextManager](https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager)\[None]`</pre>
 
@@ -182,7 +182,7 @@ async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
 **Implementation**
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`system\_one(
+<pre tabIndex="0" aria-label="SDK signature">`system\_one(
 &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 &#x20;   \*,
@@ -203,7 +203,7 @@ Copy signature
 **Overload 1**
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`system\_one(
+<pre tabIndex="0" aria-label="SDK signature">`system\_one(
 &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 &#x20;   \*,
@@ -223,7 +223,7 @@ Copy signature
 **Overload 2**
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`system\_one(
+<pre tabIndex="0" aria-label="SDK signature">`system\_one(
 &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 &#x20;   \*,
@@ -362,7 +362,7 @@ Access to the models available to the account, reached through `AsyncTypeSafeCli
 `async`
 
 Copy signature
-<pre tabIndex={0} aria-label="SDK signature">`list(
+<pre tabIndex="0" aria-label="SDK signature">`list(
 &#x20;   \*,
 &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)

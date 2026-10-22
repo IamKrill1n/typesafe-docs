@@ -68,7 +68,7 @@ The request method and URL, without credentials, query parameters, or fragment, 
 
 Copy signature
 
-<pre tabIndex={0} aria-label="SDK signature">
+<pre tabIndex="0" aria-label="SDK signature">
   \`request\_id
 
   :

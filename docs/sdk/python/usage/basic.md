@@ -100,7 +100,7 @@ client = AsyncTypeSafeClient(model="jev")
 client = TypeSafeClient(model="jev")
 ```
 
-See the [Models resource reference](https://docs.typesafe.ai/go/models) for more information on available models, their capabilities, pricing details, and model aliases.
+See the [Models resource reference](https://docs.typesafe.ai/go/models.md) for more information on available models, their capabilities, pricing details, and model aliases.
 
 ## Attaching Media Assets
 
@@ -124,7 +124,7 @@ System One requests can include media assets.
 >
 > Learn about support for images:
 >
-> * [**API docs**](https://docs.typesafe.ai/go/images): how to enable and use images with TypeSafe's System One API
+> * [**API docs**](https://docs.typesafe.ai/go/images.md): how to enable and use images with TypeSafe's System One API
 > * [**SDK docs**](../api/types/assets.md#typesafe_sdk.Image): documentation and code examples for using images with `typesafe-sdk`
 
 > [!NOTE]

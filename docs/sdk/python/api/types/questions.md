@@ -16,7 +16,7 @@ Bases: `TypedDict`
 
 Optional descriptions of the yes and no outcomes.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 ### true
 
@@ -120,7 +120,7 @@ Bases: `_Question`, `wire.NoulQuestion`
 
 A yes/no question with optional descriptions for either outcome.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 > [!NOTE]
 >
@@ -354,7 +354,7 @@ Bases: `_Question`, `wire.ChoiceQuestion`
 
 A question that selects between named alternatives.
 
-See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 
 > [!NOTE]
 >
@@ -570,7 +570,7 @@ Bases: `_Question`, `wire.ScoreQuestion`
 
 A question that assigns a score using an ordered rubric.
 
-See the [score primitive](https://docs.typesafe.ai/go/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 
 > [!NOTE]
 >
@@ -991,7 +991,7 @@ Bases: `TypedDict`
 
 A yes/no question dictionary with `type="noul"`.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 ### type
 
@@ -1085,7 +1085,7 @@ Bases: `TypedDict`
 
 A choice question dictionary with `type="choice"`.
 
-See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 
 ### type
 
@@ -1185,7 +1185,7 @@ Bases: `TypedDict`
 
 A score question dictionary with `type="score"`.
 
-See the [score primitive](https://docs.typesafe.ai/go/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 
 ### type
 

@@ -131,9 +131,9 @@ it ask for a diagnosis or a dosage? Does it signal that the sender may hurt them
 One `Score` question rates how much harm complying would do, on a written scale from
 "none" to "serious physical harm".
 
-Both go in the same request, so the whole battery costs one call. The input and output
-batteries ask the same four things from the two sides: whether the user is asking for it,
-and whether the reply went ahead and gave it.
+Both go in the same request, so the whole battery costs one call. The two batteries ask
+the same four things: the input battery whether the user is asking for each, the output
+battery whether the reply gave it.
 
 ```python expandable
 def noul(instructions: str, yes: str, no: str) -> Noul:

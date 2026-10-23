@@ -111,7 +111,7 @@ else:
     route_to_bot(ticket)
 ```
 
-Where to set the threshold depends on the cost of being wrong. Use 0.5 when yes and no are equally easy to act on. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Values in the middle can go to a person rather than either code path. That is the same three-way split the [Confidence](../confidence.md#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
+A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](../confidence.md#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
 
 A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](./score.md) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
@@ -158,8 +158,8 @@ SUPPORT_QUESTIONS = {
     ),
 }
 
-YES = 0.8
-NO = 0.2
+YES = 0.7
+NO = 0.3
 
 def route(message: str) -> None:
     with TypeSafeClient() as client:
@@ -178,8 +178,8 @@ def route(message: str) -> None:
         send_to_review(message)
         return
 
-    priority = "high" if repeat > YES else "normal"
-    if wants_human > YES:
+    priority = "high" if repeat >= YES else "normal"
+    if wants_human >= YES:
         route_to_agent(message, priority=priority)
     else:
         route_to_bot(message, priority=priority)

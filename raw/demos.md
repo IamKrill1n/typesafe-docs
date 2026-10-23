@@ -8,7 +8,7 @@
 
 ## Available demos
 
-* [Smart Home Assistant Demo](/demos/smart-home) - Evaluate user smart home requests with speculative questions and LLM fallback.
+* [Smart Home Assistant Demo](/demos/smart-home.md) - Evaluate user smart home requests with speculative questions and LLM fallback.
 
 > [!TIP]
 >

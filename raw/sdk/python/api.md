@@ -6,12 +6,12 @@
 
 > Python clients for the TypeSafe AI API
 
-* [Sync client](/sdk/python/api/clients/sync)
-* [Async client](/sdk/python/api/clients/async)
-* Types: [Common](/sdk/python/api/types/common) · [Questions](/sdk/python/api/types/questions) · [Responses](/sdk/python/api/types/responses)
-* [Retries](/sdk/python/api/retries)
-* [Exceptions](/sdk/python/api/exceptions)
-* [Constants](/sdk/python/api/constants)
+* [Sync client](/sdk/python/api/clients/sync.md)
+* [Async client](/sdk/python/api/clients/async.md)
+* Types: [Common](/sdk/python/api/types/common.md) · [Questions](/sdk/python/api/types/questions.md) · [Responses](/sdk/python/api/types/responses.md)
+* [Retries](/sdk/python/api/retries.md)
+* [Exceptions](/sdk/python/api/exceptions.md)
+* [Constants](/sdk/python/api/constants.md)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

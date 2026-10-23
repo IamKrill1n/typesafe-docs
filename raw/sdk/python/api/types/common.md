@@ -40,7 +40,7 @@ Copy signature
 &#x20;   "str | int | float | bool | Sequence\[ContentValue | None] | Mapping\[str, ContentValue | None] | Asset",
 )`</pre>
 
-A JSON-like value that may also hold [assets](/sdk/python/api/types/assets#typesafe_sdk.Asset). May be nested and contain `None`.
+A JSON-like value that may also hold [assets](/sdk/python/api/types/assets.md#typesafe_sdk.Asset). May be nested and contain `None`.
 
 ## typesafe\_sdk.Content
 
@@ -52,7 +52,7 @@ Copy signature
 &#x20;   "str | Mapping\[str, ContentValue | None] | Sequence\[ContentValue | None] | Asset",
 )`</pre>
 
-Text, an [asset](/sdk/python/api/types/assets#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](/sdk/python/api/types/common#typesafe_sdk.ContentValue) entries.
+Text, an [asset](/sdk/python/api/types/assets.md#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](/sdk/python/api/types/common#typesafe_sdk.ContentValue) entries.
 
 Each asset is sent in the request's assets, with its unique reference in its place.
 

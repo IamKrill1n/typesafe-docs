@@ -6,7 +6,7 @@
 
 > A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.
 
-Use a Score when the answer is a position on a spectrum you can describe in steps. For example, how severe a bug is, how happy a customer is, or how much Python experience a candidate has. If the answer is one of a fixed set of options with no order between them, use a [Choice](/primitives/choice). If it's a yes or no, use a [Noul](/primitives/noul). [Choose a question type](/primitives#choose-a-question-type) compares all three.
+Use a Score when the answer is a position on a spectrum you can describe in steps. For example, how severe a bug is, how happy a customer is, or how much Python experience a candidate has. If the answer is one of a fixed set of options with no order between them, use a [Choice](/primitives/choice.md). If it's a yes or no, use a [Noul](/primitives/noul.md). [Choose a question type](/primitives#choose-a-question-type) compares all three.
 
 A Score answer is a position along your levels in `score`, which can fall between two levels. The model also returns a probability for every level in `probabilities`, and a `confidence` value for the answer.
 
@@ -64,7 +64,7 @@ The model gets the descriptions and nothing else, and each level is judged on it
 
 The `score` in the response is a position on the levels spectrum. For a three-level scale it runs from 0 to 2, and it can land between two levels.
 
-Our [client SDKs](/sdk) provide typed questions. In Python, the same question is a `Score`:
+Our [client SDKs](/sdk.md) provide typed questions. In Python, the same question is a `Score`:
 
 ```python theme={null}
 from typesafe_sdk import Score, TypeSafeClient
@@ -87,9 +87,9 @@ with TypeSafeClient() as client:
     print(response.answers["bug_severity"].score)
 ```
 
-Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](/concepts/how-to-build-with-system-one) covers where in your code to call it.
+Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
 
-Use one of our [client SDKs](/sdk) or call the [TypeSafe API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
+Use one of our [client SDKs](/sdk.md) or call the [TypeSafe API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill.md#installation) first so it knows the request and response shapes.
 
 > [!NOTE]
 >
@@ -203,9 +203,9 @@ The score is a probability-weighted mean of the level numbers. In the third and 
 
 Different distributions can produce the same score. A score of 1.0 can mean all probability is on level 1, or half is on each of levels 0 and 2. Read `probabilities` and `confidence` alongside the score to distinguish these cases.
 
-A fractional score is a position. You can use it to rank reports by severity, or round it to the nearest level when your code needs one outcome. Our [entity alignment cookbook](/cookbooks/entity_alignment) shows an example of rounding to the nearest level to make a decision.
+A fractional score is a position. You can use it to rank reports by severity, or round it to the nearest level when your code needs one outcome. Our [entity alignment cookbook](/cookbooks/entity_alignment.md) shows an example of rounding to the nearest level to make a decision.
 
-Low confidence on a Score usually means one of three things. The levels overlap for this state, the question is measuring more than one thing, or the state doesn't say enough to place it. Our [Confidence](/confidence) docs cover how to use it in your code.
+Low confidence on a Score usually means one of three things. The levels overlap for this state, the question is measuring more than one thing, or the state doesn't say enough to place it. Our [Confidence](/confidence.md) docs cover how to use it in your code.
 
 ## Writing good levels
 
@@ -227,7 +227,7 @@ Keep each Score question to one dimension. If a description says "punctual and s
 
 If the top of your scale has a rare extreme case you need to act on differently, give it its own level. A sentiment scale that ends at "very angry" can add "abusive or threatening". Without that level, both messages may receive a score near the top. The score alone may not distinguish them.
 
-If there is no in-between at all, and the answer is one of a few discrete categories, use a [Choice](/primitives/choice) instead, or split the question into several [Noul](/primitives/noul) questions. It's important to test your levels against your own data. Two wordings of the same scale can behave differently on your data.
+If there is no in-between at all, and the answer is one of a few discrete categories, use a [Choice](/primitives/choice.md) instead, or split the question into several [Noul](/primitives/noul.md) questions. It's important to test your levels against your own data. Two wordings of the same scale can behave differently on your data.
 
 ## Splitting a complex judgment into several Score questions
 
@@ -364,7 +364,7 @@ def priority(ticket: str) -> float:
 
 For the example response above, the normalized scores are 0.62 for severity, 0.64 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.62 + 0.3 × 0.64 + 0.1 × 1.0 = 0.664`, which rounds to `0.66`.
 
-The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The request count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](/patterns/composite-scoring) pattern.
+The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The request count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](/patterns/composite-scoring.md) pattern.
 
 ## Structured level descriptions
 

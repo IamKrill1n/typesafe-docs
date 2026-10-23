@@ -150,8 +150,8 @@ print(json.dumps({k: PAIRS[0][k] for k in ("entity_a", "entity_b")}, indent=2)[:
 
 ## Ask one Score question and three Noul questions per candidate pair
 
-Both entities go into a single state, as `entity_a` and `entity_b`, so the questions are
-about the *pair* and not about either side on its own. All four ride in one request.
+Both entities go into one state, as `entity_a` and `entity_b`, so every question is about
+the pair. All four ride in one request.
 
 The three level descriptions below are the entire decision: each level is one outcome.
 There is no threshold constant anywhere in this file. You can also write these descriptions
@@ -343,11 +343,11 @@ The two score values where `route()` changes its answer are the cut points. Most
 settle: 360 score below the lower cut point and 40 above the upper one, leaving 50 for the
 curator.
 
-On this set the scores do not sit neatly on the whole numbers. Most land near 0.25. Two
-beers with nothing in common might still share a style name, and their brewery names might
-look alike, so the model gives the middle level some of its probability instead of none.
-What decides a pair is which side of a cut point it falls on. How near it sits to a level
-does not enter into it.
+On this set, most scores land near 0.25 rather than on a whole number. Two beers with
+nothing in common might still share a style name, and their brewery names might look
+alike, so the model gives the middle level some of its probability instead of none. What
+decides a pair is which side of a cut point it falls on. How near it sits to a level does
+not enter into it.
 
 The two cut points are not equally crowded. Nine pairs sit within 0.1 of the upper one, at
 1.5, which is the one deciding what gets merged into the graph. Forty-seven sit that close

@@ -347,7 +347,7 @@ Combine independent answers with deterministic rules or weighted sums. For learn
 
 ### 8. Route on uncertainty
 
-Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data.
+Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data. For a Noul, a good starting point is 0.7 for yes and 0.3 for no; see [Reading a Noul](/primitives/noul#reading-a-noul).
 
 > **Example: route by confidence**
 >
@@ -1001,7 +1001,7 @@ TypeSafe's `confidence` is one reasonable way to summarize a distribution, not t
 
 ### Noul
 
-A Noul answer is a single probability $p$ that the answer is yes, and TypeSafe returns no separate `confidence` for it. The probability already carries the uncertainty: a value near 0.5 is the model saying it is unsure, and the [Noul](/primitives/noul) page covers how to threshold on it directly.
+A Noul answer is a single probability $p$ that the answer is yes, and TypeSafe returns no separate `confidence` for it. The probability already carries the uncertainty: a value near 0.5 is the model saying it is unsure. A good starting point is 0.7 for yes and 0.3 for no, and the [Noul](/primitives/noul#reading-a-noul) page covers when to move them.
 
 If you want a confidence-style number anyway, for example to gate Nouls and Choices with the same code, use the distance from 0.5:
 
@@ -7717,8 +7717,8 @@ print(json.dumps({k: PAIRS[0][k] for k in ("entity_a", "entity_b")}, indent=2)[:
 
 ## Ask one Score question and three Noul questions per candidate pair
 
-Both entities go into a single state, as `entity_a` and `entity_b`, so the questions are
-about the *pair* and not about either side on its own. All four ride in one request.
+Both entities go into one state, as `entity_a` and `entity_b`, so every question is about
+the pair. All four ride in one request.
 
 The three level descriptions below are the entire decision: each level is one outcome.
 There is no threshold constant anywhere in this file. You can also write these descriptions
@@ -7910,11 +7910,11 @@ The two score values where `route()` changes its answer are the cut points. Most
 settle: 360 score below the lower cut point and 40 above the upper one, leaving 50 for the
 curator.
 
-On this set the scores do not sit neatly on the whole numbers. Most land near 0.25. Two
-beers with nothing in common might still share a style name, and their brewery names might
-look alike, so the model gives the middle level some of its probability instead of none.
-What decides a pair is which side of a cut point it falls on. How near it sits to a level
-does not enter into it.
+On this set, most scores land near 0.25 rather than on a whole number. Two beers with
+nothing in common might still share a style name, and their brewery names might look
+alike, so the model gives the middle level some of its probability instead of none. What
+decides a pair is which side of a cut point it falls on. How near it sits to a level does
+not enter into it.
 
 The two cut points are not equally crowded. Nine pairs sit within 0.1 of the upper one, at
 1.5, which is the one deciding what gets merged into the graph. Forty-seven sit that close
@@ -9328,9 +9328,9 @@ it ask for a diagnosis or a dosage? Does it signal that the sender may hurt them
 One `Score` question rates how much harm complying would do, on a written scale from
 "none" to "serious physical harm".
 
-Both go in the same request, so the whole battery costs one call. The input and output
-batteries ask the same four things from the two sides: whether the user is asking for it,
-and whether the reply went ahead and gave it.
+Both go in the same request, so the whole battery costs one call. The two batteries ask
+the same four things: the input battery whether the user is asking for each, the output
+battery whether the reply gave it.
 
 ```python expandable theme={null}
 def noul(instructions: str, yes: str, no: str) -> Noul:
@@ -15749,7 +15749,7 @@ else:
     route_to_bot(ticket)
 ```
 
-Where to set the threshold depends on the cost of being wrong. Use 0.5 when yes and no are equally easy to act on. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Values in the middle can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
+A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
 
 A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
@@ -15796,8 +15796,8 @@ SUPPORT_QUESTIONS = {
     ),
 }
 
-YES = 0.8
-NO = 0.2
+YES = 0.7
+NO = 0.3
 
 
 def route(message: str) -> None:
@@ -15817,8 +15817,8 @@ def route(message: str) -> None:
         send_to_review(message)
         return
 
-    priority = "high" if repeat > YES else "normal"
-    if wants_human > YES:
+    priority = "high" if repeat >= YES else "normal"
+    if wants_human >= YES:
         route_to_agent(message, priority=priority)
     else:
         route_to_bot(message, priority=priority)

@@ -70,7 +70,7 @@ client = AsyncTypeSafeClient(http_client=Httpx2AiohttpClient())
 
 The clients use HTTP/1.1 by default and can switch to HTTP/2:
 
-* **HTTP/1.1** sends one request at a time per connection and opens a connection for each concurrent request, up to the [connection limit](/sdk/python/usage/advanced#keep-a-connection-limit). Concurrency scales with the number of connections, at the cost of a TLS handshake for each new one.
+* **HTTP/1.1** sends one request at a time per connection and opens a connection for each concurrent request, up to the [connection limit](/sdk/python/usage/advanced.md#keep-a-connection-limit). Concurrency scales with the number of connections, at the cost of a TLS handshake for each new one.
 * **HTTP/2** multiplexes every request from one client over a single connection. It needs only one handshake and one socket, but that connection caps the client's throughput.
 
 Keep the default HTTP/1.1 for high request rates. Use HTTP/2 for low to moderate concurrency when you want fewer connections, for example behind a proxy or firewall that limits them.

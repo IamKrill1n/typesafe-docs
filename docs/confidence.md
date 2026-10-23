@@ -105,7 +105,7 @@ TypeSafe's `confidence` is one reasonable way to summarize a distribution, not t
 
 ### Noul
 
-A Noul answer is a single probability $p$ that the answer is yes, and TypeSafe returns no separate `confidence` for it. The probability already carries the uncertainty: a value near 0.5 is the model saying it is unsure, and the [Noul](./primitives/noul.md) page covers how to threshold on it directly.
+A Noul answer is a single probability $p$ that the answer is yes, and TypeSafe returns no separate `confidence` for it. The probability already carries the uncertainty: a value near 0.5 is the model saying it is unsure. A good starting point is 0.7 for yes and 0.3 for no, and the [Noul](./primitives/noul.md#reading-a-noul) page covers when to move them.
 
 If you want a confidence-style number anyway, for example to gate Nouls and Choices with the same code, use the distance from 0.5:
 

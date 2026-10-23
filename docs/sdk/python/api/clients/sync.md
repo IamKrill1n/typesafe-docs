@@ -226,13 +226,13 @@ Copy signature
 
 Answer named questions about text, structured state, or assets.
 
-See [System One](https://docs.typesafe.ai/go/system-one) for details.
+See [System One](https://docs.typesafe.ai/go/system-one.md) for details.
 
 Parameters:
 
 * **`state`** (`Content`) –
 
-  Text, an asset, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/go/state) for details.
+  Text, an asset, a JSON object, or an array to evaluate. See [state](https://docs.typesafe.ai/go/state.md) for details.
 * **`questions`** (`Mapping[str, Question]`) –
 
   Nonempty mapping of names to question objects or raw dictionaries.

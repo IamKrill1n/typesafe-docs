@@ -20,7 +20,7 @@ Bases: `TypedDict`
 
 Optional descriptions of the yes and no outcomes.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 ### true
 
@@ -35,7 +35,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -61,7 +61,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -106,8 +106,8 @@ Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`Noul(
 &#x20;   \*,
 &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
-&#x20;   instructions: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   criteria: [NoulCriteria](/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria) | None = ...,
+&#x20;   instructions: [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content),
+&#x20;   criteria: [NoulCriteria](/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria) | None = ...,
 )`</pre>
 
 **Overload 2**
@@ -124,7 +124,7 @@ Bases: `_Question`, `wire.NoulQuestion`
 
 A yes/no question with optional descriptions for either outcome.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 > [!NOTE]
 >
@@ -295,7 +295,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -329,7 +329,7 @@ Copy signature
 
   &#x20;
 
-  [NoulCriteria](/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria)
+  [NoulCriteria](/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria)
 
   &#x20;
 
@@ -358,7 +358,7 @@ Bases: `_Question`, `wire.ChoiceQuestion`
 
 A question that selects between named alternatives.
 
-See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 
 > [!NOTE]
 >
@@ -517,7 +517,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -545,7 +545,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -574,7 +574,7 @@ Bases: `_Question`, `wire.ScoreQuestion`
 
 A question that assigns a score using an ordered rubric.
 
-See the [score primitive](https://docs.typesafe.ai/go/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 
 > [!NOTE]
 >
@@ -721,7 +721,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   ]\`
 </pre>
@@ -741,7 +741,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -916,7 +916,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -943,7 +943,7 @@ What to locate in the request's image, expressed as text, an asset, a JSON objec
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`Question: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
-&#x20;   [Noul](/sdk/python/api/types/questions#typesafe_sdk.Noul) | [Choice](/sdk/python/api/types/questions#typesafe_sdk.Choice) | [Score](/sdk/python/api/types/questions#typesafe_sdk.Score) | [Box](/sdk/python/api/types/questions#typesafe_sdk.Box) | [QuestionModel](/sdk/python/api/types/questions#typesafe_sdk.QuestionModel)
+&#x20;   [Noul](/sdk/python/api/types/questions.md#typesafe_sdk.Noul) | [Choice](/sdk/python/api/types/questions.md#typesafe_sdk.Choice) | [Score](/sdk/python/api/types/questions.md#typesafe_sdk.Score) | [Box](/sdk/python/api/types/questions.md#typesafe_sdk.Box) | [QuestionModel](/sdk/python/api/types/questions.md#typesafe_sdk.QuestionModel)
 )`</pre>
 
 A question object or question dictionary.
@@ -979,7 +979,7 @@ Copy signature
 
   &#x20;
 
-  [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)
+  [Question](/sdk/python/api/types/questions.md#typesafe_sdk.Question)
 
   ]\`
 </pre>
@@ -996,7 +996,7 @@ Bases: `TypedDict`
 
 A yes/no question dictionary with `type="noul"`.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 ### type
 
@@ -1037,7 +1037,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1069,7 +1069,7 @@ Copy signature
 
   \[
 
-  [NoulCriteria](/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria)
+  [NoulCriteria](/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria)
 
   &#x20;
 
@@ -1090,7 +1090,7 @@ Bases: `TypedDict`
 
 A choice question dictionary with `type="choice"`.
 
-See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 
 ### type
 
@@ -1131,7 +1131,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1169,7 +1169,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1190,7 +1190,7 @@ Bases: `TypedDict`
 
 A score question dictionary with `type="score"`.
 
-See the [score primitive](https://docs.typesafe.ai/go/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 
 ### type
 
@@ -1231,7 +1231,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1263,7 +1263,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   ]\`
 </pre>
@@ -1315,7 +1315,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
+  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1336,10 +1336,10 @@ What to locate in the request's image, expressed as text, an asset, a JSON objec
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`QuestionModel: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
-&#x20;   [NoulModel](/sdk/python/api/types/questions#typesafe_sdk.NoulModel)
-&#x20;   | [ChoiceModel](/sdk/python/api/types/questions#typesafe_sdk.ChoiceModel)
-&#x20;   | [ScoreModel](/sdk/python/api/types/questions#typesafe_sdk.ScoreModel)
-&#x20;   | [BoxModel](/sdk/python/api/types/questions#typesafe_sdk.BoxModel)
+&#x20;   [NoulModel](/sdk/python/api/types/questions.md#typesafe_sdk.NoulModel)
+&#x20;   | [ChoiceModel](/sdk/python/api/types/questions.md#typesafe_sdk.ChoiceModel)
+&#x20;   | [ScoreModel](/sdk/python/api/types/questions.md#typesafe_sdk.ScoreModel)
+&#x20;   | [BoxModel](/sdk/python/api/types/questions.md#typesafe_sdk.BoxModel)
 )`</pre>
 
 A question dictionary identified by its `type` key.

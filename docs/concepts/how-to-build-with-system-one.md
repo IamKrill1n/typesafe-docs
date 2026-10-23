@@ -176,7 +176,7 @@ Combine independent answers with deterministic rules or weighted sums. For learn
 
 ### 8. Route on uncertainty
 
-Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data.
+Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data. For a Noul, a good starting point is 0.7 for yes and 0.3 for no; see [Reading a Noul](../primitives/noul.md#reading-a-noul).
 
 > **Example: route by confidence**
 >

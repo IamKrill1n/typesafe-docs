@@ -16,7 +16,7 @@ Bases: `Response`
 
 Answers grouped by question type with model and usage metadata.
 
-See [System One](https://docs.typesafe.ai/go/system-one) for details.
+See [System One](https://docs.typesafe.ai/go/system-one.md) for details.
 
 > [!NOTE]
 >
@@ -398,7 +398,7 @@ Copy signature
 
   &#x20;
 
-  [Usage](/sdk/python/api/types/responses#typesafe_sdk.Usage)\`
+  [Usage](/sdk/python/api/types/responses.md#typesafe_sdk.Usage)\`
 </pre>
 
 Token usage for the request.
@@ -426,7 +426,7 @@ Copy signature
 
   &#x20;
 
-  [Answer](/sdk/python/api/types/responses#typesafe_sdk.Answer)
+  [Answer](/sdk/python/api/types/responses.md#typesafe_sdk.Answer)
 
   ]\`
 </pre>
@@ -456,7 +456,7 @@ Copy signature
 
   &#x20;
 
-  [NoulAnswer](/sdk/python/api/types/responses#typesafe_sdk.NoulAnswer)
+  [NoulAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.NoulAnswer)
 
   ]\`
 </pre>
@@ -486,7 +486,7 @@ Copy signature
 
   &#x20;
 
-  [ChoiceAnswer](/sdk/python/api/types/responses#typesafe_sdk.ChoiceAnswer)
+  [ChoiceAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ChoiceAnswer)
 
   ]\`
 </pre>
@@ -516,7 +516,7 @@ Copy signature
 
   &#x20;
 
-  [ScoreAnswer](/sdk/python/api/types/responses#typesafe_sdk.ScoreAnswer)
+  [ScoreAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ScoreAnswer)
 
   ]\`
 </pre>
@@ -546,7 +546,7 @@ Copy signature
 
   &#x20;
 
-  [BoxAnswer](/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer)
+  [BoxAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.BoxAnswer)
 
   ]\`
 </pre>
@@ -700,7 +700,7 @@ Bases: `wire.NoulAnswer`
 
 A yes/no answer.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 > [!NOTE]
 >
@@ -782,7 +782,7 @@ Bases: `wire.ChoiceAnswer`
 
 A selected label and its probabilities.
 
-See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 
 > [!NOTE]
 >
@@ -939,7 +939,7 @@ Bases: `wire.ScoreAnswer`
 
 An expected score with its rubric and probabilities.
 
-See the [score primitive](https://docs.typesafe.ai/go/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 
 > [!NOTE]
 >
@@ -1242,7 +1242,7 @@ Copy signature
 
   &#x20;
 
-  [BoxCoordinates](/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates)\`
+  [BoxCoordinates](/sdk/python/api/types/responses.md#typesafe_sdk.BoxCoordinates)\`
 </pre>
 
 The box's edges as fractions of the image's height and width, from 0 to 1.
@@ -1436,10 +1436,10 @@ model_config = ConfigDict(
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`Answer: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = [Annotated](https://docs.python.org/3/library/typing.html#typing.Annotated)\[
-&#x20;   [NoulAnswer](/sdk/python/api/types/responses#typesafe_sdk.NoulAnswer)
-&#x20;   | [ChoiceAnswer](/sdk/python/api/types/responses#typesafe_sdk.ChoiceAnswer)
-&#x20;   | [ScoreAnswer](/sdk/python/api/types/responses#typesafe_sdk.ScoreAnswer)
-&#x20;   | [BoxAnswer](/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer),
+&#x20;   [NoulAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.NoulAnswer)
+&#x20;   | [ChoiceAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ChoiceAnswer)
+&#x20;   | [ScoreAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ScoreAnswer)
+&#x20;   | [BoxAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.BoxAnswer),
 &#x20;   Field(discriminator="type"),
 ]`</pre>
 
@@ -1566,7 +1566,7 @@ Copy signature
 
   \[
 
-  [ModelMetadata](/sdk/python/api/types/responses#typesafe_sdk.ModelMetadata)
+  [ModelMetadata](/sdk/python/api/types/responses.md#typesafe_sdk.ModelMetadata)
 
   ,
 

@@ -524,7 +524,7 @@ re-ranks those 30 passages.
 
 This walkthrough asked one question per pair for clarity. A real application would
 ask several questions about the same pair in one call. See the [parallel questions
-cookbook](/cookbooks/parallel_questions) and the
+cookbook](/cookbooks/parallel_questions.md) and the
 [Speculative Fan-Out pattern](../patterns/fan-out.md) for how.
 
 ***

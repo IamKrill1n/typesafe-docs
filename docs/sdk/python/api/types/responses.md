@@ -12,7 +12,7 @@ Bases: `Response`
 
 Answers grouped by question type with model and usage metadata.
 
-See [System One](https://docs.typesafe.ai/go/system-one) for details.
+See [System One](https://docs.typesafe.ai/go/system-one.md) for details.
 
 > [!NOTE]
 >
@@ -696,7 +696,7 @@ Bases: `wire.NoulAnswer`
 
 A yes/no answer.
 
-See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
+See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 
 > [!NOTE]
 >
@@ -778,7 +778,7 @@ Bases: `wire.ChoiceAnswer`
 
 A selected label and its probabilities.
 
-See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
+See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 
 > [!NOTE]
 >
@@ -935,7 +935,7 @@ Bases: `wire.ScoreAnswer`
 
 An expected score with its rubric and probabilities.
 
-See the [score primitive](https://docs.typesafe.ai/go/score) for details.
+See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 
 > [!NOTE]
 >

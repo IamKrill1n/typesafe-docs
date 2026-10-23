@@ -916,10 +916,10 @@ display(
 ## What's next
 
 The same shape shows up elsewhere:
-[Intent Routing](/patterns/intent-routing) for routing to a
-handler rather than a skill, [Confidence](/confidence) for
+[Intent Routing](/patterns/intent-routing.md) for routing to a
+handler rather than a skill, [Confidence](/confidence.md) for
 picking the two thresholds, and
-[Speculative Fan-Out](/patterns/fan-out) for putting every
+[Speculative Fan-Out](/patterns/fan-out.md) for putting every
 question in one request.
 
 

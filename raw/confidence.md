@@ -34,7 +34,7 @@ Even split
   TypeSafe computes confidence from how the probability is spread across the options. All of it on one option gives 1.0; the more evenly it spreads, the lower the confidence. With three options, the [Choice formula](#choice) is `(3 × largest probability − 1) / 2`, which is what this demo shows.
 </details>
 
-For a [Choice](/primitives/choice), the distribution is `probabilities` across your options. For a [Score](/primitives/score), it is the distribution across your levels. In both cases a flatter distribution means lower confidence: low confidence on a Choice often means none of the options are a clear winner over the others, and low confidence on a Score often means the levels are ambiguous, multi-dimensional, or the state doesn't contain enough to go on.
+For a [Choice](/primitives/choice.md), the distribution is `probabilities` across your options. For a [Score](/primitives/score.md), it is the distribution across your levels. In both cases a flatter distribution means lower confidence: low confidence on a Choice often means none of the options are a clear winner over the others, and low confidence on a Score often means the levels are ambiguous, multi-dimensional, or the state doesn't contain enough to go on.
 
 The exact formula for each question type is in [How confidence is calculated](#how-confidence-is-calculated), so you can see how any `confidence` value follows from the answer's own `probabilities`.
 
@@ -109,7 +109,7 @@ TypeSafe's `confidence` is one reasonable way to summarize a distribution, not t
 
 ### Noul
 
-A Noul answer is a single probability $p$ that the answer is yes, and TypeSafe returns no separate `confidence` for it. The probability already carries the uncertainty: a value near 0.5 is the model saying it is unsure, and the [Noul](/primitives/noul) page covers how to threshold on it directly.
+A Noul answer is a single probability $p$ that the answer is yes, and TypeSafe returns no separate `confidence` for it. The probability already carries the uncertainty: a value near 0.5 is the model saying it is unsure. A good starting point is 0.7 for yes and 0.3 for no, and the [Noul](/primitives/noul.md#reading-a-noul) page covers when to move them.
 
 If you want a confidence-style number anyway, for example to gate Nouls and Choices with the same code, use the distance from 0.5:
 
@@ -199,7 +199,7 @@ levels = sorted(answer.probabilities)
 score_confidence([answer.probabilities[level] for level in levels])
 ```
 
-The `bug_severity` answer in the [Score response example](/primitives/score#response-structure) has probabilities $(0, 0.57, 0.43)$. The most likely level is 1, the spread is $0.43$, and $\text{MAD}_{\text{unif}}$ for three levels is $\frac{2}{3}$, so confidence is $1 - 0.43 / \frac{2}{3} \approx 0.35$.
+The `bug_severity` answer in the [Score response example](/primitives/score.md#response-structure) has probabilities $(0, 0.57, 0.43)$. The most likely level is 1, the spread is $0.43$, and $\text{MAD}_{\text{unif}}$ for three levels is $\frac{2}{3}$, so confidence is $1 - 0.43 / \frac{2}{3} \approx 0.35$.
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

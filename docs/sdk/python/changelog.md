@@ -94,6 +94,6 @@
 
 ## v0.5.7 (2026-09-14)
 
-This is the initial public release of TypeSafe Python SDK. Learn more in the [documentation](https://docs.typesafe.ai/go/python-sdk).
+This is the initial public release of TypeSafe Python SDK. Learn more in the [documentation](https://docs.typesafe.ai/go/python-sdk.md).
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -6,7 +6,7 @@
 
 > A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.
 
-Use a Noul when the answer is yes or no. For example, does this message ask for a refund, does this resume mention distributed systems, does this comment contain personal data. If the answer is one of several options, use a [Choice](/primitives/choice). If it's a position on a spectrum, use a [Score](/primitives/score). [Choose a question type](/primitives#choose-a-question-type) compares all three.
+Use a Noul when the answer is yes or no. For example, does this message ask for a refund, does this resume mention distributed systems, does this comment contain personal data. If the answer is one of several options, use a [Choice](/primitives/choice.md). If it's a position on a spectrum, use a [Score](/primitives/score.md). [Choose a question type](/primitives#choose-a-question-type) compares all three.
 
 A Noul answer is a single number representing the probability that the answer is yes where 0 means no and 1 means yes.
 
@@ -24,7 +24,7 @@ Try it in the Playground →
 
 You choose the question ids, `is_human_escalation` and `is_repeat_contact` here. The ids are not sent to the model. Each answer is returned under the same id. The first question relies on `instructions` alone. The second adds `criteria` to say what counts as a yes and what counts as a no.
 
-With the [Python SDK](/sdk/python), the same questions are `Noul` objects:
+With the [Python SDK](/sdk/python.md), the same questions are `Noul` objects:
 
 ```python theme={null}
 from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
@@ -51,13 +51,13 @@ with TypeSafeClient() as client:
     print(response.answers["is_repeat_contact"].noul)
 ```
 
-The `system_one` method and the `https://api.typesafe.ai/v1/systemone` endpoint are both named after [System One](/concepts/system-one), TypeSafe's AI model. [How to build with TypeSafe](/concepts/how-to-build-with-system-one) covers where to use it in your code.
+The `system_one` method and the `https://api.typesafe.ai/v1/systemone` endpoint are both named after [System One](/concepts/system-one.md), TypeSafe's AI model. [How to build with TypeSafe](/concepts/how-to-build-with-system-one.md) covers where to use it in your code.
 
-If you're using a coding agent, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
+If you're using a coding agent, install the [TypeSafe agent skill](/agent-skill.md#installation) first so it knows the request and response shapes.
 
 > [!NOTE]
 >
-> `instructions` can be a string, an object, or an array. Start with a string. Use an object when the question needs data alongside it, such as a record to compare the state against, or when part of the question is built by your code. [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) explains when structure helps, and [the example below](#structured-instructions) shows it with questions built in code.
+> `instructions` can be a string, an object, or an array. Start with a string. Use an object when the question needs data alongside it, such as a record to compare the state against, or when part of the question is built by your code. [Use structure in the questions](/concepts/how-to-build-with-system-one.md#use-structure-in-the-questions) explains when structure helps, and [the example below](#structured-instructions) shows it with questions built in code.
 
 ## Response structure
 
@@ -102,7 +102,7 @@ The table below shows recorded `jev-1.13.0` answers to the `is_human_escalation`
 
 The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and the model splits almost evenly at 0.40. Both are the kind of message where a decision needs to be made based on a threshold in your code.
 
-There is no separate `confidence` value for a Noul, unlike a [Choice](/primitives/choice) or a [Score](/primitives/score). A Noul's probability distribution has only two outcomes, yes and no, so the single `noul` value describes it completely. A Choice or Score spreads probability over several options or levels, and `confidence` summarizes that spread.
+There is no separate `confidence` value for a Noul, unlike a [Choice](/primitives/choice.md) or a [Score](/primitives/score.md). A Noul's probability distribution has only two outcomes, yes and no, so the single `noul` value describes it completely. A Choice or Score spreads probability over several options or levels, and `confidence` summarizes that spread.
 
 Most often your code thresholds `noul` into a boolean:
 
@@ -115,9 +115,9 @@ else:
     route_to_bot(ticket)
 ```
 
-Where to set the threshold depends on the cost of being wrong. Use 0.5 when yes and no are equally easy to act on. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Values in the middle can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
+A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence.md#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
 
-A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
+A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score.md) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
 | Candidate | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
 | - | - | - |
@@ -162,8 +162,8 @@ SUPPORT_QUESTIONS = {
     ),
 }
 
-YES = 0.8
-NO = 0.2
+YES = 0.7
+NO = 0.3
 
 
 def route(message: str) -> None:
@@ -183,8 +183,8 @@ def route(message: str) -> None:
         send_to_review(message)
         return
 
-    priority = "high" if repeat > YES else "normal"
-    if wants_human > YES:
+    priority = "high" if repeat >= YES else "normal"
+    if wants_human >= YES:
         route_to_agent(message, priority=priority)
     else:
         route_to_bot(message, priority=priority)
@@ -196,7 +196,7 @@ The thresholds live in your code. If reviewers see too many messages, narrow the
 
 ## Structured instructions
 
-Instructions can be an object instead of a string, with the question in one field and supplementary data in the others. [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) covers when that helps. Here it's used for a question built using code: a resume that has just arrived is compared against records in a candidate database that might be the same person. Each record goes into a `potential_duplicate` field as it is, the `question` is the same for every record, and all the records are checked in one request. The code-generated question keys contain each record's database ID:
+Instructions can be an object instead of a string, with the question in one field and supplementary data in the others. [Use structure in the questions](/concepts/how-to-build-with-system-one.md#use-structure-in-the-questions) covers when that helps. Here it's used for a question built using code: a resume that has just arrived is compared against records in a candidate database that might be the same person. Each record goes into a `potential_duplicate` field as it is, the `question` is the same for every record, and all the records are checked in one request. The code-generated question keys contain each record's database ID:
 
 Try it in the Playground →
 
@@ -267,17 +267,17 @@ def find_duplicates(resume: dict, candidates: list[dict]) -> list[str]:
     ]
 ```
 
-The [structured-data-extraction cascade cookbook](/cookbooks/sde_cascade) uses structured instructions to verify an extracted record. Every field gets the same set of questions. Each question's `instructions` object has the question text in the `main_question` property. There are also `field_spec` and `extracted_field` properties that change for each field.
+The [structured-data-extraction cascade cookbook](/cookbooks/sde_cascade.md) uses structured instructions to verify an extracted record. Every field gets the same set of questions. Each question's `instructions` object has the question text in the `main_question` property. There are also `field_spec` and `extracted_field` properties that change for each field.
 
 ## Noul in the cookbooks
 
 Take a look at our cookbooks to see apps using Noul questions:
 
-* [Parallel questions](/cookbooks/parallel_questions) runs a 13-question regulatory checklist over one article in a single request.
-* [Self-consistency: nouls](/cookbooks/consistency_noul_cookbook) scores an insurance claim against a 15-question rubric and measures how stable the values are across runs.
-* [Re-ranking](/cookbooks/rerank_typesafe) uses the probability itself, not a threshold: one Noul per query-candidate pair, then sorts candidates by the value.
-* [Line-by-line search](/cookbooks/semantic_find) pairs a Choice that finds the matching line with a Noul that checks whether the document contains an answer at all.
-* [Structure recovery](/cookbooks/autoformat) asks one Noul per pair of lines, whether a line break split a sentence, to rebuild paragraphs from plain text.
+* [Parallel questions](/cookbooks/parallel_questions.md) runs a 13-question regulatory checklist over one article in a single request.
+* [Self-consistency: nouls](/cookbooks/consistency_noul_cookbook.md) scores an insurance claim against a 15-question rubric and measures how stable the values are across runs.
+* [Re-ranking](/cookbooks/rerank_typesafe.md) uses the probability itself, not a threshold: one Noul per query-candidate pair, then sorts candidates by the value.
+* [Line-by-line search](/cookbooks/semantic_find.md) pairs a Choice that finds the matching line with a Noul that checks whether the document contains an answer at all.
+* [Structure recovery](/cookbooks/autoformat.md) asks one Noul per pair of lines, whether a line break split a sentence, to rebuild paragraphs from plain text.
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

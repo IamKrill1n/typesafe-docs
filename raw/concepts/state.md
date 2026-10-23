@@ -8,7 +8,7 @@
 
 **State** is the content you ask a System One model to evaluate. It could be a support message, a passage of text, or the current state of your application. You pass it in the `state` field of an API request, alongside the questions you want answered.
 
-Each request evaluates one state against one or more questions. All questions see the same state and are evaluated independently. You can mix [Choice](/primitives/choice), [Score](/primitives/score), and [Noul](/primitives/noul) questions in one request.
+Each request evaluates one state against one or more questions. All questions see the same state and are evaluated independently. You can mix [Choice](/primitives/choice.md), [Score](/primitives/score.md), and [Noul](/primitives/noul.md) questions in one request.
 
 ## State can be a simple string or a structured JSON value
 
@@ -30,7 +30,7 @@ Use an object for most requests so each part of the state has a descriptive name
 
 > [!NOTE]
 >
-> State is a string, JSON object, or array. Audio and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
+> State is a string, JSON object, or array. Audio and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models.md#language-support).
 
 ```json title="A support conversation as state" theme={null}
 {
@@ -60,7 +60,7 @@ The state contains the content and supporting facts. [Questions](/primitives) de
 
 See [Primitives (Questions)](/primitives) for guidance on instructions, criteria, question types, and asking several questions about one state.
 
-See the [API reference](/api) for the request schema and [client SDKs](/sdk) for installation, typed inputs, and response handling.
+See the [API reference](/api) for the request schema and [client SDKs](/sdk.md) for installation, typed inputs, and response handling.
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

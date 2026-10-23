@@ -6,7 +6,7 @@
 
 > A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.
 
-Use a Choice when the answer is one of a fixed set of options. For example, which team handles a ticket, which category a product belongs to, or which language a code snippet is written in. If the answer is a position on a spectrum, use a [Score](/primitives/score). If it's a yes or no, use a [Noul](/primitives/noul). [Choose a question type](/primitives#choose-a-question-type) compares all three.
+Use a Choice when the answer is one of a fixed set of options. For example, which team handles a ticket, which category a product belongs to, or which language a code snippet is written in. If the answer is a position on a spectrum, use a [Score](/primitives/score.md). If it's a yes or no, use a [Noul](/primitives/noul.md). [Choose a question type](/primitives#choose-a-question-type) compares all three.
 
 A Choice answer is the selected option in `choice`. The model also returns a probability for every option in `probabilities`, and a `confidence` value for the selected option.
 
@@ -37,7 +37,7 @@ Try it in the Playground →
 
 You choose the question id, `department` in this case. The answer is returned under the same id. The model never sees the question id. The option names and their descriptions are both sent to the model, so write descriptions that separate the options from each other.
 
-Our [client SDKs](/sdk) provide typed questions. In Python, the same question is a `Choice`:
+Our [client SDKs](/sdk.md) provide typed questions. In Python, the same question is a `Choice`:
 
 ```python theme={null}
 from typesafe_sdk import Choice, TypeSafeClient
@@ -60,9 +60,9 @@ with TypeSafeClient() as client:
     print(response.answers["department"].choice)
 ```
 
-Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](/concepts/how-to-build-with-system-one) covers where in your code to call it.
+Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
 
-Use one of our [client SDKs](/sdk) or call the [HTTP API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
+Use one of our [client SDKs](/sdk.md) or call the [HTTP API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill.md#installation) first so it knows the request and response shapes.
 
 > [!NOTE]
 >
@@ -110,9 +110,9 @@ The same logic applies to the options inside a single Choice question. A Choice 
 
 > [!TIP]
 >
-> A `none of the above` option may not work well in many use cases. As an alternative, ask a companion [Noul](/primitives/noul) question in the same request that checks whether anything fits at all, such as "Does `message` name any of `our_products`?" Your code then reads the Choice answer only when the Noul says yes.
+> A `none of the above` option may not work well in many use cases. As an alternative, ask a companion [Noul](/primitives/noul.md) question in the same request that checks whether anything fits at all, such as "Does `message` name any of `our_products`?" Your code then reads the Choice answer only when the Noul says yes.
 
-To classify documents through a deep hierarchy or large taxonomy, chain Choice questions level by level. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification) shows how to run a beam search over Choice probabilities, keeping the best `K` candidate paths at each level instead of committing to a single greedy path.
+To classify documents through a deep hierarchy or large taxonomy, chain Choice questions level by level. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification.md) shows how to run a beam search over Choice probabilities, keeping the best `K` candidate paths at each level instead of committing to a single greedy path.
 
 ## A more complex example
 
@@ -294,7 +294,7 @@ For the ticket above, this assigns the ticket to the returns team with issue `wr
 
 One request, five answers, and the routing logic is ordinary `if` statements. If you later need to know the customer's language, or which product the ticket is about, add another Choice question to `TRIAGE_QUESTIONS`; the request count stays at one.
 
-The [smart home assistant demo](/demos/smart-home) evaluates every user request against a long list of Choice questions in one call: the request category, the room, the device, and the action. Most of those questions are irrelevant to any one request and the code ignores them.
+The [smart home assistant demo](/demos/smart-home.md) evaluates every user request against a long list of Choice questions in one call: the request category, the room, the device, and the action. Most of those questions are irrelevant to any one request and the code ignores them.
 
 ## Structured instructions and criteria
 

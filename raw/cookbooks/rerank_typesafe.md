@@ -97,7 +97,7 @@ Could this candidate passage be from the cited precedent?
 
 A plain yes or no would not be enough to rank 30 candidates. A `Noul` instead
 returns a number between 0 and 1, called a
-[noul](/primitives/noul.md). The noul is TypeSafe's estimate
+[noul](https://docs.typesafe.ai/primitives/noul.md). The noul is TypeSafe's estimate
 of how likely the answer is to be yes.
 
 The question's criteria define what counts as true and false. TypeSafe applies them to
@@ -539,8 +539,8 @@ re-ranks those 30 passages.
 
 This walkthrough asked one question per pair for clarity. A real application would
 ask several questions about the same pair in one call. See the [parallel questions
-cookbook](/cookbooks/parallel_questions.md) and the
-[Speculative Fan-Out pattern](/patterns/fan-out.md) for how.
+cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md) and the
+[Speculative Fan-Out pattern](https://docs.typesafe.ai/patterns/fan-out.md) for how.
 
 ***
 
@@ -548,11 +548,11 @@ cookbook](/cookbooks/parallel_questions.md) and the
 
 The same building blocks show up elsewhere in TypeSafe's docs:
 
-* [Noul](/primitives/noul.md), for how TypeSafe turns a yes/no
+* [Noul](https://docs.typesafe.ai/primitives/noul.md), for how TypeSafe turns a yes/no
   question into a score.
-* [Speculative Fan-Out](/patterns/fan-out.md), for asking
+* [Speculative Fan-Out](https://docs.typesafe.ai/patterns/fan-out.md), for asking
   several questions about one document in a single call.
-* [Line-by-line Search](/cookbooks/semantic_find.md),
+* [Line-by-line Search](https://docs.typesafe.ai/cookbooks/semantic_find.md),
   for another way to search a corpus by meaning rather than keywords.
 
 

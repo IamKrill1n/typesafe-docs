@@ -4,17 +4,17 @@ An unsuccessful HTTP response from the API.
 
 ## Extends
 
-* [`TypeSafeError`](./TypeSafeError.md)
+* [`TypeSafeError`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError)
 
 ## Extended by
 
-* [`AuthenticationError`](./AuthenticationError.md)
-* [`BadRequestError`](./BadRequestError.md)
-* [`InternalServerError`](./InternalServerError.md)
-* [`NotFoundError`](./NotFoundError.md)
-* [`PermissionDeniedError`](./PermissionDeniedError.md)
-* [`RateLimitError`](./RateLimitError.md)
-* [`UnprocessableEntityError`](./UnprocessableEntityError.md)
+* [`AuthenticationError`](https://docs.typesafe.ai/sdk/javascript/api/classes/AuthenticationError)
+* [`BadRequestError`](https://docs.typesafe.ai/sdk/javascript/api/classes/BadRequestError)
+* [`InternalServerError`](https://docs.typesafe.ai/sdk/javascript/api/classes/InternalServerError)
+* [`NotFoundError`](https://docs.typesafe.ai/sdk/javascript/api/classes/NotFoundError)
+* [`PermissionDeniedError`](https://docs.typesafe.ai/sdk/javascript/api/classes/PermissionDeniedError)
+* [`RateLimitError`](https://docs.typesafe.ai/sdk/javascript/api/classes/RateLimitError)
+* [`UnprocessableEntityError`](https://docs.typesafe.ai/sdk/javascript/api/classes/UnprocessableEntityError)
 
 ## Constructors
 
@@ -53,7 +53,7 @@ new APIError(
 
 #### Overrides
 
-[`TypeSafeError`](./TypeSafeError.md).[`constructor`](./TypeSafeError.md#sdk-constructor)
+[`TypeSafeError`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError).[`constructor`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError#sdk-constructor)
 
 ## Properties
 

@@ -2,13 +2,13 @@
 
 > Get up and running with Jev in 5 minutes.
 
-This guide covers four ways of using Jev, TypeSafe's [System One model](../concepts/system-one.md), namely: [use our SDK](#code-it-your-first-request), [call our API](#call-it-the-api), [use our agent skill](#vibe-it-the-agent-skill), or [try our browser-based Playground](#try-it-the-playground).
+This guide covers four ways of using Jev, TypeSafe's [System One model](https://docs.typesafe.ai/concepts/system-one.md), namely: [use our SDK](#code-it-your-first-request), [call our API](#call-it-the-api), [use our agent skill](#vibe-it-the-agent-skill), or [try our browser-based Playground](#try-it-the-playground).
 
 Get an API key from the [TypeSafe console](https://console.typesafe.ai/keys).
 
 ## The minimum you should know to use Jev effectively
 
-Each call to Jev takes a [state](../concepts/state.md) (as a simple string or structured object) and a set of [questions](../primitives.md), and returns one answer per question:
+Each call to Jev takes a [state](https://docs.typesafe.ai/concepts/state.md) (as a simple string or structured object) and a set of [questions](https://docs.typesafe.ai/primitives), and returns one answer per question:
 
 ```mermaid actions={true}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
@@ -29,15 +29,15 @@ Jev answers three types of question, called primitives:
 
 | Question type | Goal | Returns |
 | - | - | - |
-| [Choice](../primitives/choice.md) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
-| [Score](../primitives/score.md) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
-| [Noul](../primitives/noul.md) | Is this statement true? | `noul` (0–1) |
+| [Choice](https://docs.typesafe.ai/primitives/choice.md) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
+| [Score](https://docs.typesafe.ai/primitives/score.md) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
+| [Noul](https://docs.typesafe.ai/primitives/noul.md) | Is this statement true? | `noul` (0–1) |
 
 ## Vibe it: the Agent Skill
 
 The fastest way to add Jev to your project is to have your coding agent write the integration with the TypeSafe skill installed.
 
-1. **[Install the TypeSafe skill](../agent-skill.md#installation)** using the Claude Code plugin or `npx skills add typesafe-ai/skills --skill typesafe-ai`. You can also [read SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md).
+1. **[Install the TypeSafe skill](https://docs.typesafe.ai/agent-skill.md#installation)** using the Claude Code plugin or `npx skills add typesafe-ai/skills --skill typesafe-ai`. You can also [read SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md).
 
 **Claude Code**
 
@@ -74,7 +74,7 @@ Let's build a simple CLI that uses Jev to evaluate a set of supplied texts on mu
 >
 > We suggest that you generate and store your TypeSafe API key in an environment variable (e.g. `TYPESAFE_API_KEY`).
 
-The [Agent Skill](../agent-skill.md) page has more example prompts and fixes for common issues, such as an agent that isn't using the skill.
+The [Agent Skill](https://docs.typesafe.ai/agent-skill.md) page has more example prompts and fixes for common issues, such as an agent that isn't using the skill.
 
 ## Code it: your first request
 
@@ -311,7 +311,7 @@ technical
 
 The Bash example prints the raw JSON response on one line. The Raw Response in the next section shows it formatted, with each answer's confidence and probabilities. These are example results; values can change between Jev releases.
 
-The [client SDKs](../sdk.md) pages cover installing the Python and JavaScript SDKs, typed answers, and their retry policy.
+The [client SDKs](https://docs.typesafe.ai/sdk.md) pages cover installing the Python and JavaScript SDKs, typed answers, and their retry policy.
 
 ## Call it: the API
 
@@ -396,11 +396,11 @@ Our API integration started returning 500 errors on every request about 20 minut
 
 ## Next Steps
 
-Composing primitives into larger systems takes some practice, even if you're used to LLMs. The [Machine Learning Primer](./machine-learning-primer.md) explains why Jev returns calibrated probabilities instead of generated text, and how that changes the way you build with it.
+Composing primitives into larger systems takes some practice, even if you're used to LLMs. The [Machine Learning Primer](https://docs.typesafe.ai/introduction/machine-learning-primer.md) explains why Jev returns calibrated probabilities instead of generated text, and how that changes the way you build with it.
 
-We’d also suggest taking a look at [Primitives](../primitives.md) and the [Use Case Map](../concepts/use-case-map.md).
+We’d also suggest taking a look at [Primitives](https://docs.typesafe.ai/primitives) and the [Use Case Map](https://docs.typesafe.ai/concepts/use-case-map.md).
 
-1. [Errors and retries](../sdk/python/usage/basic.md#error-handling)
-2. [Parallel Questions](../cookbooks/parallel_questions.md)
+1. [Errors and retries](https://docs.typesafe.ai/sdk/python/usage/basic.md#error-handling)
+2. [Parallel Questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

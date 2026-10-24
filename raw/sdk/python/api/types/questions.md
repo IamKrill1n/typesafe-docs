@@ -35,7 +35,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -61,7 +61,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -106,8 +106,8 @@ Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`Noul(
 &#x20;   \*,
 &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
-&#x20;   instructions: [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content),
-&#x20;   criteria: [NoulCriteria](/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria) | None = ...,
+&#x20;   instructions: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+&#x20;   criteria: [NoulCriteria](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria) | None = ...,
 )`</pre>
 
 **Overload 2**
@@ -295,7 +295,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -329,7 +329,7 @@ Copy signature
 
   &#x20;
 
-  [NoulCriteria](/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria)
+  [NoulCriteria](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria)
 
   &#x20;
 
@@ -517,7 +517,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -545,7 +545,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -721,7 +721,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   ]\`
 </pre>
@@ -741,7 +741,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -916,7 +916,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -943,7 +943,7 @@ What to locate in the request's image, expressed as text, an asset, a JSON objec
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`Question: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
-&#x20;   [Noul](/sdk/python/api/types/questions.md#typesafe_sdk.Noul) | [Choice](/sdk/python/api/types/questions.md#typesafe_sdk.Choice) | [Score](/sdk/python/api/types/questions.md#typesafe_sdk.Score) | [Box](/sdk/python/api/types/questions.md#typesafe_sdk.Box) | [QuestionModel](/sdk/python/api/types/questions.md#typesafe_sdk.QuestionModel)
+&#x20;   [Noul](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Noul) | [Choice](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Choice) | [Score](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Score) | [Box](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Box) | [QuestionModel](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.QuestionModel)
 )`</pre>
 
 A question object or question dictionary.
@@ -979,7 +979,7 @@ Copy signature
 
   &#x20;
 
-  [Question](/sdk/python/api/types/questions.md#typesafe_sdk.Question)
+  [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)
 
   ]\`
 </pre>
@@ -1037,7 +1037,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1069,7 +1069,7 @@ Copy signature
 
   \[
 
-  [NoulCriteria](/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria)
+  [NoulCriteria](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria)
 
   &#x20;
 
@@ -1131,7 +1131,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1169,7 +1169,7 @@ Copy signature
 
   &#x20;
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1231,7 +1231,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1263,7 +1263,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   ]\`
 </pre>
@@ -1315,7 +1315,7 @@ Copy signature
 
   \[
 
-  [Content](/sdk/python/api/types/common.md#typesafe_sdk.Content)
+  [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content)
 
   &#x20;
 
@@ -1336,10 +1336,10 @@ What to locate in the request's image, expressed as text, an asset, a JSON objec
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`QuestionModel: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
-&#x20;   [NoulModel](/sdk/python/api/types/questions.md#typesafe_sdk.NoulModel)
-&#x20;   | [ChoiceModel](/sdk/python/api/types/questions.md#typesafe_sdk.ChoiceModel)
-&#x20;   | [ScoreModel](/sdk/python/api/types/questions.md#typesafe_sdk.ScoreModel)
-&#x20;   | [BoxModel](/sdk/python/api/types/questions.md#typesafe_sdk.BoxModel)
+&#x20;   [NoulModel](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.NoulModel)
+&#x20;   | [ChoiceModel](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.ChoiceModel)
+&#x20;   | [ScoreModel](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.ScoreModel)
+&#x20;   | [BoxModel](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.BoxModel)
 )`</pre>
 
 A question dictionary identified by its `type` key.

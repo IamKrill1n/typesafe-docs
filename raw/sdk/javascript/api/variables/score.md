@@ -23,13 +23,13 @@ Create a score question using an ordered rubric.
 
 #### T
 
-`T` *extends* [`ScoreCriteria`](/sdk/javascript/api/type-aliases/ScoreCriteria)
+`T` *extends* [`ScoreCriteria`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreCriteria)
 
 ### Parameters
 
 #### instructions
 
-[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)
 
 #### criteria
 
@@ -37,7 +37,7 @@ Create a score question using an ordered rubric.
 
 ### Returns
 
-[`ScoreQuestion`](/sdk/javascript/api/interfaces/ScoreQuestion)\<`T`>
+[`ScoreQuestion`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreQuestion)\<`T`>
 
 ## Call Signature
 
@@ -49,13 +49,13 @@ Create a score question using an ordered rubric.
 
 #### T
 
-`T` *extends* readonly [`EntryType`](/sdk/javascript/api/type-aliases/EntryType)\[]
+`T` *extends* readonly [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)\[]
 
 ### Parameters
 
 #### instructions
 
-[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)
 
 #### criteria
 
@@ -63,7 +63,7 @@ Create a score question using an ordered rubric.
 
 ### Returns
 
-[`ScoreQuestion`](/sdk/javascript/api/interfaces/ScoreQuestion)\<readonly \[`T`\[`number`], `T`\[`number`], `T`\[`number`]]>
+[`ScoreQuestion`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreQuestion)\<readonly \[`T`\[`number`], `T`\[`number`], `T`\[`number`]]>
 
 ## Param
 

@@ -375,7 +375,7 @@ Adding memory this way has four consequences for your app:
 * **Every call makes two sequential requests**, your call followed by the memory gate.
   The gate judges the ticket together with Jev's answer, so it runs after the routing
   request. If your gate ignores the answer, it could instead be a second question in the
-  routing request (see [fan-out](/patterns/fan-out.md)).
+  routing request (see [fan-out](https://docs.typesafe.ai/patterns/fan-out.md)).
 * **Memory only grows.** Every saved memory goes into every later call for that
   customer. There is no size limit, no check for relevance and no expiry date here. The
   Next steps section has ideas for each.
@@ -561,8 +561,8 @@ display(Markdown(
   ID. The in-memory dict disappears when the process exits.
 * **Act on the route.** Map each team to a handler in code, such as booking a call for
   Enterprise customers or sending a setup-specific article. See
-  [intent routing](/patterns/intent-routing.md) and
-  [confidence-based routing](/patterns/confidence-routing.md). Add your reply to the ticket
+  [intent routing](https://docs.typesafe.ai/patterns/intent-routing.md) and
+  [confidence-based routing](https://docs.typesafe.ai/patterns/confidence-routing.md). Add your reply to the ticket
   thread as a support message, and the gate can remember what you did.
 
 ***
@@ -582,7 +582,7 @@ The 0.5 in this wrapper is a starting value. To pick your own, label request-and
 pairs from your traffic as worth remembering or not, and find the probability that best
 separates the two groups. Check it on pairs you didn't use to pick it. Raise it if a
 misleading memory costs more than a missing one; lower it if the reverse. See
-[Confidence](/confidence.md) and [Confidence-Gated Routing](/patterns/confidence-routing.md) for
+[Confidence](https://docs.typesafe.ai/confidence.md) and [Confidence-Gated Routing](https://docs.typesafe.ai/patterns/confidence-routing.md) for
 choosing thresholds and matching them to the risk of each action.
 
 

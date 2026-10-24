@@ -4,15 +4,15 @@
 
 **Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
 
-To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](./images.md#turning-on-images).
+To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](https://docs.typesafe.ai/images.md#turning-on-images).
 
-An image can go anywhere text can go in a System One request: in the `state`, in a question's `instructions`, and in its `criteria`. Every question type accepts images, and the [Box](./primitives/box.md) question type returns where something is in an image.
+An image can go anywhere text can go in a System One request: in the `state`, in a question's `instructions`, and in its `criteria`. Every question type accepts images, and the [Box](https://docs.typesafe.ai/primitives/box.md) question type returns where something is in an image.
 
 ![A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs_up option in a Choice question's criteria. The images themselves are listed in the request's assets.](https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/anatomy-light.webp?fit=max\&auto=format\&n=OmOS-OoUA_8VxwSR\&q=85\&s=7d5e99842cb8a482309f65a6d4aa195e)
 
 ## Turning on images
 
-Images and [Box](./primitives/box.md) questions are off by default. To use them, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. The examples under [Uploading images](#uploading-images) show how. The other examples on this page show only the request body.
+Images and [Box](https://docs.typesafe.ai/primitives/box.md) questions are off by default. To use them, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. The examples under [Uploading images](#uploading-images) show how. The other examples on this page show only the request body.
 
 ## Sending images in a request
 
@@ -52,9 +52,9 @@ This request sends a photo of a found dog as the state, and puts the photo from 
 }
 ```
 
-Questions can refer to an image in the state by name or path in backticks, the same way they refer to any other field (see [Reference specific fields](./primitives.md#reference-specific-fields)). An image that only one question uses goes directly in that question's `instructions` or `criteria`, as the poster photo does above.
+Questions can refer to an image in the state by name or path in backticks, the same way they refer to any other field (see [Reference specific fields](https://docs.typesafe.ai/primitives#reference-specific-fields)). An image that only one question uses goes directly in that question's `instructions` or `criteria`, as the poster photo does above.
 
-Jev 1.13 and Jev 1.14 both accept images. [Box](./primitives/box.md) questions need Jev 1.14.
+Jev 1.13 and Jev 1.14 both accept images. [Box](https://docs.typesafe.ai/primitives/box.md) questions need Jev 1.14.
 
 ### Asset fields
 
@@ -147,7 +147,7 @@ const { answers } = await client.systemOne(
 console.log(answers);
 ```
 
-To put an image inside a sentence, or to choose your own references, see the [SDK guides](./sdk.md).
+To put an image inside a sentence, or to choose your own references, see the [SDK guides](https://docs.typesafe.ai/sdk.md).
 
 ### Over HTTP
 
@@ -303,7 +303,7 @@ Score and Noul criteria take images the same way:
 
 ### Structured data
 
-State, instructions, and criteria accept nested JSON [structure](./primitives/advanced.md), and a reference works at any level of it. A question can refer to one picture in an array as `` `lineup[2]` ``, or to one in a labeled object as `` `faces.happy` ``. A criterion can hold several example pictures as an array.
+State, instructions, and criteria accept nested JSON [structure](https://docs.typesafe.ai/primitives/advanced.md), and a reference works at any level of it. A question can refer to one picture in an array as `` `lineup[2]` ``, or to one in a labeled object as `` `faces.happy` ``. A criterion can hold several example pictures as an array.
 
 ## Patterns
 
@@ -314,7 +314,7 @@ State, instructions, and criteria accept nested JSON [structure](./primitives/ad
 | What changed | Send the previous frame or a short frame history, and ask about motion, arrivals, or differences. | `state` |
 | Look closer when needed | Ask about a small copy of the image first. Send a larger copy (up to the size limit), or a full-resolution crop, only when the answer needs more detail. | `state` |
 | Search a large image | Cut the image into tiles and ask a Choice with the tiles as its options. Repeat on the chosen tile until the target takes up most of the tile. | `criteria` |
-| Find where it is | Ask a [Box](./primitives/box.md) question for the edges of the target. | `state`, optionally a picture of the target in `instructions` |
+| Find where it is | Ask a [Box](https://docs.typesafe.ai/primitives/box.md) question for the edges of the target. | `state`, optionally a picture of the target in `instructions` |
 
 ## Limits
 
@@ -324,13 +324,13 @@ State, instructions, and criteria accept nested JSON [structure](./primitives/ad
 | File size | 16 MiB per image file. For base64, this is the size after decoding. |
 | Width and height | 280 to 1568 pixels each. An image with either side under 280 pixels is rejected. |
 | Total pixels (width × height) | 78,400 to 2,458,624, the area of a 280 × 280 to a 1568 × 1568 square. |
-| Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](./api/errors.md#compression) doesn't raise the limit. |
+| Request body | 32 MiB, including the JSON, base64 text, and multipart framing. HTTP headers don't count. [Compression](https://docs.typesafe.ai/api/errors.md#compression) doesn't raise the limit. |
 | All images in the request | 32 MiB, shared by every distinct image after the API processes it. Processing re-encodes each image and can make it larger than the file you sent, so a request of small uploads can still go over. |
 | Expanded request | 32 MiB for the text, questions, structure, and images after every reference is replaced by its image. Each use of a reference adds the image again: an image that is 10 MiB after processing, referenced four times, is over the limit. |
 
 All limits include both ends of the range. An image outside them is rejected, never resized to fit. If any image in a request is rejected, the whole request fails: there are no partial answers. See [Errors](#errors) for the status codes.
 
-How many images fit in one request depends on these limits and on the [context length](./models.md). Images have no separate [rate limits](./api/errors.md#handling-rate-limits): a request with images counts against the same limits as any other request.
+How many images fit in one request depends on these limits and on the [context length](https://docs.typesafe.ai/models.md). Images have no separate [rate limits](https://docs.typesafe.ai/api/errors.md#handling-rate-limits): a request with images counts against the same limits as any other request.
 
 To stay under the request limits, send fewer images, send smaller images, put an image that several questions use in the `state` once instead of in each question's `instructions`, or split the work across requests.
 
@@ -358,7 +358,7 @@ with Image.open("photo.jpg") as original:
 
 ## Image tokens
 
-Each image counts as input tokens, billed at the same per-token [input price](./models.md) as text. There is no separate charge for images. The `usage.input_tokens` field in the response includes the tokens for every image in the request. Image tokens also count toward the request's [context length](./models.md).
+Each image counts as input tokens, billed at the same per-token [input price](https://docs.typesafe.ai/models.md) as text. There is no separate charge for images. The `usage.input_tokens` field in the response includes the tokens for every image in the request. Image tokens also count toward the request's [context length](https://docs.typesafe.ai/models.md).
 
 We'll be providing guidance on estimating image token usage soon.
 
@@ -368,7 +368,7 @@ We'll be providing guidance on estimating image token usage soon.
 | - | - |
 | `400` | Images are not turned on: the request has an image or a Box question but no `TypeSafe-Danger-Zone-Images: true` header. See [Turning on images](#turning-on-images). |
 | `400` | An image or asset was rejected. The file isn't PNG or JPEG, is damaged or incomplete, or is animated; the image is below the minimum width, height, or total pixels; an asset isn't referenced anywhere; the base64 or `format` is invalid; a reference is empty; or the multipart request breaks a [multipart rule](#over-http). |
-| `400` | `max_tokens_exceeded`: the images and text together exceed the request's [context length](./models.md). Send fewer or smaller images, or move images out of `instructions` into the `state`. |
+| `400` | `max_tokens_exceeded`: the images and text together exceed the request's [context length](https://docs.typesafe.ai/models.md). Send fewer or smaller images, or move images out of `instructions` into the `state`. |
 | `413` | The request is over a size limit: an image file, an image's width, height, or total pixels, the request body, all images together, the expanded request, or the reference lengths. See [Limits](#limits). |
 
 If a request has several problems, the error reports one of them. Check the request against [Limits](#limits) and [Preparing images](#preparing-images).

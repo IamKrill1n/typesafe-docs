@@ -29,7 +29,7 @@ Errors use standard HTTP status codes with a JSON body describing what went wron
 
 | Status | Meaning |
 | - | - |
-| `400 Bad Request` | The body breaks a [request rule](#request-rules), such as invalid UTF-8, too much nesting, a number that isn't finite, or a malformed compressed body. With `max_tokens_exceeded`, the request is longer than the model's [context length](/models.md). |
+| `400 Bad Request` | The body breaks a [request rule](#request-rules), such as invalid UTF-8, too much nesting, a number that isn't finite, or a malformed compressed body. With `max_tokens_exceeded`, the request is longer than the model's [context length](https://docs.typesafe.ai/models.md). |
 | `401 Unauthorized` | Missing or invalid API key. Check the `Authorization` header. |
 | `413 Payload Too Large` | The body is over 32 MiB. See [Request rules](#request-rules). |
 | `415 Unsupported Media Type` | The body uses an unsupported `Content-Encoding` or more than one compression layer. See [Compression](#compression). |

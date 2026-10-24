@@ -31,7 +31,7 @@ untagged template literal. To write a list of assets with a separator, use
 
 ## Returns
 
-[`TextWithAssets`](/sdk/javascript/api/interfaces/TextWithAssets)
+[`TextWithAssets`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/TextWithAssets)
 
 ### join()
 
@@ -56,7 +56,7 @@ Written between values. Default: `","`.
 
 #### Returns
 
-[`TextWithAssets`](/sdk/javascript/api/interfaces/TextWithAssets)
+[`TextWithAssets`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/TextWithAssets)
 
 #### Example
 

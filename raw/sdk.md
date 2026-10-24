@@ -10,15 +10,15 @@ Our client SDKs provide typed questions and answers for the TypeSafe API and han
 
 Choose a client SDK for installation instructions, examples, and API details.
 
-> **[Python](/sdk/python.md)**
+> **[Python](https://docs.typesafe.ai/sdk/python.md)**
 >
 > Install the Python client SDK and make your first request.
 
-> **[JavaScript / TypeScript](/sdk/javascript.md)**
+> **[JavaScript / TypeScript](https://docs.typesafe.ai/sdk/javascript.md)**
 >
 > Install the JavaScript client SDK and make your first typed request.
 
-You can also call the [HTTP API](/api) directly from any language.
+You can also call the [HTTP API](https://docs.typesafe.ai/api) directly from any language.
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

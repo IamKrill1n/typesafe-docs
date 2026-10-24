@@ -10,13 +10,13 @@ Create a question that selects between named alternatives.
 
 ### T
 
-`T` *extends* [`ChoiceCriteria`](../type-aliases/ChoiceCriteria.md)
+`T` *extends* [`ChoiceCriteria`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ChoiceCriteria)
 
 ## Parameters
 
 ### instructions
 
-[`EntryType`](../type-aliases/EntryType.md)
+[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)
 
 The question as text, a JSON object or array, or `null`.
 
@@ -28,6 +28,6 @@ Labels mapped to descriptions, or `null` for undescribed labels.
 
 ## Returns
 
-[`ChoiceQuestion`](../interfaces/ChoiceQuestion.md)\<`T`>
+[`ChoiceQuestion`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceQuestion)\<`T`>
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

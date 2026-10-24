@@ -29,7 +29,7 @@ Copy signature
 
   &#x20;
 
-  [Image](./assets.md#typesafe_sdk.Image)\`
+  [Image](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Image)\`
 </pre>
 
 An asset referenced from request content; currently only images are supported.

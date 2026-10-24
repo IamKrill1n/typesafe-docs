@@ -54,7 +54,7 @@ Calibration makes uncertainty usable by software. Across many predictions from a
 * Outcomes assigned a probability of `0.8` should occur about 80% of the time.
 * Outcomes assigned a probability of `1.0` should occur 100% of the time.
 
-These rates describe groups of predictions, not a guarantee about any single answer. See [Confidence](/confidence.md) for guidance on deciding when software should act or escalate.
+These rates describe groups of predictions, not a guarantee about any single answer. See [Confidence](https://docs.typesafe.ai/confidence.md) for guidance on deciding when software should act or escalate.
 
 ## The problems with RLHF
 

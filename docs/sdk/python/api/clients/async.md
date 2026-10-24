@@ -9,7 +9,7 @@ Copy signature
 &#x20;   \*,
 &#x20;   api_key: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   retry: [RetryPolicy](../retries.md#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 &#x20;   | httpx2.Timeout
 &#x20;   | None = None,
@@ -61,7 +61,7 @@ Parameters:
   API root; may be set via the `TYPESAFE_BASE_URL` environment variable.
 * **`compression`** (`Literal['zstd', False] | None`, default: `None` ) –
 
-  Request body compression: `"zstd"`, or `False` to send bodies uncompressed. Defaults to zstd [when available](../../usage/advanced.md#ensure-zstd-is-available).
+  Request body compression: `"zstd"`, or `False` to send bodies uncompressed. Defaults to zstd [when available](https://docs.typesafe.ai/sdk/python/usage/advanced.md#ensure-zstd-is-available).
 
 Raises:
 
@@ -110,7 +110,7 @@ Copy signature
 
   &#x20;
 
-  [AsyncModels](./async.md#typesafe_sdk.AsyncModels)\`
+  [AsyncModels](https://docs.typesafe.ai/sdk/python/api/clients/async.md#typesafe_sdk.AsyncModels)\`
 </pre>
 
 An accessor for the Models API resource.
@@ -127,7 +127,7 @@ async def main() -> None:
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`attach\_assets(
-&#x20;   assets: [Asset](../types/assets.md#typesafe_sdk.Asset) | [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)\[[Asset](../types/assets.md#typesafe_sdk.Asset)],
+&#x20;   assets: [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset) | [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)\[[Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)],
 ) -> [AbstractContextManager](https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager)\[None]`</pre>
 
 Attach assets to calls made within a `with` block, for referencing them inside strings.
@@ -176,59 +176,59 @@ async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](../types/common.md#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](../types/questions.md#typesafe_sdk.Question)],
+&#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
 &#x20;   \*,
 &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](../types/assets.md#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](../retries.md#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
+&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 &#x20;   | httpx2.Timeout
 &#x20;   | None = None,
 &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 &#x20;   | None = None,
-&#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](../types/common.md#typesafe_sdk.JSONValue) | None]
+&#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
 &#x20;   | None = None,
 &#x20;   response_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
 &#x20;   | None = None,
-) -> [SystemOneResponse](../types/responses.md#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
+) -> [SystemOneResponse](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
 
 **Overload 1**
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](../types/common.md#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](../types/questions.md#typesafe_sdk.Question)],
+&#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
 &#x20;   \*,
 &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](../types/assets.md#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](../retries.md#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
+&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 &#x20;   | httpx2.Timeout
 &#x20;   | None = None,
 &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 &#x20;   | None = None,
-&#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](../types/common.md#typesafe_sdk.JSONValue) | None]
+&#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
 &#x20;   | None = None,
 &#x20;   response_model: None = None,
-) -> [SystemOneResponse](../types/responses.md#typesafe_sdk.SystemOneResponse)`</pre>
+) -> [SystemOneResponse](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.SystemOneResponse)`</pre>
 
 **Overload 2**
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](../types/common.md#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](../types/questions.md#typesafe_sdk.Question)],
+&#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
 &#x20;   \*,
 &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](../types/assets.md#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](../retries.md#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
+&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 &#x20;   | httpx2.Timeout
 &#x20;   | None = None,
 &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 &#x20;   | None = None,
-&#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](../types/common.md#typesafe_sdk.JSONValue) | None]
+&#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
 &#x20;   | None = None,
 &#x20;   response_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
 ) -> ResponseT`</pre>
@@ -250,7 +250,7 @@ Parameters:
   Model override; `None` inherits the client default.
 * **`assets`** (`Mapping[str, Asset] | None`, default: `None` ) –
 
-  Assets keyed by the reference used for them in `state` or questions; see [Attaching media assets](../../usage/basic.md#attaching-media-assets).
+  Assets keyed by the reference used for them in `state` or questions; see [Attaching media assets](https://docs.typesafe.ai/sdk/python/usage/basic.md#attaching-media-assets).
 * **`retry`** (`RetryPolicy | None`, default: `None` ) –
 
   An optional retry policy to override the client-level value for this call only.
@@ -344,7 +344,7 @@ Release network resources and close the underlying HTTP client, including a supp
 
 ## Models resource
 
-Reached through [`AsyncTypeSafeClient.models`](./async.md#typesafe_sdk.AsyncTypeSafeClient.models).
+Reached through [`AsyncTypeSafeClient.models`](https://docs.typesafe.ai/sdk/python/api/clients/async#typesafe_sdk.AsyncTypeSafeClient.models).
 
 ### typesafe_sdk.AsyncModels
 
@@ -357,13 +357,13 @@ Access to the models available to the account, reached through `AsyncTypeSafeCli
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`list(
 &#x20;   \*,
-&#x20;   retry: [RetryPolicy](../retries.md#typesafe_sdk.RetryPolicy) | None = None,
+&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 &#x20;   | httpx2.Timeout
 &#x20;   | None = None,
 &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 &#x20;   | None = None,
-) -> [ListModelsResponse](../types/responses.md#typesafe_sdk.ListModelsResponse)`</pre>
+) -> [ListModelsResponse](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.ListModelsResponse)`</pre>
 
 List the models available to the account.
 

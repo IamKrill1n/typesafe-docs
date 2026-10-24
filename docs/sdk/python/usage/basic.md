@@ -125,7 +125,7 @@ System One requests can include media assets.
 > Learn about support for images:
 >
 > * [**API docs**](https://docs.typesafe.ai/go/images.md): how to enable and use images with TypeSafe's System One API
-> * [**SDK docs**](../api/types/assets.md#typesafe_sdk.Image): documentation and code examples for using images with `typesafe-sdk`
+> * [**SDK docs**](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Image): documentation and code examples for using images with `typesafe-sdk`
 
 > [!NOTE]
 >
@@ -139,8 +139,8 @@ An **asset reference** inside the content of `state` or `questions` will be repl
 
 There are two ways to create **asset references**:
 
-1. [Automatic references](./basic.md#automatic-references): place assets directly in the content, or format them into strings. The SDK then auto-generates a unique reference for each asset.
-2. [Named references](./basic.md#named-references): choose your own references for assets, passed through the `assets` argument to `system_one`.
+1. [Automatic references](https://docs.typesafe.ai/sdk/python/usage/basic.md#automatic-references): place assets directly in the content, or format them into strings. The SDK then auto-generates a unique reference for each asset.
+2. [Named references](https://docs.typesafe.ai/sdk/python/usage/basic.md#named-references): choose your own references for assets, passed through the `assets` argument to `system_one`.
 
 Both types of asset references may be used together in the same request.
 
@@ -393,7 +393,7 @@ assert 0 <= result.answers.billing.noul <= 1
 
 ## Retries
 
-Pass a custom [`RetryPolicy`](../api/retries.md) as `retry` on the client or per call. Invalid API keys raise `TypeSafeError` during client creation, before any request or retry.
+Pass a custom [`RetryPolicy`](https://docs.typesafe.ai/sdk/python/api/retries) as `retry` on the client or per call. Invalid API keys raise `TypeSafeError` during client creation, before any request or retry.
 
 On the client:
 
@@ -447,7 +447,7 @@ client.system_one(
 
 ## Error handling
 
-Handle [exceptions](../api/exceptions.md) raised by the SDK:
+Handle [exceptions](https://docs.typesafe.ai/sdk/python/api/exceptions.md) raised by the SDK:
 
 **Async**
 
@@ -488,7 +488,7 @@ The SDK reads and uses the following environment variables:
 | `TYPESAFE_DEFAULT_MODEL` | Default model | `jev-latest` |
 | `TYPESAFE_LOG_LEVEL` | `typesafe_sdk` logger level, applied once at import | unset |
 
-See the [constants reference](../api/constants.md) for SDK defaults.
+See the [constants reference](https://docs.typesafe.ai/sdk/python/api/constants.md) for SDK defaults.
 
 API keys supplied through `api_key` or `TYPESAFE_API_KEY` have leading and trailing whitespace stripped, including newlines from key files. Empty keys, internal whitespace, control characters, and non-ASCII characters are rejected before sending a request. An explicitly empty key does not fall back to the environment.
 

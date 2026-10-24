@@ -52,11 +52,11 @@ Code handles deterministic work and owns the control flow. The model appears onl
 
 > **Calibrated confidence**
 >
-> [RLCD](../introduction/machine-learning-primer.md) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
+> [RLCD](https://docs.typesafe.ai/introduction/machine-learning-primer.md) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
 
 > **Self-consistent**
 >
-> System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](../cookbooks/consistency_noul_cookbook.md).
+> System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md).
 
 Because every output is constrained to the supplied options, the model returns a full probability distribution over those options rather than inventing a value outside the schema. TypeSafe's target is a greater than 100× intelligence-to-speed-and-cost ratio; the underlying bet is that cheaper intelligence will create much more demand.
 
@@ -75,7 +75,7 @@ Keep deterministic work in code. It is reliable and cheap. Avoid agent `while` l
 >     route_to_collections(invoice)
 > ```
 
-Browse the [System One patterns](../patterns.md) for bounded ways to compose model decisions with code.
+Browse the [System One patterns](https://docs.typesafe.ai/patterns.md) for bounded ways to compose model decisions with code.
 
 ### 2. Decompose the input state
 
@@ -141,19 +141,19 @@ The descriptions inside `criteria` can be objects too. For a Choice, each option
 
 Each question type's page has a worked example:
 
-* [Noul](../primitives/noul.md#structured-instructions) compares one resume against several candidate records, one question per record, with the questions built in code.
-* [Choice](../primitives/choice.md#structured-instructions-and-criteria) describes two easily confused options with what each covers, what it's not for, and examples.
-* [Score](../primitives/score.md#structured-level-descriptions) gives each level a description and example situations.
+* [Noul](https://docs.typesafe.ai/primitives/noul.md#structured-instructions) compares one resume against several candidate records, one question per record, with the questions built in code.
+* [Choice](https://docs.typesafe.ai/primitives/choice.md#structured-instructions-and-criteria) describes two easily confused options with what each covers, what it's not for, and examples.
+* [Score](https://docs.typesafe.ai/primitives/score.md#structured-level-descriptions) gives each level a description and example situations.
 
-The [structured-data-extraction cascade cookbook](../cookbooks/sde_cascade.md) shows the shared-wording case, asking the same battery of questions about every field of an extracted record.
+The [structured-data-extraction cascade cookbook](https://docs.typesafe.ai/cookbooks/sde_cascade.md) shows the shared-wording case, asking the same battery of questions about every field of an extracted record.
 
-A short, unambiguous question or criterion can remain a string. Add structure when it separates guidance that would otherwise blur together. For the full set of places structure is accepted, see [Advanced: structure](../primitives/advanced.md).
+A short, unambiguous question or criterion can remain a string. Add structure when it separates guidance that would otherwise blur together. For the full set of places structure is accepted, see [Advanced: structure](https://docs.typesafe.ai/primitives/advanced.md).
 
 ### 6. Ask a lot of questions
 
 Ask many narrow, independent questions about the same state in one request. This is how you maximize effectiveness and intelligence per dollar with the API: questions run in parallel, and code can combine their signals without adding serial model round trips.
 
-See the [Speculative Fan-Out pattern](../patterns/fan-out.md) and [Parallel questions cookbook](../cookbooks/parallel_questions.md).
+See the [Speculative Fan-Out pattern](https://docs.typesafe.ai/patterns/fan-out.md) and [Parallel questions cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md).
 
 ### 7. Combine question outputs in code (or feed into a classical ML model)
 
@@ -172,11 +172,11 @@ Combine independent answers with deterministic rules or weighted sums. For learn
 > )
 > ```
 
-[Composite Scoring](../patterns/composite-scoring.md) shows how to preserve individual judgments while combining them. If you do not have labels for a downstream model, use an ensemble of expensive reasoning models to generate them; the [AutoResearch cookbook](../cookbooks/autoresearch_feature_discovery.md) shows how to train a classical model on System One outputs.
+[Composite Scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) shows how to preserve individual judgments while combining them. If you do not have labels for a downstream model, use an ensemble of expensive reasoning models to generate them; the [AutoResearch cookbook](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md) shows how to train a classical model on System One outputs.
 
 ### 8. Route on uncertainty
 
-Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data. For a Noul, a good starting point is 0.7 for yes and 0.3 for no; see [Reading a Noul](../primitives/noul.md#reading-a-noul).
+Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data. For a Noul, a good starting point is 0.7 for yes and 0.3 for no; see [Reading a Noul](https://docs.typesafe.ai/primitives/noul.md#reading-a-noul).
 
 > **Example: route by confidence**
 >
@@ -189,7 +189,7 @@ Make code take different actions for confident and unconfident answers. Escalate
 >     route_to_handler(answer.choice, ticket)
 > ```
 
-See [Confidence](../confidence.md) and [Confidence-Gated Routing](../patterns/confidence-routing.md) for choosing thresholds and matching them to the risk of each action.
+See [Confidence](https://docs.typesafe.ai/confidence.md) and [Confidence-Gated Routing](https://docs.typesafe.ai/patterns/confidence-routing.md) for choosing thresholds and matching them to the risk of each action.
 
 > [!TIP]
 >

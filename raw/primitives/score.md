@@ -6,7 +6,7 @@
 
 > A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.
 
-Use a Score when the answer is a position on a spectrum you can describe in steps. For example, how severe a bug is, how happy a customer is, or how much Python experience a candidate has. If the answer is one of a fixed set of options with no order between them, use a [Choice](/primitives/choice.md). If it's a yes or no, use a [Noul](/primitives/noul.md). [Choose a question type](/primitives#choose-a-question-type) compares all three.
+Use a Score when the answer is a position on a spectrum you can describe in steps. For example, how severe a bug is, how happy a customer is, or how much Python experience a candidate has. If the answer is one of a fixed set of options with no order between them, use a [Choice](https://docs.typesafe.ai/primitives/choice.md). If it's a yes or no, use a [Noul](https://docs.typesafe.ai/primitives/noul.md). [Choose a question type](https://docs.typesafe.ai/primitives#choose-a-question-type) compares all three.
 
 A Score answer is a position along your levels in `score`, which can fall between two levels. The model also returns a probability for every level in `probabilities`, and a `confidence` value for the answer.
 
@@ -44,7 +44,7 @@ The numbers in front of each step are positions, explained under [Levels](#level
 
 ## Request structure
 
-The POST request body to the [TypeSafe API](/api) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Score question has the following fields:
+The POST request body to the [TypeSafe API](https://docs.typesafe.ai/api) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Score question has the following fields:
 
 * `type`: Always `"score"`.
 * `instructions`: The question the model answers. What it's rating.
@@ -64,7 +64,7 @@ The model gets the descriptions and nothing else, and each level is judged on it
 
 The `score` in the response is a position on the levels spectrum. For a three-level scale it runs from 0 to 2, and it can land between two levels.
 
-Our [client SDKs](/sdk.md) provide typed questions. In Python, the same question is a `Score`:
+Our [client SDKs](https://docs.typesafe.ai/sdk.md) provide typed questions. In Python, the same question is a `Score`:
 
 ```python theme={null}
 from typesafe_sdk import Score, TypeSafeClient
@@ -87,13 +87,13 @@ with TypeSafeClient() as client:
     print(response.answers["bug_severity"].score)
 ```
 
-Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
+Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
 
-Use one of our [client SDKs](/sdk.md) or call the [TypeSafe API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill.md#installation) first so it knows the request and response shapes.
+Use one of our [client SDKs](https://docs.typesafe.ai/sdk.md) or call the [TypeSafe API](https://docs.typesafe.ai/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](https://docs.typesafe.ai/agent-skill.md#installation) first so it knows the request and response shapes.
 
 > [!NOTE]
 >
-> `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](/api).
+> `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](https://docs.typesafe.ai/api).
 
 ## Response structure
 
@@ -132,7 +132,7 @@ Each Score answer has five values:
 * `probabilities`: The probability of each level, keyed by level number as a string. The sum of all values is 1.
 * `score`: The position on the level number line, from 0 to the top level number, which is 2 here. It's each level number multiplied by its probability, added up: 0 x 0.0 + 1 x 0.57 + 2 x 0.43 = 1.43.
 * `legend`: Each level number mapped back to its description.
-* [`confidence`](/confidence): A number from 0 to 1 computed from how `probabilities` is spread. A single peak on one level means high confidence. Probability spread over several levels means low confidence.
+* [`confidence`](https://docs.typesafe.ai/confidence): A number from 0 to 1 computed from how `probabilities` is spread. A single peak on one level means high confidence. Probability spread over several levels means low confidence.
 
 A score of 1.43 means the model is split between levels 1 and 2, leaning to level 1. That matches the report: the export is broken, and switching to Chrome is a workaround for most customers, but not for the ones who only use Safari. The model puts 0.57 on "workaround exists" and 0.43 on "no workaround", and confidence is 0.35 because it's split.
 
@@ -203,9 +203,9 @@ The score is a probability-weighted mean of the level numbers. In the third and 
 
 Different distributions can produce the same score. A score of 1.0 can mean all probability is on level 1, or half is on each of levels 0 and 2. Read `probabilities` and `confidence` alongside the score to distinguish these cases.
 
-A fractional score is a position. You can use it to rank reports by severity, or round it to the nearest level when your code needs one outcome. Our [entity alignment cookbook](/cookbooks/entity_alignment.md) shows an example of rounding to the nearest level to make a decision.
+A fractional score is a position. You can use it to rank reports by severity, or round it to the nearest level when your code needs one outcome. Our [entity alignment cookbook](https://docs.typesafe.ai/cookbooks/entity_alignment.md) shows an example of rounding to the nearest level to make a decision.
 
-Low confidence on a Score usually means one of three things. The levels overlap for this state, the question is measuring more than one thing, or the state doesn't say enough to place it. Our [Confidence](/confidence.md) docs cover how to use it in your code.
+Low confidence on a Score usually means one of three things. The levels overlap for this state, the question is measuring more than one thing, or the state doesn't say enough to place it. Our [Confidence](https://docs.typesafe.ai/confidence.md) docs cover how to use it in your code.
 
 ## Writing good levels
 
@@ -227,11 +227,11 @@ Keep each Score question to one dimension. If a description says "punctual and s
 
 If the top of your scale has a rare extreme case you need to act on differently, give it its own level. A sentiment scale that ends at "very angry" can add "abusive or threatening". Without that level, both messages may receive a score near the top. The score alone may not distinguish them.
 
-If there is no in-between at all, and the answer is one of a few discrete categories, use a [Choice](/primitives/choice.md) instead, or split the question into several [Noul](/primitives/noul.md) questions. It's important to test your levels against your own data. Two wordings of the same scale can behave differently on your data.
+If there is no in-between at all, and the answer is one of a few discrete categories, use a [Choice](https://docs.typesafe.ai/primitives/choice.md) instead, or split the question into several [Noul](https://docs.typesafe.ai/primitives/noul.md) questions. It's important to test your levels against your own data. Two wordings of the same scale can behave differently on your data.
 
 ## Splitting a complex judgment into several Score questions
 
-A complex judgment, one that depends on several things, is best split into one Score question per thing. You can then combine the Scores returned from TypeSafe in your code to make the judgment. Some Score questions may matter more than others, so give each Score question a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Send the Score questions in one request. They are evaluated in parallel. Adding questions barely changes the response time and costs a few extra question tokens; see [Ask multiple questions together](/primitives#ask-multiple-questions-together).
+A complex judgment, one that depends on several things, is best split into one Score question per thing. You can then combine the Scores returned from TypeSafe in your code to make the judgment. Some Score questions may matter more than others, so give each Score question a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Send the Score questions in one request. They are evaluated in parallel. Adding questions barely changes the response time and costs a few extra question tokens; see [Ask multiple questions together](https://docs.typesafe.ai/primitives#ask-multiple-questions-together).
 
 The request below is the spinner ticket from the table above with some more context. It asks three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with.
 
@@ -364,7 +364,7 @@ def priority(ticket: str) -> float:
 
 For the example response above, the normalized scores are 0.62 for severity, 0.64 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.62 + 0.3 × 0.64 + 0.1 × 1.0 = 0.664`, which rounds to `0.66`.
 
-The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The request count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](/patterns/composite-scoring.md) pattern.
+The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The request count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) pattern.
 
 ## Structured level descriptions
 

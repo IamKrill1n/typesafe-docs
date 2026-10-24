@@ -15,13 +15,13 @@ Use the `jev-preview` model for `box` questions.
 
 ### instructions?
 
-[`EntryType`](/sdk/javascript/api/type-aliases/EntryType) = `null`
+[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType) = `null`
 
 What to locate, as text, an asset, a JSON object or array; defaults to `null`.
 
 ## Returns
 
-[`BoxQuestion`](/sdk/javascript/api/interfaces/BoxQuestion)
+[`BoxQuestion`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxQuestion)
 
 ## Example
 

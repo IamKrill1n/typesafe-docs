@@ -6,7 +6,7 @@ Answers keyed by question name, with model and usage metadata.
 
 ### Q
 
-`Q` *extends* [`Questions`](./Questions.md)
+`Q` *extends* [`Questions`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions)
 
 ## Properties
 

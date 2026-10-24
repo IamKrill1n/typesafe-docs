@@ -23,7 +23,7 @@ Empty or whitespace-only environment values are ignored.
 
 ##### config?
 
-[`TypeSafeClientConfig`](/sdk/javascript/api/interfaces/TypeSafeClientConfig) = `{}`
+[`TypeSafeClientConfig`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/TypeSafeClientConfig) = `{}`
 
 #### Returns
 
@@ -148,26 +148,26 @@ Answer named questions about text, structured state, or assets.
 
 ##### Q
 
-`Q` *extends* [`Questions`](/sdk/javascript/api/interfaces/Questions)
+`Q` *extends* [`Questions`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions)
 
 #### Parameters
 
 ##### request
 
-[`SystemOneRequest`](/sdk/javascript/api/interfaces/SystemOneRequest)\<`Q`>
+[`SystemOneRequest`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequest)\<`Q`>
 
 State, questions, an optional model override, and optional assets.
 Assets in `state`, question content, or `withAssets` text are sent under their references.
 
 ##### options?
 
-[`RequestOptions`](/sdk/javascript/api/interfaces/RequestOptions) = `{}`
+[`RequestOptions`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/RequestOptions) = `{}`
 
 Per-call timeout, retry, headers, and cancellation settings.
 
 #### Returns
 
-[`APIPromise`](/sdk/javascript/api/classes/APIPromise)\<[`SystemOneResult`](/sdk/javascript/api/interfaces/SystemOneResult)\<`Q`>>
+[`APIPromise`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIPromise)\<[`SystemOneResult`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneResult)\<`Q`>>
 
 Answers typed by question name and criteria, with model and token usage. Every
 failure below rejects the returned promise; the call itself doesn't throw.

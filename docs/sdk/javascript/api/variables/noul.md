@@ -19,32 +19,32 @@ Create a yes/no question with optional descriptions for either outcome.
 
 #### instructions
 
-`NonNullable`\<[`EntryType`](../type-aliases/EntryType.md)>
+`NonNullable`\<[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)>
 
 #### criteria?
 
 \| \{
-`false?`: [`EntryType`](../type-aliases/EntryType.md);
-`true?`: [`EntryType`](../type-aliases/EntryType.md);
+`false?`: [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType);
+`true?`: [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType);
 }
 \| `null`
 
 ##### Type Literal
 
 \{
-`false?`: [`EntryType`](../type-aliases/EntryType.md);
-`true?`: [`EntryType`](../type-aliases/EntryType.md);
+`false?`: [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType);
+`true?`: [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType);
 }
 
 ###### false?
 
-[`EntryType`](../type-aliases/EntryType.md)
+[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)
 
 Description of the no outcome.
 
 ###### true?
 
-[`EntryType`](../type-aliases/EntryType.md)
+[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)
 
 Description of the yes outcome.
 
@@ -54,7 +54,7 @@ Description of the yes outcome.
 
 ### Returns
 
-[`NoulQuestion`](../interfaces/NoulQuestion.md)
+[`NoulQuestion`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulQuestion)
 
 ## Call Signature
 
@@ -66,22 +66,22 @@ Description of the yes outcome.
 
 #### instructions
 
-[`EntryType`](../type-aliases/EntryType.md) | `undefined`
+[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType) | `undefined`
 
 #### criteria
 
 \| \{
-`false?`: [`EntryType`](../type-aliases/EntryType.md);
-`true`: `NonNullable`\<[`EntryType`](../type-aliases/EntryType.md)>;
+`false?`: [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType);
+`true`: `NonNullable`\<[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)>;
 }
 \| \{
-`false`: `NonNullable`\<[`EntryType`](../type-aliases/EntryType.md)>;
-`true?`: [`EntryType`](../type-aliases/EntryType.md);
+`false`: `NonNullable`\<[`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType)>;
+`true?`: [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType);
 }
 
 ### Returns
 
-[`NoulQuestion`](../interfaces/NoulQuestion.md)
+[`NoulQuestion`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulQuestion)
 
 ## Param
 

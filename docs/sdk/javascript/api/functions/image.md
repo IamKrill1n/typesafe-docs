@@ -24,7 +24,7 @@ Image file bytes, or a `Blob` such as a `File`.
 
 ## Returns
 
-[`Image`](../classes/Image.md)
+[`Image`](https://docs.typesafe.ai/sdk/javascript/api/classes/Image)
 
 ## Throws
 

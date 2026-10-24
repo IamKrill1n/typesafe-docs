@@ -436,10 +436,10 @@ looking in roughly the right place.
 
 One request carries two kinds of question:
 
-* **`which`** is a [`Choice`](/primitives/choice) question
+* **`which`** is a [`Choice`](https://docs.typesafe.ai/primitives/choice) question
   over all 182 skill names, with the index description as each option's criteria (the same
   text the agent itself gets). Its probabilities are the ranking.
-* **three [`Noul`](/primitives/noul) questions about the
+* **three [`Noul`](https://docs.typesafe.ai/primitives/noul) questions about the
   request**, printed below, each asking a different way whether it wants an action taken
   rather than an explanation given. `prose_suffices`
   counts the other way round. Their mean decides whether to suggest anything at all, and
@@ -916,10 +916,10 @@ display(
 ## What's next
 
 The same shape shows up elsewhere:
-[Intent Routing](/patterns/intent-routing.md) for routing to a
-handler rather than a skill, [Confidence](/confidence.md) for
+[Intent Routing](https://docs.typesafe.ai/patterns/intent-routing.md) for routing to a
+handler rather than a skill, [Confidence](https://docs.typesafe.ai/confidence.md) for
 picking the two thresholds, and
-[Speculative Fan-Out](/patterns/fan-out.md) for putting every
+[Speculative Fan-Out](https://docs.typesafe.ai/patterns/fan-out.md) for putting every
 question in one request.
 
 

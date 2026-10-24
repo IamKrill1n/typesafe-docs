@@ -6,7 +6,7 @@
 
 > Use confidence as a second axis. The answer tells you what; confidence tells you whether to act.
 
-One of TypeSafe's most powerful features is [confidence](/confidence.md). By being intentional with the way you gate decisions on confidence, you can build systems that are both reliable and safe.
+One of TypeSafe's most powerful features is [confidence](https://docs.typesafe.ai/confidence.md). By being intentional with the way you gate decisions on confidence, you can build systems that are both reliable and safe.
 
 ## Example: voice banking commands
 
@@ -65,7 +65,7 @@ else:
 
 The 0.6 floor catches anything the model is genuinely uncertain about. Above that floor, each action type has its own threshold based on the consequences of acting on a wrong classification. Checking a balance at 0.6 is fine because the worst case is the user having to listen to the balance read-out. But approving a transfer requires very high confidence (>0.85), otherwise the system should ask the user to confirm.
 
-See [Confidence](/confidence.md) for more details on how to think about confidence in your systems.
+See [Confidence](https://docs.typesafe.ai/confidence.md) for more details on how to think about confidence in your systems.
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

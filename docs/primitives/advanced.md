@@ -6,7 +6,7 @@ System One models are trained to understand structure.
 
 ## Where structure is allowed
 
-Every one of these fields is an [`EntryType`](../sdk/javascript/api/type-aliases/EntryType.md).
+Every one of these fields is an [`EntryType`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType).
 
 | Field | Applies to | Accepted shape |
 | - | - | - |
@@ -26,7 +26,7 @@ One `field` object describes the field being checked, and each question refers t
 
 Try it in the Playground →
 
-In code, you could loop over the potential records and build one of these questions per field, all sent in a single call. The [SDE cascade cookbook](../cookbooks/sde_cascade.md) does something similar to this.
+In code, you could loop over the potential records and build one of these questions per field, all sent in a single call. The [SDE cascade cookbook](https://docs.typesafe.ai/cookbooks/sde_cascade.md) does something similar to this.
 
 Arrays work too. Use one when the instruction is a list of things to check or to compare:
 
@@ -58,7 +58,7 @@ Try it in the Playground →
 
 The bottle plausibly fits under two departments. Showing the subtrees lets the model see that both `Sporting Goods > Cycling > Bike Bottles & Cages` and `Home & Kitchen > Drinkware > Water Bottles` exist, and weigh the listing's emphasis on bike cages against everyday drinkware. The `probabilities` on this answer tell you whether the split is close enough to explore both branches.
 
-Once a department is chosen, ask the next Choice with that department's children as the options and their subtrees as the values, and repeat until you reach a leaf. In code this could be a loop over a nested dict, where each question's `criteria` is simply the current node. The [Hierarchical Classification cookbook](../cookbooks/hierarchical_classification.md) shows an example of a similar walk of the tree, including a beam search that keeps several candidate paths alive when the probabilities are close.
+Once a department is chosen, ask the next Choice with that department's children as the options and their subtrees as the values, and repeat until you reach a leaf. In code this could be a loop over a nested dict, where each question's `criteria` is simply the current node. The [Hierarchical Classification cookbook](https://docs.typesafe.ai/cookbooks/hierarchical_classification.md) shows an example of a similar walk of the tree, including a beam search that keeps several candidate paths alive when the probabilities are close.
 
 > [!NOTE]
 >

@@ -12,9 +12,9 @@ Base class for SDK errors.
 
 ## Extended by
 
-* [`APIConnectionError`](/sdk/javascript/api/classes/APIConnectionError)
-* [`APIError`](/sdk/javascript/api/classes/APIError)
-* [`APIUserAbortError`](/sdk/javascript/api/classes/APIUserAbortError)
+* [`APIConnectionError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError)
+* [`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError)
+* [`APIUserAbortError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIUserAbortError)
 
 ## Constructors
 

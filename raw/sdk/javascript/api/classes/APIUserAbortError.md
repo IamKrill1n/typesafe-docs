@@ -8,7 +8,7 @@ The caller cancelled the request through an `AbortSignal`.
 
 ## Extends
 
-* [`TypeSafeError`](/sdk/javascript/api/classes/TypeSafeError)
+* [`TypeSafeError`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError)
 
 ## Constructors
 
@@ -34,7 +34,7 @@ new APIUserAbortError(message?, options?): APIUserAbortError;
 
 #### Overrides
 
-[`TypeSafeError`](/sdk/javascript/api/classes/TypeSafeError).[`constructor`](/sdk/javascript/api/classes/TypeSafeError#sdk-constructor)
+[`TypeSafeError`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError).[`constructor`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError#sdk-constructor)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

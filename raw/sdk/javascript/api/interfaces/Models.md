@@ -20,11 +20,11 @@ List the models available to the account.
 
 ##### options?
 
-[`RequestOptions`](/sdk/javascript/api/interfaces/RequestOptions) = `{}`
+[`RequestOptions`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/RequestOptions) = `{}`
 
 #### Returns
 
-[`APIPromise`](/sdk/javascript/api/classes/APIPromise)\<[`ModelCard`](/sdk/javascript/api/interfaces/ModelCard)\[]>
+[`APIPromise`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIPromise)\<[`ModelCard`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/ModelCard)\[]>
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

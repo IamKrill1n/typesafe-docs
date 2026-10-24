@@ -14480,8 +14480,12 @@ An alias is a model name that points to a versioned model ID. Send it in the `mo
 
 | Alias | Points to | Meaning |
 | :- | :- | :- |
-| `jev-latest` | `jev-1.13.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use. |
+| `jev-latest` | `jev-1.14.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use. |
 | `jev-preview` | `jev-1.14.0` | The most recent release, official or not. Moves ahead of `jev-latest` when a preview build is available. |
+
+> [!WARNING]
+>
+> `jev-preview` currently points to the same model as `jev-latest`. There is no preview build available right now.
 
 An alias moves when a new release ships, so its answers can change without any change to your code. Each response's `model` field gives the versioned ID that answered, so you can log which model produced each result. If you have tuned confidence thresholds against one version, send that version's ID instead of the alias, and switch to the new version when you are ready.
 
@@ -15169,7 +15173,7 @@ A Box is a System One question type for finding where something is in an image. 
 
 To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](/images#turning-on-images).
 
-Use a Box when you need to know where something is in an image: the mug on the counter, the signature on a scanned form, the person at the door. The answer is a bounding box, the smallest rectangle that contains the target, given as four edges. A Box question needs an image in the request; see [Images](/images) for how to send one. Box questions need Jev 1.14: send `jev-preview` or `jev-1.14.0` as the `model`.
+Use a Box when you need to know where something is in an image: the mug on the counter, the signature on a scanned form, the person at the door. The answer is a bounding box, the smallest rectangle that contains the target, given as four edges. A Box question needs an image in the request; see [Images](/images) for how to send one.
 
 Each edge is a fraction of the image's size, measured from the top-left corner. `left` and `right` are fractions of the width, and `top` and `bottom` are fractions of the height, so the same answer works at any image size.
 
@@ -15189,7 +15193,7 @@ curl https://api.typesafe.ai/v1/systemone \
   -H "Authorization: Bearer $TYPESAFE_API_KEY" \
   -H "TypeSafe-Danger-Zone-Images: true" \
   -F 'request={
-    "model": "jev-preview",
+    "model": "jev-latest",
     "state": {"photo": "6e1d0b7c-kitchen"},
     "assets": {"6e1d0b7c-kitchen": {"type": "image", "part": "kitchen-photo"}},
     "questions": {

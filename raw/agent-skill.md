@@ -6,7 +6,7 @@
 
 > Drop-in skill for Claude Code, Codex, and other agent environments.
 
-The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the question [types](/primitives), the architectural [patterns](/patterns.md), and best practices for structuring evaluations.
+The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the question [types](https://docs.typesafe.ai/primitives), the architectural [patterns](https://docs.typesafe.ai/patterns.md), and best practices for structuring evaluations.
 
 ## Installation
 
@@ -70,7 +70,7 @@ Naming the skill in your prompt — "use the TypeSafe skill" — works in any ag
   exported to `TYPESAFE_API_KEY`. Propose changes based on the most promising results.
   ```
 
-* Point your agent at a [specific cookbook](/cookbooks/consistency_noul_cookbook.md) that solves a problem you have in your codebase, or point it at the [cookbooks index](/cookbooks.md) and ask if there are any patterns that are similar to the ones in your project.
+* Point your agent at a [specific cookbook](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md) that solves a problem you have in your codebase, or point it at the [cookbooks index](https://docs.typesafe.ai/cookbooks.md) and ask if there are any patterns that are similar to the ones in your project.
 
   ```text theme={null}
   Using the TypeSafe skill, analyze my code and see if there are any applicable

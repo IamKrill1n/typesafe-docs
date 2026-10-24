@@ -398,7 +398,7 @@ Copy signature
 
   &#x20;
 
-  [Usage](/sdk/python/api/types/responses.md#typesafe_sdk.Usage)\`
+  [Usage](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.Usage)\`
 </pre>
 
 Token usage for the request.
@@ -426,7 +426,7 @@ Copy signature
 
   &#x20;
 
-  [Answer](/sdk/python/api/types/responses.md#typesafe_sdk.Answer)
+  [Answer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.Answer)
 
   ]\`
 </pre>
@@ -456,7 +456,7 @@ Copy signature
 
   &#x20;
 
-  [NoulAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.NoulAnswer)
+  [NoulAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.NoulAnswer)
 
   ]\`
 </pre>
@@ -486,7 +486,7 @@ Copy signature
 
   &#x20;
 
-  [ChoiceAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ChoiceAnswer)
+  [ChoiceAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.ChoiceAnswer)
 
   ]\`
 </pre>
@@ -516,7 +516,7 @@ Copy signature
 
   &#x20;
 
-  [ScoreAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ScoreAnswer)
+  [ScoreAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.ScoreAnswer)
 
   ]\`
 </pre>
@@ -546,7 +546,7 @@ Copy signature
 
   &#x20;
 
-  [BoxAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.BoxAnswer)
+  [BoxAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.BoxAnswer)
 
   ]\`
 </pre>
@@ -1242,7 +1242,7 @@ Copy signature
 
   &#x20;
 
-  [BoxCoordinates](/sdk/python/api/types/responses.md#typesafe_sdk.BoxCoordinates)\`
+  [BoxCoordinates](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.BoxCoordinates)\`
 </pre>
 
 The box's edges as fractions of the image's height and width, from 0 to 1.
@@ -1436,10 +1436,10 @@ model_config = ConfigDict(
 
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`Answer: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = [Annotated](https://docs.python.org/3/library/typing.html#typing.Annotated)\[
-&#x20;   [NoulAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.NoulAnswer)
-&#x20;   | [ChoiceAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ChoiceAnswer)
-&#x20;   | [ScoreAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.ScoreAnswer)
-&#x20;   | [BoxAnswer](/sdk/python/api/types/responses.md#typesafe_sdk.BoxAnswer),
+&#x20;   [NoulAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.NoulAnswer)
+&#x20;   | [ChoiceAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.ChoiceAnswer)
+&#x20;   | [ScoreAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.ScoreAnswer)
+&#x20;   | [BoxAnswer](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.BoxAnswer),
 &#x20;   Field(discriminator="type"),
 ]`</pre>
 
@@ -1566,7 +1566,7 @@ Copy signature
 
   \[
 
-  [ModelMetadata](/sdk/python/api/types/responses.md#typesafe_sdk.ModelMetadata)
+  [ModelMetadata](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.ModelMetadata)
 
   ,
 

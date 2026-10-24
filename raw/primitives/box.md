@@ -8,9 +8,9 @@
 
 **Dreamer-ready.** Images and Box questions aren't yet up to our standards to call ready for production, but we're excited for dreamers and builders to play with them. Use them to build prototypes and try ideas. The request format, the answers, and the limits on this page can change between releases, and accuracy will change as we update the models. Tell us what you build, and what breaks, on [Discord](https://discord.gg/typesafe).
 
-To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](/images.md#turning-on-images).
+To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` header with each request that contains an image or a Box question. See [Turning on images](https://docs.typesafe.ai/images.md#turning-on-images).
 
-Use a Box when you need to know where something is in an image: the mug on the counter, the signature on a scanned form, the person at the door. The answer is a bounding box, the smallest rectangle that contains the target, given as four edges. A Box question needs an image in the request; see [Images](/images.md) for how to send one. Box questions need Jev 1.14: send `jev-preview` or `jev-1.14.0` as the `model`.
+Use a Box when you need to know where something is in an image: the mug on the counter, the signature on a scanned form, the person at the door. The answer is a bounding box, the smallest rectangle that contains the target, given as four edges. A Box question needs an image in the request; see [Images](https://docs.typesafe.ai/images.md) for how to send one.
 
 Each edge is a fraction of the image's size, measured from the top-left corner. `left` and `right` are fractions of the width, and `top` and `bottom` are fractions of the height, so the same answer works at any image size.
 
@@ -30,7 +30,7 @@ curl https://api.typesafe.ai/v1/systemone \
   -H "Authorization: Bearer $TYPESAFE_API_KEY" \
   -H "TypeSafe-Danger-Zone-Images: true" \
   -F 'request={
-    "model": "jev-preview",
+    "model": "jev-latest",
     "state": {"photo": "6e1d0b7c-kitchen"},
     "assets": {"6e1d0b7c-kitchen": {"type": "image", "part": "kitchen-photo"}},
     "questions": {
@@ -40,7 +40,7 @@ curl https://api.typesafe.ai/v1/systemone \
   -F 'kitchen-photo=@kitchen.jpg;type=image/jpeg'
 ```
 
-To send the photo base64-encoded in a JSON body, or to use the SDKs, see [Uploading images](/images.md#uploading-images).
+To send the photo base64-encoded in a JSON body, or to use the SDKs, see [Uploading images](https://docs.typesafe.ai/images.md#uploading-images).
 
 A request can mix Box questions with the other types, and every question is evaluated against the same state.
 
@@ -127,7 +127,7 @@ Then crop with the padded `edges` as in the code above.
 "instructions": "the person in `photo` who matches this badge photo: 9a21c7d3-badge"
 ```
 
-**A Box answer is always a box.** There is no "not found" answer, so a Box question about something absent still returns four edges. In the same request, ask a [Noul](/primitives/noul.md) whether the target is in the image, and ignore the box when the Noul answer is low:
+**A Box answer is always a box.** There is no "not found" answer, so a Box question about something absent still returns four edges. In the same request, ask a [Noul](https://docs.typesafe.ai/primitives/noul.md) whether the target is in the image, and ignore the box when the Noul answer is low:
 
 ```json theme={null}
 "questions": {

@@ -6,13 +6,13 @@
 
 > The TypeSafe question types, the typed answers they return, how to choose between them, and how to ask several at once.
 
-TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](/concepts/system-one.md) to make about a [state](/concepts/state.md), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. Each question type returns a different shape of answer.
+TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](https://docs.typesafe.ai/concepts/system-one.md) to make about a [state](https://docs.typesafe.ai/concepts/state.md), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. Each question type returns a different shape of answer.
 
 | Type | What it answers | Returns |
 | - | - | - |
-| [Choice](/primitives/choice.md) | Which of these options? | `choice`, `probabilities`, `confidence` |
-| [Score](/primitives/score.md) | Which level? | `score`, `legend`, `probabilities`, `confidence` |
-| [Noul](/primitives/noul.md) | Is this true? | `noul` (0 to 1) |
+| [Choice](https://docs.typesafe.ai/primitives/choice.md) | Which of these options? | `choice`, `probabilities`, `confidence` |
+| [Score](https://docs.typesafe.ai/primitives/score.md) | Which level? | `score`, `legend`, `probabilities`, `confidence` |
+| [Noul](https://docs.typesafe.ai/primitives/noul.md) | Is this true? | `noul` (0 to 1) |
 
 You can ask one question or send several together. Every question in a request sees the same state, is evaluated independently, and returns a typed answer under the ID you chose.
 
@@ -28,7 +28,7 @@ Every question has an ID, a `type`, and `instructions`. Choice and Score questio
 
 * ID. The key you pick, such as `refund_requested`. It identifies the answer in the response.
 * `type`. One of `choice`, `score`, or `noul`.
-* `instructions`. The question you are asking about the state. This is where your evaluation logic goes. Write it as a clear, specific question, or as a statement for the model to judge. A string is enough for most questions. It can also be an object or an array, which puts the question in one field and the data it refers to in others; see [Use structure in the questions](/concepts/how-to-build-with-system-one.md#use-structure-in-the-questions).
+* `instructions`. The question you are asking about the state. This is where your evaluation logic goes. Write it as a clear, specific question, or as a statement for the model to judge. A string is enough for most questions. It can also be an object or an array, which puts the question in one field and the data it refers to in others; see [Use structure in the questions](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md#use-structure-in-the-questions).
 * `criteria`. The possible answers: a map of options for a Choice question, an ordered list of levels for a Score, and an optional description of yes and no for a Noul. Each question type's page covers its shape.
 
 This question asks whether a customer requested a refund:
@@ -80,11 +80,11 @@ Two properties of these answers make them composable:
 * **Every answer is constrained to the options you supplied.** The model returns a probability distribution over your options or levels, never a value outside them. Your code never has to recover a value from generated prose.
 * **Every answer is independent.** One question's answer is not hidden context for another. You can add or remove questions without changing the others' results.
 
-Some question types also return `confidence`; each type's page says whether its answers include it. [Confidence](/confidence.md) explains how to use it to decide when to act automatically and when to escalate to a person.
+Some question types also return `confidence`; each type's page says whether its answers include it. [Confidence](https://docs.typesafe.ai/confidence.md) explains how to use it to decide when to act automatically and when to escalate to a person.
 
 ## Reference specific fields
 
-The content being evaluated, the [state](/concepts/state.md), is often a JSON object with several parts: a conversation, a record, a policy. When a question is about one of those parts, name it in the `instructions` with a dot-and-index path to its key, including the backticks. The model then knows which part of the state to judge.
+The content being evaluated, the [state](https://docs.typesafe.ai/concepts/state.md), is often a JSON object with several parts: a conversation, a record, a policy. When a question is about one of those parts, name it in the `instructions` with a dot-and-index path to its key, including the backticks. The model then knows which part of the state to judge.
 
 Take the support conversation from the State page:
 
@@ -126,7 +126,7 @@ questions = {
 }
 ```
 
-Explicit paths make it clear which parts of a structured state should inform each judgment. See [State](/concepts/state.md) for how to structure the input.
+Explicit paths make it clear which parts of a structured state should inform each judgment. See [State](https://docs.typesafe.ai/concepts/state.md) for how to structure the input.
 
 ## Ask multiple questions together
 
@@ -136,7 +136,7 @@ This request classifies a customer message, checks for urgency, and scores frust
 
 Try it in the Playground →
 
-Our [client SDKs](/sdk.md) provide typed questions and answers. In Python, pass a `questions` dictionary of `Choice`, `Noul`, and `Score` objects to `client.system_one(...)`. This request sends a ticket and a refund policy once and gets a typed answer for each question:
+Our [client SDKs](https://docs.typesafe.ai/sdk.md) provide typed questions and answers. In Python, pass a `questions` dictionary of `Choice`, `Noul`, and `Score` objects to `client.system_one(...)`. This request sends a ticket and a refund policy once and gets a typed answer for each question:
 
 ```python theme={null}
 from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
@@ -177,19 +177,19 @@ print(response.answers["request_type"].choice)
 print(response.answers["frustration"].score)
 ```
 
-See [client SDKs](/sdk.md) for installation and usage in your language.
+See [client SDKs](https://docs.typesafe.ai/sdk.md) for installation and usage in your language.
 
 ### Ask speculative questions
 
-Ask every question your code might need, including ones whose answer only matters for some inputs, and let the code decide which answers to use. If a ticket turns out not to be a bug report, ignore the severity answer. We call this the [Speculative fan-out](/patterns/fan-out.md) pattern. The [Parallel questions cookbook](/cookbooks/parallel_questions.md) shows how batching 13 questions into one call is 11.5x cheaper and 9.6x faster than 13 separate calls, with no change in the answers.
+Ask every question your code might need, including ones whose answer only matters for some inputs, and let the code decide which answers to use. If a ticket turns out not to be a bug report, ignore the severity answer. We call this the [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md) pattern. The [Parallel questions cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md) shows how batching 13 questions into one call is 11.5x cheaper and 9.6x faster than 13 separate calls, with no change in the answers.
 
 > [!TIP]
 >
-> Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](/agent-skill.md#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
+> Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](https://docs.typesafe.ai/agent-skill.md#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
 
 ### How many questions you can ask
 
-There is no limit on the number of questions in a request. What limits a request is its size: it has to fit the model's [per-request context and per-question context](/models.md#context-length).
+There is no limit on the number of questions in a request. What limits a request is its size: it has to fit the model's [per-request context and per-question context](https://docs.typesafe.ai/models.md#context-length).
 
 Questions are often short compared with the `state`, in which case the `state` takes up most of both. If your questions don't all fit in one request, one option is to spread them across several requests with the same `state`.
 
@@ -197,31 +197,31 @@ Questions are often short compared with the `state`, in which case the `state` t
 
 A judgment that depends on several things is best split into one question per thing. Combine the answers in your code, giving each a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Adding questions barely changes the response time because they run in parallel within one request. The split costs a few extra question tokens.
 
-For example, ticket priority might be built from three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with. The Score page walks through this request and the code that normalizes and weights the answers in [Splitting a complex judgment into several Scores](/primitives/score.md#splitting-a-complex-judgment-into-several-score-questions). This technique is called the [Composite scoring](/patterns/composite-scoring.md) pattern.
+For example, ticket priority might be built from three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with. The Score page walks through this request and the code that normalizes and weights the answers in [Splitting a complex judgment into several Scores](https://docs.typesafe.ai/primitives/score.md#splitting-a-complex-judgment-into-several-score-questions). This technique is called the [Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) pattern.
 
 ### When one question depends on another
 
 Questions in the same request are independent: one answer does not become context for another question. If a later judgment depends on an earlier answer, make a second request in code. The dependency is real only when your code cannot build the second request until it has the first answer: it needs the answer to fetch more data for the state, to decide what the state is made of, or to pick the next question's options. Otherwise, ask the questions together and combine their answers in code.
 
-Two requests are the exception, not the rule. If the second request's questions could have been asked against the original state, ask them in the first request and let the code ignore the ones it doesn't need. Three cookbooks make a second request for a real reason. [Skill suggestion](/cookbooks/skill_suggestion.md) ranks 182 skills in one request, then fetches the full text of the top three and judges them again against that better evidence. [Structure recovery](/cookbooks/autoformat.md) asks whether each line break split a sentence, merges lines into blocks from those answers, then classifies the blocks, which did not exist until the first request had answered. [Hierarchical classification](/cookbooks/hierarchical_classification.md) uses each Choice answer to decide which options the next request offers.
+Two requests are the exception, not the rule. If the second request's questions could have been asked against the original state, ask them in the first request and let the code ignore the ones it doesn't need. Three cookbooks make a second request for a real reason. [Skill suggestion](https://docs.typesafe.ai/cookbooks/skill_suggestion.md) ranks 182 skills in one request, then fetches the full text of the top three and judges them again against that better evidence. [Structure recovery](https://docs.typesafe.ai/cookbooks/autoformat.md) asks whether each line break split a sentence, merges lines into blocks from those answers, then classifies the blocks, which did not exist until the first request had answered. [Hierarchical classification](https://docs.typesafe.ai/cookbooks/hierarchical_classification.md) uses each Choice answer to decide which options the next request offers.
 
-See [How to build with TypeSafe](/concepts/how-to-build-with-system-one.md) for guidance on breaking a workflow into focused judgments.
+See [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) for guidance on breaking a workflow into focused judgments.
 
 ## Next steps
 
-> **[Choice](/primitives/choice.md)**
+> **[Choice](https://docs.typesafe.ai/primitives/choice.md)**
 >
 > Pick one option from a fixed list.
 
-> **[Score](/primitives/score.md)**
+> **[Score](https://docs.typesafe.ai/primitives/score.md)**
 >
 > Rate the state along ordered levels.
 
-> **[Noul](/primitives/noul.md)**
+> **[Noul](https://docs.typesafe.ai/primitives/noul.md)**
 >
 > Get the probability that a statement is true.
 
-To see how these compose into system architectures, head to [Patterns](/patterns.md).
+To see how these compose into system architectures, head to [Patterns](https://docs.typesafe.ai/patterns.md).
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

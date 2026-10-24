@@ -4,7 +4,7 @@
 
 Large language models (LLMs) are designed to produce text for humans to read. When you need a model to make a judgment that your code will consume, that creates a mismatch: you are coercing a text-generation system into outputting structured decisions, then parsing the results back into something your code can depend on.
 
-Jev is TypeSafe's flagship model and the first [System One model](./concepts/system-one.md). System One models are built to make fast, structured decisions that software can use directly. Jev evaluates typed *questions* against a *state* and returns structured results directly. No text generation, no parsing. You get typed values and probability distributions that your code can branch on, sort by, and route with. Some question types also return [confidence](./confidence.md), which your code can use to decide whether and how to act on an answer. Each question type's page lists what its answers include.
+Jev is TypeSafe's flagship model and the first [System One model](https://docs.typesafe.ai/concepts/system-one.md). System One models are built to make fast, structured decisions that software can use directly. Jev evaluates typed *questions* against a *state* and returns structured results directly. No text generation, no parsing. You get typed values and probability distributions that your code can branch on, sort by, and route with. Some question types also return [confidence](https://docs.typesafe.ai/confidence.md), which your code can use to decide whether and how to act on an answer. Each question type's page lists what its answers include.
 
 ```mermaid actions={true}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
@@ -37,9 +37,9 @@ TypeSafe exposes *AI primitives*. Similar to software primitives, our AI primiti
 
 | Question type | Goal | Returns |
 | - | - | - |
-| [Choice](./primitives/choice.md) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
-| [Score](./primitives/score.md) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
-| [Noul](./primitives/noul.md) | Is this statement true? | `noul` (0–1) |
+| [Choice](https://docs.typesafe.ai/primitives/choice.md) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
+| [Score](https://docs.typesafe.ai/primitives/score.md) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
+| [Noul](https://docs.typesafe.ai/primitives/noul.md) | Is this statement true? | `noul` (0–1) |
 
 Any mix of *question* types can go in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 
@@ -53,10 +53,10 @@ For example, instead of "rate this startup pitch," ask separately about market s
 
 ## Next steps
 
-* [Quick Start](./introduction/quickstart.md) — Everything you need to get started immediately.
-* [AI Primer](./introduction/machine-learning-primer.md) — Why TypeSafe trains models for calibrated decisions instead of generated text.
-* [Primitives (Questions)](./primitives.md) — How to define questions, choose a question type, and ask several at once.
-* [Confidence](./confidence.md) — How TypeSafe reports certainty, and how to use it architecturally.
-* [Patterns](./patterns.md) — Common patterns for building systems with TypeSafe.
+* [Quick Start](https://docs.typesafe.ai/introduction/quickstart.md) — Everything you need to get started immediately.
+* [AI Primer](https://docs.typesafe.ai/introduction/machine-learning-primer.md) — Why TypeSafe trains models for calibrated decisions instead of generated text.
+* [Primitives (Questions)](https://docs.typesafe.ai/primitives) — How to define questions, choose a question type, and ask several at once.
+* [Confidence](https://docs.typesafe.ai/confidence.md) — How TypeSafe reports certainty, and how to use it architecturally.
+* [Patterns](https://docs.typesafe.ai/patterns.md) — Common patterns for building systems with TypeSafe.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

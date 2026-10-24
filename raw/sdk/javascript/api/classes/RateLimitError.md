@@ -8,7 +8,7 @@ HTTP 429: the rate limit was exceeded.
 
 ## Extends
 
-* [`APIError`](/sdk/javascript/api/classes/APIError)
+* [`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError)
 
 ## Constructors
 
@@ -47,7 +47,7 @@ new RateLimitError(
 
 #### Inherited from
 
-[`APIError`](/sdk/javascript/api/classes/APIError).[`constructor`](/sdk/javascript/api/classes/APIError#sdk-constructor)
+[`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError).[`constructor`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError#sdk-constructor)
 
 ## Properties
 
@@ -61,7 +61,7 @@ Parsed JSON, response text, or `undefined` for an empty body.
 
 #### Inherited from
 
-[`APIError`](/sdk/javascript/api/classes/APIError).[`body`](/sdk/javascript/api/classes/APIError#sdk-body)
+[`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError).[`body`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError#sdk-body)
 
 ***
 
@@ -75,7 +75,7 @@ HTTP response headers.
 
 #### Inherited from
 
-[`APIError`](/sdk/javascript/api/classes/APIError).[`headers`](/sdk/javascript/api/classes/APIError#sdk-headers)
+[`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError).[`headers`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError#sdk-headers)
 
 ***
 
@@ -89,7 +89,7 @@ Request ID from `x-typesafe-request-id`, or `undefined` when absent.
 
 #### Inherited from
 
-[`APIError`](/sdk/javascript/api/classes/APIError).[`requestId`](/sdk/javascript/api/classes/APIError#sdk-requestid)
+[`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError).[`requestId`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError#sdk-requestid)
 
 ***
 
@@ -113,7 +113,7 @@ HTTP response status code.
 
 #### Inherited from
 
-[`APIError`](/sdk/javascript/api/classes/APIError).[`status`](/sdk/javascript/api/classes/APIError#sdk-status)
+[`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError).[`status`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError#sdk-status)
 
 ## Methods
 
@@ -145,11 +145,11 @@ Create the error subclass for an HTTP status code.
 
 #### Returns
 
-[`APIError`](/sdk/javascript/api/classes/APIError)
+[`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError)
 
 #### Inherited from
 
-[`APIError`](/sdk/javascript/api/classes/APIError).[`fromResponse`](/sdk/javascript/api/classes/APIError#sdk-fromresponse)
+[`APIError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError).[`fromResponse`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIError#sdk-fromresponse)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

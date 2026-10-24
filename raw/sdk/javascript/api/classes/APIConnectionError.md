@@ -8,11 +8,11 @@ The request or response-body delivery failed (DNS, TLS, connection closed, etc.)
 
 ## Extends
 
-* [`TypeSafeError`](/sdk/javascript/api/classes/TypeSafeError)
+* [`TypeSafeError`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError)
 
 ## Extended by
 
-* [`APITimeoutError`](/sdk/javascript/api/classes/APITimeoutError)
+* [`APITimeoutError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APITimeoutError)
 
 ## Constructors
 
@@ -38,7 +38,7 @@ new APIConnectionError(message?, options?): APIConnectionError;
 
 #### Overrides
 
-[`TypeSafeError`](/sdk/javascript/api/classes/TypeSafeError).[`constructor`](/sdk/javascript/api/classes/TypeSafeError#sdk-constructor)
+[`TypeSafeError`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError).[`constructor`](https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError#sdk-constructor)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

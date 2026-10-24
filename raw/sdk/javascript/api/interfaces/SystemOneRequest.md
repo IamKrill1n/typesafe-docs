@@ -12,7 +12,7 @@ Additional properties on a request variable are forwarded, including `null` valu
 
 ### Q
 
-`Q` *extends* [`Questions`](/sdk/javascript/api/interfaces/Questions) = [`Questions`](/sdk/javascript/api/interfaces/Questions)
+`Q` *extends* [`Questions`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions) = [`Questions`](https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions)
 
 ## Properties
 

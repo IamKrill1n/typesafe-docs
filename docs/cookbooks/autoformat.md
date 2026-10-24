@@ -110,7 +110,7 @@ Line splitting, blank-line tracking, and id tagging all happen in code; no model
 involved.
 Each line gets a short id (`L014| `); the ids are ordinary text the model reads as part of
 the state, and questions and answers refer to lines by these ids (the same scheme as the
-[semantic search cookbook](./semantic_find.md)).
+[semantic search cookbook](https://docs.typesafe.ai/cookbooks/semantic_find.md)).
 
 ```python
 def to_lines(text: str) -> list[dict]:

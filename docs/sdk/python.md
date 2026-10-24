@@ -24,15 +24,15 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
 
    Extras (for example, `typesafe-sdk[http2]`) supported:
 
-   * `http2`: enable [HTTP/2 support](./python/usage/advanced.md#http2)
-   * `pil`: send [Pillow images](./python/api/types/assets.md#typesafe_sdk.Image.from_pil)
-   * `zstd`: [compress request bodies](./python/usage/advanced.md#ensure-zstd-is-available) on Python 3.13 and earlier
+   * `http2`: enable [HTTP/2 support](https://docs.typesafe.ai/sdk/python/usage/advanced.md#http2)
+   * `pil`: send [Pillow images](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Image.from_pil)
+   * `zstd`: [compress request bodies](https://docs.typesafe.ai/sdk/python/usage/advanced.md#ensure-zstd-is-available) on Python 3.13 and earlier
 2. Set `TYPESAFE_API_KEY` in your environment (create it [here](https://console.typesafe.ai/))
 3. Call the System One API:
 
    **Async**
 
-   With [AsyncTypeSafeClient](./python/api/clients/async.md):
+   With [AsyncTypeSafeClient](https://docs.typesafe.ai/sdk/python/api/clients/async.md):
 
    ```python
    from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
@@ -61,7 +61,7 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
 
    **Sync**
 
-   With [TypeSafeClient](./python/api/clients/sync.md):
+   With [TypeSafeClient](https://docs.typesafe.ai/sdk/python/api/clients/sync.md):
 
    ```python
    from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
@@ -89,12 +89,12 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
 
 ## What's next
 
-Visit the [Usage guide](./python/usage/basic.md) to learn how to:
+Visit the [Usage guide](https://docs.typesafe.ai/sdk/python/usage/basic.md) to learn how to:
 
-* [Choose a System One model](./python/usage/basic.md#choosing-a-model)
-* [Send media inputs](./python/usage/basic.md#attaching-media-assets)
-* [Use typed responses](./python/usage/basic.md#typed-system_one-responses)
-* [Configure retry policy](./python/usage/basic.md#retries)
-* [Optimize performance](./python/usage/advanced.md#performance)
+* [Choose a System One model](https://docs.typesafe.ai/sdk/python/usage/basic.md#choosing-a-model)
+* [Send media inputs](https://docs.typesafe.ai/sdk/python/usage/basic.md#attaching-media-assets)
+* [Use typed responses](https://docs.typesafe.ai/sdk/python/usage/basic.md#typed-system_one-responses)
+* [Configure retry policy](https://docs.typesafe.ai/sdk/python/usage/basic.md#retries)
+* [Optimize performance](https://docs.typesafe.ai/sdk/python/usage/advanced.md#performance)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

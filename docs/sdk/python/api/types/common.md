@@ -24,7 +24,7 @@ Copy signature
 &#x20;   "str | Mapping\[str, JSONValue | None] | Sequence\[JSONValue | None]",
 )`</pre>
 
-Either a plain string or a mapping/sequence of [`JSONValue`](./common.md#typesafe_sdk.JSONValue) entries.
+Either a plain string or a mapping/sequence of [`JSONValue`](https://docs.typesafe.ai/sdk/python/api/types/common#typesafe_sdk.JSONValue) entries.
 
 ## typesafe_sdk.ContentValue
 
@@ -36,7 +36,7 @@ Copy signature
 &#x20;   "str | int | float | bool | Sequence\[ContentValue | None] | Mapping\[str, ContentValue | None] | Asset",
 )`</pre>
 
-A JSON-like value that may also hold [assets](./assets.md#typesafe_sdk.Asset). May be nested and contain `None`.
+A JSON-like value that may also hold [assets](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset). May be nested and contain `None`.
 
 ## typesafe_sdk.Content
 
@@ -48,7 +48,7 @@ Copy signature
 &#x20;   "str | Mapping\[str, ContentValue | None] | Sequence\[ContentValue | None] | Asset",
 )`</pre>
 
-Text, an [asset](./assets.md#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](./common.md#typesafe_sdk.ContentValue) entries.
+Text, an [asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](https://docs.typesafe.ai/sdk/python/api/types/common#typesafe_sdk.ContentValue) entries.
 
 Each asset is sent in the request's assets, with its unique reference in its place.
 

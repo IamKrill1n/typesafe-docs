@@ -10,7 +10,7 @@
 
 ### Speculative fan-out
 
-The chief pattern demonstrated here is [speculative fan-out](../patterns/fan-out.md). Each user request is evaluated against a long list of questions, including many that will end up irrelevant for most requests.
+The chief pattern demonstrated here is [speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md). Each user request is evaluated against a long list of questions, including many that will end up irrelevant for most requests.
 
 Let's consider the following user request:
 

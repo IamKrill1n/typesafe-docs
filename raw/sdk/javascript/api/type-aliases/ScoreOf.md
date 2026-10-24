@@ -14,7 +14,7 @@ Score keys inferred from the rubric; a fixed-length tuple yields its indices, ot
 
 ### T
 
-`T` *extends* [`ScoreCriteria`](/sdk/javascript/api/type-aliases/ScoreCriteria)
+`T` *extends* [`ScoreCriteria`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreCriteria)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

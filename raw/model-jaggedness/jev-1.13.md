@@ -10,7 +10,7 @@
 >
 > **Applies to `jev-1.13`.** Last reviewed 2026-10-02.
 
-`jev-1.13` is fast, calibrated, and good at common-sense judgment but it is not perfect. `jev-1.13` does the best on [System One](/concepts/system-one.md) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
+`jev-1.13` is fast, calibrated, and good at common-sense judgment but it is not perfect. `jev-1.13` does the best on [System One](https://docs.typesafe.ai/concepts/system-one.md) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
 
 ## The failure modes in detail
 
@@ -81,9 +81,9 @@ Please do not use score outputs (e.g., expectations and probability) to compute 
 
 **Instead:** split the work. Extraction is a judgment, so give it to the model. Arithmetic is not, so keep it in code.
 
-Every part of a date is a small closed set: twelve months, thirty-one possible days, a bounded range of years. That turns extraction into a [Choice](/primitives/choice.md) over enumerated options rather than free-form parsing, and it gives you somewhere to put an explicit "not stated" option so a missing part is reported rather than guessed. Code assembles the parts into a real date and owns everything after that, including ordering, duration, offset, and weekday.
+Every part of a date is a small closed set: twelve months, thirty-one possible days, a bounded range of years. That turns extraction into a [Choice](https://docs.typesafe.ai/primitives/choice.md) over enumerated options rather than free-form parsing, and it gives you somewhere to put an explicit "not stated" option so a missing part is reported rather than guessed. Code assembles the parts into a real date and owns everything after that, including ordering, duration, offset, and weekday.
 
-The [date extraction cookbook](/cookbooks/date_extraction_cookbook.md) has the worked version, including relative dates and confidence gating.
+The [date extraction cookbook](https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md) has the worked version, including relative dates and confidence gating.
 
 ## Indirection
 
@@ -95,11 +95,11 @@ Instructions carrying double negatives or complex indirection are answered less 
 
 Accuracy falls as the state grows with content unrelated to the decision. Unrelated detail acts as a distractor, and a large state makes it harder to tell which part of the input produced a wrong answer.
 
-**Instead:** retrieve and filter in code first, and send only the fields the question needs. When it's not possible to filter in state, you can use a [Noul](/primitives/noul.md) to filter for relevance. The [classifying RAG passages cookbook](/cookbooks/classifying_rag_passages.md) has a worked example.
+**Instead:** retrieve and filter in code first, and send only the fields the question needs. When it's not possible to filter in state, you can use a [Noul](https://docs.typesafe.ai/primitives/noul.md) to filter for relevance. The [classifying RAG passages cookbook](https://docs.typesafe.ai/cookbooks/classifying_rag_passages.md) has a worked example.
 
 > [!NOTE]
 >
-> **Context length limit.** The `state` counts once against each of `jev-1.13`'s context limits, the [per-request context and the per-question context](/models.md#context-length).
+> **Context length limit.** The `state` counts once against each of `jev-1.13`'s context limits, the [per-request context and the per-question context](https://docs.typesafe.ai/models.md#context-length).
 
 ## Adversarial content
 
@@ -115,7 +115,7 @@ When the `instructions` and the `criteria` ask for different things, `jev-1.13` 
 
 ## Choice option order
 
-In some cases, we observed that the order of a [Choice](/primitives/choice.md)'s options can affect the answer, and `jev-1.13` leans toward the option that comes first.
+In some cases, we observed that the order of a [Choice](https://docs.typesafe.ai/primitives/choice.md)'s options can affect the answer, and `jev-1.13` leans toward the option that comes first.
 
 **Instead:** reorder the options to double check that the answer stays consistent.
 
@@ -123,7 +123,7 @@ In some cases, we observed that the order of a [Choice](/primitives/choice.md)'s
 
 `jev-1.13` is not trained to generate text. While you can force it to by chaining choices, this will not work well and will be very slow. For data extraction, it is better to extract possible options using regex or a generative model and let `jev-1.13` pick the correct extraction.
 
-**Instead:** when the answer space is bounded, turn extraction into a [Choice](/primitives/choice.md) over the options rather than asking for the value itself. If you really need to generate text... there are other models for that.
+**Instead:** when the answer space is bounded, turn extraction into a [Choice](https://docs.typesafe.ai/primitives/choice.md) over the options rather than asking for the value itself. If you really need to generate text... there are other models for that.
 
 > [!NOTE]
 >

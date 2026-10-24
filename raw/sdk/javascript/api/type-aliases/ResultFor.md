@@ -14,7 +14,7 @@ The answer type for a question, preserving its criteria keys.
 
 ### T
 
-`T` *extends* [`Question`](/sdk/javascript/api/type-aliases/Question)
+`T` *extends* [`Question`](https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Question)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -8,7 +8,7 @@ The full response did not arrive within the timeout. A kind of `APIConnectionErr
 
 ## Extends
 
-* [`APIConnectionError`](/sdk/javascript/api/classes/APIConnectionError)
+* [`APIConnectionError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError)
 
 ## Constructors
 
@@ -34,7 +34,7 @@ new APITimeoutError(timeoutMs, options?): APITimeoutError;
 
 #### Overrides
 
-[`APIConnectionError`](/sdk/javascript/api/classes/APIConnectionError).[`constructor`](/sdk/javascript/api/classes/APIConnectionError#sdk-constructor)
+[`APIConnectionError`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError).[`constructor`](https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError#sdk-constructor)
 
 ## Properties
 

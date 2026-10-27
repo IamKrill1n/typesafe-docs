@@ -1,6 +1,6 @@
 {
   "source": "https://docs.typesafe.ai",
-  "page_count": 135,
+  "page_count": 136,
   "pages": {
     "agent-skill.md": {
       "url": "https://docs.typesafe.ai/agent-skill.md",
@@ -33,19 +33,19 @@
       "url": "https://docs.typesafe.ai/api/list-models.md",
       "title": "List models",
       "description": "List the models and aliases available to the authenticated account.",
-      "raw_sha256": "58ecfc2de394faaefda60d73252afb813bea3d780ff5eb0adc1a7bfc0ae46ae2",
-      "clean_sha256": "7411b6f019988105d7b22f05a22296457ece53964c8f7b9bf18743e4fb98a9e9",
-      "bytes": 5123,
-      "changed_at": "2026-10-20T11:45:31.063Z"
+      "raw_sha256": "652d1d39ee6c1485292e5b37fcd45667ffdfa1fa34cf2d7ed4e0e6ac33f60ec7",
+      "clean_sha256": "df3818a467a7aed446404217468913b736928dd20da12d6290a884a61568a09e",
+      "bytes": 6026,
+      "changed_at": "2026-10-27T12:19:48.803Z"
     },
     "api/system-one.md": {
       "url": "https://docs.typesafe.ai/api/system-one.md",
       "title": "System One",
       "description": "Answer one or more questions about the content supplied in `state`.",
-      "raw_sha256": "5e6261f6f6212c6cf75fd55cc2856184b355a6400673b18314e85505e6219820",
-      "clean_sha256": "c69fd038c7a52f4b2405a4854cc5259616097abf5d3878d2f11bb52ae0e4adf1",
-      "bytes": 28858,
-      "changed_at": "2026-10-20T11:45:31.062Z"
+      "raw_sha256": "a5c68bb00afd2c75504b5a9a07a497253f2b03380953b56934ddd80767f63c3d",
+      "clean_sha256": "e6296d73152f11aa585c59e060ee0dc2967b047e3dcd54b1eaed5cf83683d21e",
+      "bytes": 29761,
+      "changed_at": "2026-10-27T12:19:48.802Z"
     },
     "concepts/how-to-build-with-system-one.md": {
       "url": "https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md",
@@ -96,10 +96,10 @@
       "url": "https://docs.typesafe.ai/cookbooks.md",
       "title": "Cookbooks",
       "description": "End-to-end recipes that show TypeSafe in real problems, from a few questions to full pipelines.",
-      "raw_sha256": "a683e3db391db417340277ace84375b1c8fc1e6d1526a6395fb0ffcca07c9600",
-      "clean_sha256": "7ea7ede6a041e12ce833694b700134a73b228d6f75d7ef3a517148e800954ccb",
-      "bytes": 7344,
-      "changed_at": "2026-10-24T11:09:30.111Z"
+      "raw_sha256": "818c4d690f0744320872e67d00f628d2f5b336f0e82d3ffeac9dea10c3b05a52",
+      "clean_sha256": "3f28bd210bbdba1f2feb2a1303242efc72bc990e18cb0d1f49c702b5fac022c6",
+      "bytes": 7610,
+      "changed_at": "2026-10-27T12:19:48.774Z"
     },
     "cookbooks/autoformat.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoformat.md",
@@ -208,6 +208,15 @@
       "clean_sha256": "4c726edbb58e35a29b332fd91da70224925f468320f4f75cdfe531897bb76c4e",
       "bytes": 35252,
       "changed_at": "2026-10-21T11:57:40.985Z"
+    },
+    "cookbooks/intelliprompter.md": {
+      "url": "https://docs.typesafe.ai/cookbooks/intelliprompter.md",
+      "title": "Intelliprompter",
+      "description": "Tick off a presenter's notes as they speak: TypeSafe scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold.",
+      "raw_sha256": "07f7ea9f86e3d5a4ac4522be7388ac191bf111d0daa4b7701c737663bdc75f21",
+      "clean_sha256": "22255c969c03dadab448823dec1ecd2432bf8430b7c85b0a73a281417c121f95",
+      "bytes": 14694,
+      "changed_at": "2026-10-27T12:19:48.791Z"
     },
     "cookbooks/llm_guardrails.md": {
       "url": "https://docs.typesafe.ai/cookbooks/llm_guardrails.md",

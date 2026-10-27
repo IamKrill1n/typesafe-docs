@@ -40,6 +40,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModelMetadataList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPBadRequestError'
         '422':
           description: Validation Error
           content:
@@ -69,6 +75,22 @@ components:
         - models
       title: ModelMetadataList
       description: Models and aliases available to the authenticated account.
+    HTTPBadRequestError:
+      type: object
+      title: HTTPBadRequestError
+      required:
+        - detail
+      description: Application validation failures returned with HTTP status 400.
+      properties:
+        detail:
+          title: Detail
+          anyOf:
+            - type: string
+            - additionalProperties: true
+              type: object
+          description: >-
+            Explanation of the invalid request. String details and message
+            fields are bounded, with shortened text ending with ….
     HTTPValidationError:
       properties:
         detail:
@@ -126,7 +148,7 @@ components:
           title: Location
           description: >-
             Path to the invalid value: the request location followed by field
-            names and array indices.
+            names and array indices. May be empty.
           examples:
             - - body
               - questions
@@ -136,7 +158,9 @@ components:
         msg:
           type: string
           title: Message
-          description: Human-readable explanation of the validation failure.
+          description: >-
+            Human-readable explanation of the validation failure. May be
+            shortened with ….
           examples:
             - Field required
         type:
@@ -146,14 +170,17 @@ components:
           examples:
             - missing
         input:
+          type: string
           title: Input
-          description: The input value that failed validation.
+          description: Text preview of the rejected input. May be shortened with ….
           examples:
-            - type: score
+            - '{"type":"score"}'
         ctx:
           type: object
           title: Context
-          description: Additional context used to explain the validation failure.
+          description: >-
+            Additional context used to explain the validation failure. Entries
+            may be omitted or shortened.
           examples:
             - min_length: 1
       type: object

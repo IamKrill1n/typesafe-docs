@@ -55,6 +55,7 @@ Find the lines, passages, or records that match a query or each other.
 | [Re-ranking](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md) | Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%. | Beginner |
 | [Line-by-line search](https://docs.typesafe.ai/cookbooks/semantic_find.md) | Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer. | Beginner |
 | [Knowledge graph entity alignment](https://docs.typesafe.ai/cookbooks/entity_alignment.md) | Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree. | Beginner |
+| [Intelliprompter](https://docs.typesafe.ai/cookbooks/intelliprompter.md) | Tick off a presenter's notes as they speak: TypeSafe scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold. | Beginner |
 
 ## Techniques
 

@@ -6,10 +6,10 @@
       "url": "https://docs.typesafe.ai/agent-skill.md",
       "title": "Agent skill",
       "description": "Drop-in skill for Claude Code, Codex, and other agent environments.",
-      "raw_sha256": "ef6bc1f9cb27334c5eb42a78744b434ca7edf5a63229c114e17707c5cd1defec",
-      "clean_sha256": "2548f39c2c41f19210a8d7817fd04163a88b56fac00088c26baf96760c0fde9f",
-      "bytes": 5875,
-      "changed_at": "2026-10-24T11:09:30.143Z"
+      "raw_sha256": "61840dc76f79e4c946eb34ac52d75a9d8eb7ec014a450afcbd5d761d5c33ba69",
+      "clean_sha256": "19b019543b919458e85ec4d35c29febccc439c08000eab138262c1fee90cf0cb",
+      "bytes": 5870,
+      "changed_at": "2026-10-28T13:03:27.215Z"
     },
     "api.md": {
       "url": "https://docs.typesafe.ai/api.md",
@@ -51,10 +51,10 @@
       "url": "https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md",
       "title": "How to build with TypeSafe",
       "description": "Design AI-powered software by keeping code in control and giving System One narrow, structured decisions.",
-      "raw_sha256": "5f415266e969dcbe24ea58d662b07bca994d5263c3028f90fc6a458ffa4507d1",
-      "clean_sha256": "c956dcb4af0c434da9d745b94c5213d3512a2878a58245d32a5bcb5aeb68f286",
-      "bytes": 19727,
-      "changed_at": "2026-10-24T11:09:30.106Z"
+      "raw_sha256": "c359f1be0747db376e049a516cb1ac5398322f41809da9376e307c24e45c5015",
+      "clean_sha256": "36765789ed1a502485a9a775cdb6c307c183c3dd801da5ebb2f940cb352c208d",
+      "bytes": 19743,
+      "changed_at": "2026-10-28T13:03:27.192Z"
     },
     "concepts/state.md": {
       "url": "https://docs.typesafe.ai/concepts/state.md",
@@ -78,10 +78,10 @@
       "url": "https://docs.typesafe.ai/concepts/use-case-map.md",
       "title": "Example use cases",
       "description": "Explore TypeSafe use cases by industry and turn promising ideas into software workflows.",
-      "raw_sha256": "e4b19e93edcbfe15c7aa000311aed91e296b9b2367b961885c9a24eadb815fa5",
-      "clean_sha256": "38abbeb801bfba2bbe8a5519e10c43bf7899842d234b1566fbe1ddf8b9cb233a",
-      "bytes": 9869,
-      "changed_at": "2026-10-21T11:57:40.948Z"
+      "raw_sha256": "811e4bb3e587bb03e239a23b577362f7853d55b0f5c516bebe42cf70b71bbc62",
+      "clean_sha256": "612af02ac7bec12cd832d5436e50956c67cf84287ef6029d98ea45650826aeab",
+      "bytes": 9865,
+      "changed_at": "2026-10-28T13:03:27.182Z"
     },
     "confidence.md": {
       "url": "https://docs.typesafe.ai/confidence.md",
@@ -321,10 +321,10 @@
       "url": "https://docs.typesafe.ai/introduction.md",
       "title": "Introduction",
       "description": "Jev is TypeSafe's flagship model and the first System One model. Send state and typed questions; get structured answers your code can use directly.",
-      "raw_sha256": "bef47e726abf71b166c19016ab08a1e3f237640d8236c2254c0643cb04c3443d",
-      "clean_sha256": "efd4127aab2d671be2f4e33b5cdead74a0eb5a91a20c9436392e5de9fd209c38",
-      "bytes": 4958,
-      "changed_at": "2026-10-24T11:09:30.084Z"
+      "raw_sha256": "990033bd2f27c3658610bedba818633b161f5afad851cfdda66b1237fc231c50",
+      "clean_sha256": "cbab937822d595f1969cdf58f841a5eea69bed34e6e9cb43c8944387b06a651d",
+      "bytes": 4957,
+      "changed_at": "2026-10-28T13:03:27.177Z"
     },
     "introduction/coding-agents.md": {
       "url": "https://docs.typesafe.ai/introduction/coding-agents.md",
@@ -348,19 +348,19 @@
       "url": "https://docs.typesafe.ai/introduction/quickstart.md",
       "title": "Quick start",
       "description": "Get up and running with Jev in 5 minutes.",
-      "raw_sha256": "64774d7c7b11b36e7b549f253a32b6418983495e7c09f9dc8c197ca6057dd695",
-      "clean_sha256": "7a403ac6b66c247c2272e55351e2ea458705c69e16d5caf21d529f7b92a40bca",
-      "bytes": 14458,
-      "changed_at": "2026-10-24T11:09:30.086Z"
+      "raw_sha256": "3b09e6289f15cb658fb2f085840779b717a63393260b1bebd496b506fde76065",
+      "clean_sha256": "aa9ebc19698d47e969c0c71b575466ae9f209493dc2269feef591d20cb12801a",
+      "bytes": 14480,
+      "changed_at": "2026-10-28T13:03:27.179Z"
     },
     "legal.md": {
       "url": "https://docs.typesafe.ai/legal.md",
       "title": "Legal",
       "description": "Legal documents and policies for TypeSafe.",
-      "raw_sha256": "cc96ee6f2d53a89a76b21dc0df6102e5982d2583aa9ad95971d8bebc9de55897",
-      "clean_sha256": "f0b7924e396151d6071c0142346d31b41a87dd578b8513e71d5fc040c50171b0",
-      "bytes": 1168,
-      "changed_at": "2026-10-02T12:43:50.522Z"
+      "raw_sha256": "63060fe526d6d0151262d59fe653b1d5972d295466c44c382495ac12f7af1cd8",
+      "clean_sha256": "2f279f04c2d1b5927fd528f02ef9e611f5202de92125575710269aac10702772",
+      "bytes": 1202,
+      "changed_at": "2026-10-28T13:03:27.216Z"
     },
     "model-jaggedness/jev-1.13.md": {
       "url": "https://docs.typesafe.ai/model-jaggedness/jev-1.13.md",
@@ -375,19 +375,19 @@
       "url": "https://docs.typesafe.ai/models.md",
       "title": "Models",
       "description": "",
-      "raw_sha256": "bed299c24098aaf2223f2244127041fcc5d0c3a77a2cbaa4daf7eb14bd755343",
-      "clean_sha256": "c7bd6bf5368f9ef301a839b411989f7b011e833f455a1ac899fa60e1469e9d79",
-      "bytes": 8275,
-      "changed_at": "2026-10-24T11:09:30.142Z"
+      "raw_sha256": "1c56aeadeec0225beccef214dd2f0b4b47d6a0e0d53c356aac46290f9053146c",
+      "clean_sha256": "6cc8dc66a53cbcf8475950c7e619d37dd0eeac8d633e1eb889116d964f650019",
+      "bytes": 8353,
+      "changed_at": "2026-10-28T13:03:27.215Z"
     },
     "patterns.md": {
       "url": "https://docs.typesafe.ai/patterns.md",
       "title": "Patterns",
       "description": "Architectural patterns for building systems with TypeSafe.",
-      "raw_sha256": "cd7ca04398b82520cd56b13bb07aabffa49c101f8a09fda19b74ae4f7f7ad5f8",
-      "clean_sha256": "d1a7a36a4e78567c2066ff4d767ebb7cefa6e6583c7cf5ebf9f2bbdadd594514",
-      "bytes": 1747,
-      "changed_at": "2026-10-24T11:09:30.108Z"
+      "raw_sha256": "d159c5f486470da02eb0083d54e8a66ebf10e961201d850a9fa0ad773c6d4446",
+      "clean_sha256": "be852f45b3241c58846fe161aa243c761d241325c7bb41018a4e33589bde9fa7",
+      "bytes": 1750,
+      "changed_at": "2026-10-28T13:03:27.192Z"
     },
     "patterns/composite-scoring.md": {
       "url": "https://docs.typesafe.ai/patterns/composite-scoring.md",
@@ -410,11 +410,11 @@
     "patterns/fan-out.md": {
       "url": "https://docs.typesafe.ai/patterns/fan-out.md",
       "title": "Speculative fan-out",
-      "description": "Send many questions in a single call, including speculative ones, and let your code decide what's relevant.",
-      "raw_sha256": "7374e45cd14771f092607922edc30fbeaba696cfe93aa09c152f9c6cf149dc16",
-      "clean_sha256": "77d82b7b15f1eefe73bf259626e2fd58779c2bab6e73ed5dfae9c2b73a9aa5d4",
-      "bytes": 4109,
-      "changed_at": "2026-10-21T11:57:40.969Z"
+      "description": "Send many questions in a single request, including speculative ones, and let your code decide what's relevant.",
+      "raw_sha256": "a33fc9ce0fd5e05bc6de95d77e7aad02d7944a73c4d9ae34a27d73523b931b89",
+      "clean_sha256": "982f9e5d75caeefb65c4e2c7ada0f2d85396dbb29cda16a4074889ce5bb855a2",
+      "bytes": 4112,
+      "changed_at": "2026-10-28T13:03:27.193Z"
     },
     "patterns/intent-routing.md": {
       "url": "https://docs.typesafe.ai/patterns/intent-routing.md",
@@ -429,19 +429,19 @@
       "url": "https://docs.typesafe.ai/primitives.md",
       "title": "Primitives (Questions)",
       "description": "The TypeSafe question types, the typed answers they return, how to choose between them, and how to ask several at once.",
-      "raw_sha256": "c6e7de429b679d80419a3f08901f96f01010b4ffe0ab7095541c2ad318c126c1",
-      "clean_sha256": "55d0858f34d04d069bfc879552cd995d1ad4d799cc3d158f52fbc3324e5706a9",
-      "bytes": 15597,
-      "changed_at": "2026-10-24T11:09:30.092Z"
+      "raw_sha256": "aa57ef910c3927218527778bb35c4860fa0b09bd81e9201a1e74c12cfc040a03",
+      "clean_sha256": "b055c18e7df904a6251ce5d9a5b2830a2682c5de62773a744d27e874a4f332d3",
+      "bytes": 15603,
+      "changed_at": "2026-10-28T13:03:27.183Z"
     },
     "primitives/advanced.md": {
       "url": "https://docs.typesafe.ai/primitives/advanced.md",
       "title": "Advanced: structure",
       "description": "Instructions, Choice options, Score levels, and Noul criteria all accept JSON structure.",
-      "raw_sha256": "be24dd3907bbd725ff26e46b322d503c6a02f922e73d0772c0c7edbfa3baccb1",
-      "clean_sha256": "7042a883e983b2e46d679454d4e43027e3d169a0982c808eb066bd7e7f50d03b",
-      "bytes": 4496,
-      "changed_at": "2026-10-24T11:09:30.102Z"
+      "raw_sha256": "44487b9e31d6a903c8f7664d2d458eb0b8b430bf4554768da70a15e4cc6e1e69",
+      "clean_sha256": "73d0439fec28a33e44eaa017c1290a3c3d14ec7ad004cd6bf9dbf641672d25b2",
+      "bytes": 4517,
+      "changed_at": "2026-10-28T13:03:27.190Z"
     },
     "primitives/box.md": {
       "url": "https://docs.typesafe.ai/primitives/box.md",
@@ -456,28 +456,28 @@
       "url": "https://docs.typesafe.ai/primitives/choice.md",
       "title": "Choice",
       "description": "A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.",
-      "raw_sha256": "0ff127cbdb24e6ab20669cc559d738951d9285537b06d1c96c8581923b609ed4",
-      "clean_sha256": "11492b5188fc8ca9cbf5b2ee83e423318c3e913d393e7664ce1668bce1fa791b",
-      "bytes": 15639,
-      "changed_at": "2026-10-24T11:09:30.094Z"
+      "raw_sha256": "6a5028407d27559aba9451d214031fd595bc990323955ae5df28ffc186f160b5",
+      "clean_sha256": "a66ea665a1e20f412b2a5d1703ea3323fbfd6ada308d282b02238c03feaf52f4",
+      "bytes": 15642,
+      "changed_at": "2026-10-28T13:03:27.184Z"
     },
     "primitives/noul.md": {
       "url": "https://docs.typesafe.ai/primitives/noul.md",
       "title": "Noul",
       "description": "A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.",
-      "raw_sha256": "5f2b8356c4b88644c0a3b16410e7faff655004cb566c63b2762868db2c79b1e0",
-      "clean_sha256": "008be643397278b53c1d19fe8cff1502b62768f4c2cc94ddb826ea0595bc4330",
-      "bytes": 16677,
-      "changed_at": "2026-10-24T11:09:30.100Z"
+      "raw_sha256": "d9e61d8eb02eabe327e49ca1079e8abbb5bd7635e0e443f4eb3e3a3e6af2f9bb",
+      "clean_sha256": "cdf75ec16ea44c335020339b42d2a1e14662f76567180f419bafaaf442853bfa",
+      "bytes": 16686,
+      "changed_at": "2026-10-28T13:03:27.189Z"
     },
     "primitives/score.md": {
       "url": "https://docs.typesafe.ai/primitives/score.md",
       "title": "Score",
       "description": "A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.",
-      "raw_sha256": "2c225d901599c2f00472a73ef1fe121f8dc6c5086cd5120007dd4148e2e6abda",
-      "clean_sha256": "52b419fb679fa20e7574101921da4414030a7d0179e69e80438f9edb852e58e0",
-      "bytes": 20656,
-      "changed_at": "2026-10-24T11:09:30.098Z"
+      "raw_sha256": "8b587ce8e9d990812a3b18bad42314ffd39f0b1ed9456fa5a8db0abfab34e6a1",
+      "clean_sha256": "2fcf43ed69ae756cdb1471c02c7ee13f9da44ece7e7c72daad6a9fe17121f6c5",
+      "bytes": 20653,
+      "changed_at": "2026-10-28T13:03:27.187Z"
     },
     "sdk.md": {
       "url": "https://docs.typesafe.ai/sdk.md",

@@ -1,6 +1,6 @@
 # Models
 
-Jev is TypeSafe's flagship model and the first [System One model](https://docs.typesafe.ai/concepts/system-one.md). Every model on this page is served by the same endpoint, `POST /v1/systemone`. The request's `model` field selects which one handles the call; see the [API reference](https://docs.typesafe.ai/api) for the full request shape.
+Jev is TypeSafe's flagship model and the first [System One model](https://docs.typesafe.ai/concepts/system-one.md). Every model on this page is served by the same endpoint, `POST /v1/systemone`. The request's `model` field selects which one handles it; see the [API reference](https://docs.typesafe.ai/api) for the full request shape.
 
 ## Current models
 
@@ -57,7 +57,7 @@ Rate limits are set per organization. Your organization's current limits are in 
 
 Limits are measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](https://docs.typesafe.ai/sdk.md) retry these requests by default, waiting longer between each attempt, and follow the `retry-after` header when the response includes one. If you call the HTTP API directly, see [Handling rate limits](https://docs.typesafe.ai/api/errors.md#handling-rate-limits).
 
-Higher limits are available on custom and enterprise plans. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai).
+Higher limits are available on custom and enterprise plans. To request a higher limit, fill out the [rate limit increase request form](https://support.typesafe.ai/forms/rate-limit-increase-request).
 
 ## Aliases
 

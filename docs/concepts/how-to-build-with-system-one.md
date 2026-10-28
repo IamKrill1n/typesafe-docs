@@ -48,7 +48,7 @@ Code handles deterministic work and owns the control flow. The model appears onl
 
 > **Fast**
 >
-> Most queries complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
+> Most calls complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
 
 > **Calibrated confidence**
 >
@@ -127,13 +127,13 @@ Structure helps in these situations:
 
 > **Example: reference a record from your code**
 >
-> This Noul compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
+> This Noul question compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
 >
 > Try it in the Playground →
 
 The "potential_duplicate" data sourced from code can change over time. The "question" references it using backticks.
 
-The descriptions inside `criteria` can be objects too. For a Choice, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
+The descriptions inside `criteria` can be objects too. For a Choice question, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
 
 > **Example: define contrastive Choice criteria**
 >

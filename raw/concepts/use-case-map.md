@@ -28,7 +28,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 > **Harness Engineering**
 >
-> Use Jev queries to make your harness smarter - model routing, semantic context retrieval, LLM error detection and guardrails, reasoning trace classification at lightspeed and a fraction of the cost.
+> Use Jev calls to make your harness smarter - model routing, semantic context retrieval, LLM error detection and guardrails, reasoning trace classification at lightspeed and a fraction of the cost.
 
 ## Example automation use cases
 
@@ -66,7 +66,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 > **Semantic code linting**
 >
-> * Use Jev queries to add automated semantic lints to code and writing.
+> * Use Jev calls to add automated semantic lints to code and writing.
 > * Define checks for your team's coding conventions and writing guidelines.
 > * Run these checks in CI and flag violations for review.
 

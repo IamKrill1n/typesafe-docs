@@ -2,7 +2,7 @@
 
 > Drop-in skill for Claude Code, Codex, and other agent environments.
 
-The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the question [types](https://docs.typesafe.ai/primitives), the architectural [patterns](https://docs.typesafe.ai/patterns.md), and best practices for structuring evaluations.
+The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the question [types](https://docs.typesafe.ai/primitives), the architectural [patterns](https://docs.typesafe.ai/patterns.md), and best practices for structuring requests.
 
 ## Installation
 
@@ -59,7 +59,7 @@ Naming the skill in your prompt — "use the TypeSafe skill" — works in any ag
   intelligent judgement to stand in for complex parsing or other fragile code.
   ```
 
-* You can also create an [API key](https://console.typesafe.ai/keys) and give your agent permission to figure out the best way to use TypeSafe by running cheap test queries.
+* You can also create an [API key](https://console.typesafe.ai/keys) and give your agent permission to figure out the best way to use TypeSafe by running cheap test calls.
 
   ```text
   Using the TypeSafe skill, run some experiments using the TypeSafe API key that I've

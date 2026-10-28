@@ -1,6 +1,6 @@
 # Speculative fan-out
 
-> Send many questions in a single call, including speculative ones, and let your code decide what's relevant.
+> Send many questions in a single request, including speculative ones, and let your code decide what's relevant.
 
 Because TypeSafe supports sending many questions in a single API call, we recommend putting all of the questions your system needs in a single request, and then using code to decide what is relevant after the fact. All questions are evaluated in parallel, so adding more questions usually has little effect on response time.
 

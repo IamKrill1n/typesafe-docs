@@ -26,7 +26,7 @@ One `field` object describes the field being checked, and each question refers t
 
 Try it in the Playground →
 
-In code, you could loop over the potential records and build one of these questions per field, all sent in a single call. The [SDE cascade cookbook](https://docs.typesafe.ai/cookbooks/sde_cascade.md) does something similar to this.
+In code, you could loop over the potential records and build one of these questions per field, all sent in a single request. The [SDE cascade cookbook](https://docs.typesafe.ai/cookbooks/sde_cascade.md) does something similar to this.
 
 Arrays work too. Use one when the instruction is a list of things to check or to compare:
 
@@ -50,7 +50,7 @@ The example tells the model what each option does and does *not* cover. It sharp
 
 ### Walking a taxonomy
 
-To classify into a deep taxonomy, ask one Choice per level and walk the tree in code. At each step the options are the children of the current node, and each option's value is the child's tree. Doing so lets the model see what lives under a branch before committing to it, which matters when the item belongs to a leaf whose name is not obvious from the branch name alone.
+To classify into a deep taxonomy, ask one Choice question per level and walk the tree in code. At each step the options are the children of the current node, and each option's value is the child's tree. Doing so lets the model see what lives under a branch before committing to it, which matters when the item belongs to a leaf whose name is not obvious from the branch name alone.
 
 Here the state is a product listing and the first question picks a top-level department.
 
@@ -58,7 +58,7 @@ Try it in the Playground →
 
 The bottle plausibly fits under two departments. Showing the subtrees lets the model see that both `Sporting Goods > Cycling > Bike Bottles & Cages` and `Home & Kitchen > Drinkware > Water Bottles` exist, and weigh the listing's emphasis on bike cages against everyday drinkware. The `probabilities` on this answer tell you whether the split is close enough to explore both branches.
 
-Once a department is chosen, ask the next Choice with that department's children as the options and their subtrees as the values, and repeat until you reach a leaf. In code this could be a loop over a nested dict, where each question's `criteria` is simply the current node. The [Hierarchical Classification cookbook](https://docs.typesafe.ai/cookbooks/hierarchical_classification.md) shows an example of a similar walk of the tree, including a beam search that keeps several candidate paths alive when the probabilities are close.
+Once a department is chosen, ask the next Choice question with that department's children as the options and their subtrees as the values, and repeat until you reach a leaf. In code this could be a loop over a nested dict, where each question's `criteria` is simply the current node. The [Hierarchical Classification cookbook](https://docs.typesafe.ai/cookbooks/hierarchical_classification.md) shows an example of a similar walk of the tree, including a beam search that keeps several candidate paths alive when the probabilities are close.
 
 > [!NOTE]
 >

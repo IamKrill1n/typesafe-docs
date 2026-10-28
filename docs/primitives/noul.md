@@ -113,7 +113,7 @@ else:
 
 A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](https://docs.typesafe.ai/confidence.md#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
 
-A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](https://docs.typesafe.ai/primitives/score.md) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
+A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](https://docs.typesafe.ai/primitives/score.md) question with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
 | Candidate | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
 | - | - | - |
@@ -134,7 +134,7 @@ A statement works as well as a question. For "The customer is requesting a refun
 
 Make the boundary between yes and no unambiguous. "Does this candidate have any Python experience?" works well because "any" leaves no middle ground. When the boundary is subtle, add `criteria` with `true` and `false` descriptions, as the `is_repeat_contact` question above does. The instruction is enough for most Nouls, so try your questions with and without `criteria` and keep whichever gives better answers on your documents.
 
-## Good practice: ask more than one question per call
+## Good practice: ask more than one question per request
 
 For a checklist of conditions, ask many Noul questions in one request: one question per condition, and the code decides what the combination means. Questions are evaluated in parallel, so adding Nouls barely changes the response time. [Ask multiple questions together](https://docs.typesafe.ai/primitives#ask-multiple-questions-together) explains this in more detail.
 
@@ -187,7 +187,7 @@ def route(message: str) -> None:
 
 For the message above, the noul answer value for `is_human_escalation` is 0.99 and `is_repeat_contact` is 0.93, so the code routes it to an agent at high priority. The message "How do I reset my password?" is 0.07 on both questions and is routed to the bot.
 
-The thresholds live in your code. If reviewers see too many messages, narrow the gap between `NO` and `YES`. If too many wrong routes get through, widen it. If you later need to know whether the message mentions a payment, or whether it contains personal data, add another Noul to `SUPPORT_QUESTIONS`. The request count stays at one.
+The thresholds live in your code. If reviewers see too many messages, narrow the gap between `NO` and `YES`. If too many wrong routes get through, widen it. If you later need to know whether the message mentions a payment, or whether it contains personal data, add another Noul to `SUPPORT_QUESTIONS`. The call count stays at one.
 
 ## Structured instructions
 

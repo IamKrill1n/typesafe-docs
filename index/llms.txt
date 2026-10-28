@@ -19,7 +19,7 @@
 - [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md): Design AI-powered software by keeping code in control and giving System One narrow, structured decisions.
 - [AI primer](https://docs.typesafe.ai/introduction/machine-learning-primer.md): Why TypeSafe trains decision models with calibrated probabilities instead of optimizing for generated text.
 - [Patterns](https://docs.typesafe.ai/patterns.md): Architectural patterns for building systems with TypeSafe.
-- [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md): Send many questions in a single call, including speculative ones, and let your code decide what's relevant.
+- [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md): Send many questions in a single request, including speculative ones, and let your code decide what's relevant.
 - [Confidence-gated routing](https://docs.typesafe.ai/patterns/confidence-routing.md): Use confidence as a second axis. The answer tells you what; confidence tells you whether to act.
 - [Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring.md): Break a complex judgment into atomic scores, combine with weights you control in code.
 - [Intent routing](https://docs.typesafe.ai/patterns/intent-routing.md): Classify incoming requests and route each to the optimal handler: deterministic logic, a specialist LLM, or a human.

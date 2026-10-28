@@ -3,7 +3,7 @@ Source: https://docs.typesafe.ai/agent-skill
 
 Drop-in skill for Claude Code, Codex, and other agent environments.
 
-The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the question [types](/primitives), the architectural [patterns](/patterns), and best practices for structuring evaluations.
+The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe API: the question [types](/primitives), the architectural [patterns](/patterns), and best practices for structuring requests.
 
 ## Installation
 
@@ -60,7 +60,7 @@ Naming the skill in your prompt — "use the TypeSafe skill" — works in any ag
   intelligent judgement to stand in for complex parsing or other fragile code.
   ```
 
-* You can also create an [API key](https://console.typesafe.ai/keys) and give your agent permission to figure out the best way to use TypeSafe by running cheap test queries.
+* You can also create an [API key](https://console.typesafe.ai/keys) and give your agent permission to figure out the best way to use TypeSafe by running cheap test calls.
 
   ```text theme={null}
   Using the TypeSafe skill, run some experiments using the TypeSafe API key that I've
@@ -219,7 +219,7 @@ Code handles deterministic work and owns the control flow. The model appears onl
 
 > **Fast**
 >
-> Most queries complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
+> Most calls complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
 
 > **Calibrated confidence**
 >
@@ -298,13 +298,13 @@ Structure helps in these situations:
 
 > **Example: reference a record from your code**
 >
-> This Noul compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
+> This Noul question compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
 >
 > Try it in the Playground →
 
 The "potential\_duplicate" data sourced from code can change over time. The "question" references it using backticks.
 
-The descriptions inside `criteria` can be objects too. For a Choice, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
+The descriptions inside `criteria` can be objects too. For a Choice question, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
 
 > **Example: define contrastive Choice criteria**
 >
@@ -734,7 +734,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 > **Harness Engineering**
 >
-> Use Jev queries to make your harness smarter - model routing, semantic context retrieval, LLM error detection and guardrails, reasoning trace classification at lightspeed and a fraction of the cost.
+> Use Jev calls to make your harness smarter - model routing, semantic context retrieval, LLM error detection and guardrails, reasoning trace classification at lightspeed and a fraction of the cost.
 
 ## Example automation use cases
 
@@ -772,7 +772,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 > **Semantic code linting**
 >
-> * Use Jev queries to add automated semantic lints to code and writing.
+> * Use Jev calls to add automated semantic lints to code and writing.
 > * Define checks for your team's coding conventions and writing guidelines.
 > * Run these checks in CI and flag violations for review.
 
@@ -14069,7 +14069,7 @@ TypeSafe exposes *AI primitives*. Similar to software primitives, our AI primiti
 | [Score](/primitives/score) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
 | [Noul](/primitives/noul) | Is this statement true? | `noul` (0–1) |
 
-Any mix of *question* types can go in a single API call. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
+Any mix of *question* types can go in a single request. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 
 ## Atomic questions, composed in code
 
@@ -14222,7 +14222,7 @@ Get an API key from the [TypeSafe console](https://console.typesafe.ai/keys).
 
 ## The minimum you should know to use Jev effectively
 
-Each call to Jev takes a [state](/concepts/state) (as a simple string or structured object) and a set of [questions](/primitives), and returns one answer per question:
+Each call to Jev sends a request, made of a [state](/concepts/state) (as a simple string or structured object) and a set of [questions](/primitives), and returns one answer per question:
 
 ```mermaid actions={true} theme={null}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
@@ -14604,7 +14604,7 @@ Our API integration started returning 500 errors on every request about 20 minut
 }
 ```
 
-4. **Add more questions.** Mix Noul, Choice, and Score questions in one call and see all results at once.
+4. **Add more questions.** Mix Noul, Choice, and Score questions in one request and see all results at once.
 
 ***
 
@@ -14631,7 +14631,7 @@ These documents cover how TypeSafe handles your data when you have an account wi
 * [Master Customer Agreement](https://typesafe.ai/legal/mca) — the general terms that apply to your TypeSafe account.
 * [Privacy Policy](https://typesafe.ai/legal/privacy-policy) — what data we collect and how we use it, including our commitment not to train models on user data.
 
-We also offer zero data retention (ZDR) for enterprise customers. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai) to learn more.
+We also offer zero data retention (ZDR) for enterprise customers. To learn more, fill out the [support request form](https://support.typesafe.ai/forms/support-request).
 
 
 # Jev 1.13 jaggedness
@@ -14777,7 +14777,7 @@ Source: https://docs.typesafe.ai/models
 
 
 
-Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). Every model on this page is served by the same endpoint, `POST /v1/systemone`. The request's `model` field selects which one handles the call; see the [API reference](/api) for the full request shape.
+Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). Every model on this page is served by the same endpoint, `POST /v1/systemone`. The request's `model` field selects which one handles it; see the [API reference](/api) for the full request shape.
 
 ## Current models
 
@@ -14834,7 +14834,7 @@ Rate limits are set per organization. Your organization's current limits are in 
 
 Limits are measured in tokens per second and requests per second. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry these requests by default, waiting longer between each attempt, and follow the `retry-after` header when the response includes one. If you call the HTTP API directly, see [Handling rate limits](/api/errors#handling-rate-limits).
 
-Higher limits are available on custom and enterprise plans. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai).
+Higher limits are available on custom and enterprise plans. To request a higher limit, fill out the [rate limit increase request form](https://support.typesafe.ai/forms/rate-limit-increase-request).
 
 ## Aliases
 
@@ -14928,7 +14928,7 @@ This section assumes you know the [TypeSafe primitives](/primitives) and underst
 
 | Pattern | What it does | Benefits |
 | - | - | - |
-| [Speculative Fan-Out](/patterns/fan-out) | Send many questions in a single call, including speculative ones, and let your code decide what's relevant | Cost, Speed |
+| [Speculative Fan-Out](/patterns/fan-out) | Send many questions in a single request, including speculative ones, and let your code decide what's relevant | Cost, Speed |
 | [Confidence-Gated Routing](/patterns/confidence-routing) | Utilize confidence as a second decision axis to build safer systems | Reliability, Safety |
 | [Composite Scoring](/patterns/composite-scoring) | Combine several dimensions of analysis into a single score | Cost, Reliability, Speed |
 | [Intent Routing](/patterns/intent-routing) | Classify a user's intent and route to the appropriate handler | Cost, Speed |
@@ -15066,7 +15066,7 @@ See [Confidence](/confidence) for more details on how to think about confidence 
 # Speculative fan-out
 Source: https://docs.typesafe.ai/patterns/fan-out
 
-Send many questions in a single call, including speculative ones, and let your code decide what's relevant.
+Send many questions in a single request, including speculative ones, and let your code decide what's relevant.
 
 Because TypeSafe supports sending many questions in a single API call, we recommend putting all of the questions your system needs in a single request, and then using code to decide what is relevant after the fact. All questions are evaluated in parallel, so adding more questions usually has little effect on response time.
 
@@ -15407,7 +15407,7 @@ Ask every question your code might need, including ones whose answer only matter
 
 > [!TIP]
 >
-> Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](/agent-skill#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
+> Coding agents fall into the one question per request habit more than people do. The [TypeSafe agent skill](/agent-skill#installation) tells your agent to put many questions in each request, including ones that only matter for some inputs.
 
 ### How many questions you can ask
 
@@ -15475,7 +15475,7 @@ One `field` object describes the field being checked, and each question refers t
 
 Try it in the Playground →
 
-In code, you could loop over the potential records and build one of these questions per field, all sent in a single call. The [SDE cascade cookbook](/cookbooks/sde_cascade) does something similar to this.
+In code, you could loop over the potential records and build one of these questions per field, all sent in a single request. The [SDE cascade cookbook](/cookbooks/sde_cascade) does something similar to this.
 
 Arrays work too. Use one when the instruction is a list of things to check or to compare:
 
@@ -15499,7 +15499,7 @@ The example tells the model what each option does and does *not* cover. It sharp
 
 ### Walking a taxonomy
 
-To classify into a deep taxonomy, ask one Choice per level and walk the tree in code. At each step the options are the children of the current node, and each option's value is the child's tree. Doing so lets the model see what lives under a branch before committing to it, which matters when the item belongs to a leaf whose name is not obvious from the branch name alone.
+To classify into a deep taxonomy, ask one Choice question per level and walk the tree in code. At each step the options are the children of the current node, and each option's value is the child's tree. Doing so lets the model see what lives under a branch before committing to it, which matters when the item belongs to a leaf whose name is not obvious from the branch name alone.
 
 Here the state is a product listing and the first question picks a top-level department.
 
@@ -15507,7 +15507,7 @@ Try it in the Playground →
 
 The bottle plausibly fits under two departments. Showing the subtrees lets the model see that both `Sporting Goods > Cycling > Bike Bottles & Cages` and `Home & Kitchen > Drinkware > Water Bottles` exist, and weigh the listing's emphasis on bike cages against everyday drinkware. The `probabilities` on this answer tell you whether the split is close enough to explore both branches.
 
-Once a department is chosen, ask the next Choice with that department's children as the options and their subtrees as the values, and repeat until you reach a leaf. In code this could be a loop over a nested dict, where each question's `criteria` is simply the current node. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification) shows an example of a similar walk of the tree, including a beam search that keeps several candidate paths alive when the probabilities are close.
+Once a department is chosen, ask the next Choice question with that department's children as the options and their subtrees as the values, and repeat until you reach a leaf. In code this could be a loop over a nested dict, where each question's `criteria` is simply the current node. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification) shows an example of a similar walk of the tree, including a beam search that keeps several candidate paths alive when the probabilities are close.
 
 > [!NOTE]
 >
@@ -15773,9 +15773,9 @@ Besides `type`, each Choice answer has three values:
 
 This ticket is an easy one, so all of the probability is on `returns` and confidence is 1.0. A ticket that mentions a wrong size and a missing refund would split probability between `returns` and `billing`, and confidence would drop.
 
-## Good practice: ask more than one question per call
+## Good practice: ask more than one question per request
 
-Ask every Choice question your code might need in a single request rather than one request per question. Questions are evaluated in parallel. Adding questions barely changes the response time, and the code can ignore answers it doesn't need. Extra questions still cost tokens. [Ask multiple questions together](/primitives#ask-multiple-questions-together) explains this in full; the next section shows five Choice questions in one call.
+Ask every Choice question your code might need in a single request rather than one request per question. Questions are evaluated in parallel. Adding questions barely changes the response time, and the code can ignore answers it doesn't need. Extra questions still cost tokens. [Ask multiple questions together](/primitives#ask-multiple-questions-together) explains this in full; the next section shows five Choice questions in one request.
 
 The same logic applies to the options inside a single Choice question. A Choice question accepts up to 255 options, and adding options costs a few tokens each, so give the model the full list of teams, categories, or products rather than a shortlist. Add an `other` or `none of the above` option when the list might not cover every input, so the model can say none of the others fit.
 
@@ -15963,7 +15963,7 @@ def triage(ticket: str) -> None:
 
 For the ticket above, this assigns the ticket to the returns team with issue `wrong_size`, sends the billing team a copy because its 0.35 share is over the 0.25 threshold, and asks the customer what they want because the resolution confidence of 0.20 is under 0.5. The code does not use the `shipping_issue` answer.
 
-One request, five answers, and the routing logic is ordinary `if` statements. If you later need to know the customer's language, or which product the ticket is about, add another Choice question to `TRIAGE_QUESTIONS`; the request count stays at one.
+One request, five answers, and the routing logic is ordinary `if` statements. If you later need to know the customer's language, or which product the ticket is about, add another Choice question to `TRIAGE_QUESTIONS`; the call count stays at one.
 
 The [smart home assistant demo](/demos/smart-home) evaluates every user request against a long list of Choice questions in one call: the request category, the room, the device, and the action. Most of those questions are irrelevant to any one request and the code ignores them.
 
@@ -16117,7 +16117,7 @@ else:
 
 A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
 
-A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
+A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) question with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
 | Candidate | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
 | - | - | - |
@@ -16138,7 +16138,7 @@ A statement works as well as a question. For "The customer is requesting a refun
 
 Make the boundary between yes and no unambiguous. "Does this candidate have any Python experience?" works well because "any" leaves no middle ground. When the boundary is subtle, add `criteria` with `true` and `false` descriptions, as the `is_repeat_contact` question above does. The instruction is enough for most Nouls, so try your questions with and without `criteria` and keep whichever gives better answers on your documents.
 
-## Good practice: ask more than one question per call
+## Good practice: ask more than one question per request
 
 For a checklist of conditions, ask many Noul questions in one request: one question per condition, and the code decides what the combination means. Questions are evaluated in parallel, so adding Nouls barely changes the response time. [Ask multiple questions together](/primitives#ask-multiple-questions-together) explains this in more detail.
 
@@ -16192,7 +16192,7 @@ def route(message: str) -> None:
 
 For the message above, the noul answer value for `is_human_escalation` is 0.99 and `is_repeat_contact` is 0.93, so the code routes it to an agent at high priority. The message "How do I reset my password?" is 0.07 on both questions and is routed to the bot.
 
-The thresholds live in your code. If reviewers see too many messages, narrow the gap between `NO` and `YES`. If too many wrong routes get through, widen it. If you later need to know whether the message mentions a payment, or whether it contains personal data, add another Noul to `SUPPORT_QUESTIONS`. The request count stays at one.
+The thresholds live in your code. If reviewers see too many messages, narrow the gap between `NO` and `YES`. If too many wrong routes get through, widen it. If you later need to know whether the message mentions a payment, or whether it contains personal data, add another Noul to `SUPPORT_QUESTIONS`. The call count stays at one.
 
 ## Structured instructions
 
@@ -16643,7 +16643,7 @@ def priority(ticket: str) -> float:
 
 For the example response above, the normalized scores are 0.62 for severity, 0.64 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.62 + 0.3 × 0.64 + 0.1 × 1.0 = 0.664`, which rounds to `0.66`.
 
-The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The request count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](/patterns/composite-scoring) pattern.
+The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The call count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](/patterns/composite-scoring) pattern.
 
 ## Structured level descriptions
 

@@ -8,7 +8,7 @@ Get an API key from the [TypeSafe console](https://console.typesafe.ai/keys).
 
 ## The minimum you should know to use Jev effectively
 
-Each call to Jev takes a [state](https://docs.typesafe.ai/concepts/state.md) (as a simple string or structured object) and a set of [questions](https://docs.typesafe.ai/primitives), and returns one answer per question:
+Each call to Jev sends a request, made of a [state](https://docs.typesafe.ai/concepts/state.md) (as a simple string or structured object) and a set of [questions](https://docs.typesafe.ai/primitives), and returns one answer per question:
 
 ```mermaid actions={true}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
@@ -390,7 +390,7 @@ Our API integration started returning 500 errors on every request about 20 minut
 }
 ```
 
-4. **Add more questions.** Mix Noul, Choice, and Score questions in one call and see all results at once.
+4. **Add more questions.** Mix Noul, Choice, and Score questions in one request and see all results at once.
 
 ***
 

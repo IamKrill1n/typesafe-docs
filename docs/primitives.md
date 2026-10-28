@@ -181,7 +181,7 @@ Ask every question your code might need, including ones whose answer only matter
 
 > [!TIP]
 >
-> Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](https://docs.typesafe.ai/agent-skill.md#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
+> Coding agents fall into the one question per request habit more than people do. The [TypeSafe agent skill](https://docs.typesafe.ai/agent-skill.md#installation) tells your agent to put many questions in each request, including ones that only matter for some inputs.
 
 ### How many questions you can ask
 

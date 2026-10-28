@@ -14,7 +14,7 @@ This section assumes you know the [TypeSafe primitives](https://docs.typesafe.ai
 
 | Pattern | What it does | Benefits |
 | - | - | - |
-| [Speculative Fan-Out](https://docs.typesafe.ai/patterns/fan-out.md) | Send many questions in a single call, including speculative ones, and let your code decide what's relevant | Cost, Speed |
+| [Speculative Fan-Out](https://docs.typesafe.ai/patterns/fan-out.md) | Send many questions in a single request, including speculative ones, and let your code decide what's relevant | Cost, Speed |
 | [Confidence-Gated Routing](https://docs.typesafe.ai/patterns/confidence-routing.md) | Utilize confidence as a second decision axis to build safer systems | Reliability, Safety |
 | [Composite Scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) | Combine several dimensions of analysis into a single score | Cost, Reliability, Speed |
 | [Intent Routing](https://docs.typesafe.ai/patterns/intent-routing.md) | Classify a user's intent and route to the appropriate handler | Cost, Speed |

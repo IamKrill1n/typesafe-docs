@@ -94,7 +94,6 @@ How you act on a Box's confidence is up to your application. A common pattern is
 
 * **Ask again on a better image.** Send a larger version of the image, or crop to the region around the box at a higher resolution and ask the same Box question on the crop. [Writing Box questions](#writing-box-questions) covers finding a small target in a large image.
 * **Pad the box before cropping.** When a crop must not cut off any part of the target, move each edge outward before you crop.
-* **Check the box with edge questions.** Ask whether the target continues past each edge, as in [Check a box with edge questions](#check-a-box-with-edge-questions).
 
 This code pads the box when confidence is below a threshold, and keeps it inside the image:
 
@@ -135,11 +134,5 @@ Then crop with the padded `edges` as in the code above.
 **One box per question.** Box is designed to find one target, and every answer is a single box. To find several different things, ask one Box question for each in the same request. When the image might hold more than one of the same thing, describe the one you want so that only it fits: "the mug nearest the sink in `photo`". When you can't tell them apart in words, add a Choice with the options `none`, `one`, and `several` next to the Box. When the answer is `several`, split the image into regions and ask again on each.
 
 **Crop large images before looking for small things.** A target a few dozen pixels wide in a very large image can be missed. Find the region first, for example with a Choice that has tiles of the image as its options. Then ask the Box question on that tile, and convert its edges back to fractions of the full image.
-
-### Check a box with edge questions
-
-To check whether a box cuts off part of the target, crop to the box and ask one Noul per edge, such as "Does the mug in `crop` continue past the left edge of the image?". Move out each edge where the Noul answer is yes, and ask again.
-
-On 36 test crops of paintings, each with a known part of the target cut off, the four edge questions caught 30 of the cuts. A single "Is all of the mug inside `crop`?" question caught 26. Drawing the box as an outline on the full image and asking about that caught 20.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

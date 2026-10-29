@@ -448,7 +448,7 @@ playground_link = make_playground_link(
     models=[TYPESAFE_MODEL],
 )
 # Print a usable URL in a script; render a clickable link in a notebook.
-if "__file__" in globals():
+if __name__ == "__main__" and "__file__" in globals():
     print(f"Open the state + questions in the TypeSafe playground:\n{playground_link}")
 else:
     display(Markdown(f"🔗 [Open the state + questions in the TypeSafe playground]({playground_link})"))

@@ -7,20 +7,18 @@ questions, or N requests with one question each. With TypeSafe the answers come 
 same either way: each question is scored on its own against the document, so its answer
 doesn't depend on what else is in the request.
 
-To check that, the cookbook asks each question several times both ways - all N in one
-request, and one question per request - and compares the run-to-run std dev: how far an
-answer moves from one repeat to the next. Whatever noise a question has, it has under
-both batching strategies. Batching adds none. Most answers came back identical across all
-5 repeats either way, the same value on every call, std dev exactly 0.0.
+To check that, we ask each question several times both ways (all N in one request, and
+one question per request) and compare the run-to-run std dev: how far an answer moves
+from one repeat to the next. Batching adds no noise. Most answers came back identical
+across all 5 repeats either way, std dev exactly 0.0.
 
 Cost and speed do change. The document dominates every request. N single-question calls
 pay for it N times, in N round trips; the batched call pays once. The bigger the document,
 the nearer that saving comes to a full Nx.
 
 The case here is a regulatory briefing. The document is the Wikipedia article on the GDPR
-(\~54,000 characters, a document-dominated workload where the document is most of every
-request), and a compliance team wants 13 things checked: 8 `Noul` questions, 2 `Choice`
-questions, and 3 `Score` questions.
+(\~54,000 characters), and a compliance team wants 13 things checked: 8 `Noul` questions,
+2 `Choice` questions, and 3 `Score` questions.
 
 ## Setup
 
@@ -28,7 +26,9 @@ questions, and 3 `Score` questions.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`.
+then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
+`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/parallel_questions) into the folder you run
+the script from.
 
 ```python
 import json
@@ -54,9 +54,9 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 ## The document: the Wikipedia article on the GDPR
 
-Fetched as plain text from a pinned revision of the article and cached in `json_cache.json`
-next to the API calls, so the document and its numbers stay fixed even as the live
-article gets edited.
+We fetch the article as plain text from a pinned revision and cache it in
+`json_cache.json` next to the API calls, so the document and its numbers stay fixed even
+as the live article gets edited.
 
 ```python
 WIKIPEDIA_REVISION = 1363040264  # "General Data Protection Regulation", as of 2026-07
@@ -90,12 +90,12 @@ display(Markdown(f"📄 [Read the pinned Wikipedia revision]({DOCUMENT['source']
 
 ## The questions: 8 nouls + 2 choices + 3 scores
 
-One number tracked per answer, by type:
+We track one number per answer, by type:
 
 * `Noul`: the probability of "yes".
 * `Choice`: the max prob, the probability on the picked label. `criteria` maps each
   label to its meaning.
-* `Score`: the score normalized to 0-1, the score divided by the top level.
+* `Score`: the score divided by the top level, so it runs 0-1.
   `criteria` lists the level descriptions, from level 0 up.
 
 ```python expandable
@@ -179,13 +179,12 @@ METRIC = {  # question type -> the one number we track per answer
 
 ## Ask two ways, 5 times each
 
-`ask()` sends any subset of the questions with the document and reduces each answer to its
+Each call sends some of the questions with the document, and we reduce each answer to its
 one tracked number. The document is byte-identical in every call.
 
-Both batching strategies run `RUNS` = 5 times, giving each question 5 answers per strategy,
-enough to compare the mean (do the two agree?) and the std dev (does batching add noise?).
-Calls are cached to `json_cache.json`, which ships with the cookbook, so re-rendering is
-free; delete it to re-run live.
+Both batching strategies run `RUNS` = 5 times, enough to compare the mean (do the two
+agree?) and the std dev (does batching add noise?). Calls are cached to
+`json_cache.json`; delete it to re-run live.
 
 ```python expandable
 @json_cache
@@ -230,9 +229,9 @@ singles = [
 
 ## Batching doesn't change the answers
 
-Per question: the mean and std dev of its tracked number over the 5 runs, under each
-batching strategy. If batching changed the answers, the batched columns would differ from
-the single columns. A shifted mean is bias. A larger std dev is noise.
+For each question, the table shows the mean and std dev of its tracked number over the 5
+runs under each batching strategy. A mean that shifts between the batched and single
+columns would be bias; a larger std dev would be noise.
 
 ```python
 print(
@@ -265,32 +264,24 @@ penalty_severity      normalized score          1.000       1.000       0.0000  
 compliance_burden     normalized score          0.750       0.750       0.0000      0.0000
 ```
 
-Reading the table by question type:
-
 * Choices, scores, and six of the eight nouls come back identical across the 5 repeats:
-  std dev exactly 0.0 under both batching strategies, every batched and single call
-  returning the same number. One call with N questions gives the same answers as N calls
-  with one question each.
+  std dev exactly 0.0 under both batching strategies. One call with N questions gives the
+  same answers as N calls with one question each.
 * `breach_72h` and `criminal_penalties` carry a little run-to-run sampling noise, and it's
   the same size under both batching strategies, with the means agreeing to within that
   noise. The noise is a property of the question, not of how you batch: batching neither
   shifts the answer nor adds variance.
 
-Either way, there is no batching effect: no question's answer depends on the 12 other
-questions sharing its request.
-
 ## The only difference: cost and speed
 
-Same answers, different bill. The \~54,000-character article dominates every request, so:
+The \~54,000-character article dominates every request, so:
 
 * Cost: the 13 single-question calls re-send the article 13 times; the batched call sends
-  it
-  once. This saving holds however you fire the calls.
-* Speed: the figure sums the 13 single-call latencies, so it assumes they run one after
+  it once. This saving holds however you fire the calls.
+* Speed: the table sums the 13 single-call latencies, so it assumes they run one after
   another. Fire them concurrently and the gap shrinks, but the 13x token cost stays.
 
-Token counts and latencies are cached alongside the answers; cost is applied after, and
-both are averaged over the 5 runs.
+Cost and time are averaged over the 5 runs.
 
 ```python
 batched_cost = mean(cost for _values, cost, _latency in batched)
@@ -323,8 +314,8 @@ batching: 12.2x cheaper, 10.0x faster
 
 ## Open it in the TypeSafe playground
 
-The same article and the same 13 questions, packed into a share link. Open it to re-run
-the briefing live; the same numbers come back.
+The share link packs the same article and 13 questions. Open it to re-run the briefing
+live.
 
 ```python
 playground_link = make_playground_link(

@@ -21,14 +21,12 @@ nearly all the probability landed on one option and low when it spread across se
 one number separates the answers you can trust from the ones you can't.
 
 What to do with an untrusted answer depends on your labels. SIC labels form a hierarchy:
-industry groups roll up into broader divisions. That makes one response nearly free. When
-the model is unsure of the group, report the division it belongs to. The broad label
-follows from the narrow one, so there is no second call.
+industry groups roll up into broader divisions. When the model is unsure of the group,
+report the division it belongs to. The division follows from the group, so there is no
+second call.
 
 Across 60 filings, a confidence cutoff of 0.9 splits them in half. The confident half is
-right 90% of the time; the other half, 40%. Reported one level up, that 40% becomes 70%. We
-end with a `classify()` function that returns a label plus how specific it is, at one
-request per document.
+right 90% of the time; the other half, 40%. Reported one level up, that 40% becomes 70%.
 
 ```mermaid actions={true} theme={null}
 flowchart LR
@@ -54,9 +52,11 @@ flowchart LR
 pip install ipython matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached to `json_cache.json`, which ships
-with the cookbook, so re-rendering replays the published numbers without calling the API.
-Delete that file to re-run everything live.
+then set `TYPESAFE_API_KEY`. Download `filings.jsonl`, `sic_codes.tsv` and
+`json_cache.json` from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/classification_using_confidence) into the folder you run
+the script from. Every API call is cached in `json_cache.json`, so the published numbers
+replay without calling the API; leave that file out to run everything live.
 
 Numbers below came from `jev-1.12` on 2026-08-12.
 
@@ -181,11 +181,10 @@ section where a company describes what it does, which is the only part an indust
 about. They span 1993–2024 and run from 700 to 2,200 words. Each one carries the SIC code
 its filer chose, plus the accession number to look it up on EDGAR.
 
-Where that label comes from matters before any accuracy number. It is self-reported:
-whoever prepared the filing picked it once, and it goes stale when a company sells the
-business the code names and keeps the code. These 60 were filtered down to filings whose
-own text supports the code they carry, so the numbers here measure the recipe rather than
-the state of EDGAR's metadata.
+The label is self-reported: whoever prepared the filing picked it once, and it goes stale
+when a company sells the business the code names and keeps the code. These 60 were
+filtered down to filings whose own text supports the code they carry, so the numbers here
+measure the recipe rather than the state of EDGAR's metadata.
 
 ```python theme={null}
 FILINGS = [json.loads(line) for line in Path("filings.jsonl").read_text().splitlines()]
@@ -208,8 +207,8 @@ print(f"  filer's code: {example['sic']} {INDUSTRIES[example['sic']]}")
 
 ## Ask one Choice question, and read the confidence
 
-One `Choice` question whose options are the 75 groups. The whole taxonomy fits in one
-request: a Choice works reliably up to roughly 240 options, and 75 is well inside that.
+The whole taxonomy fits in one request: a Choice works reliably up to roughly 240 options,
+and 75 is well inside that.
 
 The answer comes back with `choice`, the winning group; `probabilities`, the weight on each
 of the 75; and `confidence`, which says how concentrated that spread was. The recipe reads
@@ -248,9 +247,8 @@ def ask(filing_id: str, text: str) -> dict:
 
 ## Return the group when sure, its division when not
 
-The four lines below are the whole recipe. At 0.9 confidence or above, the answer is
-reported as an industry group; below that, the same answer is reported as the division that
-group sits in.
+At 0.9 confidence or above, the answer is reported as an industry group; below that, the
+same answer is reported as the division that group sits in.
 
 Every filing still comes back with a usable label. One the model could not classify
 confidently comes back one level up instead of being dropped or sent on. If a division is
@@ -306,13 +304,10 @@ developer", Barricode was "organized to enter into the computer security softwar
 industry"), and the third had two segments and sold one of them weeks before filing. Those
 three come back as a division rather than a group.
 
-`classify()` is the whole recipe. Point `ask()` at your own documents and rewrite
-`describe()` for your own taxonomy, and the rest carries over.
-
 ## What the broader answer buys
 
-All 60 filings, scored against the code each filer chose, under both policies: name a group
-every time, or report the division whenever confidence lands under 0.9.
+We score all 60 filings against the code each filer chose, under both policies: name a
+group every time, or report the division whenever confidence lands under 0.9.
 
 ```python theme={null}
 def correct(filing: dict, result: dict) -> bool:
@@ -352,10 +347,8 @@ letting it answer coarsely when unsure  48/60 useful answers
 ```
 
 Where the model was sure, the group it named is right nine times in ten. Where it was not,
-naming a group was wrong more often than right, at 40%. Reporting those same answers as a
-division takes them to 70%.
-
-The chart puts the two policies side by side, split by whether the model was sure.
+the group is right only 40% of the time. Reporting those same answers as a division takes
+them to 70%.
 
 ```python expandable theme={null}
 labels = ["sure\n(group reported)", "unsure\n(division reported)"]

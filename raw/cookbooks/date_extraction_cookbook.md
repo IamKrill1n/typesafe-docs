@@ -10,25 +10,16 @@
 
 The function you build here, `extract_date(document, role)`, takes a document and a
 phrase naming the date you want, such as "the deadline to return the form", and hands
-back a `date` with a confidence. It flags a low-confidence read, and one whose parts do
-not add up to a date at all, including a date the document never states. The date can be
-spelled out ("August 14, 2027") or written relative to today ("tomorrow", "next
-Thursday").
+back a `date` with a confidence. It flags a low-confidence read, a read whose parts do not
+make a date, and a date the document never states. The date can be spelled out ("August
+14, 2027") or written relative to today ("tomorrow", "next Thursday").
 
 TypeSafe answers `Choice` questions about the date in one call: what kind of date it is,
 and
 which month, day, year, or weekday the text names. Code turns those answers into a `date`.
 The model reads what the text says and never does the calendar math.
 
-The cells below run that function over four short documents, print each date with its
-confidence, and split the results into the ones code accepts and the ones a person should
-look at.
-
 ![Overview diagram](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/date_extraction_cookbook/overview.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=4d1d1d4d446eefafb556505d9834e7a0)
-
-*TypeSafe reads how the date is written and which parts the text names. Code turns those
-answers into a `date`, counting from today when the date is relative, and either accepts
-it or sends it to review.*
 
 ## Setup
 
@@ -36,7 +27,9 @@ it or sends it to review.*
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`.
+then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
+`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/date_extraction_cookbook) into the folder you run
+the script from.
 
 ```python expandable theme={null}
 import os
@@ -177,11 +170,11 @@ def date_questions(role: str) -> dict[str, Choice]:
 
 ## Resolve it in code
 
-`read_parts` makes the call. `assemble` turns the answers into a `date`: it fills in the
-year when the text states none, and it works out which day a named weekday points at. Both
-of those count from `TODAY`, which is pinned so relative dates come out the same on every
-run. `assemble` also reports the lowest confidence among the parts it used, so a weak
-answer on any one part can send the whole date to review.
+One call reads all seven parts. The answers then become a `date`, with the year filled in
+when the text states none and a named weekday resolved to the day it points at. Both of
+those count from `TODAY`, which is pinned so relative dates come out the same on every run.
+A date's confidence is the lowest among the parts it used, so a weak answer on any one part
+can send the whole date to review.
 
 "next Thursday" can mean two different days, so code decides which. A weekday with no
 qualifier means the next one on or after today. `next` means the following calendar week,
@@ -297,9 +290,9 @@ def extract_date(document: str, role: str) -> dict:
 
 ## Run it
 
-Six questions across four short documents: two dates from a contract that states its years,
-a form deadline written without a year, a survey that closes "today", a review set for
-"next Thursday", and a date the form never mentions. All of them resolve against `TODAY` =
+Six dates to find in four short documents: two from a contract that states its years, a
+form deadline written without a year, a survey that closes "today", a review set for "next
+Thursday", and a date the form never mentions. All of them resolve against `TODAY` =
 2026-07-30, a Thursday.
 
 ```python theme={null}
@@ -346,19 +339,17 @@ OK the date of the design review         2026-08-06  2026-08-06    0.92
 
 The contract states both of its years, so those came off the text. The form states no year,
 so code filled in 2026: it takes the current year and moves to the next one only when the
-date is already more than a month past. "today" and "next Thursday" went through the same
-function as the spelled-out dates.
+date is already more than a month past.
 
 The kickoff call is the one the form never mentions. There is a date in that form, just not
-this one, and the note `absolute date incomplete` means `mode` came back `absolute` with no
+this one. The note `absolute date incomplete` means `mode` came back `absolute` with no
 month to go with it. The date came back empty, the confidence reads 0.46, and the row is
 flagged for a person.
 
 ## Confidence to route on
 
-Every answer comes back with a calibrated confidence, and a date's confidence is the lowest
-one among the parts that went into it. A date under `REVIEW_BELOW` = 0.60 goes to a person,
-and so does a date code could not assemble at all. The rest go straight through.
+A date under `REVIEW_BELOW` = 0.60 goes to a person, and so does any date that could not be
+assembled. The rest go straight through.
 
 ```python theme={null}
 if __name__ == "__cookbook__":

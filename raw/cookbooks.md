@@ -68,6 +68,16 @@ Get more out of any question: repeat it, batch it, or turn its answers into feat
 | [Parallel questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md) | Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers. | Beginner |
 | [Autoresearch feature discovery](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md) | Runs an autoresearch loop that proposes TypeSafe questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor. | Advanced |
 
+## Image processing
+
+Find things in photos and scans, and check what was read from them.
+
+| Cookbook | What it does | Level |
+| - | - | - |
+| [Reading a scanned vaccination record](https://docs.typesafe.ai/cookbooks/reading_scanned_documents.md) | Find each vaccine on a scanned travel record with a Noul and a Box, read the year of each dose with a Choice that can answer unreadable, and check each dose still covers the trip in a text-only request. | Intermediate |
+| [OCR confidence and bounding boxes](https://docs.typesafe.ai/cookbooks/ocr_confidence_bounding_boxes.md) | Check the values an OCR extractor read from invoice photos: Jev boxes each value, scores it against the page and against a crop of its box, and flags low scores for review. | Intermediate |
+| [Feeder-cam visit log](https://docs.typesafe.ai/cookbooks/feeder_watch.md) | Send frames from bird feeder camera footage to Jev with five questions, one of them a Box that finds the bird, then use plain code to turn the answers into a visit log per species. | Intermediate |
+
 > [!TIP]
 >
 > We're always keen to learn how people are making use of our primitives. If you've built something worth a cookbook, drop us a note!

@@ -55,7 +55,12 @@ pip install ipython polars matplotlib numpy 'cooksafe>=0.2.0,<0.3.0'
 Set `TYPESAFE_API_KEY`. Two modules sit beside this file. `trader.py` holds the ten
 functions, plus a TypeSafe client that reads answers from a cache, so re-rendering replays
 the numbers below without calling the API. `dispatch.py` holds the code that reads a
-signature and a spec and makes the call.
+signature and a spec and makes the call. Both modules, `spec.json`, the price bars and the
+answer cache are in
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/function_calling).
+
+The prices are simulated from a fixed random seed, not real market data. The tickers are
+real, but every price, return and chart below is generated.
 
 ```python theme={null}
 import json

@@ -1161,6 +1161,16 @@ Get more out of any question: repeat it, batch it, or turn its answers into feat
 | [Parallel questions](/cookbooks/parallel_questions) | Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers. | Beginner |
 | [Autoresearch feature discovery](/cookbooks/autoresearch_feature_discovery) | Runs an autoresearch loop that proposes TypeSafe questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor. | Advanced |
 
+## Image processing
+
+Find things in photos and scans, and check what was read from them.
+
+| Cookbook | What it does | Level |
+| - | - | - |
+| [Reading a scanned vaccination record](/cookbooks/reading_scanned_documents) | Find each vaccine on a scanned travel record with a Noul and a Box, read the year of each dose with a Choice that can answer unreadable, and check each dose still covers the trip in a text-only request. | Intermediate |
+| [OCR confidence and bounding boxes](/cookbooks/ocr_confidence_bounding_boxes) | Check the values an OCR extractor read from invoice photos: Jev boxes each value, scores it against the page and against a crop of its box, and flags low scores for review. | Intermediate |
+| [Feeder-cam visit log](/cookbooks/feeder_watch) | Send frames from bird feeder camera footage to Jev with five questions, one of them a Box that finds the bird, then use plain code to turn the answers into a visit log per species. | Intermediate |
+
 > [!TIP]
 >
 > We're always keen to learn how people are making use of our primitives. If you've built something worth a cookbook, drop us a note!
@@ -1195,15 +1205,9 @@ The whole pipeline is two API requests per document, run in sequence:
   carries companion questions for every block (heading level, step order, callout kind)
   whose answers are read only when the block's type makes them relevant.
 * **Direct evidence stays in code.** Blank lines and explicit markers (`- `, `1.`, `#`)
-  are read in code, never sent to the model to reconsider; this memo kept its blank lines
-  but lost every marker. The model gets only the questions code cannot answer from the
-  text.
-
-All of the behavior is specified in the pass-2 question criteria: three dicts of
-one-line descriptions, plus the step question's true/false criteria inside
-`classify_questions`. The rest of the code is plumbing around them. The cost and latency
-numbers are in the appendix: two round trips, 10,211 tokens, 0.8s, \$0.0015 for this
-memo.
+  are read directly and never sent to the model to reconsider; this memo kept its blank
+  lines but lost every marker. The model gets only the questions code cannot answer from
+  the text.
 
 ## Setup
 
@@ -1211,9 +1215,11 @@ memo.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`, which ships
-with the cookbook, so re-rendering replays the published numbers without calling the API.
-Delete that file to re-run everything live.
+then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`. Download it
+from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/autoformat)
+into the folder you run the script from to replay the published numbers without calling the
+API, or leave it out to run everything live.
 
 ```python theme={null}
 import os
@@ -1227,7 +1233,6 @@ from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.12"
-PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output); TypeSafe jev-1.12 as of 2026-09
 client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
 json_cache = JsonCache(Path("json_cache.json"))
 ```
@@ -1236,13 +1241,11 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 The test document is a memo about a build-system migration, in the state it arrives in a
 plain-text inbox: paragraphs hard-wrapped mid-sentence, a shell command sitting on a bare
-line, two lists with no bullets or numbers, a warning with nothing marking it as one. The
-text is fetched from a pinned gist so the cookbook's numbers stay reproducible.
+line, two lists with no bullets or numbers, a warning with nothing marking it as one.
 
 ```python theme={null}
-GIST = (
-    "https://gist.githubusercontent.com/eugene-shvarts/6df7daf97233bf92bcdd6b386a0fa561"
-    "/raw/5da03690611fb6ddcbaabdb91fb9f91d9751b113/build-memo.txt"
+DOCUMENT_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/cookbooks/autoformat/build-memo.txt"
 )
 
 
@@ -1253,7 +1256,7 @@ def fetch_document(url: str) -> str:
         return response.read().decode()
 
 
-RAW = fetch_document(GIST)
+RAW = fetch_document(DOCUMENT_URL)
 print(RAW[:560])
 ```
 
@@ -1277,11 +1280,11 @@ Generated artifacts no longer need to be committed. The new pipeline
 uploads them
 ```
 
-Line splitting, blank-line tracking, and id tagging all happen in code; no model is
-involved.
-Each line gets a short id (`L014| `); the ids are ordinary text the model reads as part of
-the state, and questions and answers refer to lines by these ids (the same scheme as the
-[semantic search cookbook](/cookbooks/semantic_find)).
+Splitting lines, tracking blank lines and tagging ids all happen before the request; no
+model is involved. Each line gets a short id (`L014| `). The model reads the ids as
+ordinary text in the state, and questions and answers refer to lines by them. The
+[semantic search cookbook](/cookbooks/semantic_find)
+uses the same scheme.
 
 ```python theme={null}
 def to_lines(text: str) -> list[dict]:
@@ -1329,8 +1332,7 @@ L017| Whoever still owns the release tooling
 
 One Noul question per adjacent pair of lines, all in one request; pairs separated by a
 blank line are skipped. The question is deliberately narrow ("does this line pick up
-mid-sentence?"), which is close to an objective fact about the text. The appendix covers
-both the wording choice and how the merge thresholds were derived.
+mid-sentence?"), which is close to an objective fact about the text.
 
 ```python expandable theme={null}
 def join_question(i: int) -> Noul:
@@ -1372,8 +1374,7 @@ print(f"{sum(1 for l in LINES if not l['gap']) - 1} pair questions, one request,
 
 The cutoff for merging depends on how the previous line ends. After a dangling line (one
 with no sentence-ending punctuation), a join probability of 0.2 or above merges the
-pair; after terminal punctuation (`.` `!` `?` `:` `;`), the cutoff rises to 0.5. The
-appendix walks through the probabilities behind the two numbers.
+pair; after terminal punctuation (`.` `!` `?` `:` `;`), the cutoff rises to 0.5.
 
 ```python theme={null}
 JOIN_AFTER_DANGLING, JOIN_AFTER_TERMINAL = 0.2, 0.5
@@ -1430,11 +1431,10 @@ B016  1 line   Thanks, and shout if anything looks off.
 
 ## Pass 2: classifying blocks
 
-Each stitched block gets a `Choice` question: *what kind of content is this?* These
-three
+Each stitched block gets a `Choice` question: *what kind of content is this?* These three
 dicts, plus the step question's true/false criteria inside `classify_questions` below,
-are the entire specification of the classifier. There is no other logic. To adapt the
-pipeline to your own documents, edit these descriptions.
+are the entire specification of the classifier. To adapt the pipeline to your own
+documents, edit these descriptions.
 
 ```python theme={null}
 TYPE_CRITERIA = {
@@ -1457,14 +1457,13 @@ CALLOUT_CRITERIA = {
 }
 ```
 
-Everything below is plumbing: build the questions, send one request, read the answers back.
 If the type comes back `heading`, the renderer needs a heading level; if `list_item`,
 whether order matters; if `callout`, which kind. The types are not known yet, and waiting
 for them would mean a third round trip, so the companion questions are asked up front in
-the same request. Most of these answers are never read: the step probability of a paragraph
-means nothing and is simply ignored. An extra question adds little, since the state is
-most of the tokens and is sent once either way, while an extra round trip adds a full
-request of latency.
+the same request. Most of these answers are never read: the step probability of a
+paragraph goes unused. An extra question adds little, since the state is most of the
+tokens and is sent once either way, while an extra round trip adds a full request of
+latency.
 
 ```python expandable theme={null}
 HEADING_MAX_CHARS = 90  # longer blocks can't render as headings, so don't ask
@@ -1563,19 +1562,16 @@ B015  quote      0.99  -                 As Dana put it in the kickoff, "a migra
 B016  paragraph  0.92  -                 Thanks, and shout if anything looks off.
 ```
 
-Every block's judgment is in that table, and the companion column shows the up-front
-answers being put to use: the three "Things to do before Monday" lines carry step
-probabilities near 0.9 (they will render as a numbered list), the three team lines sit
-near 0.1 (bulleted), and the unmarked warning about the doctor script was classified as
-a callout of kind `warning`. The appendix looks at the one block the model was unsure
-about.
+The companion column shows the up-front answers in use: the three "Things to do before
+Monday" lines carry step probabilities near 0.9 (they will render as a numbered list),
+the three team lines sit near 0.1 (bulleted), and the unmarked warning about the doctor
+script was classified as a callout of kind `warning`.
 
 ## Rendering
 
 Code assembles the page from the judgments. Consecutive list items become one list,
 numbered when the mean of the items' step probabilities is at least 0.5. That threshold
-is a
-group-level decision no single question asked directly.
+is a group-level decision no single question asked directly.
 
 ````python expandable theme={null}
 STEP_THRESHOLD = 0.5
@@ -1673,27 +1669,6 @@ display(Markdown(f"🔗 [Open the stitched memo + questions in the TypeSafe play
 
 # Appendix
 
-## Cost and latency
-
-```python theme={null}
-tokens = [result["usage"], classified["usage"]]
-total_in, total_out = sum(t[0] for t in tokens), sum(t[1] for t in tokens)
-cost = total_in / 1e6 * PRICE[0] + total_out / 1e6 * PRICE[1]
-n_joins = sum(1 for l in LINES if not l["gap"]) - 1
-print(f"pass 1  {n_joins} questions  {result['seconds']}s")
-print(f"pass 2  {classified['n_questions']} questions  {classified['seconds']}s")
-print(f"total   {total_in + total_out:,} tokens  "
-      f"{result['seconds'] + classified['seconds']:.1f}s  ${cost:.4f}")
-```
-
-```
-pass 1  16 questions  0.32s
-pass 2  62 questions  0.51s
-total   10,211 tokens  0.8s  $0.0003
-```
-
-Two round trips, 10,211 tokens, 0.8s, \$0.0015.
-
 ## Where the join thresholds come from
 
 The per-line join probabilities from pass 1:
@@ -1738,21 +1713,17 @@ directly:
   paragraphs.
 * After *terminal* punctuation (a character that ends a sentence or clause: `.` `!` `?`
   `:` `;`), the cutoff rises to 0.5. The memo's team list shows why: `L015| The platform
-  team` follows a colon and scores 0.22. That is a low but nonzero "this continues the
-  sentence" signal, and it would clear the 0.2 cutoff and merge the list into the
-  sentence
-  introducing it. No single threshold works for both cases; once code checks the
-  punctuation first, the two bands separate.
+  team` follows a colon and scores 0.22, which would clear the 0.2 cutoff and merge the
+  list into the sentence introducing it. No single threshold works for both cases; once
+  code checks the punctuation first, the two bands separate.
 
 ## Why the question is "mid-sentence" and not "same paragraph"
 
 The first version of this pipeline asked the obvious question: "are these two lines part
-of the same paragraph?" It failed in a specific way. A run of short lines under a
-heading (a list typed without bullets) *is* a paragraph in the loose sense: the lines sit
-together and share a topic. Asked about paragraphs, the model says yes to every pair, and
-the stitch pass merges the whole list into one long block.
-
-Same document, same request shape, only the wording changed:
+of the same paragraph?" A run of short lines under a heading (a list typed without
+bullets) *is* a paragraph in the loose sense: the lines sit together and share a topic.
+Asked about paragraphs, the model says yes to every pair, and the stitch pass merges the
+whole list into one long block.
 
 ```python theme={null}
 def naive_join_question(i: int) -> Noul:
@@ -1786,11 +1757,10 @@ blocks after merge: 17 (mid-sentence) vs 12 (same paragraph)
 ```
 
 With the paragraph wording, every unmarked list item scores above 0.75 and both lists
-collapse. The memo merges into a few run-on blocks. "Same paragraph" asks the model to
-judge whether the topic carries over, and between list items it does. "Picks up
-mid-sentence" asks about the text itself. When a judgment call feeds a threshold, the
-question should name the narrowest fact that decides it. Here the wording is the
-difference between 17 blocks and 12.
+collapse. "Same paragraph" asks the model to judge whether the topic carries over, and
+between list items it does. "Picks up mid-sentence" asks about the text itself. When a
+judgment call feeds a threshold, the question should name the narrowest fact that
+decides it. Here the wording is the difference between 17 blocks and 12.
 
 ## The lowest-confidence block
 
@@ -1807,10 +1777,10 @@ print(", ".join(f"{k} {v:.2f}" for k, v in
 confidence 0.43: paragraph 0.53, list_item 0.24, callout 0.19
 ```
 
-The sentence introducing the team list is genuinely ambiguous - it names what follows
+The sentence introducing the team list is ambiguous: it names what follows
 (heading-like), is a complete sentence (paragraph-like), and sits where a callout would
 go. The probabilities spread accordingly (paragraph 0.53, list\_item 0.24, callout 0.19),
-and a UI can surface that - for example, underline for review any block whose type
+and a UI can surface that, for example by underlining for review any block whose type
 confidence (the probability behind the winning choice) is under 0.55.
 
 
@@ -3080,7 +3050,7 @@ the five held-out heatmap columns:
   5. 97 points: A thoroughly elegant, serious and yet immensely enjoyable wine that stays lively many days after ope...
 ```
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=9a9c9e88ad39b5cc6ae00db22d38b9d5)
+![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.1.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=7f69da1be7be2080165147f122d19b0f)
 
 The table from the top of the page, computed. All five arms are scored once on the same 800
 held-out rows, and the first three skip feature discovery. One predicts the mean of the dev
@@ -3286,7 +3256,7 @@ display(
 )
 ```
 
-[Open the note + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAgvgMIAWAhnAA6UDmSC+KVK+AlgM74BuCAJwCe+ODCjl8Adw5MAdPjTlmXFAPEoYA5pSRgWy-AI4SmXHpW34AVjFVGO9cuwBmEAfkr43EfTKYANPhc5BD+9A40OlAcYBwoQkEuADaUvO48EC74NMnwFnqeNMZQEChcQbr6AEaUqUgxSBGsCFzMxRxwliIu6vE8Mqye+GDIbUGltMlYwWoaWsyslOwolADWrZxI+EIIlKpBXZrGCZ6FXiiOzkW5Kmuy3rLc5HIgQSDFELTlGNh4hMAADogSa3TDxITAghAkAJKJQ-DArilbTAoLAqAnQQcSgIgDawIAcmUcto2qgtgZuPgkGUdOw6sk0YiQAAhSwIZIiYqtZDsAC0oj5HAgTH0oqgCCCDzo5lk9GZwIACmS+Z4GaJfIJlsxpvwmW8WSreRTVAJRfQufhBS0aXSRlJOclMtt4oqQAARL6yXQCgzMWkoZjU1ICeickSUaoQGArcjcYEAXXRIFkZo0IqQXARwIAEmFZuamlbIJtbYHmAhaFQuBwAF6LQz+BAAch4oOm4ISQVSu20+hSaQyQXcohgyUutxG3EuDQZ5q6XAA9IP0gIBu57k0WBBwy0BAB+YEAXxTvRg8QA+rIg1mIQiYXCEDmQMj3M-DRiscZcf8CSBiXYHlyXYB5WGpCt1U8ZIDRTdltCtYC1UFRBUEzBBxQaKVKVlWsmndY0QKgrw4C1AQdXwPVOQI1VTTUC0rRtQxILAR0YJdTgUHdL04B9CkmIDe0Q0scMrSjGM4wTEBkxZNM5igS5RWzf48wLM0GMjQpeA4bSwBLCAy2Y+1RmRYxqmYc94nwCRLEoBTBHwAAKBA5HoOQgmMKIzAqYIohiFwTG8Pp2BMzEOBoFBhwcUxWkybJLNcVI1wASiPEBTxZVYkCQWRL3TBSFgfYEnxfN9UU-EFvxxfEiRJJCKTA+MeEg5ZoNgll4IjUkTT9VDFLFfAJWwmV9jwhUKsItVWpIsiKKo9rlVo9h1OLEQBLtIMHSdDi3Qqni+L9cshJ4UNRMjaNYypZSZOBOT1AUzNlIIVSpELDSRgMngjs2uJkTsL7dBy7Z8uOZhRwgfhyJgwt5ihx4BDgbyl1qKA1mjJg0oy4E7NiCFr1QMZ73+R8hHhFTXxRD8UzCoMfxqgC6qWylwOa+1ppg91OsQpmUOFUUMMGrDpW2XD5RonriM1UZyM2+bxaIlbLTW-0NuYVjtsFzjuO9JBfWtFXIOEsMuvEy6WaTFM7ozJSX3zV7Ff0wzBJ+7hYHMTwYjibtrOMLgaG8kcPFWAQUG8zGUwgdZ8dvWsEiK2FSY-Z6Kffd0aexX8CH-QDuqIxqILZhkOYqrnuR5oU0P5zDJWFnJRrFiamemqXtVlhB9XltUHeV761bY51Nd2lN9t1-iDeOyiRJNi7JOuy2s3k-qnpZO23tWj6ndViv+sG9YgikCBfE8eh5SCWoBAQoJIv2FBA74XQOBgyglz9kxnbLUmTEZHoF13tZw5ZAFHKIRLwAEcYB1CJtCYqidSqUzTlVTO+Bs6MwlvnVmm12YLTZBybmEteaVwGkNWuot8KNwls3Ui0s5rt2ouQhW9F17rRYv3HaXE9o6z1swiep1p4SSuhbWSC97pL1tmpRhSsN5fSMptYolBuCNmYOAyBpwsgqyAc8TibRkguCCIGGwdhQLlEosgegQxnKuXcvgFsyR5SCB4OZSgsYOAuHHFyFsQQWyWliK0Dx1jShYVQDLAWGiQh+JsRaDyCAgEhKeGE5KfB7F2HwCfbS25bShMkLSDaUZpg5AgLHHSixtDLD6gA4EtR6iSkvFQBGopITExgWTZOZUqYsnTnTP8tUgJM3QVvLBnNcFl3wdvdC1dhoi3rmQlMk0KSUNmm3Du9Cu4SMYuPH6rDB7sOHpwsevdOAnSnmJGeAjpLzxBo9MR9tVkiFLNI9+pJ5FtBVs2Ns+BKm6BrvgWppEkCJEGh4G8CB6Ay0zINbI-RrJfBoPzVAXBykgAYPKS8MLbyXDqPHEq5NWkIPiBnemOd6qgW2CzfpRdsGl1zshUZVdBZfJGnKaZRom4aioa3XUtDsGzOWjc-W+z1bsS2drXio9DoyODIc42xz+HmzOUIi5Ntyar27lI9ZKgYD0HDPYUlzZvn7GPvKfJaKcTJABdIR+prOifH4EuUY+oIA0G8Fofc5qhiXEQMzQwkon6HhPCmGFhT+B5RgFEAQqRLhBvqPQCB4ZMWwOxfAiqHTqpdIZj0tBJKmpkraoMhCwyiIEP6gLYhOEpnjRmSy4YbLgkmKWRWiWKruEbI1qKLWHCRVcLVQcyeUrzoyqaoI26wjrZZiuWvSRdyu12HVaG8NRSzXxicIhAp8R53tzqBAiNupdDRoYMwCxblPH0HcOGGMXBwnUEoHWeU4SQV7GWuISU5hwltGoNMZ9njHHONcckFsCTIqPIUS82QYNIaMgRUwegywimXhpl-ZIl4o0xqTvgEmzSWQ4qTYgglqC86ZoLpg8luaupEv1n1MZdKJl10ZeW5lFDWULI5XWujDCiySKbX3FtrptkshHp2-ZRszqeBObKm6qZh0PUVcnZVvLJ29zeRDbU0NIpMGCBqrV7BwxIAvKp36lAaAwpvH1M1XhIZxAUgYVqtpdUuEZDwEI7h2AHqsS2R06xWgoHCXp1Qghwn6J-VaAJaTGj0D-ZUTIBmCkCwA14MaeTeLJH0FANI96aUDQZWNV18Zti6EGvuGQzyA2rv4EYduHAEBSARWAYwSA1hRkfnjPYeFYpxvQ0iRN1NsOpsJb0-DGD6Q5pLkMqlY9yO0pLRlhu9aiLzOoYsuh02VlsbWfyzZrah68d2WKh5gm+FmwHXKodCrR1KvEct25n0u29GoIo81qn9VNaEPyarsgtz0CCLWKY2EYANGhbY5LQYwB3xKWAEQAGXu1btK9QYoRLquJDsoDwdrOQOrKX6lk0ZQeXhKOQbyrWUPtdTlhvFnSs7dJG8Sq62bGTEbwQWtLxahalpo53OZDG5tMYWyxpb70ONbUFetnjwI+N7PFd23h0r9tSTE1bSTJ3pNnfenJsXoUzK3deQ43w-zHRXFvtFXHsU74BMlEE6DrbnOeIC-yTH5WwDhJx15sYrZPHG75MEu3qV0dIkdAgUOsVEOcvx3AonnWScprJ2minnqCMDZp0NvNUfC0UYm5Mlnyy2dVsY7Wrni0G28r5wKgegvhUHT5WL3bkvZ6DvE8d5eL1x2O3uVvVXHBzLBB93792o4uAau6NZWpdlaaeuYM2BFQZsALEvC3iKGQg8JpD+0rrEeesZqpy1Ij8eSPlzG0Qpnk2mW55m+z9l2euVM0bV2wvbCS+irLztyVQnTZV8OzXxelzTvXPO6q-lrQwpt9WA9HkuPqDGaqRLGOQC4AgJyE5C5IetYlwKRGUOQOEvqPwAkC+o-GsEIOEpiHsHANgZ4jClINLNgZ7ulCmHsAjkIHlEOMIJeBWMvGhgTinOVKHrTOHsguTqRn0uvoNnBMNqRknuNnvqnmNKzgyMfjWnLOnjyl-gXmttxjfvxuXg-nts-jLhJqIh-g3hdpvCxL-mrvgJQawP8lwLQf8qOLSEgPyAlP3rZPZB4D3hIJ4CdPeojlfBACjKUEED9tLNUOoCEIcCBlDHfIjtUKrPCl7iAIOFIJeO4FPtEggApJeDvhhHPsnLSOOO6LLlocnF6HofaDvsMDEWaqMJARZo1CPiBh9uIJIPquZIav2OIBhEkD9lgYcLGC0XquuOQB9jGAIHfEgYIAVmDC4C4PyDQLGLOPQGlGwfio0rCOoMwUoA8qoDqNItSKOFANMJYFaFarYpsBtsCLZs6MsWLqkpsNkrIOZmbtsGorKseFjK+PKNMJeGkggEIJYGAHEQICimSJcOGHlI4LrAaNAgnG1iAJkdgjke-nkZdvsrWIwHUL5EkSarnACWDB4FEHEHeo2OaBqpIEUWorFn5C4oFO8Z8QIEDkYWsZtNoJMasP1D2J0HivoJ8GACOiOIlnwCBj5LZmAQMCBl0BsAMWaoGLkswORCcEIEuHZNsfInALMYvmHkgo+EsS+CsVvLSYZJsR4NsZQXsVMOVjwEcdEXUG0BqecUUqzFsDcTvPcQdo8SmLwJYOVqsAhtUNMHoAkasI-OkSyFCdkZobCZtgUZtH7KiS4GDoYCCvpswC6cYL7iIKOJ6cgGyYICbqsFqpSKML6ckEqV+CqZiuqeTJqZBNqRsZkHqTsWGiIPscaW2meOaWcQ8hcTadcV-PadkA8U8UQYILBkNKbv1Ihjushv6YTqwcqewUgigumnhmvoXHwR1AIdvnzLvvSqIVNtzhnjNBzqfuIToXfs3goY2Zth2qLvfj2o-iJgdhobXmOiqsrg8tOpPE0MhuCiMITN7H2aKa7kOZmHfECneKcBbtYqMFmM7tYuQBqpBS2H+WoDqHbp4mme+uep4m0FWC8SIChbFOEtUI4H+juJ+aZK3uriBgpmBtDFaoPgiquPEb9LOA9PwHjgsVii0h1lOfMcvrhmqDwYuXHvwQnoIQzuMiQmWgebNiftIYtnRHIZfieaaSLttlvBXn2lLnPPKm-lJivAWD9nYBAskEEFgGUCYHfBGf5IFNSLaIplDKanRQILKQuKZtAFGOOH3tOvoHxZtKBUQF0OaGfGUMIJcD5LGTQPGEGB9pQGMUWEEKijCloMYAkqCByPoDFlvHmoaq2pML8kZZDEIGAJQD-BeCgEuJHGsMRWFDPuuPrDWgAAycDZDCgJ5abYhQBBAAAsDVKs6QyW1QblwgWinIEK9magHAb2Zw+gelPeyJrA+JTgEkCKLVJQl4CUI5b5e645kJMY0JwZ2lwu8JYuCeXQsgVoraS1plUKcAvyuQdkFkwUFVnkkU1VjktiGw-eggwgZ8H1-yuQ8AlQBm0wCSMO-CugtyM4sgTFmJ+AU1Bldh5EDhERBZlURZrFJZycZZ9oFZVOWxNZhpuQDZppJxFppZVp-A7ZegnZYKDpUkTp7SVQtul4lglwAUMQdQK1SU7gm1gZFUMJe1noB1DyLebeyWFNXRTNZJrNhlwQQgqAyglwbVZqXAvglA-Ir1FkHNz1sBViAAyh0BFdZLoOqlBqKbZjAJgEFMVRMFUEIAkj3pqh5oal4KkKjB+brMcMiaOE4i0GhFAHDYPoIEjcmqqcVGjSyBjeGYyTqVWdZLjXWUaYcULmaacZaa2daXaLaZTa2tTcpLTcCAEfLYzeAcKFALBgPg4ZtZhnMaTpwZHtwX1tTsXIJVviMqkaJczmITIZLNWjQsxofjzkwvJVxqefteecpYbKoZXqcneVpfLjpZ-krgLVvNdh6vnRda4rVv8ufH8l8YMYlvyAfL4EuK5o-Hbn7Qjfql4AxRDVupUEXT7TySHDAKMcBqpo5DLIjpZjlhYN4KkK9EsMSnMCZKUb7vDeUMlFEsbXpLFB+VIHLR-f-WfUPtSOaRAD7KujEA2PoJyG0LA4IMGJmu-AipyMCp8ggCtbyW0GtburGqxfGuxQvoWdOThnObxfXbwQJcuUJauYQozhudRh3TJRIZnnudJdubIbzoPQLooe2qXnzqpcJv2tLucjPXXiADJl-k+VvC+Uhnuh+cQ1BkzjEuYNhNoDEn1FEmaPIqgLFRALYoEWajyDELWOblrchdMAY55p4qYyBkhdYjCnY8oL4y2P8eRDeBgckFgd1E45mIRQBjZKA9iA2C-QgAiiKkpnjI49wJmFQ2ObQxCZXZxdXbOVHl5bHo3Zw83fTq3ZRmJWnoI13VnqI33bJRI6tkPYpVtkeePVeWoVPcoyIiGfXo+YvZBFWGFfsPWMwGk1DBCB9iphQ3fE7SBpYCuNAB5bFdoE4yoE7h+SDAsDAZYp4tM3UM9sYMxS+ghbrpRORZ4rYkwJYOEgCc4FaG4G7BhGFtOKoNfUFF8EYUzeQMmR4FvZSUlmXbTAioE+GN8corYgFBhH8U8ihkwS+Nzf0yOqo-kU3pBHQBwFiaE88g6VUapjDmcEYZgPjTEOwDCy4kIIaslvwK1KBS2H1Z41BWELQgII87Dk4OErsJ5v+mwCwGM-YmarYrxMYrlkMQICMfkoGjoMY+YGjsTkw6jU-SnVqZHZWWavqbsXHfjQne6ETS2VvG2enR2QDlTd2Y6U8doNpBVv2TZYyG8YIOZigHlGoKYqwBXRxYw1xTXSvvOaSuw+U8CJSsJdUynvw1uc00I7uVJYHp3Rfm01I8PfzaPV0zwkcmpeoWi3Lqo+owvWGZWOS2SAUGSxS-EBMKKAFOBewI69DGZiYAyDeUS62DwNSyBa49YlgJKBFJmHUBeqSJ0MW9QFOFkBc-zPyKUNybuuRATLBfzB+baOZKoIRe-Q5EsMDPsbcgYa3oauSErQNcsKNSy5sMDZdLFvAH5SILYGAPQEq08TDWzfEevVgQkSRVVW8XUMgJKN6ww8jSq9xSww1Gw-xSGzglwy3Wubw1RqQrRjGw0yIwm-U0myrgpYnUpRm5tPI0-n05pQM3zQAOrKAENaNtA8BPtS2vsWFAuWDb1Un8hPgPXhRPU8CgXAs73fIZAID8hrGpmtG1ZBCsjaAoAoDgNcfz3ryTpWTL2NjUjxP+0eAX2yvFbYRX1vnPCGqXN1tWuttGDLDwNUBf3FG-2K1fC+7ZbNCCuQAdpBgFD6C5mgORHkEY6BVCDBU-F5Skls3NjCnIqIkglc3bVBn3nkyYtdpFEkmonIm+frBadJG44cDgJQ0BJexgqjTQA4iA5ZbfJXD4AdumG1EuHvJufBU9gUS1Jk167nwITeCCB9S3FGXYBpkCzTCbBIpNB3yUeJLGOmodcRCgWTENDKCihVsNAicIBkFV0cFqlqsk2rGavY3VkGl6sHEmmJ1GvquQSmtXEU0WtZ1Ws01PE9v+7xGdAfJYRAlImgmoZNLMGov4fosvjhcInqYebJPdo2WQCBDfJ7C8BPZGejDUmjg-YXeSieXAzmdGHTDGagUndyglZlVLjXwHDQSlChCmrKDLBXyAwPA2XJCRzUnbEQC0vbhcAd4BxQVWRCAxjD7eC3XhI3jqAmSPNQG0wcTE+k+ha21FcINeCgiwp1uQy4PJBwA8DrtBxGdbBBixl2c5fWYgaB1L63eLFzfo1i5Y2ko40recDx3reGvNlbf2g7eoPmu3FLvWspjT5bo+nyIIbgWxwNJglsUYY+sAd+vFN10LmEZLmhsrlQc8Nt377wcgDcqIfxu92h-n756SNF7SM7LptyMT3Zt4dHYqNjpdB-KfOMV67mUS2eBOUrga0vyLxaDInW8ZDf5i50Au0PCORO2RKTx9gCwA51C7i7Okks1cAJL6oOoBrRaoO2D2CLujgoAHwpLICtXMdVU+TaCQOoUwNwMbuGC0xi8F-tArpbpikkNboIpwYl18jQW1j7BwADlIA1s-tIt3fB6Tm+tFNcG9be9lMUr+9VPQdB+bkH5R-0bCMR857f+sZWmaHdphh06ZJ8emk9UTLm1yJz0xwzhTRpBBBzFdcsYzNgBdQCQX8KQWAUNOwDTLcdjMhLO7G20GiUVTUBXJyIrE-LylQUJWORAoiCCjBomJWRtgpB74RZ++qVVBl4EHB65JiCea3vOlHCQtHaUAUoD9hQAIozCa4agj4G+LNg8o2IM9CxWd50NXe-7IOswxKagcfeHDP3pBzf6B8am7daNgAKmiSEe6--MPqh0FroclCF5FSsnwUbqVq8vNWekM1kwjN7QsnD7vqjaDGAz0SQQ+GAH3qOYAWZlUvrZREAtgrUjmX0C2AOZwFqsphCIV0T6qPxXAo-FfhKTPgXgJwRFXRiS1jLaRVg3ffTi6k3bIDgg+xbCMlmmqmpawBmAOlEQrBxFSBl4FTGQyKwRooEKvF3hOTaR38OCnvR-kGzA4v99B1KCNiISjZf8w+klKQshzEaHl5CIAuwWPUza9onBObR7nmxfDa1fc0xFwj4hRIWVfaFfdcEEFCCvQuh86KyoYHramoqwJlUUDNUXZVBpA7gUFhADfgW8HkqwDYMZy8CwNbG+6KQJYDgCVAwAvEGrBEB0bhgDAc1WHOwF4BcAFAPAvRAgFjAhFRWMADYGCIRg5ByA5EMaGQSeJ7MoYCg-wXYGUG9DVB-Q3FIB39Y8UQOT-YiOBzDbcMi0H-GYSHzmHmD5sZ+PPHJWTZx9U2mHcARLhT5QCdhMA9wRo08GbQ3Ac-fEoUHJHIliGfUNjllCBiVBPYszUQMERUQ21iutoMok8E64fR02CnBGoQObAeQDOy-XLB62gzbhbCo4ToIgDiAURbg+wfZvqltDHURY3w1AAihp7gEf07QwmKKCu6Bc8mzBApoMJnIP9V8ownQeyNf6TD3+Rg4PhJX5Gc5BRgAgeiKOvwyNb8EorNlsNT6v4CObgtRorik4Ki1Yu7f-E2BAzFcwxFop5igCtAHxfCOPEOHfG1GWUcs0gQqpZlcDkREAWrGOOl2-oBddmig5JKimFDIkJen9KoVME0jQ0kAIOHoL-UkFaBbM1SHkKJwoZvEuACRCKOQD-a393e9-WuiMKzTBtxhlTTMYYMjZwdcxv-BYZHysEx9ixQqUscoUvKSjKx0otPjWPzb1iJ0jY0rKdUh4uBeBInb2KMH+w6gkgBPbEaOEeynNXshqOEVUVYAg1nQqDALpAm3CjArxczERAsDMqLiuA3kGqhRE6ouIu01IGzj6Gy7VARAn2KcCeNnDQMSWtiUTnkmwbYR6qrEhElcPbA1lPyV4kvjRKsBt8mgtYUYGajkh7BxQ2QfiRQwRQdBqkLpPIGQzIk3dkW5MB7hBKe5hdYJ2A-7PECtCmM8GWEIdl8kMlP0q2qPFMggEdopIghyMSgA5z2B2VMhUzfmEICV4o1neodYEOHRUCLctey3XVrr31b68Kom3ebiazTq7c7SlrU5I8WPCGhEUNADgAADV7EmYf4CAF4AABGQqdoiSKA4AAslqGdB-gQA1gduPyGqlyBqpAAJmkjHggAA)
+[Open the note + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAgvgMIAWAhnAA6UDmSC+KVK+AlgM74BuCAJwCe+ODCjl8Adw5MAdPjTlmXFAPEoYA5pSRgWy-AI4SmXHpW34AVjFVGO9cuwBmEAfkr43EfTKYANPhc5BD+9A40OlAcYBwoQkEuADaUvO48EC74NMnwFnqeNMZQEChcQbr6AEaUqUgxSBGsCFzMxRxwliIu6vE8Mqye+GDIbUGltMlYwWoaWsyslOwolADWrZxI+EIIlKpBXZrGCZ6FXiiOzkW5Kmuy3rLc5HIgQSDFELTlGNh4hMAADogSa3TDxITAghAkAJKJQ-DArilbTAoLA2SqdRQS4QJBcBHAgASYVmAjx9GSIkgmxa+CQZWYCFoVC4HAAXotDP4EAByHig6bghJBVK7bT6FJpDJBdyiGDJS63EbcS4NdiWL77AD0UvSAgG7nuTRYEHoCBaAgA-GjESCToIOJQEQBtYEAOTKOW0bVQWwM3HpjM8GuSyVtwIAQpYEFTva1kOwALSiRMcPEIfR4qAIIIPOjmWT0CMgAAKPsTIeGcF8gmWzGm-HDbzt5YTfqxFLjKbpDJQzDAUljyUy23iJYAIl9ZLpkwZmH3mIHUgJzXHKNUIDAVuRuMCALoAX3RIF6MHiAH1ZP38RCETC4QhCSBke4ny2Mfi5jj0-jnySpDJLsRCqPgOF4WI4xpHhe2DUZkWMapmDPeJ8AkSxKBxQR8AACgQOR6DkIJjCiMwKmCKIYhcExvD6dh4KgEiUBlBxTFaTJshQ1xUn1ABKG0P3teJHWdf43RAT12GKdt2AeVhA0XKs6mbE9o20ONpN9OdEFQX9M3wbNc39As2SaEs2y0pTRFrAR63wRtY3MisOzUYD8B7QxFMHYdR04FBJ2nJBZ3c+cg37TgeBXNcQM3bcAwJEAjxPVYkCQWQLyxeZUX+B8hHhf4kRRd8T0xb9cT-AqQAAoCmigiBaU8uDuFgcwWF0NLtkynEFgMjwIH4WywzJLK6keAQ4DI7VaigNZNyYAST0Y4TjFEghxMk+NLLk3ceEU5ZPDDEs1NjERNMrFMdPK-TDLzbYTKLJyZKsmtRls8KHJU1tnPYTtapEDyFzgocw188dBKnOAZz9AGwqXSLLGizxYp3PdEuPO1MNiCEr1QMY7xy4FH2fV9spKr9sXKhKCGJUlfspal6pgxrwriZE7AsGI4hFNDjC4GgyNlDxVgEFAyIWu0lv7FbXQ9L0zr9baFODfblKOmMNO+kLLr0rMGiM-N9lM4tBIsysVes167I+x7LLp7tQq84GRwMsd-PBwLgphxTlwRk6ka3FGEqSu0IHWHGbzZBJ70JvL32pl8ipLUqKd-Km7Wqu2GYawHwu1vEDPWIIpAgXxPHoIsglqAR1KCZj9hQQW+F0Dgw0obU+ZMHPaTykxlJ6ck4ALtZxeBSWRJliS5c1xXduV0NPqjdXTs1i60wzXWc1unJDYek3NfNl663ehAmxtytM5C2CWad0G3ZPCGobnK+4fs3312R+KD3R4FqLSkILwAI4wDqPjaEMd8rxxJsVO0ycNCp3-LTVyf0RiMwdsGYolBuBcmYEAkBpwsihV-s8PybRkguCCH2GwdhZLlHssgegQw8IESIvgXkyQiyCB4EhSg24OAuAVFSXkQReSUliK0IRrDSh61QG9fSRCQgSLYRSYiCBf5yKeAo3ifBOF2HwOXCCJo6TyMkAyMKG5pg5AgJHcCixtDLEuiPISUsnQTw2vLWS2x5Kz3CirQ6gljoayeqvXS68Xab2MjvMye8noHxslbE+jlom2yQfTS+zMBw3xdn5AKkMgrQzQeFH2q4-YbgDp-NGJ5aj1BzBeKg408SQgJrCWOxNE6CVgT+PEacaaAQvtBAp7RbJYNCjyfk+Aqm6HCXUmsSBEi9S2P2egb1fwGWyP0NCXwaAZlQFwRxY9pZiVllJaenidqwyUn41SS9NrnVTCEpgG99Z3UicbE8ps-SxMtsfU+STz4pPts-EYmT85g3vh7fJgKimI1KXFLxX8TwMCLBeLZN5Lh1Gjs0iBdooFJ3JnArpCDen-KzkzLuwQYD0HNPYLx0hZDMFZGXIsljUVOmSPMmQQ1OifH4NqUYTYIA0G8FoS0tKhiXEQP6OkOZW7WhLPslxhzJ7HKejPc5viF4gACcvIJdyrqPK3vdKJbz94agtkfBsCSNXvJ+sStJZLvIgyyaCu0D88lP3SRFV+xT35lLhRUu0WzrH8AyjAKIAhUiXGDfUegwDzQYqJpVHF7S8WdIqvHDOtr+mArsCoUNggI02PmbuJwGkrHxELSfOowDI0Nl0DGhgzAmGEWEfQdw5otxcEUdQSg7IiyKKWXsH64gczmEUW0ag0xR3CO4bw-hyReRaOYt6TBbQRl0oMgNZSeyHQHLWkcm5CtTlKx8fPNW6ltWWWCXqsJTzt6FiNV9GJprD6yLoT841T0L5eyBj5J1d8XXgvdWSqFJSP5+uDsCJg9Blg2IvJLXuyQLzRtjXHfAuUsWFTfLirqlNCU1VSVm9JYz+p1iGsxJg5LKWtHYOaJA54KOs0oDQLZ15LrzK8ANOIOIDD7TpDybwykeAhHcOwJtLDeRDnWNRxRjHVCCEUZQudcYpEGMaPQBdlRMjMasfpJdXgjYWMhskfQUA0iDt1TrCJ96IiDF3NsXQBlLQyFXYG8t-AjAnw4AgKQ27loKr3Uqg9Hj4pqtPf4657itZrweTeg1Lyz4fOfXE75iSP3JPJMg7919f0gv-cCV1nsBmeqiqB31O14V2jAMYJAawNwt2xnsUy7F40tMTW0smOH4GVQzRlgjqDAW9GoNg2lFH9j4Ea0IJMVXZDGnoEENkUwjIwAaJs9hpn+xgEbnYsAIgl3TZq0GQCtmyn8JFsoDwfLYwCocXKnd-n8DrSniqo93idBhaueeoLUX7nXT1nF6zCWNRJa+Ra99j70tuSyxknLrscmPzteckDPrYXlf9cCTcO2LwlHIGRFrGGE5YeTZ1gl3XEG9bqtnc5DFELDdGVw3wcyhxXAbqxHH7FG5SJzDImD+cxPCKU0mDHXmwCKOxzJsYfJhGc8TLIkX-Fbt+dWg9-dkXVV7Xe3aLVX2r2WZulZo2gPnrJdB6l8Hfzyf-SKw652uW4duoR97eG3qYpldRhBl8Q4LRkSQ5avHqHMOkxgSm3DpOiUW5QZTryrQlpIWCJ70W7F5lcApd0NCdTMJS0ldyOlvnnFK8e8qraL3QsHQ1VryLOvQl64NgD35iXqzG7fab4E1r8MAo9db2+dvCuQqd9CsDqP3f9mwAsC81OOA0GYgaP3rTCcdbKl19NZO3KEftdHmnbUfwWOH8cZgcoazbnIC4BAsZcL4WbawrgNYyjkEUU2fgCQx0tzWEIRRjE9hwFf8IrZUhXqv-l4JPKvniriciFurqXmen7BXhZlXn9vrrvGlmbMDuak3laprF+lbsCrDu7Lkj3h6kji7ijm7t-CAHsGdkIBlNKMIBeIuGnOhv7gToHp+MTmmunMvsgqvlTuvhwLHmQawHMlwFQXMnKAyEgEmFxGnhhFhB4MnhIJ4JFIOudrXBANNKUEEMtq9NUOoCEIcHSoNI3OdtULDLsgrnnq4k9kXmAXPBAeFp9tAXnDFtXs8rXogfXl4C+vEmDi3ugbalDkCjDtkjgfDn4QQf7EQUHCQVKFIBeO4GPqoggDiBeA4ZmDPpVAyAqNhgviTvHFOJHsGA4cMFEfMqMMftxttMwDyPNuIJIGNkhEyhKOIJmEkMti-ocNuE0fgHUjocEFuAII3DfoIM5nvi4C4EmDQNuGqPQLnuPE0nMAwUoGSqoPWEzIGHKFANMJYHGFyuwpsM6j-HUG0M+AsecvopsKYrIFxjztsAQn6oeCQQZggBeAYggEIJYGADEQIMij6JcOaBlI4EFM2GApigwekRqh0iHjkf1h6myIwKNHzAkayptD8Xvh4FEHEAOlyOSBSpIAUQQvppRHwjRM8a8QIJtuNkseFNoOMasOVKKJ0MJPoJ8GAPikgLKMZmBGYEkNQB2iNsyFJn0fMn2OYswLZCcEINqJhOsZgnANMbumhoTOoPMdCTSQ1KsR4OsWQVsVMF5jwHsaeAcUqWSqcbPFsJceVKsuUncSeLwJYF5qsIhtUNMHoHEasC3KkfHKCZkSnNkQBnkeFPCVRLtoYEskxswDacYBaCIHKI6cgIyYIFzqsFSv6KMK6ckLKfdg+IqUccqcsSFmsRseGiINsTqYESeC4AadmUaTYiaRcb3OaTcajlaQGmEIIHBoZNzuVEhnWihu6diu1kHiwd0lVOwX1n6cwDmq-E0ChhaaMLeNzD-oIBMO2WoFcY3NeHjKcHzqwrOW0IouQBSpLpIsubLoorGZOp2sIm0MyEWHGGeexIotUI4AuqaCMNwbHnxnSsRpupyrQBnumcAYFqrsXuAarLYVASvDAY4XATXgbnXkDg3iDqgYbhgYCp3n+t3hCvgX3qVuERVj-DxLEazGqD+PwLjrMa1pAv2cwVkawT0vgMtnYMAskEEFgGUCYI3AGYSVAJ6nSCRoNGynqO4BKQPBxtABuAqKnjmvoGrsGFuUQF0OSJXGUMIJcORCGTQLuP2PNpQCMRlkECilsloMYFoqCDGPoHpucuekyvnJMDMixQNEIGAJQP3OeCgNqKHGsK+QhBPlPjwCmK+gAAycDZBpifa0aOhQBBAAAswVoU6Qpm1QElwgJCsYayQmagHAs2Zw+gDFyeo0rAWJTgAc-55hhelYMlJ6NhH24FOqyR+q8BD63hT6CFKB1scFbeluqFWBpZAGuBmFwG2FyOgceFIA4VJQF4XEXZU5DavZkGW4YJwei+vppKllfsXQsgcY+cY17FGycAMyuQmEyEdEXlS0k+GQuE7CGwaeggwglcN1cyuQ8AlQzG0wWix2cUug1IqosgJFKJ9FdGeVbK6Etk0hxhJVsxWZlUxxikFJqpmQ6pBZWpuQJZep5ZI4hpJx1ZQYppdZKyDZqMTZo8VQwuF4lglw1EMQdQE1BFAgs1IAnpRONFQ5uRK1Ue3lsepmegwulQIsXFrK82QgqAyglwkVSevglASYl1yENNPAW5AAyh0FpWhLoLmtBgKeWTAJgLRK5RMFUEIFosnlRqoEyl4KkDNBaUFMcKNHKDwi0LpNxcDRnoIODUCXMZWecrDSsfDWhIjUWdqbsXlvqeje7YpMadjbWetnjdkLcSQdoSLaTYfmmFAHBuntIXTUmvPt6bRcOWHivlCWSoNhKnHTtfwjVnMlXLMm8f0cZkmMXL4NqBJi3CLpISDZnmNl4ERT9TWpUInfbWBCLDAMMWuhRjhG9OdjxvZhYN4KkIBEsB4nMPBMURaK3VwLxComrWAOeRaVIMLePXPS3U7R4IGAcRADzOWjEJyPoLGG0DvYIEuKcl3C7croBaATSiBZcprhFhBXVbFg1a8mbm4Waq+m1a4TauHn4WhbbkEfbiEYNYQcNWjqQdMNBnrBNXSuYI8chjNeRfjhnQOUzXhn0vnechOVg+aBabGAgCg+EmohgyomopdColiJgqgPpRAOwt0XKNJDEGyLzufuJpQygygKLqonSiLt-uw88JmCI8w9eE-skC-vGDw7+M+Uuo7dIRyLTjnqYTMQFm4q-Wcu-WXl-bVdFr9uEjBQgQA-Be4Y3iA9Yx1Q7j+o6lA2Cn1UBojnA2EQg+7rkqRtjNw9wL+FNfWnGjgwwXg9RVnUOT1nnWOeNiyPsJo6IHoXggIeRug+RDbfZHSpYLqNAFJfpdoDwyoBLhaThj1FubyH44NFNsYKRWOiuczjk0wIouwkwJYIoj8c4HGG4C1NI2vSqMbeqLRF8ONmTeQFGR4BXSSSZqnVLE-QXl9hVW9lVZ-XYd-WY-VZY41WWCai1cA77u1ShR3t1XqQVv1Z416v3q7hESeMoGAOaO8bguwtRJmF8SuqhvQc+AzZnSyczcQ4pHQBwKiUMqug2RUeurZmcONpgMjTEOwC83wkIEyqZvwPtFU4lcI8IqEEOANF06ENiYorsMI4umwCwMyGGt7ewpDLQg5gMQIEMZYkGjoBg+YDdoAXdkrpmYPSHcGJ7XmQjZqX7cjQHSWGjYcVDR6mHecVzZHfnPjQlITSANoBBN5q2XxcpE8YIFxigBlGoPQqwOnVRSAOCUtXRUQ-E1gJpAULC-C-EEuUgNRLOewJq0NJxiYBqAPpC60zwEi5ufw8IlgDmJPr+HUF2t6J0EyJgNQMqFkI0xmEmKUOyfWrZLjIebyBmBaXSEhKoM+WPdhEsJ1NsdSG+Uyr6FwO4CBCgBlVi5sO9aasnntanrYI8xy4tFy6Vcs8BdYaBdVYEpepBeY7eoav-U1ZZJ8q1Uc6A44xA2c4HRcx447tczhT4yQblUxR8RNS0RQePmdZ8TaU6TmMa3Pvg9E8+AAOrKAP0kNtA8Abt1DNFl2NwzNvFJiPgnVMTnVbmvuklBChAGgIBJhLExlPtrBBCRjaA1uDO4uOP9KoSF1ciBjqNt1T2ubd1DOTHnghBMpNOuvR3Z4UYFtCxUCT2FEz1i2IDySGLkuQC4H9gFD6Apkr2LMgHPZWGVV9vrM1WDs-1OF3qwUzuTuHNeF7Ofq+GYEBHnOAZOOFJeMwpruVLKVCCqVbucVU08hdCzZ-GwmAnynAk-PzVen-PPgs1FYFH4kImjSafrC4cJE44cBAJ-VSJcwrKGzQBOgbaiqSDFqSD+sCHVHyHjLKeqWih2R1L8AHDjKWDqTeCCCXSrmws3ijD6DTCbCIpNCNwPtsqRekKMomhbnjENDKB4iOvv79gAEduK7xqQ3xzQ38sqle3zIambEis7G6mB0SsY2h1Y2ytmlR2WkkHBvsRbudATKoMwkAl02-NnsmeVRmeAqG1Uo7g+svx8WQCBCdF7C8CTakcpdZdIDjc5jSWdRfBMjTBsZbnDeFjuYeXah1xRd1ClChBsrKDLC1ztQPB8XJChxknrEQAosmhcDx4CysKaU7BbhZ7ISHWKLXjqDwRdMn5Sy+T-eA-qYG2Bf71eCgjbKusDS33JBwA8DEcT0LJUOyIDDxCSAfnzQ6Nyk8vdcNe5k0r5nCucD+0dfisVlStVmRfh1ytXHZuNkkF7s1oumYKIY7mgL6cJqUWntRNzdL6ARdCzKYdd3zYEkU2eAiW6g03txlRaCjSi-nWcFAuYSeUPA4Sm3KKvzij6TrZ1BmjlOa8mCr1BcCqBq6an22D2BZtygoDFx6LIARWfs+UsTaAb1b0EK30ip0hSxE-a-tBlo1qClUMwb8Cscv3sdv29sf2LwbOmM-bbPOGCcOPCeeHN5icQ6ZaScuPYFuPBFFahEKflLu7wbJ2Jj7lsj7BwBtlOtiJ6wntMGmuLU+l0ViByGm-BjbZBcOaUtsA7VSLOuVjWuCDsCxkZDMiVgQu8lfmkZsr+e4R0yvlSnLLuYYJYJBCjDKPuYes4haJjYe86bmWn1eBSgs7jGfai+FpygPPlwmiSktwqATPvo2z6GNc+xjAvrxy2a-0dmY7KvkgQOYV80C4ncBrXxtz19eqjfXvCuyGqt97iQhCaiXHeI8gMojoDtGRVdoUU+y8vEfoOUIaZpAWwYRDsPVZbBByBdgJIMQNroiZJmHFA3vxREC8guUImWcLyDPzMIr+t1YaN1AlCVxzwiobwP70MCrBQO4yBQSsFf7kNoWIZCCKsDd4k8i2s-YINsSMimZAaJg5jM7Tp73YlmQFDjqsy4758eOtyPjtBRL5WNx2iA2xohXsZeCXIaArqlJwXYydYGuA+BvgJPCLgYi35RDORkeLodwI0vb5m1loFmsx+IAOWhaEmLyExEFEBElr2N4Gh-2pIRIe5kDC8VYhCTNiniHypZtQIxcUkmnggCdwheZKVYBsDI5eAd67DRtFIEsBwBKgYASGNVgiBkNMSW4IqnFF4BcAFA7-ChAgG3D6F5keQDYP0PGg5ByAtkI2JVwlidtFUoAywjn04559NUJjaAUX1gEeDdmrecvilhQHV9Ukc7YIRhSXbBhm+A+YgieAqaDQyBxgCgc1nCaz5h+6Q7OrEw4JMDwobgCPliUKA-DRolDS6LLRSgdRKgnMCELoSYCDQIQD-FaiUSeCZcUE7jA+qDR36VEjAywPeqRxYB2IchEhOUJ0EQBxA7ItwfYD1DGx0h1qd0FocAJsEAVDh5VHticMgEuD8kbgixtcPgG3DkCInSvq3hOb2p52rw2Ti-BKx4DwMJBIQAHCPwKgLwEcYJpN3RRAjUhII0fmCJHIU5WacEN8lo1Gw8AtRy2ObCwGZxxhi4GhD7iLEbgoiaIDwboc5R4yuBbIiAJrvqPzjt0TBjAcphwJ4Aoo0wo0QwdSIWy5AQI2wZbNth6Az0QBFhQUQ4IuQiiB2rgmAfx1HaG47hJuB4ebkhzoCu80DPAgNXCHeNIh2KLQOWRqTSQa2mTJ4lwDiKT5yAQ-aBAr1TQxMLRJKIrJ9nziVsXAH-KDtzFGBrZ6wSQH7ssLlATY6mM2JlOMO85lIT6EYgEkylGC9j5sAgoyHKDaD-C7AZEEKK+hip8Im+PAOjjOC87VARASYixO2LVCJ5oW7CGthYmvpGQgqt4xbriwFAFlXyvY-XhTHZE-cmgbIUYPMlKh7Asw2Qd8ZkyzFlVD0uY9VJAQLFiiix7ggTp4IQGAMPC9w5ChJyCF18eq+WUIXeIbEt8NRJ4DoDUkPaD0dOU3Y0R6SM6M1z283SEdG3tYoA4w2gY-NoD1iRtwkLEswVYhZzRkEAJtPRMQKmiUAmOewASsoOYAzIXiT9Bnny39KNdBWPtNnsWTFaCQuuuk5gDK1PoR1BeirYEHcUPAtgQATGDgAADVOEv4f4CAF4AABGRyaQgSIbYAAsrWBHBiQQA1gE+EmG8lyBvJAAJjRhAA)
 
 
 # Simple memory system
@@ -4241,14 +4211,12 @@ nearly all the probability landed on one option and low when it spread across se
 one number separates the answers you can trust from the ones you can't.
 
 What to do with an untrusted answer depends on your labels. SIC labels form a hierarchy:
-industry groups roll up into broader divisions. That makes one response nearly free. When
-the model is unsure of the group, report the division it belongs to. The broad label
-follows from the narrow one, so there is no second call.
+industry groups roll up into broader divisions. When the model is unsure of the group,
+report the division it belongs to. The division follows from the group, so there is no
+second call.
 
 Across 60 filings, a confidence cutoff of 0.9 splits them in half. The confident half is
-right 90% of the time; the other half, 40%. Reported one level up, that 40% becomes 70%. We
-end with a `classify()` function that returns a label plus how specific it is, at one
-request per document.
+right 90% of the time; the other half, 40%. Reported one level up, that 40% becomes 70%.
 
 ```mermaid actions={true} theme={null}
 flowchart LR
@@ -4274,9 +4242,11 @@ flowchart LR
 pip install ipython matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached to `json_cache.json`, which ships
-with the cookbook, so re-rendering replays the published numbers without calling the API.
-Delete that file to re-run everything live.
+then set `TYPESAFE_API_KEY`. Download `filings.jsonl`, `sic_codes.tsv` and
+`json_cache.json` from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/classification_using_confidence) into the folder you run
+the script from. Every API call is cached in `json_cache.json`, so the published numbers
+replay without calling the API; leave that file out to run everything live.
 
 Numbers below came from `jev-1.12` on 2026-08-12.
 
@@ -4401,11 +4371,10 @@ section where a company describes what it does, which is the only part an indust
 about. They span 1993–2024 and run from 700 to 2,200 words. Each one carries the SIC code
 its filer chose, plus the accession number to look it up on EDGAR.
 
-Where that label comes from matters before any accuracy number. It is self-reported:
-whoever prepared the filing picked it once, and it goes stale when a company sells the
-business the code names and keeps the code. These 60 were filtered down to filings whose
-own text supports the code they carry, so the numbers here measure the recipe rather than
-the state of EDGAR's metadata.
+The label is self-reported: whoever prepared the filing picked it once, and it goes stale
+when a company sells the business the code names and keeps the code. These 60 were
+filtered down to filings whose own text supports the code they carry, so the numbers here
+measure the recipe rather than the state of EDGAR's metadata.
 
 ```python theme={null}
 FILINGS = [json.loads(line) for line in Path("filings.jsonl").read_text().splitlines()]
@@ -4428,8 +4397,8 @@ print(f"  filer's code: {example['sic']} {INDUSTRIES[example['sic']]}")
 
 ## Ask one Choice question, and read the confidence
 
-One `Choice` question whose options are the 75 groups. The whole taxonomy fits in one
-request: a Choice works reliably up to roughly 240 options, and 75 is well inside that.
+The whole taxonomy fits in one request: a Choice works reliably up to roughly 240 options,
+and 75 is well inside that.
 
 The answer comes back with `choice`, the winning group; `probabilities`, the weight on each
 of the 75; and `confidence`, which says how concentrated that spread was. The recipe reads
@@ -4468,9 +4437,8 @@ def ask(filing_id: str, text: str) -> dict:
 
 ## Return the group when sure, its division when not
 
-The four lines below are the whole recipe. At 0.9 confidence or above, the answer is
-reported as an industry group; below that, the same answer is reported as the division that
-group sits in.
+At 0.9 confidence or above, the answer is reported as an industry group; below that, the
+same answer is reported as the division that group sits in.
 
 Every filing still comes back with a usable label. One the model could not classify
 confidently comes back one level up instead of being dropped or sent on. If a division is
@@ -4526,13 +4494,10 @@ developer", Barricode was "organized to enter into the computer security softwar
 industry"), and the third had two segments and sold one of them weeks before filing. Those
 three come back as a division rather than a group.
 
-`classify()` is the whole recipe. Point `ask()` at your own documents and rewrite
-`describe()` for your own taxonomy, and the rest carries over.
-
 ## What the broader answer buys
 
-All 60 filings, scored against the code each filer chose, under both policies: name a group
-every time, or report the division whenever confidence lands under 0.9.
+We score all 60 filings against the code each filer chose, under both policies: name a
+group every time, or report the division whenever confidence lands under 0.9.
 
 ```python theme={null}
 def correct(filing: dict, result: dict) -> bool:
@@ -4572,10 +4537,8 @@ letting it answer coarsely when unsure  48/60 useful answers
 ```
 
 Where the model was sure, the group it named is right nine times in ten. Where it was not,
-naming a group was wrong more often than right, at 40%. Reporting those same answers as a
-division takes them to 70%.
-
-The chart puts the two policies side by side, split by whether the model was sure.
+the group is right only 40% of the time. Reporting those same answers as a division takes
+them to 70%.
 
 ```python expandable theme={null}
 labels = ["sure\n(group reported)", "unsure\n(division reported)"]
@@ -7163,25 +7126,16 @@ Extracts absolute and relative dates by asking TypeSafe for the parts named in a
 
 The function you build here, `extract_date(document, role)`, takes a document and a
 phrase naming the date you want, such as "the deadline to return the form", and hands
-back a `date` with a confidence. It flags a low-confidence read, and one whose parts do
-not add up to a date at all, including a date the document never states. The date can be
-spelled out ("August 14, 2027") or written relative to today ("tomorrow", "next
-Thursday").
+back a `date` with a confidence. It flags a low-confidence read, a read whose parts do not
+make a date, and a date the document never states. The date can be spelled out ("August
+14, 2027") or written relative to today ("tomorrow", "next Thursday").
 
 TypeSafe answers `Choice` questions about the date in one call: what kind of date it is,
 and
 which month, day, year, or weekday the text names. Code turns those answers into a `date`.
 The model reads what the text says and never does the calendar math.
 
-The cells below run that function over four short documents, print each date with its
-confidence, and split the results into the ones code accepts and the ones a person should
-look at.
-
 ![Overview diagram](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/date_extraction_cookbook/overview.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=4d1d1d4d446eefafb556505d9834e7a0)
-
-*TypeSafe reads how the date is written and which parts the text names. Code turns those
-answers into a `date`, counting from today when the date is relative, and either accepts
-it or sends it to review.*
 
 ## Setup
 
@@ -7189,7 +7143,9 @@ it or sends it to review.*
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`.
+then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
+`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/date_extraction_cookbook) into the folder you run
+the script from.
 
 ```python expandable theme={null}
 import os
@@ -7330,11 +7286,11 @@ def date_questions(role: str) -> dict[str, Choice]:
 
 ## Resolve it in code
 
-`read_parts` makes the call. `assemble` turns the answers into a `date`: it fills in the
-year when the text states none, and it works out which day a named weekday points at. Both
-of those count from `TODAY`, which is pinned so relative dates come out the same on every
-run. `assemble` also reports the lowest confidence among the parts it used, so a weak
-answer on any one part can send the whole date to review.
+One call reads all seven parts. The answers then become a `date`, with the year filled in
+when the text states none and a named weekday resolved to the day it points at. Both of
+those count from `TODAY`, which is pinned so relative dates come out the same on every run.
+A date's confidence is the lowest among the parts it used, so a weak answer on any one part
+can send the whole date to review.
 
 "next Thursday" can mean two different days, so code decides which. A weekday with no
 qualifier means the next one on or after today. `next` means the following calendar week,
@@ -7450,9 +7406,9 @@ def extract_date(document: str, role: str) -> dict:
 
 ## Run it
 
-Six questions across four short documents: two dates from a contract that states its years,
-a form deadline written without a year, a survey that closes "today", a review set for
-"next Thursday", and a date the form never mentions. All of them resolve against `TODAY` =
+Six dates to find in four short documents: two from a contract that states its years, a
+form deadline written without a year, a survey that closes "today", a review set for "next
+Thursday", and a date the form never mentions. All of them resolve against `TODAY` =
 2026-07-30, a Thursday.
 
 ```python theme={null}
@@ -7499,19 +7455,17 @@ OK the date of the design review         2026-08-06  2026-08-06    0.92
 
 The contract states both of its years, so those came off the text. The form states no year,
 so code filled in 2026: it takes the current year and moves to the next one only when the
-date is already more than a month past. "today" and "next Thursday" went through the same
-function as the spelled-out dates.
+date is already more than a month past.
 
 The kickoff call is the one the form never mentions. There is a date in that form, just not
-this one, and the note `absolute date incomplete` means `mode` came back `absolute` with no
+this one. The note `absolute date incomplete` means `mode` came back `absolute` with no
 month to go with it. The date came back empty, the confidence reads 0.46, and the row is
 flagged for a person.
 
 ## Confidence to route on
 
-Every answer comes back with a calibrated confidence, and a date's confidence is the lowest
-one among the parts that went into it. A date under `REVIEW_BELOW` = 0.60 goes to a person,
-and so does a date code could not assemble at all. The rest go straight through.
+A date under `REVIEW_BELOW` = 0.60 goes to a person, and so does any date that could not be
+assembled. The rest go straight through.
 
 ```python theme={null}
 if __name__ == "__cookbook__":
@@ -7945,6 +7899,820 @@ display(
 [Open this pair + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiMigJYoCeA+gIakEkhL2JP6kCCcARgBsEAZwpgE+XnwQAnSUNIAaLiD4yEAd1nVOpAEIyxAcwkHNFJEfwBhCHAAO9JDpDLSwmgrwresilCdJfll8AHp8ACUEMHkEJRV6PgA3XRAAVgA6AGYABnwAUlIAXzcyVCo6Pk4WNg5vfUMwEyDBETEJKRDuIXwAWnwABTsEIxknehQJADJ8AHF6ITZ8AAkIe2F40jVNbVSDY1N1DQsrWwcnF1KPai8CHmC5brjXBOTUzNyC4qKXkHsZOz2FDCDDYbxEUgCCwAa1oHgmz2YpBo9kRKmEUAg6k2IAsHhkMCglAgSA29RAqw0+Eg+BQAAsJCgNBB8OQKtSRFBDECKCThPh1AIEfh6Pz-hAwITgQB+HFcqh+RjeADapDQDOoHIxhmktOZ1IoADNDbJyPhxZKicIMjj1QhNeJtRRdVABBBhAgBJrBQiYhapfz6RN8HB6JqsSGw-gkBAUPhdfSJMJ2BISQgCPR8El6IYnChlJnhKioBQFqywFReUhlBHM7VGXTg5iYAI-UKYKJBN6ECa5CgWQgqAyZDaXmqNVr5bq0yKkDFE-hk4hzQDLShRwBdErolO0evVZHUVGpGMtnF4lAEolVsl3EAAERZC6ZA-KlBEi5QwoXS4k0hC9ayiA27uLu2xaDILhIiAKJoqQp4COepKXlKN6pNw6i0gyeqvpQ778oaAJwFhSYpvGRzaEBIEgL+cKeGiLCwSeEBnmOuLIVexKkqkj4kThrJvhQH6OlODakcu-5yNcQhUT8yggPQ9gUAAarIogkuCSQAIy-B6QhEtEACyEqesIKogAAVggSS9FpGRaQATCAW5AA)
 
 
+# Feeder-cam visit log
+Source: https://docs.typesafe.ai/cookbooks/feeder_watch
+
+Send frames from bird feeder camera footage to Jev with five questions, one of them a Box that finds the bird, then use plain code to turn the answers into a visit log per species.
+
+A camera on a bird feeder, a front door, or a street records hours of footage. Jev can
+help you analyse it.
+
+Send Jev the frames of a video one at a time and ask questions about each frame. With
+footage from a bird feeder camera, the answers become a visit log per species.
+
+![A snowy bird feeder with a male cardinal and a downy woodpecker, each in its own
+labeled box with a species probability. A status bar shows the time, the bird\_present
+probability, and the visits open so far.](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/feeder_watch/feeder-watch-hero.webp?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=b18b39e8df73dcaa8cf0f5d4c30e9b0a)
+
+We send Jev one frame a second, with five questions about each frame per request:
+
+* `bird_present`, a `Noul`: is there a bird?
+* `how_many`, a `Choice` of none, one, or several
+* `bird`, a `Box`: where is the most prominent bird?
+* `species_left` and `species_right`, two `Choice` questions over a list of species: what
+  are the leftmost and rightmost birds?
+
+A [Box](/primitives/box) question is used to find where the bird is in the image. It
+returns one box, so when two species share the feeder, a second request asks for a box
+around each species by name. This cookbook boxes up to two species at a time. Plain code
+turns the answers into visits.
+
+On the 101-second video clip we used, Jev agreed with our hand labels on whether a bird
+was there in all 101 frames, and named the correct species in 132 of 133 labeled bird
+sightings.
+
+> **Note** - Images and Box questions are experimental ("dreamer-ready"). Every request
+> that carries an image or a Box question needs the `TypeSafe-Danger-Zone-Images: true`
+> header. See [Images](/images) and [Box](/primitives/box).
+
+## Setup
+
+Requires Python 3.10 or later. Choose a package manager to install the dependencies:
+
+**pip**
+
+Create a virtual environment and add the dependencies:
+
+```bash wrap theme={null}
+python3 -m venv .venv
+.venv/bin/pip install 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
+```
+
+**uv**
+
+Initialize a project and add the dependencies:
+
+```bash wrap theme={null}
+uv init --bare
+uv add 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
+```
+
+Set your TypeSafe API key:
+
+```bash theme={null}
+export TYPESAFE_API_KEY="your-api-key"
+```
+
+Create a new file named `feeder_watch.py`. As you work through this cookbook, copy each
+Python code block into that file, in order. This command runs it whether you installed
+with pip or uv:
+
+```bash theme={null}
+.venv/bin/python feeder_watch.py
+```
+
+A full run sends about 180 requests. Pillow draws the boxes and matplotlib lays out the
+figures.
+
+Every response is saved in `json_cache.json`, so a second run makes no requests. To replay
+the published numbers without an API key, download [`json_cache.json`][cache] into the
+folder you run the script from.
+
+[cache]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/json_cache.json
+
+Numbers below came from `jev-1.14.0` on 2026-10-15.
+
+```python theme={null}
+import json
+import os
+import statistics
+import urllib.request
+import zipfile
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from time import perf_counter
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from IPython.display import display
+from PIL import Image as PILImage
+from PIL import ImageDraw, ImageFont
+from cooksafe import JsonCache
+from typesafe_sdk import Box, Choice, Image, Noul, SystemOneResponse, TypeSafeClient
+
+TYPESAFE_MODEL = "jev-1.14.0"  # Box questions need Jev 1.14
+IMAGE_HEADERS = {"TypeSafe-Danger-Zone-Images": "true"}  # images and Box are opt-in
+
+client = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless runs replay the cache
+    timeout=60.0,
+)
+json_cache = JsonCache(Path("json_cache.json"))  # every response, keyed by frame and questions
+```
+
+## Download the frames
+
+The footage is ["Busy Bird Feeder"][usfws-clip], a 101-second clip filmed by Courtney
+Celley of the U.S. Fish and Wildlife Service and released into the public domain. For the
+first minute, a male cardinal and a downy woodpecker share the feeder, so most frames hold
+two birds of different species. After that, the male cardinal leaves and a female cardinal
+feeds from behind the feeder, mostly out of sight.
+
+We cut one frame a second at 1024 × 576 pixels, and labeled each frame by hand with the
+species of every bird in full view. Twenty-two frames are marked `partial`, because the
+female cardinal in them is cut off at the edge or mostly hidden behind the feeder.
+The frames are in [`usfws_frames.zip`][frames-zip] and the labels are in
+[`usfws_labels.json`][labels-json], both in typesafe-public-examples. The source and the
+changes made are in
+[`DATA_LICENSE.md`][data-license]. The code below downloads both, unzips the frames into
+`usfws_frames/`, and skips anything that is already on disk.
+
+[usfws-clip]: https://www.flickr.com/photos/usfwsmidwest/31524812531
+
+[data-license]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/DATA_LICENSE.md
+
+[frames-zip]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/usfws_frames.zip
+
+[labels-json]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/usfws_labels.json
+
+```python theme={null}
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/feeder_watch"
+)
+FRAMES = Path("usfws_frames")
+LABELS = Path("usfws_labels.json")
+
+
+def download(url: str, path: Path) -> Path:
+    if not path.exists():
+        urllib.request.urlretrieve(url, path)
+    return path
+
+
+if not FRAMES.exists():
+    with zipfile.ZipFile(download(f"{EXAMPLES}/usfws_frames.zip", Path("usfws_frames.zip"))) as zf:
+        zf.extractall()  # the zip holds usfws_frames/u001.jpg to u101.jpg
+NAMES = [f"u{second:03d}.jpg" for second in range(1, 102)]  # one frame per second
+paths = [FRAMES / n for n in NAMES]
+labels = json.loads(download(f"{EXAMPLES}/usfws_labels.json", LABELS).read_text())
+
+birds_per_frame = [len(labels[n]["species"]) for n in NAMES]
+print(f"{len(paths)} frames, {PILImage.open(paths[0]).size[0]} x {PILImage.open(paths[0]).size[1]}")
+print(f"frames by birds in full view: {[birds_per_frame.count(k) for k in (0, 1, 2)]} (0, 1, 2)")
+print("u010.jpg is labeled", labels["u010.jpg"])
+```
+
+```
+101 frames, 1024 x 576
+frames by birds in full view: [11, 27, 63] (0, 1, 2)
+u010.jpg is labeled {'species': ['cardinal_male', 'downy_woodpecker'], 'partial': False}
+```
+
+## Write the questions
+
+Each request sends one frame as the state, under the key `frame`, and asks five questions
+about it. All five share the one request, so the image is sent once.
+
+* The `bird_present` question is a `Noul`. Below 0.5, the frame counts as empty and the
+  code ignores the other answers. A Box question always returns a box, even when there is
+  nothing to find, so this answer is what tells the code whether to use the box.
+* The `how_many` question is a `Choice` over `none`, `one`, and `several`. The code asks
+  for a second box only when the answer is `several`.
+* The `bird` question is a `Box` around the most prominent bird. Frames with one bird use
+  this box.
+* The `species_left` and `species_right` questions are the same `Choice`, over ten species
+  plus `other`, asked about the leftmost and the rightmost bird. With one bird in the
+  frame, both answers describe it. With two, each answer describes one bird.
+
+Each species option describes what the bird looks like on a feeder camera, rather than what
+a field guide says. For example, the grackle option says the bird can fill the frame so
+that only its head shows.
+
+```python expandable theme={null}
+SPECIES = {
+    "blue_jay": "A blue bird with a crest, a pale grey-white face and chest, a black necklace, "
+    "and black bars on the blue wings and tail.",
+    "cardinal_male": "A bright red bird with a pointed crest, a black mask, and an orange beak.",
+    "cardinal_female": "A warm brown or buff bird with a pointed crest, reddish tinges on the "
+    "wings, tail and crest, and an orange beak.",
+    "grackle": "A common grackle: a glossy black bird with a pale yellow eye, a long heavy dark "
+    "beak, and an iridescent blue, purple or bronze sheen on the head and body. On a close-up "
+    "feeder camera it often fills the frame, so only the glossy dark head, pale eye and beak "
+    "may be visible.",
+    "starling": "A European starling: a chunky short-tailed dark bird with glossy plumage "
+    "speckled with pale spots, a dark eye, and a pointed yellow or dark beak. Juveniles are "
+    "plain grey-brown with a dark beak.",
+    "mourning_dove": "A plump grey-brown dove with a small head, a long pointed tail, and black "
+    "spots on the wings.",
+    "house_sparrow": "A small streaky brown sparrow. Males have a grey crown and a black bib.",
+    "house_finch": "A small streaky brown finch. Males have a rosy red head and chest.",
+    "red_winged_blackbird": "A glossy black bird with a red shoulder patch edged in yellow.",
+    "downy_woodpecker": "A small black-and-white woodpecker with a white stripe down the back "
+    "and spotted wings. Males have a red patch on the back of the head.",
+    "other": "A bird that matches none of the other descriptions.",
+}
+
+QUESTIONS = {
+    "bird_present": Noul(instructions="Is there at least one bird in `frame`?"),
+    "how_many": Choice(
+        instructions="How many birds are in `frame`?",
+        criteria={
+            "none": "No bird at all.",
+            "one": "Exactly one bird.",
+            "several": "Two or more birds.",
+        },
+    ),
+    "bird": Box(instructions="The most prominent bird in `frame`"),
+    "species_left": Choice(
+        instructions="What species is the leftmost bird in `frame`?", criteria=SPECIES
+    ),
+    "species_right": Choice(
+        instructions="What species is the rightmost bird in `frame`?", criteria=SPECIES
+    ),
+}
+```
+
+## Ask about one frame
+
+Each request sends one frame and a set of questions, with the model version and the images
+header set above. The three frames below have two birds, one bird, and no bird.
+
+```python expandable theme={null}
+@json_cache
+def ask_cached(model: str, frame: str, questions_json: str) -> dict:
+    started = perf_counter()
+    response = client.system_one(
+        state={"frame": Image(FRAMES / frame)},
+        questions=json.loads(questions_json),
+        model=model,
+        extra_headers=IMAGE_HEADERS,
+    )
+    seconds = round(perf_counter() - started, 2)
+    return {"response": response.model_dump(mode="json"), "seconds": seconds}
+
+
+def ask(path: Path, questions: dict):
+    as_json = json.dumps(
+        {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()},
+        sort_keys=True,
+    )
+    cached = ask_cached(TYPESAFE_MODEL, path.name, as_json)
+    return SystemOneResponse.model_validate(cached["response"]), cached["seconds"]
+
+
+def edges(box) -> str:
+    return f"left {box.left:.2f}  right {box.right:.2f}  top {box.top:.2f}  bottom {box.bottom:.2f}"
+
+
+def show_first_request(name: str) -> None:
+    response, seconds = ask(FRAMES / name, QUESTIONS)
+    how_many = response.choices["how_many"]
+    print(f"{name}  labeled {labels[name]['species'] or 'empty'}  ({seconds:.2f} s)")
+    print(f"  bird_present   {response.nouls['bird_present'].noul:.2f}")
+    print(f"  how_many       {how_many.choice} {how_many.probabilities[how_many.choice]:.2f}")
+    bird = response.boxes["bird"]
+    print(f"  bird           {edges(bird.box)}  confidence {bird.confidence:.2f}")
+    for key in ("species_left", "species_right"):
+        answer = response.choices[key]
+        print(f"  {key:<15}{answer.choice} {answer.probabilities[answer.choice]:.2f}")
+    print()
+
+
+for name in ("u010.jpg", "u090.jpg", "u097.jpg"):
+    show_first_request(name)
+```
+
+```
+u010.jpg  labeled ['cardinal_male', 'downy_woodpecker']  (0.35 s)
+  bird_present   0.98
+  how_many       several 1.00
+  bird           left 0.13  right 0.42  top 0.58  bottom 0.90  confidence 0.71
+  species_left   cardinal_male 1.00
+  species_right  downy_woodpecker 1.00
+
+u090.jpg  labeled ['downy_woodpecker']  (0.29 s)
+  bird_present   0.95
+  how_many       one 1.00
+  bird           left 0.33  right 0.44  top 0.43  bottom 0.94  confidence 0.85
+  species_left   downy_woodpecker 0.99
+  species_right  downy_woodpecker 0.99
+
+u097.jpg  labeled empty  (0.28 s)
+  bird_present   0.07
+  how_many       none 0.99
+  bird           left 0.04  right 0.13  top 0.47  bottom 0.80  confidence 0.14
+  species_left   other 0.38
+  species_right  other 0.61
+```
+
+The two-bird frame came back as `several`, with the cardinal on the left, the woodpecker on
+the right, and both species answers near 1.00. On the one-bird frame, the left and right
+answers both name the woodpecker. On the empty frame, `bird_present` is low, so the code
+ignores the box and the species answers. Those answers still name an option, here `other`.
+
+On the two-bird frame, the `bird` box covers only the cardinal. One Box question returns
+one box, so the woodpecker needs a question of its own.
+
+## Box each bird by its species
+
+We need two Box questions, one for "the leftmost bird" and one for "the
+rightmost bird". On this feeder, both boxes landed on the cardinal.
+
+```python theme={null}
+POSITION_BOXES = {
+    "leftmost": Box(instructions="The leftmost bird in `frame`"),
+    "rightmost": Box(instructions="The rightmost bird in `frame`"),
+}
+by_position, _ = ask(FRAMES / "u010.jpg", POSITION_BOXES)
+for key in POSITION_BOXES:
+    answer = by_position.boxes[key]
+    print(f"{key:<11}{edges(answer.box)}  confidence {answer.confidence:.2f}")
+```
+
+```
+leftmost   left 0.13  right 0.42  top 0.58  bottom 0.91  confidence 0.76
+rightmost  left 0.13  right 0.41  top 0.40  bottom 0.88  confidence 0.32
+```
+
+Both boxes cover the same part of the frame. We need to ask for each bird by its species.
+The first request already said which two species are there, so the second request
+asks for "the male northern cardinal" and "the downy woodpecker". The phrase for each
+species is in `BOX_TARGETS`. Where the name alone could also fit another bird, the phrase
+adds what the bird looks like.
+
+```python theme={null}
+BOX_TARGETS = {
+    "blue_jay": "the blue jay",
+    "cardinal_male": "the male northern cardinal (the bright red bird)",
+    "cardinal_female": "the female northern cardinal (the brown bird with an orange beak)",
+    "grackle": "the common grackle (the glossy black bird)",
+    "starling": "the European starling (the speckled dark bird)",
+    "mourning_dove": "the mourning dove",
+    "house_sparrow": "the house sparrow",
+    "house_finch": "the house finch",
+    "red_winged_blackbird": "the red-winged blackbird",
+    "downy_woodpecker": "the downy woodpecker (the black and white bird)",
+    "other": "the bird that is none of the listed species",
+}
+
+
+def box_questions(species: list[str]) -> dict:
+    return {sp: Box(instructions=f"{BOX_TARGETS[sp]} in `frame`") for sp in species}
+
+
+by_species, _ = ask(FRAMES / "u010.jpg", box_questions(["cardinal_male", "downy_woodpecker"]))
+for key, answer in by_species.boxes.items():
+    print(f"{key:<17}{edges(answer.box)}  confidence {answer.confidence:.2f}")
+```
+
+```
+cardinal_male    left 0.13  right 0.42  top 0.58  bottom 0.92  confidence 0.84
+downy_woodpecker left 0.59  right 0.73  top 0.40  bottom 0.88  confidence 0.36
+```
+
+With named boxes, the woodpecker gets its own box, to the right of the cardinal's. Its box
+confidence, 0.36, is lower than the cardinal's 0.84. The figure
+below shows both pairs of boxes on the frame.
+
+```python expandable theme={null}
+SURFACE, INK, INK2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
+BLUE, ORANGE = "#2a78d6", "#eb6834"
+COLOURS = {"cardinal_male": ORANGE, "downy_woodpecker": BLUE}  # every other species: INK2
+FONT = ImageFont.load_default(size=26)
+
+
+def draw(ax, name: str, boxes: list[tuple[str, dict, str]], title: str) -> None:
+    """Draw (label, edges, colour) boxes on a frame and put it on a matplotlib axis."""
+    image = PILImage.open(FRAMES / name).convert("RGB")
+    width, height = image.size
+    pen = ImageDraw.Draw(image)
+    for label, e, colour in boxes:
+        x0, y0 = e["left"] * width, e["top"] * height
+        pen.rectangle([x0, y0, e["right"] * width, e["bottom"] * height], outline=colour, width=6)
+        text_box = pen.textbbox((x0, y0), label, font=FONT)
+        y = y0 - (text_box[3] - text_box[1]) - 12 if y0 > 40 else y0 + 6
+        pen.rectangle([x0, y, x0 + text_box[2] - text_box[0] + 12, y + 36], fill=colour)
+        pen.text((x0 + 6, y + 2), label, fill="white", font=FONT)
+    ax.imshow(image)
+    ax.set_axis_off()
+    ax.set_title(title, loc="left", fontsize=10, color=INK2)
+
+
+def show(fig, filename: str) -> None:
+    """Show a figure in a notebook; save it as a PNG when run as a script."""
+    if __name__ == "__main__" and "__file__" in globals():
+        fig.savefig(filename, dpi=120)
+        print(f"saved {filename}")
+    else:
+        display(fig)
+    plt.close(fig)
+
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 3.6), facecolor=SURFACE)
+draw(
+    axes[0],
+    "u010.jpg",
+    [(key, by_position.boxes[key].box.model_dump(), MUTED) for key in POSITION_BOXES],
+    "Box by position: both boxes on the cardinal",
+)
+draw(
+    axes[1],
+    "u010.jpg",
+    [(key.replace("_", " "), a.box.model_dump(), COLOURS[key]) for key, a in by_species.boxes.items()],
+    "Box by species name: one box per bird",
+)
+fig.suptitle("The second request on frame u010 (0:09)", x=0.01, ha="left", color=INK, fontsize=12)
+fig.tight_layout()
+show(fig, "second-request.png")
+```
+
+![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/feeder_watch/feeder_watch.executed.1.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=4958af057b8d6595f79deba1a373e01a)
+
+A Box question always returns a box. If the first request names a species that is barely in
+the frame, such as a bird hidden behind the feeder, the second request still returns a box
+for that species, and the box can land on the other bird. Two named boxes that overlap by
+0.6 or more are treated as the same bird found twice, and only the box with the higher
+confidence is kept. Overlap here is intersection over union: the area the two boxes share,
+divided by the total area they cover.
+
+```python theme={null}
+OVERLAP_AT = 0.6  # two named boxes overlapping this much are one bird found twice
+
+
+def overlap(a: dict, b: dict) -> float:
+    """Intersection over union of two boxes given as edge fractions."""
+    w = max(0.0, min(a["right"], b["right"]) - max(a["left"], b["left"]))
+    h = max(0.0, min(a["bottom"], b["bottom"]) - max(a["top"], b["top"]))
+    area = lambda e: (e["right"] - e["left"]) * (e["bottom"] - e["top"])  # noqa: E731
+    union = area(a) + area(b) - w * h
+    return w * h / union if union > 0 else 0.0
+
+
+def dedupe(birds: list[dict]) -> list[dict]:
+    kept: list[dict] = []
+    for bird in sorted(birds, key=lambda b: -b["box_confidence"]):
+        if all(overlap(bird["box"], k["box"]) < OVERLAP_AT for k in kept):
+            kept.append(bird)
+    return kept
+```
+
+## Ask about every frame
+
+For each frame:
+
+1. Send the five questions. Stop there if `bird_present` is below 0.5, or if neither
+   species answer reaches 0.5.
+2. If `how_many` is `several` and the two species answers name different species, send the
+   second request for one box per species, then run `dedupe()` on the boxes. Do the same
+   when only one side's answer reaches 0.5, because the `bird` box might be around the
+   other bird.
+3. Otherwise, keep the most likely species and the `bird` box from the first request.
+
+The result for a frame is each bird's species, species probability, box and box
+confidence, plus the number of requests and the seconds the frame took.
+
+```python expandable theme={null}
+PRESENT_AT = 0.5  # below this, the frame is empty and the other answers are ignored
+SPECIES_AT = 0.5  # a species answer below this is too unsure to name a box
+
+
+def ask_frame(path: Path) -> dict:
+    first, seconds = ask(path, QUESTIONS)
+    result = {
+        "frame": path.name,
+        "bird_present": first.nouls["bird_present"].noul,
+        "how_many": first.choices["how_many"].choice,
+        "birds": [],
+        "requests": 1,
+        "seconds": seconds,
+    }
+    # the species named by the leftmost and rightmost answers, each with its best probability
+    named: dict[str, float] = {}
+    sure_sides = 0
+    for key in ("species_left", "species_right"):
+        answer = first.choices[key]
+        p = answer.probabilities[answer.choice]
+        if p >= SPECIES_AT:
+            named[answer.choice] = max(p, named.get(answer.choice, 0.0))
+            sure_sides += 1
+    if result["bird_present"] < PRESENT_AT or not named:
+        return result
+
+    # with several birds, the `bird` box only fits when both sides name the same species
+    if result["how_many"] == "several" and (len(named) == 2 or sure_sides < 2):
+        second, more_seconds = ask(path, box_questions(list(named)))
+        result["requests"] = 2
+        result["seconds"] += more_seconds
+        boxes = {sp: second.boxes[sp] for sp in named}
+    else:
+        top = max(named, key=named.get)
+        named, boxes = {top: named[top]}, {top: first.boxes["bird"]}
+
+    birds = [
+        {"species": sp, "p": p, "box": boxes[sp].box.model_dump(), "box_confidence": boxes[sp].confidence}
+        for sp, p in named.items()
+    ]
+    result["birds"] = dedupe(birds)
+    return result
+```
+
+The frames don't depend on each other, so four threads ask about them in parallel. The
+results still come back in frame order, because `pool.map` keeps the order of its input. On
+a live camera, send one frame at a time instead, each as soon as the previous answer is
+back.
+
+```python theme={null}
+with ThreadPoolExecutor(max_workers=4) as pool:  # 101 frames, about 180 requests, 4 at a time
+    results = list(pool.map(ask_frame, paths))
+
+two_requests = [r for r in results if r["requests"] == 2]
+print(f"{len(results)} frames, {sum(r['requests'] for r in results)} requests")
+print(f"frames that needed the second request: {len(two_requests)}")
+print(f"frames that ended with two boxes:      {sum(len(r['birds']) == 2 for r in results)}")
+print(f"seconds per frame, median: {statistics.median(r['seconds'] for r in results):.2f}")
+```
+
+```
+101 frames, 178 requests
+frames that needed the second request: 77
+frames that ended with two boxes:      66
+seconds per frame, median: 0.54
+```
+
+Some frames sent the second request and still ended with one box. On those frames, either
+only one species answer reached 0.5, or the two named boxes overlapped and `dedupe()` kept
+one.
+
+## Turn answers into visits
+
+Visits are built from the results in frame order, one species at a time, so two birds at
+the feeder at once make two overlapping visits. Three settings decide what counts as a
+visit:
+
+* A frame counts toward a species when that species' probability is at least `species_at`.
+* A visit stays open through gaps of up to `max_gap` frames, such as when the bird hops out
+  of view for a moment.
+* A visit needs at least `min_frames` frames that name its species. With the default of 2,
+  a wrong answer on a single frame doesn't become a visit.
+
+These settings belong to your application, and Jev never sees them. To try other values,
+rerun `visits()` on the saved results. No new requests are needed.
+
+```python expandable theme={null}
+def visits(results: list[dict], species_at=0.6, max_gap=2, min_frames=2) -> list[dict]:
+    done, open_visits, last_seen = [], {}, {}
+    for second, result in enumerate(results):  # one frame per second
+        seen = {b["species"] for b in result["birds"] if b["p"] >= species_at}
+        for sp in list(open_visits):
+            if sp not in seen and second - last_seen[sp] > max_gap:
+                done.append(open_visits.pop(sp))
+        for sp in sorted(seen):
+            if sp in open_visits:
+                open_visits[sp]["end"] = second
+                open_visits[sp]["frames"] += 1
+            else:
+                open_visits[sp] = {"species": sp, "start": second, "end": second, "frames": 1}
+            last_seen[sp] = second
+    done.extend(open_visits.values())
+    kept = [v for v in done if v["frames"] >= min_frames]
+    return sorted(kept, key=lambda v: (v["start"], v["species"]))
+
+
+def clock(second: int) -> str:
+    return f"{second // 60}:{second % 60:02d}"
+
+
+def print_visits(found: list[dict]) -> None:
+    for v in found:
+        seconds = v["end"] - v["start"] + 1
+        print(f"  {v['species']:<18}{clock(v['start'])} to {clock(v['end'])}  ({seconds} s)")
+
+
+found = visits(results)
+print("Visits:")
+print_visits(found)
+
+per_species: dict[str, list[int]] = {}
+for v in found:
+    count = per_species.setdefault(v["species"], [0, 0])
+    count[0] += 1
+    count[1] += v["end"] - v["start"] + 1
+print("\nPer species:")
+for sp, (n, seconds) in sorted(per_species.items(), key=lambda kv: -kv[1][1]):
+    print(f"  {sp:<18}{n} visit{'s' if n > 1 else ''}, {seconds} s at the feeder")
+print("\nVisits in the hand labels:")
+print_visits(visits([{"birds": [{"species": s, "p": 1.0} for s in labels[n]["species"]]} for n in NAMES]))
+```
+
+```
+Visits:
+  cardinal_male     0:00 to 1:02  (63 s)
+  downy_woodpecker  0:00 to 1:29  (90 s)
+  cardinal_male     1:12 to 1:15  (4 s)
+
+Per species:
+  downy_woodpecker  1 visit, 90 s at the feeder
+  cardinal_male     2 visits, 67 s at the feeder
+
+Visits in the hand labels:
+  cardinal_male     0:00 to 1:02  (63 s)
+  downy_woodpecker  0:00 to 1:29  (90 s)
+```
+
+As a timeline, each row of the visit log is a species and each bar is one visit, with the
+total time at the feeder beside the row.
+
+```python expandable theme={null}
+def draw_visits(found: list[dict], seconds: int, title: str) -> None:
+    by_species: dict[str, list[dict]] = {}
+    for v in found:
+        by_species.setdefault(v["species"], []).append(v)
+    total = {sp: sum(v["end"] - v["start"] + 1 for v in vs) for sp, vs in by_species.items()}
+    order = sorted(by_species, key=lambda sp: -total[sp])
+
+    height = 0.45 * len(order) + 1.4
+    fig, (ax, bx) = plt.subplots(
+        1, 2, figsize=(11, height), facecolor=SURFACE,
+        gridspec_kw={"width_ratios": [3.6, 1], "wspace": 0.04},
+    )
+    for a in (ax, bx):
+        a.set_facecolor(SURFACE)
+        a.spines[["top", "right", "left"]].set_visible(False)
+        a.tick_params(colors=INK2, labelsize=9, length=0)
+    for row, sp in enumerate(order):
+        colour = MUTED if sp == "other" else BLUE
+        spans = [(v["start"], v["end"] - v["start"] + 1) for v in by_species[sp]]
+        ax.broken_barh(spans, (row - 0.32, 0.64), facecolors=colour)
+        bx.barh(row, total[sp], height=0.64, color=colour)
+        n = len(by_species[sp])
+        label = f"{total[sp]} s, {n} visit{'s' if n > 1 else ''}"
+        bx.text(total[sp] + seconds * 0.03, row, label, va="center", fontsize=9, color=INK2)
+    ax.set_yticks(range(len(order)), [sp.replace("_", " ") for sp in order], color=INK, fontsize=10)
+    ax.set_xlim(0, seconds)
+    ax.set_xticks(range(0, seconds + 1, 10), [clock(s) for s in range(0, seconds + 1, 10)])
+    ax.grid(axis="x", color="#e4e3df")
+    ax.set_axisbelow(True)
+    ax.set_title("Each visit, by time of footage (m:ss)", loc="left", fontsize=10, color=INK2)
+    bx.set_xlim(0, seconds * 1.6)
+    bx.set_xticks([])
+    bx.set_yticks([])
+    bx.spines["bottom"].set_visible(False)
+    bx.set_title("Time at the feeder", loc="left", fontsize=10, color=INK2)
+    for a in (ax, bx):
+        a.set_ylim(len(order) - 0.5, -0.5)
+    fig.suptitle(title, x=0.01, ha="left", fontsize=12, color=INK)
+    # margins in inches: the species names on the left, the titles on top, the times below
+    fig.subplots_adjust(left=1.6 / 11, right=0.99, top=1 - 0.75 / height, bottom=0.4 / height)
+    show(fig, "visits.png")
+
+
+draw_visits(found, len(results), f"{len(found)} visits in {clock(len(results))} of footage")
+```
+
+![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/feeder_watch/feeder_watch.executed.2.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=aeeedf9c6c369a3f23c09abb4d961cb1)
+
+The two long visits match the visit log built the same way from our hand labels, with the
+same start and end seconds. In every run we made of this clip, the two long visits came out
+the same, but the short visits changed from run to run.
+
+The short visit here is wrong: the male cardinal visit from 1:12 to 1:15 is a female
+cardinal behind the feeder, misnamed when only her red beak showed.
+
+Lowering `min_frames` to 1 shows the single-frame sightings that the default of 2 keeps out
+of the log:
+
+```python theme={null}
+logged = {(v["species"], v["start"]) for v in visits(results)}
+print("Single-frame sightings that min_frames=2 leaves out:")
+print_visits([v for v in visits(results, min_frames=1) if (v["species"], v["start"]) not in logged])
+```
+
+```
+Single-frame sightings that min_frames=2 leaves out:
+  cardinal_female   1:04 to 1:04  (1 s)
+  cardinal_female   1:08 to 1:08  (1 s)
+  other             1:16 to 1:16  (1 s)
+  cardinal_male     1:34 to 1:34  (1 s)
+```
+
+Some of these are real birds, such as the female cardinal at 1:04 and 1:08, and some are
+misreads, such as the male cardinal at 1:34. A higher `min_frames` keeps more wrong answers
+out of the log, and it also drops more birds that only show up for a second or two.
+
+## Check the answers against the labels
+
+Two checks compare the answers with the hand labels:
+
+* whether `bird_present` agrees with the label on whether the frame has a bird in it
+* whether every labeled bird's species is among the species that `ask_frame()` returned
+
+A frame marked `partial` counts as having a bird for the first check. It is left out of the
+second, because its label doesn't name every bird in it.
+
+```python theme={null}
+present_ok, found, total, misses = 0, 0, 0, []
+for r in results:
+    label = labels[r["frame"]]
+    has_bird = bool(label["species"]) or label["partial"]  # a partial bird is still a bird
+    if (r["bird_present"] >= PRESENT_AT) == has_bird:
+        present_ok += 1
+    else:
+        misses.append(f"{r['frame']}  bird_present {r['bird_present']:.2f}, labeled {label['species'] or 'empty'}")
+    if label["partial"]:
+        continue
+    returned = {b["species"] for b in r["birds"]}
+    for sp in label["species"]:
+        total += 1
+        if sp in returned:
+            found += 1
+        else:
+            misses.append(f"{r['frame']}  labeled {sp}, returned {sorted(returned) or 'nothing'}")
+
+print(f"bird_present agrees with the labels: {present_ok}/{len(results)} frames")
+print(f"labeled birds returned:              {found}/{total}")
+print("\nDisagreements:")
+print("\n".join(misses) or "none")
+```
+
+```
+bird_present agrees with the labels: 101/101 frames
+labeled birds returned:              132/133
+
+Disagreements:
+u063.jpg  labeled downy_woodpecker, returned ['cardinal_male']
+```
+
+The hardest frames for `bird_present` are 1:33 and 1:34, where only part of a cardinal
+shows; the left half of the figure below is 1:33. Jev scored both at about 0.8 and counted
+the bird, and the labels mark both `partial`.
+
+The one labeled bird that Jev missed is the woodpecker at 1:02, which shares the frame with
+the male cardinal. That frame came back with only the male cardinal.
+
+The right half of the figure shows a failure that `dedupe()` doesn't catch. At 1:15, the
+female cardinal's beak shows at the right edge of the cage, and Jev named a male cardinal.
+The box for the male cardinal landed on the woodpecker. It overlaps the woodpecker's own
+box by less than 0.6, so both boxes stay. A check on each box would catch this: crop to the
+box and ask a `Noul` question whether the bird in the crop is a male cardinal.
+
+```python theme={null}
+by_frame = {r["frame"]: r for r in results}
+
+
+def answer_boxes(name: str) -> list[tuple[str, dict, str]]:
+    return [
+        (f"{b['species'].replace('_', ' ')} {b['p']:.2f}", b["box"], COLOURS.get(b["species"], INK2))
+        for b in by_frame[name]["birds"]
+    ]
+
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 3.6), facecolor=SURFACE)
+for ax, name in zip(axes, ("u094.jpg", "u076.jpg")):
+    r = by_frame[name]
+    second = int(name[1:4]) - 1
+    draw(ax, name, answer_boxes(name), f"{clock(second)}  bird_present {r['bird_present']:.2f}")
+fig.suptitle("Two hard frames from the run", x=0.01, ha="left", color=INK, fontsize=12)
+fig.tight_layout()
+show(fig, "failures.png")
+```
+
+![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/feeder_watch/feeder_watch.executed.3.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=deac8de512d669ca99426e3192c0b361)
+
+## See it running live
+
+The same questions work on live footage. The video below shows a small web app built on
+them. It takes a frame from a webcam or a video file, asks Jev,
+draws the boxes, and keeps a running visit log. In the video, it plays a stretch of the
+Ostdrossel feeder cam that the questions weren't tuned on, at about two answers a second.
+
+[Feeder watch web app demo](https://player.vimeo.com/video/1237184729)
+
+Bird footage: [Ostdrossel feeder cam](https://www.youtube.com/watch?v=h6iNvPiyPbI) by
+Ostdrossel, licensed [CC BY](https://creativecommons.org/licenses/by/3.0/), shown with
+boxes and labels added by the app.
+
+## Before you point it at your own camera
+
+* **One Box question returns one box.** This code boxes at most two birds per frame,
+  and only when they are different species. For more species, ask one `Noul` question per
+  species, such as "Is there a blue jay in `frame`?", then a named Box for each species
+  whose answer comes back high.
+* **Two birds of the same species can't be told apart by name.** For a flock, a zero-shot
+  detector such as Meta's SAM 3 can find every bird from the text prompt "bird", with no
+  training. Jev can then name the species of each cropped bird.
+* **Small frames are rejected.** The [Images](/images) page allows 280 to 1568 pixels on
+  each side, with at least 78,400 pixels in total (280 × 280).
+* **Adjust the thresholds as needed.** The values of `PRESENT_AT`, `SPECIES_AT`,
+  `OVERLAP_AT`, and the `visits()` defaults worked here. Label a few minutes of your own
+  footage and check them against it.
+* **Write the species list for your camera.** Describe what your camera shows of each bird,
+  close-ups included. Keep the `other` option, so that a bird your list doesn't name isn't
+  forced into one of the names it does have.
+
+
 # Function calling
 Source: https://docs.typesafe.ai/cookbooks/function_calling
 
@@ -7999,7 +8767,12 @@ pip install ipython polars matplotlib numpy 'cooksafe>=0.2.0,<0.3.0'
 Set `TYPESAFE_API_KEY`. Two modules sit beside this file. `trader.py` holds the ten
 functions, plus a TypeSafe client that reads answers from a cache, so re-rendering replays
 the numbers below without calling the API. `dispatch.py` holds the code that reads a
-signature and a spec and makes the call.
+signature and a spec and makes the call. Both modules, `spec.json`, the price bars and the
+answer cache are in
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/function_calling).
+
+The prices are simulated from a fixed random seed, not real market data. The tickers are
+real, but every price, return and chart below is generated.
 
 ```python theme={null}
 import json
@@ -10022,6 +10795,455 @@ display(Markdown(f"🔗 [Open the prompt + guardrail questions in the TypeSafe p
 [Open the prompt + guardrail questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAEgJb5QAWAhigOIAKaAdPgJoQz5UBOC+A5hBJJ++FBHwAHXimRgxEgEZ8AIgEEAcvgDuFEpXwBnFFSRhD+AGYRu+ADrgJpgJ4o9I-EgjaHLdRoAaLgs3PiQqRCMYfn4EY0MgqFN8SC4kV3dRL20WNAoEZ3xqADc+RW4IAGtkK14+CEsxfLFnSX0qABtyCCRLYTj8Bvw1AEk0+VSvFCKqUoUuRRIwMsLQ-G4YDoHDBGnrW1C4FgAxG3wsCMktoP9yZNkOrsjdGhSaPlN5FBJIkmmSQx+TR3JBcDqGCTSXZyeZUKBQOIhZrCWTcJC7IJQnaofDCfZwGgkHpNV7UCxTfDKGqlbgkPoIMBBT4pJzpNzCURuV42Ej8YSdcjUOiMEGeCDTSAsNQWW5edGDRrODi2XiGSQ9HYWQwUDgdeR4mxwfCRLnTJWcJJIADkEokEMQ7I8yiSMB2+FulvsjjSGQ5Yp8IBYAGkEAhJPgYOG1nDpkNblQLNoEI9gvhzSCWCNjmmOFxeJTeFRKn7KDwYwhbGNtCQU1szbnKtlKYVDFRnH6HABlEyFYSCstQVEAQgcTLMOc42t18igNl4g4ntnKCCLCv73HL3CYdiQO4A6vlQWME5UJ1x8ABHGBxb7E0yGJO2BOU8UUd3A5kMND4DokaqU5NvFwHcdy-AgAG08jCQ0BQAYSFL91jidUkB2ABdECkH8CCoJ0Nt3y0bRpyQtUejAND8APV4ASaPgwHecYxB+BAAH4QCCEBpAgOBJBQQwMGwPBCGABwACsqBrZciwcAgRJAFBWgQGSvS8TZRy9YRjA2QciVQ5SHBUCABnZCxEEMVtYjEbhVgkWJpmjcyARMHFxFxfgvF4IIIBpWlli8lUEFKAU-gsTSUG029UP8+YKi2ABaK58OfZJRh0P43y8dZNjiFj1IcKBaVREgqGUuTwuvfSQBGezaWMpRWgTCwziwdU3QcwwnNMFArVC1Dyp0jVBlsVtLF2QoNi2QE8pASxOh2SrqtxCxkhsMB+WspCrxvElplVSQEEHJEPkc4wup6sVuAJLpFA4MweBIOJtxAABfZ6ggcahLssTYAH1eC24xSocBT9sq1SOmmsKIt0wxKsM4y9FMxEqEsk8rDOfIOnDF0Oo8SQKGcDqki6T6jVc-aICuBBov2Ipk3DKTiw8NYOiobRcvYr0Cr+CtiqB+SNiUoSHEWnYEEqZaTuchE0rcKQCaJgVSaG3FHgQfgBRjEhij+Zwnvema5qFggRdtAYKTF09MfDas5eVs4ay2DWui1nWFKe16DcQNbiZ+qgwB1hF+ZB42VN1SG+uhjU4aMpEaLMizjtPWmqBSYr3IgDqEnPNUDrpfQUg2URIET6LU-ClcUEQHFligAFdKCZQlXHWJ0Q3EmVw6OWDUuwkeg5g3uaKkqhLKwWFumE8juCLPnPsiQCX-VP9u4CFwieBl2i6Wv656fWvVm8FQ9N4IJfR2wpkyY1N+J6Keg6Qpadbislc77vehgyKPber0dg6Swfqk2DopMG4dOYOChjAAaelhYgHhnHJG5kUZ8EMNEWIxhaJSArGvIwcg-R-GNPhZQ3RUJLF5h4UmfpDh-1KIYAeXNCq8xHrJYG49YGLXcHxLg0xUH6CWAKNwHB+AUC4WcZIKJkDz1wf-OKpN94OEPvNdhPCdTaHJHaXkoI1jYmWLYCRZgQgSGVtQ5MtDv4Gx2DSXWwDQawMMLOXgEctJQMirDWBRBvDGigW+ZWs5NjyFVJsf4jR2qdRxLOHiv4GSyzfCZa+SDYj0Pyow2kzD8DgQcBoIxPA4AEBWtwNa4RrJBBGnwf614MFnF4FcPW00ACyNYwAEHEN4gYqdsQdW+HMcQbQoCUhgNMCJNS-SQHNhIQs28IjIPkSATsvMOCGAIEMh+fpkBUEUJNJCAptAVBEJAP0Zw+S0IjKhKgo0sGrx6JrAO+gEAzLmTSBASzuLDI8DjbY8zXTy0JlvGYl0VY7FpAs1WTslY5KemhV6nMQBUDaAANWwbpISIBigAEZoV-wOrIMAdSIDLHBEJcCIBRKBTiqipgqKABMIBIVAA)
 
 
+# OCR confidence and bounding boxes
+Source: https://docs.typesafe.ai/cookbooks/ocr_confidence_bounding_boxes
+
+Check the values an OCR extractor read from invoice photos: Jev boxes each value, scores it against the page and against a crop of its box, and flags low scores for review.
+
+Values that OCR extracts from invoice photos are mostly right, but checking every one by
+hand takes as long as typing them in. Jev can check them instead: it boxes each value on
+the photo and flags the ones that look wrong, so a reviewer only looks at those.
+
+![Each extracted field gets a box on the invoice photo, the box tightens on a zoomed-in
+pass, and a crop of it is checked against the value: the misread invoice numbers and date
+turn orange for review, and every correct value turns blue](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/ocr_confidence_bounding_boxes/ocr-confidence-hero.gif?s=c6eec832bd5c0781c8f1954dea06c94d)
+
+On these two supplier invoices, an extractor read the supplier, invoice number, date,
+amount due and bank details, and got three values wrong. Jev flags all three.
+
+Jev checks each value twice: against the whole page (the page check) and against a crop of
+its box (the crop check). A value that scores below 0.25 on either check goes to review. In
+the table, "extracted" is what the extractor read and "printed" is what the invoice says.
+
+| invoice | field | extracted | printed | page check | crop check |
+| - | - | - | - | - | - |
+| Milkwood | invoice number | `AN400074` | `IN400074` | 0.88 | 0.18 |
+| Siyakhula | invoice number | `INV03070` | `INV03079` | 0.02 | 0.04 |
+| Siyakhula | date | `16/09/2028` | `16/09/2026` | 0.17 | 0.66 |
+
+The code below starts from `extractions.json`, the values the OCR and LLM steps produced,
+and leaves those two steps out. You can make that file with Tesseract and your LLM of
+choice.
+
+```mermaid actions={true} theme={null}
+  %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 42, "nodeSpacing": 28, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 36}}}}%%
+flowchart TB
+    photo["invoice photo"]
+
+    subgraph EX["an OCR extractor"]
+        direction LR
+        ocr["<b>OCR</b>, local<br/>photo → lines of text"]
+        llm["<b>LLM</b>, text only<br/>lines → named fields"]
+        ocr --> llm
+    end
+
+    values["extracted values"]
+
+    subgraph JEV["this cookbook · three requests per invoice"]
+        direction LR
+        r1["<b>request 1</b> · the photo<br/><b>Box</b> + <b>Noul</b> per field:<br/>where is it, is the value that field?"]
+        r2["<b>request 2</b> · zoomed regions<br/><b>Box</b> per field:<br/>a tighter box"]
+        r3["<b>request 3</b> · crops<br/><b>Noul</b> per field:<br/>does the crop show the value?"]
+        r1 --> r2 --> r3
+    end
+
+    gate{"<b>check_invoice()</b><br/>either check low?"}
+    ok["<b>passes</b>"]
+    rv["<b>review</b><br/>boxed on the photo"]
+
+    photo --> EX --> values --> JEV
+    photo --> JEV
+    JEV --> gate
+    gate green_ok@--> ok
+    gate orange_review@--> rv
+    style EX fill:none,stroke:#71717a,stroke-width:1.5px,stroke-dasharray: 6 4
+    %% Branch colours (styles.css): node classes and green_/orange_ edge ids.
+    class ok neonGreen
+    class rv neonOrange
+```
+
+## Setup
+
+```bash theme={null}
+pip install ipython pillow 'typesafe-sdk[pil]>=0.7.5' 'cooksafe>=0.2.0,<0.3.0'
+```
+
+Then set `TYPESAFE_API_KEY`. Download the two invoice photos, `extractions.json` and
+`json_cache.json` from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/ocr_confidence_bounding_boxes),
+and put them beside the script, with the photos in an `inputs/` folder.
+
+Every API response is saved in `json_cache.json`, so running the cookbook reuses those
+saved responses and you get the published numbers without calling the API. Delete that
+file to send every request again.
+
+> **Note** - Images and `Box` questions are dreamer-ready, which means they are not yet
+> ready for production, and their request format and answers can change between releases.
+> They need Jev 1.14, and every request needs the `TypeSafe-Danger-Zone-Images: true`
+> header. The client below sets that header.
+
+The numbers below came from `jev-1.14.0` on 2026-10-15.
+
+```python theme={null}
+import io
+import json
+import os
+from pathlib import Path
+
+from cooksafe import JsonCache
+from IPython.display import display
+from PIL import Image as PILImage
+from PIL import ImageDraw, ImageFont
+from typesafe_sdk import Box, Image, Noul, TypeSafeClient
+
+TYPESAFE_MODEL = "jev-1.14.0"  # Box questions need Jev 1.14
+BAR = 0.25  # a check scoring below this flags the field
+ZOOM = 3  # the zoomed region is three times the first box, and at least ZOOM_MIN of the page
+ZOOM_MIN = (0.30, 0.15)  # width, height as fractions of the page
+GROW = (0.25, 0.20)  # review margin around each box, as fractions of its width and height
+MIN_SIDE, MAX_SIDE = 280, 1568  # the pixel range Jev accepts for each side of an image
+
+client = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay the cache
+    base_url=os.environ.get("TYPESAFE_ENDPOINT"),
+    headers={"TypeSafe-Danger-Zone-Images": "true"},
+    timeout=120.0,
+)
+json_cache = JsonCache(Path("json_cache.json"))
+```
+
+## Load the photos and what the extractor read
+
+The two photos are invoices a restaurant received from its suppliers, taken with a phone.
+One is a creased carbon copy from Milkwood Mushrooms. The other is from Siyakhula Trading
+and has a shadow down the middle, making it a challenging OCR task.
+
+The extracted values are in `extractions.json`. We used Apple Vision's text recognition
+(OCR) to read the photos, and an LLM to read the output of that and return the structured
+values. Any extractor works here, because the check only needs the photo and the values.
+
+```python theme={null}
+INPUTS = Path("inputs")  # the photos, keyed in extractions.json by file name
+EXTRACTIONS = json.loads(Path("extractions.json").read_text())
+FIELDS = {
+    # field: what it is, in the words every question uses
+    "supplier_name": "the supplier's (seller's) business name",
+    "invoice_number": "the invoice or document number",
+    "invoice_date": "the invoice date",
+    "amount_due": "the final total amount payable",
+    "bank_name": "the name of the supplier's bank in the payment details",
+    "account_holder": "the account holder name in the supplier's bank details",
+    "account_number": "the supplier's bank account number",
+    "branch_code": "the supplier's bank branch code",
+}
+SAME_VALUE = "Ignore differences in spacing, punctuation, currency symbols and letter case."
+
+for photo, values in sorted(EXTRACTIONS.items()):
+    with PILImage.open(INPUTS / photo) as page:
+        print(f"{photo}  ({page.width} x {page.height} px)")
+    for field, value in values.items():
+        print(f"  {field:<16}{value}")
+```
+
+```
+milkwood.jpg  (1393 x 1080 px)
+  supplier_name   MILKWOOD mushrooms
+  invoice_number  AN400074
+  invoice_date    01/09/2026
+  amount_due      504.70
+  bank_name       Standard Bank
+  account_holder  MILKWOOD
+  account_number  080 11 4941
+siyakhula.jpg  (899 x 1599 px)
+  supplier_name   Siyakhula Trading Services (Pty) Ltd ta Siyakhula Trading
+  invoice_number  INV03070
+  invoice_date    16/09/2028
+  amount_due      R1,305.65
+  bank_name       Standard Bank
+  account_holder  Siyakhula Trading
+  account_number  10 13 205 260 5
+  branch_code     051001
+```
+
+Jev accepts images between 280 and 1568 pixels on each side. Larger images are shrunk, and
+small crops are enlarged so their text is readable. An image that is still too small goes
+in the middle of a white canvas, and its place on the canvas is kept, so a box Jev draws on
+the canvas can be converted back to a position on the crop.
+
+```python theme={null}
+def as_image(picture: PILImage.Image, upscale_to: int | None = None) -> tuple[Image, tuple]:
+    picture = picture.convert("RGB")
+    if upscale_to and max(picture.size) < upscale_to:
+        scale = upscale_to / max(picture.size)
+        picture = picture.resize(
+            (round(picture.width * scale), round(picture.height * scale)), PILImage.LANCZOS
+        )
+    picture.thumbnail((MAX_SIDE, MAX_SIDE))
+    frame = (0.0, 0.0, 1.0, 1.0)  # left, top, width, height of the picture on the canvas
+    if min(picture.size) < MIN_SIDE:
+        canvas = PILImage.new("RGB", (max(picture.width, MIN_SIDE), max(picture.height, MIN_SIDE)), "white")
+        x, y = (canvas.width - picture.width) // 2, (canvas.height - picture.height) // 2
+        canvas.paste(picture, (x, y))
+        frame = (x / canvas.width, y / canvas.height, picture.width / canvas.width,
+                 picture.height / canvas.height)
+        picture = canvas
+    buffer = io.BytesIO()
+    picture.save(buffer, "JPEG", quality=90)
+    return Image(buffer.getvalue()), frame
+
+
+def crop(photo: str, box: dict, pad: float = 0.0) -> PILImage.Image:
+    with PILImage.open(INPUTS / photo) as page:
+        w, h = page.size
+        return page.convert("RGB").crop((
+            max(0, int((box["left"] - pad) * w)), max(0, int((box["top"] - pad) * h)),
+            min(w, int((box["right"] + pad) * w)), min(h, int((box["bottom"] + pad) * h)),
+        ))
+```
+
+## Find each field on the page
+
+The first of the three requests sends the whole photo, with two questions for each field:
+
+* A `Box` question that finds the field. It includes the extracted value as a hint about
+  which text to box. This box decides where to zoom in.
+* A `Noul` question that asks whether the extracted value is that field on this page. Its
+  P(yes) is the first of the two checks, the page check.
+
+```python expandable theme={null}
+def page_questions(values: dict) -> dict:
+    questions = {}
+    for field, value in sorted(values.items()):
+        questions[f"box_{field}"] = Box(
+            instructions=f"{FIELDS[field]}, printed as “{value}” in `page`"
+        )
+        questions[f"fits_{field}"] = Noul(
+            instructions=f"Is “{value}” {FIELDS[field]} on `page`? {SAME_VALUE}"
+        )
+    return questions
+
+
+@json_cache
+def find_fields(photo: str, values_json: str) -> dict:
+    values = json.loads(values_json)
+    with PILImage.open(INPUTS / photo) as page:
+        image, _ = as_image(page)  # a whole page fills the size range, so no canvas
+    response = client.system_one(
+        state={"page": image}, questions=page_questions(values), model=TYPESAFE_MODEL
+    )
+    return {
+        "boxes": {f: response.boxes[f"box_{f}"].box.model_dump() for f in sorted(values)},
+        "fits": {f: response.nouls[f"fits_{f}"].noul for f in sorted(values)},
+    }
+
+
+found = {photo: find_fields(photo, json.dumps(values, sort_keys=True))
+         for photo, values in sorted(EXTRACTIONS.items())}
+for photo, result in found.items():
+    print(photo)
+    for field, value in EXTRACTIONS[photo].items():
+        print(f"  {field:<16}{value:<24.24} value fits the page {result['fits'][field]:.2f}")
+```
+
+```
+milkwood.jpg
+  supplier_name   MILKWOOD mushrooms       value fits the page 0.98
+  invoice_number  AN400074                 value fits the page 0.88
+  invoice_date    01/09/2026               value fits the page 0.53
+  amount_due      504.70                   value fits the page 0.95
+  bank_name       Standard Bank            value fits the page 0.98
+  account_holder  MILKWOOD                 value fits the page 0.90
+  account_number  080 11 4941              value fits the page 0.35
+siyakhula.jpg
+  supplier_name   Siyakhula Trading Servic value fits the page 0.96
+  invoice_number  INV03070                 value fits the page 0.02
+  invoice_date    16/09/2028               value fits the page 0.17
+  amount_due      R1,305.65                value fits the page 0.97
+  bank_name       Standard Bank            value fits the page 0.97
+  account_holder  Siyakhula Trading        value fits the page 0.93
+  account_number  10 13 205 260 5          value fits the page 0.96
+  branch_code     051001                   value fits the page 0.97
+```
+
+The page check catches `INV03070` (0.02) and `16/09/2028` (0.17), but passes the misread
+`AN400074` at 0.88. A photo of the whole page shows small print in little detail, so these
+first boxes are rough.
+
+## Zoom in and box each field again
+
+For each field, cut out a region around its first box and enlarge it. The region is at
+least 30% of the page wide and 15% high, so the field stays inside it even if the first box
+was off. Then ask the same `Box` question about each region. Each region's image goes
+inside its question's instructions, all the regions go in one request, and
+`client.attach_assets()` sends the images with it.
+
+The code then pads each new box on every side, so that cropping to it can't cut off part of
+the value.
+
+```python expandable theme={null}
+def region_around(box: dict) -> dict:
+    width = min(1.0, max(ZOOM_MIN[0], (box["right"] - box["left"]) * ZOOM))
+    height = min(1.0, max(ZOOM_MIN[1], (box["bottom"] - box["top"]) * ZOOM))
+    left = min(max(0.0, (box["left"] + box["right"] - width) / 2), 1 - width)
+    top = min(max(0.0, (box["top"] + box["bottom"] - height) / 2), 1 - height)
+    return {"left": left, "top": top, "right": left + width, "bottom": top + height}
+
+
+@json_cache
+def zoom_fields(photo: str, values_json: str, boxes_json: str) -> dict:
+    values, boxes = json.loads(values_json), json.loads(boxes_json)
+    questions, regions, images = {}, {}, []
+    for field in sorted(values):
+        region = region_around(boxes[field])
+        image, frame = as_image(crop(photo, region), upscale_to=1200)
+        regions[field], images = (region, frame), images + [image]
+        questions[field] = Box(
+            instructions=f"{FIELDS[field]}, printed as “{values[field]}” in this image: {image}"
+        )
+    with client.attach_assets(images):  # resolves the image references inside the text
+        response = client.system_one(
+            state={"task": "Locate fields in zoomed-in parts of a supplier invoice."},
+            questions=questions, model=TYPESAFE_MODEL,
+        )
+    tight = {}
+    for field, (region, (fx, fy, fw, fh)) in regions.items():
+        b = response.boxes[field].box
+        # canvas -> region -> page, then add the review margin
+        left, right = (b.left - fx) / fw, (b.right - fx) / fw
+        top, bottom = (b.top - fy) / fh, (b.bottom - fy) / fh
+        gx, gy = (right - left) * GROW[0], (bottom - top) * GROW[1]
+        rw, rh = region["right"] - region["left"], region["bottom"] - region["top"]
+        tight[field] = {
+            "left": max(0.0, region["left"] + (left - gx) * rw),
+            "top": max(0.0, region["top"] + (top - gy) * rh),
+            "right": min(1.0, region["left"] + (right + gx) * rw),
+            "bottom": min(1.0, region["top"] + (bottom + gy) * rh),
+        }
+    return {"boxes": tight}
+```
+
+## Check each value against its crop
+
+Crop the photo to each padded box and ask one `Noul` question per field: does this crop
+show the extracted value? Each crop goes inside its own question's instructions. The
+answer's P(yes) is the crop check.
+
+```python theme={null}
+@json_cache
+def check_crops(photo: str, values_json: str, boxes_json: str) -> dict:
+    values, boxes = json.loads(values_json), json.loads(boxes_json)
+    questions, images = {}, []
+    for field in sorted(values):
+        image, _ = as_image(crop(photo, boxes[field], pad=0.01), upscale_to=800)
+        images.append(image)
+        questions[field] = Noul(
+            instructions=f"Image: {image}\nDoes this cropped image clearly show {FIELDS[field]}"
+            f" as “{values[field]}”? {SAME_VALUE} Answer no if it is cut off, unreadable or"
+            " different."
+        )
+    with client.attach_assets(images):
+        response = client.system_one(
+            state={"task": "Check values read from cropped parts of a supplier invoice."},
+            questions=questions, model=TYPESAFE_MODEL,
+        )
+    return {
+        "shows": {f: response.nouls[f].noul for f in sorted(values)},
+    }
+```
+
+## Flag the fields a person should check
+
+A field goes to review when either check scores below `BAR` (0.25).
+
+```python theme={null}
+def check_invoice(photo: str, values: dict) -> dict:
+    values_json = json.dumps(values, sort_keys=True)
+    first = find_fields(photo, values_json)
+    tight = zoom_fields(photo, values_json, json.dumps(first["boxes"], sort_keys=True))
+    shown = check_crops(photo, values_json, json.dumps(tight["boxes"], sort_keys=True))
+    return {
+        field: {
+            "value": values[field],
+            "box": tight["boxes"][field],
+            "fits": first["fits"][field],
+            "shows": shown["shows"][field],
+            "review": first["fits"][field] < BAR or shown["shows"][field] < BAR,
+        }
+        for field in sorted(values)
+    }
+
+
+checked = {photo: check_invoice(photo, values) for photo, values in sorted(EXTRACTIONS.items())}
+KEY = {field: n for n, field in enumerate(FIELDS, 1)}  # the number drawn on each box below
+print(f"{'photo':<15}{'#':<3}{'field':<16}{'extracted':<26}{'fits page':>10}{'crop':>7}  verdict")
+for photo, fields in checked.items():
+    for field, r in sorted(fields.items(), key=lambda item: KEY[item[0]]):
+        verdict = "REVIEW" if r["review"] else "ok"
+        print(f"{photo:<15}{KEY[field]:<3}{field:<16}{r['value']:<26.26}{r['fits']:>10.2f}"
+              f"{r['shows']:>7.2f}  {verdict}")
+```
+
+```
+photo          #  field           extracted                  fits page   crop  verdict
+milkwood.jpg   1  supplier_name   MILKWOOD mushrooms              0.98   0.95  ok
+milkwood.jpg   2  invoice_number  AN400074                        0.88   0.18  REVIEW
+milkwood.jpg   3  invoice_date    01/09/2026                      0.53   0.82  ok
+milkwood.jpg   4  amount_due      504.70                          0.95   0.80  ok
+milkwood.jpg   5  bank_name       Standard Bank                   0.98   0.53  ok
+milkwood.jpg   6  account_holder  MILKWOOD                        0.90   0.57  ok
+milkwood.jpg   7  account_number  080 11 4941                     0.35   0.92  ok
+siyakhula.jpg  1  supplier_name   Siyakhula Trading Services      0.96   0.31  ok
+siyakhula.jpg  2  invoice_number  INV03070                        0.02   0.04  REVIEW
+siyakhula.jpg  3  invoice_date    16/09/2028                      0.17   0.66  REVIEW
+siyakhula.jpg  4  amount_due      R1,305.65                       0.97   0.84  ok
+siyakhula.jpg  5  bank_name       Standard Bank                   0.97   0.98  ok
+siyakhula.jpg  6  account_holder  Siyakhula Trading               0.93   0.96  ok
+siyakhula.jpg  7  account_number  10 13 205 260 5                 0.96   0.78  ok
+siyakhula.jpg  8  branch_code     051001                          0.97   0.94  ok
+```
+
+Neither check catches all three misreads alone. The crop check catches `AN400074` (0.18),
+which the page check passed at 0.88. The page check catches `16/09/2028` (0.17), which the
+crop check passed at 0.66. Both catch `INV03070`.
+
+All the correct values pass both checks. The lowest scores among them are the Milkwood
+account number at 0.35 on the page check and the Siyakhula supplier name at 0.31 on the
+crop check.
+
+On each photo, every box is numbered as in the `#` column above. Orange marks a field to
+review and blue one that passed, so a reviewer can check each value where it is printed.
+
+```python theme={null}
+BLUE, ORANGE = "#2a78d6", "#eb6834"
+
+
+def annotate(photo: str, fields: dict) -> PILImage.Image:
+    with PILImage.open(INPUTS / photo) as page:
+        page = page.convert("RGB")
+    draw = ImageDraw.Draw(page)
+    font = ImageFont.load_default(size=max(14, page.width // 60))
+    for field, r in fields.items():
+        colour = ORANGE if r["review"] else BLUE
+        b = r["box"]
+        xy = (b["left"] * page.width, b["top"] * page.height,
+              b["right"] * page.width, b["bottom"] * page.height)
+        draw.rectangle(xy, outline=colour, width=max(3, page.width // 300))
+        label = f" {KEY[field]} "  # a small badge keeps fields on one printed line legible
+        tx, ty = xy[0], max(0, xy[1] - font.size - 4)
+        draw.rectangle(draw.textbbox((tx, ty), label, font=font), fill=colour)
+        draw.text((tx, ty), label, fill="white", font=font)
+    return page
+
+
+for photo, fields in checked.items():
+    display(annotate(photo, fields))
+```
+
+![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/ocr_confidence_bounding_boxes/ocr_confidence_bounding_boxes.executed.1.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=cc3dddc23acd833fd013e254988b60a8)
+
+![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/ocr_confidence_bounding_boxes/ocr_confidence_bounding_boxes.executed.2.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=c370ec9cbcf317e55100ff6e12ce203e)
+
+
 # Parallel questions
 Source: https://docs.typesafe.ai/cookbooks/parallel_questions
 
@@ -10032,20 +11254,18 @@ questions, or N requests with one question each. With TypeSafe the answers come 
 same either way: each question is scored on its own against the document, so its answer
 doesn't depend on what else is in the request.
 
-To check that, the cookbook asks each question several times both ways - all N in one
-request, and one question per request - and compares the run-to-run std dev: how far an
-answer moves from one repeat to the next. Whatever noise a question has, it has under
-both batching strategies. Batching adds none. Most answers came back identical across all
-5 repeats either way, the same value on every call, std dev exactly 0.0.
+To check that, we ask each question several times both ways (all N in one request, and
+one question per request) and compare the run-to-run std dev: how far an answer moves
+from one repeat to the next. Batching adds no noise. Most answers came back identical
+across all 5 repeats either way, std dev exactly 0.0.
 
 Cost and speed do change. The document dominates every request. N single-question calls
 pay for it N times, in N round trips; the batched call pays once. The bigger the document,
 the nearer that saving comes to a full Nx.
 
 The case here is a regulatory briefing. The document is the Wikipedia article on the GDPR
-(\~54,000 characters, a document-dominated workload where the document is most of every
-request), and a compliance team wants 13 things checked: 8 `Noul` questions, 2 `Choice`
-questions, and 3 `Score` questions.
+(\~54,000 characters), and a compliance team wants 13 things checked: 8 `Noul` questions,
+2 `Choice` questions, and 3 `Score` questions.
 
 ## Setup
 
@@ -10053,7 +11273,9 @@ questions, and 3 `Score` questions.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`.
+then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
+`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/parallel_questions) into the folder you run
+the script from.
 
 ```python theme={null}
 import json
@@ -10079,9 +11301,9 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 ## The document: the Wikipedia article on the GDPR
 
-Fetched as plain text from a pinned revision of the article and cached in `json_cache.json`
-next to the API calls, so the document and its numbers stay fixed even as the live
-article gets edited.
+We fetch the article as plain text from a pinned revision and cache it in
+`json_cache.json` next to the API calls, so the document and its numbers stay fixed even
+as the live article gets edited.
 
 ```python theme={null}
 WIKIPEDIA_REVISION = 1363040264  # "General Data Protection Regulation", as of 2026-07
@@ -10117,12 +11339,12 @@ display(Markdown(f"📄 [Read the pinned Wikipedia revision]({DOCUMENT['source']
 
 ## The questions: 8 nouls + 2 choices + 3 scores
 
-One number tracked per answer, by type:
+We track one number per answer, by type:
 
 * `Noul`: the probability of "yes".
 * `Choice`: the max prob, the probability on the picked label. `criteria` maps each
   label to its meaning.
-* `Score`: the score normalized to 0-1, the score divided by the top level.
+* `Score`: the score divided by the top level, so it runs 0-1.
   `criteria` lists the level descriptions, from level 0 up.
 
 ```python expandable theme={null}
@@ -10206,13 +11428,12 @@ METRIC = {  # question type -> the one number we track per answer
 
 ## Ask two ways, 5 times each
 
-`ask()` sends any subset of the questions with the document and reduces each answer to its
+Each call sends some of the questions with the document, and we reduce each answer to its
 one tracked number. The document is byte-identical in every call.
 
-Both batching strategies run `RUNS` = 5 times, giving each question 5 answers per strategy,
-enough to compare the mean (do the two agree?) and the std dev (does batching add noise?).
-Calls are cached to `json_cache.json`, which ships with the cookbook, so re-rendering is
-free; delete it to re-run live.
+Both batching strategies run `RUNS` = 5 times, enough to compare the mean (do the two
+agree?) and the std dev (does batching add noise?). Calls are cached to
+`json_cache.json`; delete it to re-run live.
 
 ```python expandable theme={null}
 @json_cache
@@ -10259,9 +11480,9 @@ singles = [
 
 ## Batching doesn't change the answers
 
-Per question: the mean and std dev of its tracked number over the 5 runs, under each
-batching strategy. If batching changed the answers, the batched columns would differ from
-the single columns. A shifted mean is bias. A larger std dev is noise.
+For each question, the table shows the mean and std dev of its tracked number over the 5
+runs under each batching strategy. A mean that shifts between the batched and single
+columns would be bias; a larger std dev would be noise.
 
 ```python theme={null}
 print(
@@ -10294,32 +11515,24 @@ penalty_severity      normalized score          1.000       1.000       0.0000  
 compliance_burden     normalized score          0.750       0.750       0.0000      0.0000
 ```
 
-Reading the table by question type:
-
 * Choices, scores, and six of the eight nouls come back identical across the 5 repeats:
-  std dev exactly 0.0 under both batching strategies, every batched and single call
-  returning the same number. One call with N questions gives the same answers as N calls
-  with one question each.
+  std dev exactly 0.0 under both batching strategies. One call with N questions gives the
+  same answers as N calls with one question each.
 * `breach_72h` and `criminal_penalties` carry a little run-to-run sampling noise, and it's
   the same size under both batching strategies, with the means agreeing to within that
   noise. The noise is a property of the question, not of how you batch: batching neither
   shifts the answer nor adds variance.
 
-Either way, there is no batching effect: no question's answer depends on the 12 other
-questions sharing its request.
-
 ## The only difference: cost and speed
 
-Same answers, different bill. The \~54,000-character article dominates every request, so:
+The \~54,000-character article dominates every request, so:
 
 * Cost: the 13 single-question calls re-send the article 13 times; the batched call sends
-  it
-  once. This saving holds however you fire the calls.
-* Speed: the figure sums the 13 single-call latencies, so it assumes they run one after
+  it once. This saving holds however you fire the calls.
+* Speed: the table sums the 13 single-call latencies, so it assumes they run one after
   another. Fire them concurrently and the gap shrinks, but the 13x token cost stays.
 
-Token counts and latencies are cached alongside the answers; cost is applied after, and
-both are averaged over the 5 runs.
+Cost and time are averaged over the 5 runs.
 
 ```python theme={null}
 batched_cost = mean(cost for _values, cost, _latency in batched)
@@ -10352,8 +11565,8 @@ batching: 12.2x cheaper, 10.0x faster
 
 ## Open it in the TypeSafe playground
 
-The same article and the same 13 questions, packed into a share link. Open it to re-run
-the briefing live; the same numbers come back.
+The share link packs the same article and 13 questions. Open it to re-run the briefing
+live.
 
 ```python theme={null}
 playground_link = make_playground_link(
@@ -10682,13 +11895,631 @@ display(
   them. TypeSafe then picks the one the question asks for.
 
 
+# Reading a scanned vaccination record
+Source: https://docs.typesafe.ai/cookbooks/reading_scanned_documents
+
+Find each vaccine on a scanned travel record with a Noul and a Box, read the year of each dose with a Choice that can answer unreadable, and check each dose still covers the trip in a text-only request.
+
+You have scanned vaccination records with no text layer, and you want Jev to check that
+the information on each one is correct before a trip. Jev takes the image and answers a
+set list of questions about it:
+
+* a `Noul` question per vaccine: is it on the record?
+* a `Box` question per vaccine: where is its row?
+* a `Choice` question per row: what year does the date say, or is it `unreadable`?
+
+![Jev reading a scanned travel vaccination record and flagging two
+rows](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/reading_scanned_documents/reading-scanned-documents-hero.gif?s=0d45e811c73c5660710628f496ae1fce)
+
+In this example, Jev reads the travel vaccination record above into one row per
+vaccine, and flags the rows that need review before the trip. This record has two:
+
+* The rabies date is under a batch sticker, so it can't be read from the scan. Jev
+  answers `unreadable` instead of guessing.
+* The typhoid dose is from June 2021. The date is clear, but a typhoid injection
+  protects for about three years, so it won't cover the trip in November 2026.
+
+In this case we already know the possible answers: the vaccines the clinic gives, and
+the years a dose could have been given in. We also have `unreadable` as an option to
+account for values that cannot be found on the page.
+
+Two requests read the scan, and a third checks the readings as text. Your code decides
+what goes into each request and which rows to flag.
+
+```mermaid actions={true} theme={null}
+  %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 36, "nodeSpacing": 24, "wrappingWidth": 260, "subGraphTitleMargin": {"top": 8, "bottom": 24}}}}%%
+flowchart LR
+    scan["scan arrives<br/><i>not covered here</i>"]
+
+    subgraph jev["three Jev requests"]
+        direction TB
+        r1["<b>1.</b> find the rows<br/><b>Noul</b> + <b>Box</b> per vaccine"]
+        r2["<b>2.</b> read the year of each dose<br/><b>Choice</b>, or <i>unreadable</i>"]
+        r3["<b>3.</b> check each dose covers the trip<br/><b>Noul</b>, text only"]
+        r1 --> r2 --> r3
+    end
+
+    code{"flag it?<br/>your code"}
+    rec["traveller's file<br/><i>not covered here</i>"]
+    nurse["a nurse checks it"]
+
+    scan --> jev --> code
+    code green_no@-->|"no"| rec
+    code blue_yes@-->|"yes"| nurse
+    %% Branch colours (styles.css): node classes and green_/blue_ edge ids.
+    class rec neonGreen
+    class nurse neonBlue
+    style scan stroke-dasharray: 6 4
+```
+
+## Setup
+
+```bash theme={null}
+pip install ipython matplotlib 'typesafe-sdk>=0.7.5,<0.8.0' \
+    'cooksafe>=0.2.0,<0.3.0'
+```
+
+Set `TYPESAFE_API_KEY`. Download `vaccination_record.jpg` and `json_cache.json` from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/reading_scanned_documents)
+and keep them in one folder with the script. `json_cache.json` stores the API responses
+behind the numbers on this page. While it's there, the script reuses those responses
+instead of calling the API, so you get the same numbers. Delete it to call the API
+yourself.
+
+> [!WARNING]
+>
+> Images and `Box` questions are an early preview. Requests that carry an image
+> or a `Box` question need the `TypeSafe-Danger-Zone-Images: true` header, and the request
+> format can change between releases. See [Images](/images).
+
+```python theme={null}
+import hashlib
+import json
+import os
+from datetime import date
+from pathlib import Path
+from time import perf_counter
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from cooksafe import JsonCache
+from IPython.display import Markdown, display
+from typesafe_sdk import Image, TypeSafeClient
+
+TYPESAFE_MODEL = "jev-1.14.0"
+IMAGES_ON = {"TypeSafe-Danger-Zone-Images": "true"}  # opt in to the image preview
+READ_CUTOFF = 0.90  # below this, a person checks the reading against the paper
+LEGIBLE_CUTOFF = 0.50  # the legibility Noul gets its own, lower cutoff
+IN_DATE_CUTOFF = 0.50  # below this, a nurse checks whether the dose still covers the trip
+
+client = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay
+    base_url=os.environ.get("TYPESAFE_ENDPOINT"),
+    timeout=120.0,
+)
+json_cache = JsonCache(Path("json_cache.json"))
+```
+
+## Send the scan to Jev
+
+![A scanned travel vaccination record](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/reading_scanned_documents/vaccination_record.jpg?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=0050cdcf649c1b76ce0bfeb0f7678717)
+
+Each request carries the scan in its state as `Image(PAGE)`, under the name `page`, and
+each question mentions `page` to say which image it is about. All the questions in a
+request see the same image, so each step's questions go in one request.
+
+Jev accepts PNG and JPEG files up to 16 MiB. Each side has to be between 280 and 1568
+pixels, so scale a high-resolution scan down before sending it. The
+[image limits](/images#limits) page lists the rest, including
+limits on the whole request.
+
+```python theme={null}
+PAGE = Path("vaccination_record.jpg")
+PAGE_SHA = hashlib.sha256(PAGE.read_bytes()).hexdigest()[:16]  # cache key for the scan
+
+
+@json_cache
+def ask(model: str, page_sha: str, questions_json: str) -> dict:
+    """One request: the scan as the state, plus a set of questions about it."""
+    started = perf_counter()
+    response = client.system_one(
+        state={"page": Image(PAGE)},
+        questions=json.loads(questions_json),
+        model=model,
+        extra_headers=IMAGES_ON,
+    )
+    return {
+        "answers": {k: a.model_dump(mode="json") for k, a in response.answers.items()},
+        "seconds": round(perf_counter() - started, 2),
+        "input_tokens": response.usage.input_tokens or 0,
+        "output_tokens": response.usage.output_tokens or 0,
+    }
+
+
+def ask_page(questions: dict) -> dict:
+    if not questions:  # nothing to ask, such as a page with no rows found
+        return {"answers": {}}
+    return ask(TYPESAFE_MODEL, PAGE_SHA, json.dumps(questions, sort_keys=True))
+```
+
+## Find which vaccines are on the record
+
+Jev doesn't extract data into a list. It answers questions about what's on the page, so
+you ask it about each thing you're looking for. In this case, that's the 16 vaccines the
+clinic gives. The first
+request asks two questions about each one:
+
+* a `Noul` question: is this vaccine in the table?
+* a `Box` question: where is its row?
+
+The list includes vaccines with similar names, like the combined hepatitis A and B
+vaccine next to Hepatitis A, to check that Jev matches the exact name.
+One more `Noul` question asks whether the table has a vaccine that isn't on the list at
+all, since none of the other questions would catch that.
+
+```python theme={null}
+VACCINES = [
+    "Hepatitis A", "Hepatitis B", "Hepatitis A and B combined", "Typhoid",
+    "Hepatitis A and typhoid combined", "Yellow fever", "Rabies", "Japanese encephalitis",
+    "Tick-borne encephalitis", "Cholera", "MenACWY", "MenB",
+    "Tetanus, diphtheria and polio (Td/IPV)", "MMR", "Varicella", "Influenza",
+]
+PRESENT_CUTOFF = 0.5  # P(recorded) at or above this counts the vaccine as on the page
+```
+
+```python theme={null}
+def find_questions() -> dict:
+    questions = {"unlisted": {
+        "type": "noul",
+        "instructions": {
+            "question": "Does the vaccines table in `page` record any vaccine that is not "
+                        "in this list?",
+            "list": VACCINES,
+        },
+    }}
+    for i, vaccine in enumerate(VACCINES):
+        questions[f"vac_{i:02d}"] = {
+            "type": "noul",
+            "instructions": f"Is {vaccine} recorded in the vaccines table in `page`, with "
+                            "exactly this name?",
+        }
+        questions[f"vac_{i:02d}|box"] = {
+            "type": "box",
+            "instructions": f"the whole {vaccine} row of the vaccines table in `page`",
+        }
+    return questions
+```
+
+All the questions go in one request. Vaccines that score 0.5 or more count as on the page,
+and the top edges of their boxes give the page order.
+
+```python theme={null}
+found = ask_page(find_questions())
+F = found["answers"]
+present = []
+for i, vaccine in enumerate(VACCINES):
+    p, box = F[f"vac_{i:02d}"]["noul"], F[f"vac_{i:02d}|box"]
+    print(f"{vaccine:<40}recorded {p:.2f}  box top {box['box']['top']:.2f}")
+    if p >= PRESENT_CUTOFF:
+        present.append({"vaccine": vaccine, "present": p, "box": box["box"],
+                        "box_confidence": box["confidence"]})
+print(f"\nanother vaccine on the page: {F['unlisted']['noul']:.2f}")
+
+rows = sorted(present, key=lambda r: r["box"]["top"])
+for n, row in enumerate(rows, 1):
+    row["id"], row["position"] = f"row-{n}", n
+```
+
+```
+Hepatitis A                             recorded 0.98  box top 0.33
+Hepatitis B                             recorded 0.98  box top 0.40
+Hepatitis A and B combined              recorded 0.02  box top 0.36
+Typhoid                                 recorded 0.98  box top 0.48
+Hepatitis A and typhoid combined        recorded 0.01  box top 0.34
+Yellow fever                            recorded 0.98  box top 0.55
+Rabies                                  recorded 0.97  box top 0.69
+Japanese encephalitis                   recorded 0.01  box top 0.35
+Tick-borne encephalitis                 recorded 0.01  box top 0.34
+Cholera                                 recorded 0.01  box top 0.34
+MenACWY                                 recorded 0.00  box top 0.34
+MenB                                    recorded 0.01  box top 0.35
+Tetanus, diphtheria and polio (Td/IPV)  recorded 0.98  box top 0.62
+MMR                                     recorded 0.01  box top 0.33
+Varicella                               recorded 0.01  box top 0.34
+Influenza                               recorded 0.01  box top 0.34
+
+another vaccine on the page: 0.02
+```
+
+The six vaccines on the page score 0.97 or more, and the look-alikes score 0.02 or
+less. Sorted by their boxes, the six rows come out in the same order as the page. The
+question about an unlisted vaccine scores 0.02, so there isn't one.
+
+> [!NOTE]
+>
+> A `Box` always returns a box, even for a vaccine that isn't on the page. Only use
+> the box when the `Noul` says the vaccine is there.
+
+Sixteen vaccines make 33 questions. With a list of thousands, the questions may not
+fit in one request (see [context length](/models#context-length)). A bigger version of
+this would narrow the list first, for example with one `Noul` question per group of
+vaccines.
+
+## Read the year of each dose
+
+The in-date check only needs to know roughly how old each dose is, so the second request
+asks for the year alone, with one `Choice` question per row. A `Choice` always picks one
+of its options, so the date under the sticker would otherwise get whichever year looked
+closest. The list of years ends with `other` and `unreadable`, which lets Jev say it
+can't read the date.
+
+Each row also gets a `Noul` question asking whether the date is fully legible. It's a
+second signal, separate from the `Choice`, that something is covering the date.
+
+```python theme={null}
+YEAR = {
+    **{f"y{n}": str(n) for n in range(2016, 2027)},
+    "other": "A year before 2016 or after 2026",
+    "unreadable": "The year is covered, stained, smudged or damaged and can't be read",
+}
+```
+
+The record writes dates as day/month/year, so the year question says the year is the last
+part.
+
+```python theme={null}
+def read_questions(row: dict) -> dict:
+    where = f"the DATE GIVEN cell of the {row['vaccine']} row of the vaccines table in `page`"
+    i = row["id"]
+    return {
+        f"{i}|year": {
+            "type": "choice", "criteria": YEAR,
+            "instructions": "Dates on this record are written day/month/year, so the year "
+                            f"is the last part. What year is written in {where}?",
+        },
+        f"{i}|legible": {
+            "type": "noul",
+            "instructions": f"Is the date in {where} fully legible, with nothing covering, "
+                            "staining, smudging or blurring any of it?",
+        },
+    }
+```
+
+```python theme={null}
+read = ask_page({k: q for row in rows for k, q in read_questions(row).items()})
+A = read["answers"]
+for row in rows:
+    i = row["id"]
+    row["year"], row["year_confidence"] = A[f"{i}|year"]["choice"], A[f"{i}|year"]["confidence"]
+    row["legible"] = A[f"{i}|legible"]["noul"]
+```
+
+An `other` or `unreadable` pick leaves the row without a year, so there's nothing to check
+yet.
+
+```python theme={null}
+UNRESOLVED = ("other", "unreadable")  # picks that leave the row without a year
+
+
+def year_given(row: dict) -> int | None:
+    return None if row["year"] in UNRESOLVED else int(row["year"][1:])
+
+
+def unresolved(row: dict) -> bool:
+    """True when the year came back without a value to check."""
+    return year_given(row) is None
+
+
+def as_text(row: dict) -> str:
+    year = year_given(row)
+    return str(year) if year else row["year"]
+
+
+print(f"{'vaccine':<40}{'year':<12}legible")
+for row in rows:
+    print(f"{row['vaccine']:<40}{as_text(row):<12}{row['legible']:.2f}")
+```
+
+```
+vaccine                                 year        legible
+Hepatitis A                             2026        0.96
+Hepatitis B                             2026        0.86
+Typhoid                                 2021        0.96
+Yellow fever                            2025        0.96
+Tetanus, diphtheria and polio (Td/IPV)  2024        0.96
+Rabies                                  unreadable  0.05
+```
+
+Five years read correctly. For rabies, the `Choice` picks `unreadable` and the legibility
+`Noul` is 0.05.
+
+The legibility `Noul` scores the clear dates between 0.86 and 0.96, lower than the
+`Choice` answers. That's why it gets its own cutoff of 0.50 further down. The lowest of
+them, at 0.86, is the Hepatitis B row with a highlighter stroke across it, still far
+above the 0.05 for the date under the sticker.
+
+## Check whether each dose covers the trip
+
+Reading the page correctly doesn't catch the typhoid dose. Its year is clear, and Jev
+read it. The third request asks a different question: will this dose still protect the
+traveller on the day they leave?
+
+This request doesn't include the image. It sends the readings as text, so the answer is
+only about the dose, and the reading stays with the image questions. We work out roughly
+how long before departure each dose was given, because date arithmetic is a job for code,
+and leave out rows without a year. The state gives Jev the departure date, and the
+criteria say what counts as in date.
+
+```python theme={null}
+DEPARTURE = date(2026, 11, 12)  # from the traveller's booking
+
+
+def before_departure(year: int) -> str:
+    years = DEPARTURE.year - year
+    return "less than a year" if years == 0 else f"about {years} year{'s' * (years != 1)}"
+
+
+CHECK_CONTEXT = (
+    "Each entry is one line of an adult traveller's vaccination record, as read from a "
+    f"scan. The traveller leaves on {DEPARTURE.day} November {DEPARTURE.year}. Judge "
+    "only whether the dose will still protect the traveller on that date, by usual "
+    "travel-health guidance for adults."
+)
+IN_DATE_QUESTION = "Will this dose still protect the traveller on the departure date?"
+IN_DATE_CRITERIA = {
+    "true": "The dose is within the usual protection period for this vaccine on the "
+            "departure date.",
+    "false": "The dose is past the usual protection period for this vaccine by the "
+             "departure date.",
+}
+```
+
+```python theme={null}
+def check_questions(readable: list[dict]) -> dict:
+    return {
+        row["id"]: {
+            "type": "noul",
+            "instructions": {"question": IN_DATE_QUESTION, "entry": row["id"]},
+            "criteria": IN_DATE_CRITERIA,
+        }
+        for row in readable
+    }
+
+
+def check_state(readable: list[dict]) -> dict:
+    return {
+        "context": CHECK_CONTEXT,
+        "entries": [{"id": r["id"], "vaccine": r["vaccine"], "year_given": as_text(r),
+                     "given_before_departure": before_departure(year_given(r))}
+                    for r in readable],
+    }
+```
+
+This request has no image, so it doesn't need the images header.
+
+```python theme={null}
+@json_cache
+def check(model: str, state_json: str, questions_json: str) -> dict:
+    started = perf_counter()
+    response = client.system_one(
+        state=json.loads(state_json), questions=json.loads(questions_json), model=model
+    )
+    return {
+        "answers": {k: a.noul for k, a in response.answers.items()},
+        "seconds": round(perf_counter() - started, 2),
+        "input_tokens": response.usage.input_tokens or 0,
+        "output_tokens": response.usage.output_tokens or 0,
+    }
+
+
+readable = [r for r in rows if not unresolved(r)]
+checked = check(TYPESAFE_MODEL, json.dumps(check_state(readable)),
+                json.dumps(check_questions(readable))) if readable else {"answers": {}}
+for row in rows:
+    row["in_date"] = checked["answers"].get(row["id"])
+    year = year_given(row)
+    ago = before_departure(year) if year else "-"
+    shown = "  -" if row["in_date"] is None else f"{row['in_date']:.2f}"
+    print(f"{row['vaccine']:<40}{as_text(row):<12}{ago:<20}{shown}")
+```
+
+```
+Hepatitis A                             2026        less than a year    0.94
+Hepatitis B                             2026        less than a year    0.83
+Typhoid                                 2021        about 5 years       0.38
+Yellow fever                            2025        about 1 year        0.95
+Tetanus, diphtheria and polio (Td/IPV)  2024        about 2 years       0.93
+Rabies                                  unreadable  -                     -
+```
+
+Typhoid, given about 5 years before departure, scores 0.38. The other doses score 0.83
+or more. Rabies has no score because its year couldn't be read.
+
+## Flag the rows to check
+
+A row gets up to two flags:
+
+* **Check the reading** if an answer about finding or reading the row is below 0.90, the
+  legibility `Noul` is below 0.50, or the year came back `other` or `unreadable`.
+* **Check the dose** if the in-date score is below 0.50.
+
+The whole page is flagged if the question about an unlisted vaccine scores 0.5 or more,
+since that vaccine has no row of its own.
+
+A high in-date score doesn't cancel a doubtful reading, because it was judged on a year
+that might be wrong. The cutoffs (`READ_CUTOFF` at 0.90, `LEGIBLE_CUTOFF` and
+`IN_DATE_CUTOFF` at 0.50) are a starting point. Tune them on records a person has
+already checked.
+
+```python expandable theme={null}
+def reading_score(row: dict) -> float:
+    """The weakest of the answers that say the row was found and read."""
+    return min(row["present"], row["year_confidence"])
+
+
+def review_reasons(row: dict) -> list[str]:
+    reasons = []
+    if (unresolved(row) or reading_score(row) < READ_CUTOFF
+            or row["legible"] < LEGIBLE_CUTOFF):
+        reasons.append("Check the reading")
+    if row["in_date"] is not None and row["in_date"] < IN_DATE_CUTOFF:
+        reasons.append("Check the dose")
+    return reasons
+
+
+def review_queue(rows: list[dict]) -> list[tuple[dict, list[str]]]:
+    return [(row, review_reasons(row)) for row in rows if review_reasons(row)]
+
+
+def page_reasons() -> list[str]:
+    """Flags that belong to the whole page rather than to one row."""
+    if F["unlisted"]["noul"] >= PRESENT_CUTOFF:
+        return ["Check the page: it may record a vaccine outside the list"]
+    return []
+
+
+table = ["| Vaccine | Year given | Lowest reading score | Legible | In date | Flagged |",
+         "|---|---|---|---|---|---|"]
+for row in rows:
+    in_date = "–" if row["in_date"] is None else f"{row['in_date']:.2f}"
+    table.append(f"| {row['vaccine']} | {as_text(row)} | {reading_score(row):.2f} | "
+                 f"{row['legible']:.2f} | {in_date} | {', '.join(review_reasons(row)) or '–'} |")
+display(Markdown("\n".join(table)))
+print(f"page: {', '.join(page_reasons()) or 'not flagged'} "
+      f"(another vaccine on the page: {F['unlisted']['noul']:.2f})")
+```
+
+```
+page: not flagged (another vaccine on the page: 0.02)
+```
+
+| Vaccine | Year given | Lowest reading score | Legible | In date | Flagged |
+| - | - | - | - | - | - |
+| Hepatitis A | 2026 | 0.98 | 0.96 | 0.94 | – |
+| Hepatitis B | 2026 | 0.98 | 0.86 | 0.83 | – |
+| Typhoid | 2021 | 0.98 | 0.96 | 0.38 | Check the dose |
+| Yellow fever | 2025 | 0.98 | 0.96 | 0.95 | – |
+| Tetanus, diphtheria and polio (Td/IPV) | 2024 | 0.98 | 0.96 | 0.93 | – |
+| Rabies | unreadable | 0.97 | 0.05 | – | Check the reading |
+
+## Crop the flagged rows for the nurse
+
+A `Box` answer has `top`, `bottom`, `left` and `right` edges as fractions of the image's
+height and width, plus a `confidence`. Multiply by the image size to get pixels. The
+crops reuse the boxes from the first request with a small margin, and a wider margin when
+the box's confidence is below 0.6.
+
+```python theme={null}
+SURFACE, INK, INK2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
+GRID, AXIS, BLUE, ORANGE = "#e1e0d9", "#c3c2b7", "#2a78d6", "#eb6834"
+PAD = 0.02  # fraction of the page added around each box before cropping
+LOW_BOX_CONFIDENCE, LOW_PAD = 0.6, 0.05  # a less certain box gets a wider margin
+
+
+def crop(box: dict, confidence: float):
+    page = plt.imread(PAGE)
+    h, w = page.shape[:2]
+    pad = LOW_PAD if confidence < LOW_BOX_CONFIDENCE else PAD
+    top, bottom = max(0.0, box["top"] - pad), min(1.0, box["bottom"] + pad)
+    left, right = max(0.0, box["left"] - pad), min(1.0, box["right"] + pad)
+    return page[int(top * h):int(bottom * h), int(left * w):int(right * w)]
+```
+
+```python theme={null}
+queue = review_queue(rows)
+for row, _ in queue:
+    b = row["box"]
+    print(f"{row['vaccine']:<40}top {b['top']:.2f}  bottom {b['bottom']:.2f}  "
+          f"left {b['left']:.2f}  right {b['right']:.2f}  "
+          f"confidence {row['box_confidence']:.2f}")
+
+if not queue:
+    print("No rows were flagged by these checks.")
+else:
+    fig, axes = plt.subplots(len(queue), 1, figsize=(8, 1.9 * len(queue)), facecolor=SURFACE,
+                             squeeze=False)
+    for ax, (row, reasons) in zip(axes[:, 0], queue):
+        ax.imshow(crop(row["box"], row["box_confidence"]))
+        ax.set_xticks([]), ax.set_yticks([])
+        for side in ax.spines.values():
+            side.set_color(ORANGE if "Check the dose" in reasons else BLUE)
+            side.set_linewidth(2)
+        ax.set_title(f"Row {row['position']}, {row['vaccine']}: "
+                     f"{', '.join(reasons).lower()}", loc="left", color=INK, fontsize=10)
+    fig.suptitle(f"Flagged by these checks: {len(queue)} of {len(rows)} rows",
+                 x=0.01, ha="left", color=INK, fontsize=12)
+    plt.tight_layout()
+    display(fig)
+    plt.close(fig)
+```
+
+```
+Typhoid                                 top 0.48  bottom 0.53  left 0.06  right 0.94  confidence 0.88
+Rabies                                  top 0.69  bottom 0.75  left 0.04  right 0.94  confidence 0.77
+```
+
+![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/reading_scanned_documents/reading_scanned_documents.executed.1.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=e6ba8a2f4eb315f8e647d38b7d838b43)
+
+Typhoid is flagged to check the dose, and Rabies to check the reading. Each crop shows
+the whole row.
+
+## Using it on your own documents
+
+This approach fits any document where you know the possible answers in advance. Swap in
+your own lists for `VACCINES` and `YEAR`, keep `other` and `unreadable` in each list of
+options, and rewrite the in-date question for your documents.
+
+***
+
+# Appendix
+
+## Why reading and checking are separate requests
+
+Skip the text-only request and ask the in-date question about the scan itself, with the
+departure date in the header.
+
+```python theme={null}
+def direct_questions(row: dict) -> dict:
+    return {row["id"]: {
+        "type": "noul",
+        "instructions": {"question": IN_DATE_QUESTION + " The departure date is on `page`.",
+                         "entry": f"the {row['vaccine']} row of the vaccines table in "
+                                  "`page`"},
+        "criteria": IN_DATE_CRITERIA,
+    }}
+
+
+direct = ask_page({k: q for row in rows for k, q in direct_questions(row).items()})
+print(f"{'vaccine':<40}{'from the image':>15}{'from the readings':>19}")
+for row in rows:
+    via_text = "  -" if row["in_date"] is None else f"{row['in_date']:.2f}"
+    print(f"{row['vaccine']:<40}{direct['answers'][row['id']]['noul']:>15.2f}{via_text:>19}")
+```
+
+```
+vaccine                                  from the image  from the readings
+Hepatitis A                                        0.88               0.94
+Hepatitis B                                        0.85               0.83
+Typhoid                                            0.50               0.38
+Yellow fever                                       0.96               0.95
+Tetanus, diphtheria and polio (Td/IPV)             0.84               0.93
+Rabies                                             0.88                  -
+```
+
+Rabies scores 0.88 and passes, with its date under a sticker. Typhoid scores 0.50,
+right on the cutoff, so it passes too. Both misses come from one answer covering two
+steps: you can't tell whether Jev failed to read the date or judged the dose wrongly.
+
+
 # Re-ranking
 Source: https://docs.typesafe.ai/cookbooks/rerank_typesafe
 
 Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.
 
 You have thousands of documents, and you need to find the one that answers a specific
-question. So how do you find it?
+question.
 
 First, use a quick method such as keyword matching to cut those thousands of candidates
 down to a shortlist of plausible ones. We call this fast search.
@@ -10702,24 +12533,15 @@ fast search shortlist of 30 candidates for each of 40 queries, then TypeSafe re-
 shortlist. With re-ranking, the correct passage lands in first place for 18% of queries, up
 from 5% with fast search alone.
 
-**Along the way, you're going to learn:**
-
-* What fast search does, and why it isn't the whole answer
-* What re-ranking is, and how it fits after a fast search step
-* How TypeSafe scores one candidate against a query, and how much that improves the result
-
 ## Try it yourself
 
-[Open a query, candidate, and re-ranking question in the TypeSafe Playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAngPpZTUAOKpBpUANgIYCWcfADMIVfADc+EXiilIAzvghD8AaWQoYUANY18UPpK75mVaAjAwqCADT4UACwR6h-Yygj55KHigT4efV4BfBhmCCR8AHcHPigHfGsuPgQVKB5IgCN-AHMqDL8wADp8NCd8AFk+bUVIfCQIFHw+MA0+IRpAFAIMsCUrRIR5BB4qePxIQfrGgfFhrm79HhghpRUeKFkI4VEJKRk5RWU1DS1dfUM+YwByEzMmS2sSitEECFmqOwAxazAwFMr1tEeIoGk1AswRig9B57OURNZuBB5FZ-OtNpEeoskKD8Nl8E4uL1rPJwgo+JkuP54QEkHpTOYHjxjK0hAgNoo+JFHP56UwLJycvISmhPNz8Fg-KhYb5Yf4qjUvAgENp7J5MlQBQEgvxBNTJNJfAdVrK+GJLDy7oNFBqcg4UIoYEhWmIxZ92o58ABBRBOn1NGFigCqSD4hXwAGUfH5FABhCLeUMwdF2bkuNyqrxR1HakJhLYxOIJJIpNIZXG5fKoCzl9LLfzfCx-OWAvgg6aBHJvahIP0BDY7GKedJZfwE3rJHgUqk7KDx2SadFM3YG9FC-AASUi+AASgBRAAinpjaAP+FlEbC1kQ+DjViagx8FNbTl6gSE+UQUVEKuprT8VDgTlNRiZAtU7d4ew0ABaEl4xeXpZyocJ8nRZpFA7LsqEgqU0R2alZwUeckzkJdmCscIhjXdcmjHaUmkAHAIQOsfAilY88AHFMOwpooGsXxJkCRDkMNLZMj0Ek2T4JdeCiOxqTFIQ7ycSsmGNcDuz9JcIEyAArNlZFmeQ7ExawfE5RRqVDIYuBUZhqDgDINACJMHFEUNoU8HhmHCTkwXwBydLcqFjTFP4EQ8KhDhURwZSE0QRKQFNyjilC5DQkxISgkLyk4iDe2pMikKRSYjldU1vC9H0wD9IpAFwCDdigCJoAGYAE5WrsABGTqAFYIyKGMUBKVqADZOqKOxg2dc8ABkEHVABnyJ3x4T9vy+H4mwBKB0pxDC8qc3CxEHLFy3xBBCXwCcp22MR9X2eNsvrd0Em9ZBqo0QBMAkUfdKHwAAFS15FjXg6xKcMlTsBAihyCbKpKAAhDJtGoRRnioFBYZvURmBKcQSk+CwSgACQga8ZogMt0cxko4yQuGAHY+s+Ipmt6TqABYAAZOq67mRqgrnWvwAAKVqPRjU0ik69qRoASlIOxOB6Fp+LoCFgZ4HIEHYfBSB8bRNWUFQtjjUR5E+gIwHeWR5GA2IxjrRQxXkLgIByMsjkADAJw0ud58ARmAuEpFBLcs+1y2oLEjPPPxsFuaBgjgZ2HBlM3IvSr2yn8X2uH9wPg4Qf1U7BARFGz-BPhGHc+FtUPFHCZJZHSYwtfewIZTFJxIWNN6NXSIpLfqgAObrK-BsJcfwdrmrsdq+pF8N9wAOQATXwGXWuauWSm9FB8m0b7dlU0xBhaJy-nkLz6VmXoxR4a3qFthA-TsTlxAgQ2kBySr954Q+G7SDiDQN+SBlKhmrO+MmzQI6n1aEwYGOxgRXR6G7KgvQjj-WQJESMCUkr+CwdieQNA84ZCkjuNwZgH7YzgBCWkdh6IxSaKGaIlxjB7WDhAKIJggHNyXA-G2rYjZcnKAAbXDDpOyGx1hB2rgIp+Qjv5eFrkgOqXpvIlAAEzDx6iUOai0RGgSEJcasyIWFa34IRX+B8aS9DQPudcdhuA6gFKA-8AQJxJU7uUawikr7uE8MwXgqlYjoUfhjVsL8nJbDFOGKRPhYC8DEKnXo91+K9FCZXcqYInRZKEB6N6vonI2jtGuT0+So5YDsn8MMl9ZzvBAeefcrZ95xCaLeDGiQg7ViYdY-+dhsi1hWEcKyQRir2BSM7UU5RCbOiXLlDSGg7BRGQYEBZWFexHWMk0SkwImjUjdJFJohSPpSkKhRQYxlcm9NGdYPSGw0pHH0WYJAR96QXNfOE5+myHQKBgKGSclJbrjFbEEngehOQA2wRGKMaUUnLhkD0mZ2TKrvRqqUZKEA7z4DyAUaszylo0maEgHSjoHlbExKIZ01Y942MxPY9cGZL5gr0M8iIR95ERKGL2GJ5Q4n6RkUk4U5RgwQN6Lg6M2NsVHE9N5OYFkdixLZBEXoktRj-KaNYd4QxGqdU0ePfAbNDXD2HqLTe29hU8kclwI+EBmBAS2MYo5Uwwy9Npf-IEMcxKx3slFc8lIcitgeiI2KfEwyhjsHtfA6zuLilQO5N+xRtmGtalzAA3LY2UkQCLcBgK0O+JdzyzOoPMrivYVltiaPITw79pC31YQUuAf8VS9LFDIf8R94FCMerOIOvQ8QETttS3orI5mt3JYlZoSamops6lBNqmjaaxFSPgAAUnm7W+Bl4ICiA5SIl8hhVkagAdQrHihCCj4oahKD1MegZwYlG6lzBem8OY7w3Iy09+IeCzHOpdCITA7CBwxlsfG+Bj2XEAt-DwkR-ojC-j-T0LkgqNOaiNPq97+r4AZr1M1o1Opyyub0K+LR-IZGhAIS5dE+yrmNKYQw-E43zkmadatiBZCIEUHiawHt0HVmQepDZGh+ETuBYOoii5jDnOKmuCGthxQlFhnYcMZZvgZAMPIWcXoMaKAAGRekcCHOIMdNxQDxiUUVYYJWTAAPJcBoLQuINC4Bww5sPZq+BMPhhvZozRdgeocxGnh4eDM5YZoRlweAEgSirxGEXeQug7Acx6gzTzD7p6tV5hvLmXMObBc0WFyoEBxkUzAJu5eEBH1c1S2B9cVBJAx25qlrzj6Rqzw3gzfVIsZadffdRdKrhTQZivtCQt9EsViHSJRcYkk-hKJApEej4hGNojSoBOuZ1WhRILTKUq5RvCMdTr+nE2RkCkAAL4gDsCAektD7QYGwHgQgJAQCtjoAYQodBq1WCYLrF7UI7K61IA0IOis9avcIlQLQq4gcgArhQagehGAsB4mTSYUDBCBEDOGYQFgS3GF7Z0u1DqMS5IrdEDUKBJTNDgIgP4-F7MBDMI6V85xYUxM8rcNkePUAZrFB9hKMDrIqFTlxpUkQrxdkareS6-OVZgEYxrK+m68QY+ox96sp97hOU6OMCAkwWEPkBc+c8EkDDGJ2gG0iZgKKhjSmKBHtBxSYCYEhZhSAP4o3QswiOAvUI+VQAAfjB5wSn1ApJ-f1lDnWT3SAV2HH8BXfgMqa03QdyVOwjdPnkE4FO-gzftCc1DykdgDtOhGGAOwrlCSuKUGIVwGwMpU+7NRh3lAnfI7d01VpmQkyTBhLcl+Uu2cJSKCHkArguBDFh-H+XivgTK-8K2fy1ALp6ApcowCSTVT2p2jsSAGwNRIAQBmlhExK1eEnozl2UjC87XeUiO3vL-CO6Ry7lHAxkglVURd87l3rteR8AABqqMcgT2IA4gnUV2hA1k+kFgzwrQU+T2oiIAEkFgdAiK3gIAAAuudkAA)
+[Open this example in the TypeSafe Playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAngPpZTUAOKpBpUANgIYCWcfADMIVfADc+EXiilIAzvghD8AaWQoYUANY18UPpK75mVaAjAwqCADT4UACwR6h-Yygj55KHigT4efV4BfBhmCCR8AHcHPigHfGsuPgQVKB5IgCN-AHMqDL8wADp8NCd8AFk+bUVIfCQIFHw+MA0+IRpAFAIMsCUrRIR5BB4qePxIQfrGgfFhrm79HhghpRUeKFkI4VEJKRk5RWU1DS1dfUM+YwByEzMmS2sSitEECFmqOwAxazAwFMr1tEeIoGk1AswRig9B57OURNZuBB5FZ-OtNpEeoskKD8Nl8E4uL1rPJwgo+JkuP54QEkHpTOYHjxjK0hAgNoo+JFHP56UwLJycvISmhPNz8Fg-KhYb5Yf4qjUvAgENp7J5MlQBQEgvxBNTJNJfAdVrK+GJLDy7oNFBqcg4UIoYEhWmIxZ92o58ABBRBOn1NGFigCqSD4hXwAGUfH5FABhCLeUMwdF2bkuNyqrxR1HakJhLYxOIJJIpNIZXG5fKoCzl9LLfzfCx-OWAvgg6aBHJvahIP0BDY7GKedJZfwE3rJHgUqk7KDx2SadFM3YG9FC-AASUi+AASgBRAAinpjaAP+FlEbC1kQ+DjViagx8FNbTl6gSE+UQUVEKuprT8VDgTlNRiZAtU7d4ew0ABaEl4xeXpZyocJ8nRZpFA7LsqEgqU0R2alZwUeckzkJdmCscIhjXdcmjHaUmkAHAIQOsfAilY88AHFMOwpooGsXxJkCRDkMNLZMj0Ek2T4JdeCiOxqTFIQ7ycSsmGNcDuz9JcIEyAArNlZFmeQ7ExawfE5RRqVDIYuBUZhqDgDINACJMHFEUNoU8HhmHCTkwXwBydLcqFjTFP4EQ8KhDhURwZSE0QRKQFNyjilC5DQkxISgkLyk4iDe2pMikKRSYjldU1vC9H0wD9IpAFwCDdigCJoAGYAE5WrsABGTqAFYIyKGMUBKVqADZOqKOxg2dc8ABkEHVABnyJ3x4T9vy+H4mwBKB0pxDC8qc3CxEHLFy3xBBCXwCcp22MR9X2eNsvrd0Em9ZBqo0QBMAkUfdKHwAAFS15FjXg6xKcMlTsBAihyCbKpKAAhDJtGoRRnioFBYZvURmBKcQSk+CwSgACQga8ZogMt0cxko4yQuGAHY+s+Ipmt6TqABYAAZOq67mRqgrnWvwAAKVqPRjU0ik69qRoASlIOxOB6Fp+LoCFgZ4HIEHYfBSB8bRNWUFQtjjUR5E+gIwHeWR5GA2IxjrRQxXkLgIByMsjkADAJw0ud58ARmAuEpFBLcs+1y2oLEjPPPxsFuaBgjgZ2HBlM3IvSr2yn8X2uH9wPg4Qf1U7BARFGz-BPhGHc+FtUPFHCZJZHSYwtfewIZTFJxIWNN6NXSIpLfqgAObrK-BsJcfwdrmrsdq+pF8N9wAOQATXwGXWuauWSm9FB8m0b7dlU0xBhaJy-nkLz6VmXoxR4a3qFthA-TsTlxAgQ2kBySr954Q+G7SDiDQN+SBlKhmrO+MmzQI6n1aEwYGOxgRXR6G7KgvQjj-WQJESMCUkr+CwdieQNA84ZCkjuNwZgH7YzgBCWkdh6IxSaKGaIlxjB7WDhAKIJggHNyXA-G2rYjZcnKAAbXDDpOyGx1hB2rgIp+Qjv5eFrkgOqXpvIlAAEzDx6iUOai0RGgSEJcasyIWFa34IRX+B8aS9DQPudcdhuA6gFKA-8AQJxJU7uUawikr7uE8MwXgqlYjoUfhjVsL8nJbDFOGKRPhYC8DEKnXo91+K9FCZXcqYInRZKEB6N6vonI2jtGuT0+So5YDsn8MMl9ZzvBAeefcrZ95xCaLeDGiQg7ViYdY-+dhsi1hWEcKyQRir2BSM7UU5RCbOiXLlDSGg7BRGQYEBZWFexHWMk0SkwImjUjdJFJohSPpSkKhRQYxlcm9NGdYPSGw0pHH0WYJAR96QXNfOE5+myHQKBgKGSclJbrjFbEEngehOQA2wRGKMaUUnLhkD0mZ2TKrvRqqUZKEA7z4DyAUaszylo0maEgHSjoHlbExKIZ01Y942MxPY9cGZL5gr0M8iIR95ERKGL2GJ5Q4n6RkUk4U5RgwQN6Lg6M2NsVHE9N5OYFkdixLZBEXoktRj-KaNYd4QxGqdU0ePfAbNDXD2HqLTe29hU8kclwI+EBmBAS2MYo5Uwwy9Npf-IEMcxKx3slFc8lIcitgeiI2KfEwyhjsHtfA6zuLilQO5N+xRtmGtalzAA3LY2UkQCLcBgK0O+JdzyzOoPMrivYVltiaPITw79pC31YQUuAf8VS9LFDIf8R94FCMerOIOvQ8QETttS3orI5mt3JYlZoSamops6lBNqmjaaxFSPgAAUnm7W+Bl4ICiA5SIl8hhVkagAdQrHihCCj4oahKD1MegZwYlG6lzBem8OY7w3Iy09+IeCzHOpdCITA7CBwxlsfG+Bj2XEAt-DwkR-ojC-j-T0LkgqNOaiNPq97+r4AZr1M1o1Opyyub0K+LR-IZGhAIS5dE+yrmNKYQw-E43zkmadatiBZCIEUHiawHt0HVmQepDZGh+ETuBYOoii5jDnOKmuCGthxQlFhnYcMZZvgZAMPIWcXoMaKAAGRekcCHOIMdNxQDxiUUVYYJWTAAPJcBoLQuINC4Bww5sPZq+BMPhhvZozRdgeocxGnh4eDM5YZoRlweAEgSirxGEXeQug7Acx6gzTzD7p6tV5hvLmXMObBc0WFyoEBxkUzAJu5eEBH1c1S2B9cVBJAx25qlrzj6Rqzw3gzfVIsZadffdRdKrhTQZivtCQt9EsViHSJRcYkk-hKJApEej4hGNojSoBOuZ1WhRILTKUq5RvCMdTr+nE2RkCkAAL4gDsCAektD7QYGwHgQgJAQCtjoAYQodBq1WCYLrF7UI7K61IA0IOis9avcIlQLQq4gcgArhQagehGAsB4mTSYUDBCBEDOGYQFgS3GF7Z0u1DqMS5IrdEDUKBJTNDgIgP4-F7MBDMI6V85xYUxM8rcNkePUAZrFB9hKMDrIqFTlxpUkQrxdkareS6-OVZgEYxrK+m68QY+ox96sp97hOU6OMCAkwWEPkBc+c8EkDDGJ2gG0iZgKKhjSmKBHtBxSYCYEhZhSAP4o3QswiOAvUI+VQAAfjB5wSn1ApJ-f1lDnWT3SAV2HH8BXfgMqa03QdyVOwjdPnkE4FO-gzftCc1DykdgDtOhGGAOwrlCSuKUGIVwGwMpU+7NRh3lAnfI7d01VpmQkyTBhLcl+Uu2cJSKCHkArguBDFh-H+XivgTK-8K2fy1ALp6ApcowCSTVT2p2jsSAGwNRIAQBmlhExK1eEnozl2UjC87XeUiO3vL-CO6Ry7lHAxkglVURd87l3rteR8AABqqMcgT2IA4gnUV2hA1k+kFgzwrQU+T2oiIAEkFgdAiK3gIAAAuudkAA)
 
 ## How do we find one document in thousands?
 
-You have a pile of documents, and a query, a piece of text describing what you're looking
-for. Somewhere in the pile is the one document that answers it.
-
-Checking every document against the query one at a time works, at one comparison per
-document: millions of documents means millions of comparisons per query. You can improve
-performance with a two-step approach:
+Checking every document against the query, one at a time, takes one comparison per
+document: millions of documents means millions of comparisons per query. Two steps are
+faster:
 
 1. Cut the pile down to a short list of likely candidates, using a method fast enough to
    run on the whole pile.
@@ -10729,27 +12551,21 @@ performance with a two-step approach:
 reorders that shortlist so the correct answer rises to the
 top](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/two-step-search-intro-diagram.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=796d5d4efd82f8396f380f2e1e14a9de)
 
-This cookbook tests that setup on a dataset of court opinions, in
-[A re-ranking example](#a-re-ranking-example) below.
-
 ## What is fast search?
 
 Fast search is any method that can compare a query against every document in a large corpus
 and quickly return a ranked shortlist. Common methods include keyword search, such as BM25,
-and dense embeddings, which compare passages by meaning. Systems often combine both
-methods.
+and dense embeddings, which compare passages by meaning.
 
 The first step here is BM25 and nothing else. BM25 ranks passages by shared words.
-Keeping this step simple leaves the attention on re-ranking, which is the point of the
-cookbook. The choice of fast search method is a side issue: re-ranking only ever sees
-the passages that make the shortlist.
+The choice of fast search method is a side issue: re-ranking only ever sees the passages
+that make the shortlist.
 
 ## What is re-ranking?
 
-Re-ranking takes the shortlist fast search already produced and puts it in a better order.
-Instead of comparing the query against the whole corpus at once, it compares the query
-against each candidate on the shortlist individually, and sorts the shortlist by that
-score.
+Re-ranking puts the shortlist in a better order. Instead of comparing the query against
+the whole corpus at once, it scores the query against each candidate on the shortlist and
+sorts by that score.
 
 ![Diagram: a ranked shortlist on the left, an arrow labeled "re-rank," and the re-ordered
 version on the right with the true answer moving from the middle to the
@@ -10761,16 +12577,11 @@ on the shortlist even when its wording differs from the query's.
 
 ## Re-ranking with TypeSafe
 
-A re-ranker needs a comparable score for every query-candidate pair. A general-purpose
-language model can produce these scores, or rank the whole shortlist directly. For
-independent pair scoring, however, you need to define a scoring scale and prompt the model
-to apply the same standard to every candidate. Repeated calls can still produce different
-scores for the same pair, while general-purpose generation adds time and cost to a task
-that only needs one number.
+A re-ranker needs a comparable score for every query-candidate pair.
 
 ### What TypeSafe returns
 
-With TypeSafe, the scoring request can remain a yes/no question:
+With TypeSafe, the scoring request is a yes/no question:
 
 ```text theme={null}
 Could this candidate passage be from the cited precedent?
@@ -10783,8 +12594,7 @@ of how likely the answer is to be yes.
 
 The question's criteria define what counts as true and false. TypeSafe applies them to
 every query-candidate pair and returns the noul directly. That noul is the score the
-application sorts on. No scoring scale has to be invented for a general-purpose model, and
-TypeSafe is built to do this repeated scoring faster, cheaper, and more consistently.
+application sorts on.
 
 In simplified pseudocode, one TypeSafe scoring call looks like this:
 
@@ -10800,25 +12610,18 @@ response = client.system_one(state={...}, questions={"is_cited_source": question
 response.answers["is_cited_source"].noul  # -> 0.87
 ```
 
-TypeSafe reads the query and one candidate together against that question, and returns a
-noul.
-
-You can use this to re-rank a shortlist by running the same question against every
-candidate on it, then sorting the shortlist by the noul each call comes back with, highest
-first.
+To re-rank a shortlist, ask the same question about every candidate and sort by noul,
+highest first:
 
 ```python theme={null}
 nouls = {candidate: ask_typesafe(query, candidate) for candidate in shortlist}
 reranked = sorted(shortlist, key=lambda c: nouls[c], reverse=True)  # highest noul first
 ```
 
-The diagram below shows how one request per candidate produces the scores used to reorder
-the shortlist.
-
 ```mermaid actions={true} theme={null}
 flowchart LR
     q["query excerpt<br/><i>one opinion passage,<br/>citation removed</i>"]
-    sl["shortlist from fast search<br/><i>30 candidate passages</i>"]
+    sl["shortlist from fast search"]
     quest["<b>one Noul</b><br/>could this candidate be<br/>from the cited precedent?<br/><i>criteria fix true and false</i>"]
 
     %% direction LR inside an LR chart keeps each state beside its noul, two columns,
@@ -10828,18 +12631,18 @@ flowchart LR
         d1["state<br/>{query, candidate 1}"] --> n1["noul<br/>0.87"]
         d2["state<br/>{query, candidate 2}"] --> n2["noul<br/>0.41"]
         dx["⋮"] --> nx["⋮"]
-        d30["state<br/>{query, candidate 30}"] --> n30["noul<br/>0.12"]
+        d30["state<br/>{query, candidate n}"] --> n30["noul<br/>0.12"]
     end
 
     sort["sort by noul,<br/>highest first"]
-    out["re-ranked shortlist<br/><i>same 30, better order</i>"]
+    out["re-ranked shortlist<br/><i>same candidates, better order</i>"]
 
     q --> fan
     sl --> fan
     quest --> fan
     fan --> sort --> out
 
-    %% the elision is not a node - drop its box so it reads as "and so on"
+    %% the elision is not a node, so drop its box and it reads as "and so on"
     classDef elide fill:none,stroke:none
     class dx,nx elide
     linkStyle 2 stroke:none
@@ -10853,8 +12656,6 @@ This example uses 3,565 court opinion passages and 40 queries.
 
 ### Setup
 
-The first step installs the packages this walkthrough depends on.
-
 * `bm25s` and `datasets` build the fast search shortlist.
 * `typesafe-sdk` and `cooksafe` handle re-ranking and API caching.
 * `matplotlib` draws the result charts.
@@ -10863,9 +12664,10 @@ The first step installs the packages this walkthrough depends on.
 pip install bm25s datasets matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-The next block sets up the TypeSafe client and the constants the rest of the walkthrough
-uses, such as which TypeSafe model to call and how large a shortlist fast search hands to
-the re-ranker. Calling TypeSafe needs a `TYPESAFE_API_KEY`.
+To replay the published numbers without an API key, download `json_cache.json` from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/rerank_typesafe) into the folder you run the script from.
+
+Calling TypeSafe needs a `TYPESAFE_API_KEY`.
 
 ```python theme={null}
 import hashlib
@@ -10880,10 +12682,6 @@ from IPython.display import display
 from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.12"
-PRICE = (
-    0.042,
-    0.00,
-)  # $ per 1M tokens (input, output); TypeSafe jev-1.12 as of 2026-08
 N_ROWS = 170  # CLERC rows pooled into the shared corpus
 N_QUERIES = 40  # rows we evaluate
 TOP_K = 30  # candidates the shortlist hands to the re-ranker, per query
@@ -10912,12 +12710,8 @@ row breaks down like this:
 Of the 170 rows, 40 are picked to evaluate as queries. The other 130 only ever appear as
 candidates.
 
-The next cell builds the shortlist, using the technique described above:
-
-1. Load the corpus.
-2. Rank it against every query with BM25.
-
-There's no TypeSafe here yet, this is only the fast search step.
+Fast search loads the corpus and ranks it against every query with BM25. TypeSafe isn't
+involved yet.
 
 ```python expandable theme={null}
 CLERC_FILE = (
@@ -11042,27 +12836,21 @@ bar_chart(
 
 The chart shows where fast search puts the correct passage, out of 3,565 candidates.
 
-Fast search reliably narrows the corpus down to a shortlist that contains the right answer.
-It contains the right answer for 100% of the 40 queries. But that passage is rarely the
-top-ranked one on the shortlist, only 5% of the time.
+The shortlist contains the right answer for 100% of the 40 queries, but ranks it first
+only 5% of the time.
 
-Re-ranking below only reorders the top 30 candidates already on the shortlist. It cannot
-add a passage that fast search did not select. Here, the shortlist contains the correct
-passage for all 40 queries, so re-ranking can focus on putting each one in a better
-position.
+Re-ranking only reorders the top 30 candidates already on the shortlist. It cannot add a
+passage that fast search did not select.
 
-### Re-ranking it with TypeSafe
+### Re-ranking the shortlist with TypeSafe
 
-Re-ranking scores every candidate on the shortlist against its query, then sorts by that
-score. The question TypeSafe asks about each pair is whether the candidate could be the
-passage the query's removed citation points to.
-
-The next cell does the following:
+The question TypeSafe asks about each pair is whether the candidate could be the passage
+the query's removed citation points to. Re-ranking takes three steps:
 
 1. Define that question.
-2. Ask it once per candidate on every shortlist, 40 queries times 30 candidates, 1,200
-   calls in total, run concurrently instead of one after another.
-3. Sort each shortlist by the score TypeSafe returns, producing the re-ranked result.
+2. Ask it once per candidate on every shortlist: 40 queries times 30 candidates, or 1,200
+   calls, run concurrently.
+3. Sort each shortlist by the noul TypeSafe returns.
 
 ```python expandable theme={null}
 is_cited_source = Noul(
@@ -11105,7 +12893,7 @@ def score_candidate(model: str, query: str, candidate: str, question_json: str) 
 
 
 # Each of the 40 queries has 30 candidates, so re-ranking every shortlist means 1,200 independent
-# calls — cheap enough to fire all at once with a thread pool instead of one after another.
+# calls, cheap enough to fire all at once with a thread pool instead of one after another.
 pair_list = [(q, c) for q in queries for c in candidates[q]]
 question_json = is_cited_source.model_dump_json(exclude_none=True)
 with ThreadPoolExecutor(max_workers=12) as pool:
@@ -11183,19 +12971,6 @@ def chart_before_after(
 chart_before_after(
     {"Fast search": candidates, "+ TypeSafe re-rank": reranked}, [1, 5, 10]
 )
-
-calls = [pair_scores[q][c] for q in queries for c in pair_scores[q]]
-input_tokens = sum(call["input_tokens"] for call in calls)
-output_tokens = sum(call["output_tokens"] for call in calls)
-cost = input_tokens / 1_000_000 * PRICE[0] + output_tokens / 1_000_000 * PRICE[1]
-print(
-    f"{len(calls)} TypeSafe calls used {input_tokens:,} input and "
-    f"{output_tokens:,} output tokens, costing ${cost:.4f}."
-)
-```
-
-```
-1200 TypeSafe calls used 1,536,002 input and 25,200 output tokens, costing $0.0645.
 ```
 
 ![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=46bea6ecf0dbb89f8df634eb6cda16b7)
@@ -11205,18 +12980,9 @@ print(
 The chart compares fast search against fast search plus re-ranking, at three thresholds.
 Re-ranking moves the correct passage closer to the top at every one of them:
 
-* **Top 1** — 5% → 18%
-* **Top 5** — 15% → 35%
-* **Top 10** — 38% → 62%
-
-The reported token count and cost cover all 1,200 TypeSafe calls used to re-rank the 40
-shortlists.
-
-Each CLERC row contains one correct passage and 20 negative passages. This walkthrough
-pools the passages from 170 rows into one shared corpus. For each of the 40 evaluation
-queries, BM25 selects 30 candidates from that full corpus, not only the 20 negatives
-supplied with that row. TypeSafe then reads the query against each selected candidate and
-re-ranks those 30 passages.
+* **Top 1**: 5% → 18%
+* **Top 5**: 15% → 35%
+* **Top 10**: 38% → 62%
 
 This walkthrough asked one question per pair for clarity. A real application would
 ask several questions about the same pair in one call. See the [parallel questions
@@ -11226,8 +12992,6 @@ cookbook](/cookbooks/parallel_questions) and the
 ***
 
 ## What's next
-
-The same building blocks show up elsewhere in TypeSafe's docs:
 
 * [Noul](/primitives/noul), for how TypeSafe turns a yes/no
   question into a score.
@@ -11900,20 +13664,17 @@ Source: https://docs.typesafe.ai/cookbooks/semantic_find
 Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer.
 
 You have GitHub's Terms of Service and a plain-language question about it. You need the
-lines that answer the question and a way to detect when the document has no answer. The
-included queries rank lines with direct answers first. The `exists` thresholds classify
-the remaining cases as missing or partial. You end up with `find()`, which returns the
-`exists` probability and one relevance score per line.
+lines that answer the question and a way to detect when the document has no answer. You
+end up with `find()`, which returns the `exists` probability and one relevance score per
+line.
 
 ![A query scans a document and reveals an answer attached to the matching
 line](https://mintcdn.com/ts-docs/oDyLjm6qxw13db62/cookbooks/semantic_find/semantic-find-hero.gif?s=60d3456a354bc159ac408e4c1aa8c2d2)
 
-The search backend comes together in three parts:
+The search has three parts:
 
 1. Tag each line with an ID so TypeSafe can point to it.
-2. Use a `Choice` question to rank those line IDs by how well they answer the query. Choice
-   question probabilities always add up to 1, so a line ranks first even when none
-   answer the query.
+2. Use a `Choice` question to rank those line IDs by how well they answer the query.
 3. In the same request, use a `Noul` question to check whether the document contains an
    answer at all.
 
@@ -11933,9 +13694,10 @@ export TYPESAFE_API_KEY="your-key-here"
 pip install 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-`JsonCache` replays the included API responses, so the steps below run without an API key
-or any spend. To make the requests live instead, set `TYPESAFE_API_KEY` and delete
-`json_cache.json`.
+`JsonCache` replays the API responses in `json_cache.json`, so the steps below run without
+an API key or any spend. Download it from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/semantic_find) into the folder you run the script from.
+To make the requests live instead, set `TYPESAFE_API_KEY` and leave it out.
 
 ### Create the script
 
@@ -11962,12 +13724,9 @@ json_cache = JsonCache(Path("json_cache.json"))
 The test document is GitHub's Terms of Service, split into 218 clauses, so every search
 result points to one quotable line.
 
-Add to `semantic_search.py`:
-
 ```python theme={null}
-GIST = (
-    "https://gist.githubusercontent.com/eugene-shvarts/900632789a24983d5678ffd508dd01f6"
-    "/raw/cf9c2ab422d568deade949ef0a06bed6896964b9/github-tos.txt"
+DOCUMENT_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/cookbooks/semantic_find/github-tos.txt"
 )
 
 
@@ -11980,10 +13739,10 @@ def fetch_document(url: str) -> str:
         return response.read().decode()
 
 
-LINES = fetch_document(GIST).splitlines()
+LINES = fetch_document(DOCUMENT_URL).splitlines()
 ```
 
-The cache prevents repeated downloads, and `splitlines()` leaves a list of 218 strings.
+The cache prevents repeated downloads.
 
 Now prefix each line with a short ID and join the lines back into one document. The model
 uses these IDs to point to its answer.
@@ -12007,8 +13766,7 @@ L054| 4. License Grant to Us
 ## Step 2: ask where the answer is
 
 A `Choice` question returns a probability for every option. Use the line IDs as the
-options,
-and "pick an option" becomes "point to a line."
+options.
 
 ```python theme={null}
 def where_question(query: str) -> Choice:
@@ -12031,10 +13789,7 @@ ID. The query goes in `instructions`; the state stays unchanged between searches
 ## Step 3: check whether an answer exists
 
 Choice probabilities always add up to 1, so some line ranks first even when the document
-doesn't answer the question. The ranking alone can't distinguish a real answer from the
-closest irrelevant line.
-
-So ask a second question, in the same request:
+doesn't answer the question.
 
 ```python theme={null}
 def exists_question(query: str) -> Noul:
@@ -12052,12 +13807,11 @@ so it can fall near zero when the document has no answer.
 
 ## Step 4: send both questions in one request
 
-The `system_one` method answers both questions in one pass. The state is sent once, so
-adding the existence check requires only a small amount of extra output.
+Both questions go in one `system_one` call, so the document is sent once.
 
 ![A tagged document and user question enter one TypeSafe request. A Choice question scores
 every line while a Noul question checks whether an answer exists. Local code then ranks the
-lines and applies the document verdict.](https://mintcdn.com/ts-docs/oDyLjm6qxw13db62/cookbooks/semantic_find/recipe.png?fit=max\&auto=format\&n=oDyLjm6qxw13db62\&q=85\&s=ec9af9ffa7c5b4eb0946540143678038)
+lines and applies the document verdict.](https://mintcdn.com/ts-docs/eQrFXXTYsK3Nx7hz/cookbooks/semantic_find/recipe.png?fit=max\&auto=format\&n=eQrFXXTYsK3Nx7hz\&q=85\&s=75c4719d00dc85dc01f84451ffb5927d)
 
 ```python theme={null}
 @json_cache
@@ -12092,9 +13846,8 @@ The `relevance` list keeps one score per line, in document order.
 
 ## Step 5: read the result
 
-Two pieces of local code finish the job: `verdict()` turns the raw `exists` probability
-into three states, with a middle one for partial answers, and `show()` renders `relevance`
-as a bar chart so the ranking is readable in a terminal.
+The `exists` probability becomes one of three verdicts, the middle one for partial
+answers. The ranking prints as a bar chart.
 
 ```python theme={null}
 FOUND, ABSENT = 0.7, 0.35  # present answers typically read >=0.9, absent <=0.05
@@ -12120,13 +13873,12 @@ def show(query: str, top: int = 4) -> dict:
     return result
 ```
 
-These thresholds separate the examples below, but tune them against your own documents
-before using them in production.
+Tune these thresholds on your own documents before using them in production.
 
 ## Step 6: run the search
 
 Ask two questions that have direct answers, one that has no answer, and one that has a
-partial answer, four in all.
+partial answer.
 
 ```python theme={null}
 print(f"{len(LINES)} lines, {len(DOCUMENT):,} characters\n")
@@ -12171,8 +13923,6 @@ show("can minors use GitHub with parental permission?", top=2)
 
 The first two queries return direct answers and the source lines needed to verify them.
 
-The other two show why the existence check matters:
-
 * **Arbitration:** The ranking gives the closest line a score of 0.86, but `exists` is only
   0.14. The answer is not in the document.
 * **Parental permission:** The age rule ranks first, but it doesn't answer whether parental
@@ -12183,9 +13933,9 @@ answers the question.
 
 ## Try it on your own document
 
-[Open the tagged contract in the TypeSafe playground][playground] to edit the questions
-against the same text. To search your own, swap the URL in `fetch_document()`; every other
-line of the script works off `LINES`.
+Open the tagged contract in the [TypeSafe playground][playground] to edit the questions
+against the same text. To search your own, swap `DOCUMENT_URL`; every other line of the
+script works off `LINES`.
 
 [playground]: https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAMgAxkA++AogGY0JQoCWAbgvmAIYoIECCABwBOTADb4ATAHYANJJISAbPgDt+PgDp8AEQQ0mSJswhIAzgB0kpEgEZKAZQAWEISnxshppiYIB1djCm7CiOCEH4AEacXlD4PEJwpnGOQhAwAObOMG4h7JzpQggIiKhynEhgyQgAnviOnGz4pgIMTPqxiOUG6aZaAJppTVmilQDWSBAA7viT9W6T7J1IM6HLC-iB7AicUI74EDRVcQgJvfhooYUA5EkTbukQ3XEQkXnHpm4m+EZyEdnfKBuTWYonEmxoMHEBhoLjg3G8SA0lmsEkofGW5hAfCgUDSqEx+EKwjCyBQSWqaSE+FECHSnHEhVE8JMpkcTAEMyMewA4kYABIwCJaPj4QA4BAAFE6mEz09Q4vEoQC4BISEMSgqgkuVvhVWEwwDBZQBVIJCQCYBJrss4RAAvZnLFAvUQQdLa574cqVTZHewnFhMKB5CpNX1hd2a-DGk7m75gUlGWpfXkoAVCsUAeSEdMMtuMZmVnEKQwLCEqkxco2aO1DIW4+DhtQieVM0qgTG4Jc5IXdTW6NPwcZQCapky5+yQ7BcdZc7EjnhWJ0WkOYAj7s6SUC1uNBnAiLnb7qgqWbdfKtWEEAAVgwye7PkgA8L8JLPDLxNjcTBUPgN8tG93EHAjZUgc7pILUSDwEB+yHBmWZMDmCK9MiZAAMyUBc7CinwBRFCUSoqvQnhyFuNKMKwCCiNUcgOu6oJHPEiTESYYBGIhch3P6oa4qgnAGB2k6FIRyABpUBjJEwSSQLAeH4AAFLkYoYKc0H4D6Qh+gGyqTgpmJKYkmIAJSgZU9LiBAuTAS0QjwkgLpCJCYRyAIECiP6TChrJBhQKIMAsbZRxJimT4iCwOy1PYKDtnhZShWIO59rW6RcoKGi4nAAD0Xg8OlwisGFRkevg54iTAhRJDW8yLJwZ6Cq5rL4DQqRwHETCIG6zBtV8Cn+BEWUIFoACyEAfCplI9jwRUuW5obFu6sVMhECVuFJvRJSEKVpelG48A8IhhJlRgIAAtM5rlQNUSJWGQAAslCYnwACS+AAGLbCgpUIASSyamBDVvR9KmBYK+zAaV6h0GIbY8OVcwbEESRwrsfHUtsQiGP5k4Fsw7RtlCqAUa56TCcELxE+O1kTWm2QCNkcheT5fkukDET4AAwhAAhiOZcjs5zTpuHw2QHEwmBlEGp77BZf3cADepxvoHbRHDTyI2y44owW6MupjrhtG5soGDwoJMGTAaumNUnwKSdqXdYACslBYRDrntsq32gbUA61BVHBMIUjCUSD2osf7KCB9xKCpKIph0+uJiRy5NKVBEVFBxJGwVCc34QHAcBfBHUednsnBFVjqezAu+CYgXLlfdsZh1A0KvTskWr6DQg5FScAZfrJdskAApEZUzk6y7JBwpIiZDkLwh9eRxwkg+TFKSKkKV7WjPdpoRzY8XD3hOhyQIKKByAN-pHgcbjp1qfDO1Dh-4MzttkIod0gAAQggkXBQgfoIJMCwIA6z1yaFfSYxY5Amg0o5IO9AZZlRjPLdyJlNSiAEPUX439OBOUKP-SYchUaBx2AGZschJx-3pAaXM5DhwuDAEkScGDrLwyLj2OAcUqRLG6EhK6JApDv3ZvjfEwD3a4ljNRLAp8ODcBwRwaAVseI0O+HCImMd8AFE4Bg-06jpQdwgYUJyOxRjL3UYVcylwTzxFxgjTgsY5q8QWn2EIqQMh7AUmpGBL8SAAA5HbMxkMqUU-hAnGTFMaZUgks40QCfgB694NBlCSAsOiSsLZ+2vC4XRgovAsQLO5dRBcdgOiItSTiZgsnkIhgGUpy8NRi0qMUFcEBqhFF4dYAAnI7eJNN8LuwlhHVek5BnYCKqkP0sZKg0Vvk9V6CCEB03vAzJ4544ACDJGUFAkVdh4UKRAexYkKRgzLEICsAgqwNOzkgDwpg7R1AkiUi6yEbAkHflTFAvS67lCSGVZyZgZpBlMBkNRuZ1H018k8cRE5gJSzhNY+kcgyYnHbMnWoMyXr-UKC-Gwdhzg71FJ4zikS9BSnajvLRK5-R2l0eAyBYz9kwEYGYwFvpOJJHPBMjsKcn78kFIs7yEL-IuLSJkI4PU+phIll-H+4o8HuUAdi1E4STShNFAMGAoTCpqspMSwiZL2AGBYhMg04grLSiQExNZp5aEgzgghLqsN6hJD9H1Sok506BCeN1BAvVDpB0JQGAA3K3NwJCwisMnJsH6Z4sZrx3u+BUwbt61jnkyo4XoQIKQTZ+a+9od5WRhAkcoZsQJGCSBCe8oLHyzjrIENwf5aw0miG4GwKF8CtILIww4y8tD2BaK2WUDFbFooECuWohbIievHMeScDwPBIBktmjUckfTsB9GRL4H8+4GX4GAFiuZZR6VMAZbFaEq4gFnEdbkyBkU8EqEIngIiQHfLZvHVePsjlBwsVnTYc4YDNLsVAwUHDpHDMKPuYVbjvSsofM826eLMLisOrq0lMTeURGjAsX1E0nTbUVvcZKqY0qXNMlcx90joFssueefUaaOVy1RTy5MwNazb1caK712H+pxNDdHF4US5xoeYxEI6I8OxAoiJAOEBgu0aMI1oYjTRGXFySCWRlNs5PrSIznMJ5y1FaDWo4FK2c4BaAwuEI9tFpQaIgPOpjKZozcSEgfGYPq+rZN2GGTTRm-iGBudxxThUaOMsqlxjzKn+ykQTkgC8ZwXDpC0GmHE0QESmXLm5w6jDJjjkY8zE8Z5xly19nQBcX5MZ7tYq+Y4ykQKUdg1dGwDs4mHBCMNPIFWD3iCHVcmgZ15ijhCOnbChQV6lAXi3ZorR2jVcSO6UdgcaKTwopQr8enoXBnUpxbFb9z3qqpA+0kXyG6XuveTFFr7hE5Fhp+-9TpANKYiCBm1h43oLO1AKxm7axp5xYu0alboDtfk-fURohbRj8SpN5EwJYtAPWWhAUMdx3sM2CDvT8sYhCUSeIDtwL3zvcu-Z4bFAj8Af2FPKHN5wTj6Qa341SVo3A3IRAQZ85rZRLpvIVWCXR7UNxB+wX7znQ1gA4YYD4FNyJkajqYYNJcjOL1rSNPHE0jlUg58Gz9cA62vHwK2r9HgNeDC1yNej9iS6hVco06T4g7FgDKjLsJmvqr4CR-zqchYazLGhw1EbcoPyoH6IMek3vZq-JZEwRa7AJ2q79wqSVYFBtCsdRS5AyS2R9k-bNLw6QcuuhopGrw-kY8c8DzAd0hYw9mAj32Cd4PVRPGLxTr8QRYBYueV03X5P-duAfdL5CEhXkRhNGcewgoryMH1RZ6n6jP2FEimJJcrV9x2NFw8iXjQa5mQ8F9sGrOqsc7CQpHHRcxJGBfhIXF3PszUrMzvTEYmhAEhAlqK-8E7k+wgeucDd6M4Y6qFP5SJ1DYUQDqZfEXAwNfeEDfeOQuWzaJWGV-XnQ-HeY-EcRPAELQXwLkMSDxGDN7LUB-b8LUReZeIfLOMNY8RbHeRAu0aMLgH+ILVIcfMkYUZYGg3MfLRuRoLXEA9kPsB-dRP4K7SuY3etPINwJtEab3PfJeN8JvZaMIE2JeH-JWAg7LLOZ-NgzMHnDTB6Q4TPD3HeQgzQ-AdghEX-eAkkKnU4OQdYbiXJLOWfMIP5LwSPBqbePIDdBuH2WaAtWEfiL3KkSDDjBA7Q6-XMc-JVCQLQAAJQQAAEcYAMlKh4lC04UER+8z11VFc3BTc3gLc9R+xrd3Q917dzYhA-8aI0oVxv5Ud2Bs8IIORipw1WCEwpZoRYQ7lChEiwg70gNPMlYY9wNxAl5EBY59h1lUtRA5BPwaRjwDDPCAxJik8rDusvhGx6hRBDhn8UY6RxAvY5IxJZh-Q9gNxwh1hxwOw85CwOii0OCdw0hhDdjZQvZh4qQ2gd8Ji3AJ0S5zlCiOdFkVgTiiDwhbdKtZDtQ0i7kRw6I-xxxSFbkhBx1JwIgxBXJ-IaYhBnJ4Zz94MUIu8484jEiMldl+8mt-AuC3h6BpgvA1k+x7I5j3C1d5DGFlhmYgQA1+p+8dtsjRCdc5d4AtQqjv9AxY8c0CSc0flaQHkFxGNMRdwyQn8YVLFOAhY4Urjv5nAGFy92AkcrIQM71MCBcXh9SjATwkZ1YSEFRTBcB+8ScRRVZkYrTKcb5lgD8gg3B-1Ig0VlhDVdR9RZR5ctRZgXgw11kYZ2BLN1iEBNjtiWt415DcFbM5ZwwCirdHESi7dw1Ll05K9XCa93VOcvCzgHSdg1ZFi48PUghGlMABUvA2BA4J0-CEgnhVSHR1SplogKxBpF8ai4ZSV6xfZQ4jhilEIVIS5HTLTEzJ0njjD4z2AD8PVeD1TA48zq8o8PDzTyygRRyWRS9ODpMeIxIJh3dUcCD1ZGoigtynT5DXQwSOCaIY9Lz2AZD2d5Dz86c0x1YzUvhJwaQ9j+xUB4wDzeIjzlgTzrizyvcLzfcD9PJ9DBhdgIA2s3RN9-wyybzu8vMUlpiQ0gR9Bxxfh-gzSfwxxA4-xNhKgJ17IkAtZ0KLSEAT1+8O9eTtcG0iZdc21JwXIMdMD092B1hZoXE0SOwaIgh2AIgRBjZyg3Ajl-IoU5wiY3AsBWwf9uUm00YvUTTUhNE4BbDFwlcc4x02FDRDAf8Ip2wkgmRJgtA8tIBEdzI4gCwlL9gwZOTUL08szlh0cs5W1Ll1hIAXdHLTTQ1fo1wLCqQ9dfy3K8DYdDh1gNKvdu0wqTQIqRyOKQI-LXNOQ6IGIDAINYZZxoxFzc4SwH5KI4rPjZoS4yo5Yytu1s4c0kTXKyQisFJTLDpKgLLoY5AY9u8kToxV8tdmpSDBy-weKThg0xIgUBiQS3sFiVRmhw83CJ1qisd-I0C9g+qFQBqrLOAFVkIUJB89tqRnQxJByTByKAhqzvSxx2AfzlhAAUAm+A0H6jKB7Fsj7CdCSmWEHKRz-FZGLEYx4OXD7BaA5hpEfD+MqDMK+AuqQEDjyIPARLdCVkXlqFfLkO701HJDGgk1MEPHZHuNBCmHaRIBQlxV5OdyRy9DyzEj9BcjuRAiwGclcClxciDluUrTHOstk3arMo7G6tDExl+kJzm0pQ3DcIvFKgkhYi8P3L+sctpvQ2+AQrL1mh1gEvLCeGjNjPHNUn7VxkDl0AaPOwADk7RZRZJ7BtAza3juwHqHtmC3RaTOFIhcNRgdaqRYxDAOxzlXACsIA2RUTQUSjV8PhZTbqS5DQNB7ADM4C0YZI6lzpbKVbBzTIpgu4XwG4xIal59lguavCOx+qCkJ4TgRASlS7pkcRw1vwTh877NgY6tQxMSgUZK3QY646bN50k7LQXA38q0XpJxILITOjlEajoh6iryxoqBMBWae8YCXJ2UpoU7DqlVroJSvx10ZbBxDqsig8K9nDlqCyqQ69OYi8xp3SGAAZjiM9BgM0YrNsHx8AKSDg9UHQl6lMBjyoywjoaBilMZLQ4xtpzCaJQh0FPjDyG7G9u8gQW8d7U4hCjhBl6qd9mSsLCoy1gxW9gLZovTHy0gX4UJ4NsjQ8j6q8VrMY6IUHcjhoVDxYyI-RO4fZoBW8kgfKqQYG49ZI-5kB5xlgaHvhl6I7GNCc08Xg3cOd2HM5OHL75CmKroUImtSHD6lqKGT6TxDZQKvUd54GK6Ew1b0G48gtohTATkwBU7hMiDaLHLCoYSRjHK-wXZKGqQJYnQZ1vbOBVEo8mo0GGpHEAYqijLA5NrxIkg9HgKIBFoTYbZDqeTBh7H6U1kw5wJzI2hag8tuUI5Rz-JAhkh2N3Ed48tR9R0XBaHXADY1bXg0o8gDFH4JZPw2yrR4IOwM0aAbUKDyoIByFH6YF8mRUtq5Hu9+Vll-IGml4+6bRWnwgQIY9zlmxzGg4S9DqSc7ZhQOspjrCadSAUI6d4kwE2ospqE2JxIKjS5dYwgrgZth1xaFsXgY82nG7Uwt4qQsAvGajeqjdncG0QFAINDkrbUdCODEwVbQmsGR5rmg4zpU88gcJRsyRDcy9BzIBss7sTJlgKUzp39YZDZaQKZQxQnmYk1ZGkXndlarHpkgGgK8NUa7hLFm6tBxRJCJLamhLYZb66iADZsNawYIRUk4WZJQmjlyEpZ-bmBLnIW50Tg80EA-YVQmRQU2QBBklRwjkiGO89CqrCwS4pXE7V4a1uKLIRxQSa7mwvblYxnfpim8C7zu7pWZINxzlVLU5BskhuQE6F1V4+ASgRd30Xg8sozDh3LMWq77m0hLlM84W3QsH6MvA9zkJrpB9NXgcGh6ilDWmOQJ08sqB8YsSRBwhWYnRfJqId4c34hcoC2i3Kg+A91kB9QRr5tQ2d8I2g8o2aIY3Cs42zAX5rpcVWYu9VRIo3DIwE2lUnAyn3ApRmcnm6g6HwwRx7FQo9pO4QISIHj197qmDrxy1fHSME6jgTkRhLkfY13dwJdfyEbagTkKx+HXKqRf1NRtW3CaJr3nglLLExIHh9l-GuQ+KxBrqdGp6n75qjdtcYQSbpgFI1j4z04W9lFjjPNwV7FpQ2oypI5-RQ78430gdEKtRsTpFuJaM7wjhm7LkxbXIQMb84kC6GcsF+xayCY-X+wyzJZLge396wZHnOMJVCp3K+SkcGaFXAwR0Jb4p2BeaRnBUXRcQBBqgp5HBPggjrJYw4RTlqR9r1EWaJ20LJxC7Q6JOv0pZebXQY9pb825aIj8AVH2A1yXGTxPb-IgVDDawHmZn5zVIbX05c7gm2wXNQnjPCoJYQ3Jb6TaRIQb8E2SHW3fcP0Em0SgrPSZGPZvw-ZpIPhi1QxBP9whnB2xOyCnwV7S7Jx2Zc5PxgLuQkjYx0Swge2mttAtATsb18X71sOUAE2dtx22amcfArPBgIXBHP1lc3skHM8IO4Y66KmxJ5Obx22KMXgP92BSKWJmgmQfTKhAbDDFvWvPj8P9yPh4u3cdPt9trLtLlbPIZO4J0fhkCbOTYFPcay9NEvw8nZoKPOqyUUKLiigpltLkz7EFIGWX72A3dJ47uZ4VQ85oDLsg4odwgpHVbsrLifue2ScbBYjyHXCLvkSqRGuzsf8ccE26drPFqXD1ymTeuwZj9Avfp6gEhFrF9-JGodMz88UvOllfJQxj9P18OZiAMwAbU4RwcHE4pn2UgBnoNgOjSdSEuSfj6NzXHfoaZonYhluVxndh6JJHmTqcce2O9oiZ2Bpnc4jIf2ACerp+5KAKTBzBIM0qRCgTeyChAr0mvztj8fYsvoZbmqU3DrKv0wZusgtCuaugfkba7cpQoJoiRhojB+7hbL2vNYwCaRBGxRJlh10OCqAtBj9VfVuAiDeon-3OCAax955plR1gQW4h0X47ZcV8TTD1DPAlWwkiBylwhuRrINRkI7YlVsiIXtfWvKrue6GLtyNPiWJKgkchvPn1bVHSe7PU8ZaL6y8Qed5pu3R8OAQwlVrgnqgnhQmgvG2QvxPW+auu+OONEO-PSfo3UpZwqFJoX-kkgxJ0+xz6vrpABkAnq58VvysIf9YUxe9gvB++l2SqsANH70hwMYAWoEhxmhlIe44QJ7swFyYRks6HCM1iyER7fd2IoZDZlVj-4GopSxJQoBYwp45UHGbgf2LK0aDnJqgMkCdLkHCDTczg5mY-vANDB1tb2ThB3mANJAzEEatdMWuFTdxg4OwZ+LvvBg3r4AW+bAp+Jfw7oWBzeyjQYIgJnbmIwYd8fQC7E96g9p4LtEpG9mcAfAygQgJGGwCMSeA3sOfaqJckF5bdOYwtQ4DwK-BKx4S4aAsIAPpSco5AsYBshzBzJrJxkdRDzsB0k6fZuUkcbRv5EegYp5kzKKipuUxLYlH4EQiArZG8G8MnQ59dIP4PoxjNdYOMA2PjGNimxAwlQScuJ1Rh0UfsFEa-scF2ATBvqRXbYuoPviWVq+O2C4OnHwHI4OeKAtfjRECqJ4egZSIXjJ2gHg8LYsiKIKCSDC2DIgxif9A7lZCZ0zSBDdWkGEEHD5g0-tcIGaUNihlgwBYRDpnEwCGdLgxrQMPSGqDWgDUxHPGiGE8DBoNutwthJsKlCy4gwzZZqNd1zqT0Ke+2bbrBxziakngrkIXsbn9BBxOUEAaviTheYjkWAe8DLipGPgRBpEWvMaG71ngZC-BcQayAYByGBDy82MfWHjCNiExiYYScoRrE0r+Rqh0cQ-AwEcANCzqDg1QRsJaGaCH4T-FVugQB4ydkhbIKyifzCT2VbgjlewswHegTQS4tyfgsqSzhocRAjAUSh31MB6oQITglANXzpxrMpBIo9vu3Rohphb+w+LvixUxHbdYuZeDfkrzOiURQhTwCSEClgRpRdklyAuBHmyBjl88poqUFcyj5ZRY+6iMauwHwRco2ilwM4B-FqAekkBLoIYqqGj6V1qwLwP8OGMqB2j-QDoqqm21DJjcxGbofBGEkxBg4CQiY7EjHz2hJB5IQo59N4VhiFjBycw3IHK364cxS6m1HAjvHcpTckxQY6sVUFqCb4FGpARQIPhjH2dWyKoSsY8iKi1R-Q0-C-u3TeFzgS4EwccLWR8j1k3sh7MAAu1YEws3QmwbwRJDV6pwvhYSIkKkFozsBZI3KMHN0CMhaj+mUGXAsBy8whU1KGTdDPhU-BeF6Q8YBWs7hUH3lNmTAqOpAGWIugS4+AwfoMA35c9Bg4-GXkNy-TZYlxZDNRvmXl6AUnOTo6+MKLYGegku3WH2CFX-zXVT+V0RQLikUBZ8YCXo0OqZT-xxFZxLgWoNIJhbIRFASqXwKsF4YktMyI-JjjVX7FVjhx8cSIS6A4gloGq+Apcd0J9jH4OGJHLxsEGnwtt1abba7IMBX63ddBNEJSbDBUmkTDBGk04PBOX6ptuwQQf2svgFZMdjJtYUyX-kFylYcgmkr+hFhLieihCf5EUfkBGzRQQ07oRyV+ESZAozUJYLkjRLPQPRTASAK4FdnTjS0RozgaYGaWvZoJIB1QAAPxWdVQt+Lziqyq5ooa66yRWCgImB09uxE4FoEgCOjShSoZsN0WV0HBTVAQccXOJdVqACZiBbocIbowZz1AgwmIAwLuHRwABeR4pNIqCYgjSVwQsGlLcCC8CJ9HCWmIJonwYpAg0PcOIBiJg8FBY4pQWXjnygVaI4ga4rKAgk0QXx1ojYHzycgLjWQNqCTCBlpYxo2amaHsXgUdErFCQR0lSLiwKC4NxYWyZPt6JMBaA+QUwQSUuIgSS4GBBk+7pKijZI5pkzYeulUBGp0gZMV-P3mrlaE9U3QyAPLnljUFEyuRllN0OBjZyLRPYmAbuBJCCEQTEBogtPteHMJv8iKbgJHITguEvxFAHQ+bjvCkTvo6xQU3CKvHThI5kAhaAMHl25TBc8u1lJcSoLyw6DUZX3USi8C9AvjNqjxW8OhyELmFCoNEOYXTJlBuE7EWiSKJh0cGWjoeLghgG4Oao0RCgZk9gEhhlGfDCs-3X6ZLx4kk5v+T4BcbEDYnJjgxzffanyz9zhoeJdOScUhWj5CoXgfk7IKbytEHCsxsQQMRJMwmFgU5heF0NMiDCpp4x43C2ZwCF4zU9gVPU1jhNJkeAKQ6sB1AalzbjhtREYfgceEmytg-soIWMd-CZJdhLgsrC1JRK2aSQXgSOJURh3U6TA45nTN0AXkFFbdLssmXOTOKjmDihpfsTMVjAKQ2puUeWQskkA0GQw2hPEjvB0gHbHg4irYYqPGGQhSAJxtQKdDBLVLnZ3Y1dBEkxFBDXgbUAslmf2TkhYRG5ioAqIr3DnEJG5ZPY-Ez2ajvi+m9A-NKVCSEoicRWQiePiLooDIc4iAEwUbTRTzQ8uR8goWSIJgmxKR9IuQNSMSpPBTA1QCOnpU5qtQ3aPAeoS5GdC1BZIJcTECVyIUDo3wT0ewCwp4BwBDIS48edykRmNAgu4sOiKdGmjqIh0TEHUKCmewwFikJqTwRJDHK6s6KwWJlFAjwLqIsM7mIOPQUno3hP0ELbilZAKq1gywkIG-ucNAXnhg613eeYwBtRq9WpzEcEuwz+RPMgQ74WumXJqjK84FCJMnjYsWRQlgWkObbqY2gAPxSwqrMaCYpvC6dzF-0l0GgvuoYKUKIEHwRRA7EYwlO0k5LkIuZns4xFEi4oC-CkCU1BgEIVwCqXRmOV22ayFClwuZFUozICooIs5VqJlDtgTnVMYtXQ4T4BI2CLQbC1AojQ658c5sC0qVSdCkgL-L4PVw6TyIHKoaebB4IiV9yXIFEbHkcESGlLu0G4FTpCLKioxPM7qdpmOCOD0F2An6U5SgJxwltdSkEf5lOFQCOA4FzARoA+zjSbsGUaaPJcB1sRm4yFbhblJ+i6GRLRp+AN+SQDrBolzCdUsZK7M+wbgaQFQAsECpCCbwEhJSiNDB22VcyTAcgTEEcgJCA06IAmN0JnnFi-QDiPsCuYHHdQ6hQ44cRetHHGKb4k43pG1B6iS5uisOqAQuEK0GD8LiZYQUcfwjPSZ9goeUCaJHIHEFJX58GTrozinY9cKSkcN6Mg224gRw++4fOSmJxo9Y6qzABFGEnWC9TQ+x4M0krET6E0U+roHZcsEz5tpGwToSYI9QnQRNO41y+GNRFDJmsRoS2dic1UIL78lMpTNmnCniAxrNGYFI4CDP0aQrghMCLNWtSvajgxo-5WUFE0JjUo6Y8VYHjZKtn2g0xFEdyI0AUg0NH2Hc9wN4AVbmEfp4nfajagVVgx7CpIFpU1jR4j9YChwWVFqvYA6qqxeqq6FIA67AixSy6Qcm7mtWR9xJdq2wmyAGJjd2qqVIJnKo5oryaIOvV+STn15CJ9APtJ1a5BXYzqQo+4BdXatfl048s9hOWIJh3gdqVI26mzruujk0Q-wTmR1bjHZWEMZ2iTc8FwqeIAarVr6ndYmtLpIKM4TTfujcM9BBAygjcm1Mt1h6ywZWTQdSSeForwEXFWtNxWApojwb54Y0dsUgHvVxhChSSvtQ1VdpMgqQyhAGJg3AovBeGEU0cHMRhhagxJ0Qa2X2FjBRtV2xYFpR3jr7fLkIPiY6ohWFXuqumFq6HrM2yUobgNaG4Pt+vDwY4UBSGw4EBp3m6rpl4GkwKxqAqDow2GqLzB6VHl7Bn+dKgNRoAkCXI8sD1ccOIESZI4V5Vm21RxLIyrxDZ-wE7uqGUoMd1keeHeOBxDWQpUu8AdLgfBtKqbcU4a6+vmqjVhBA0qmpVD8W-k-4Ca5QOisPXKB6K5UACcnuMAhYsBIQZ2VEk+uPkHgwVVUUQHU2AVSxBGTW7LEWJ7XZcwYgbQtZxGK1XQfEZ6TGV4HjWr8QNSahvmwllH-p56VieINNtIA+J4M1crRnirzWRN3OnJYlqpqaxBM6SparsOWtpCVromdIUOh8XWBu5G1g0ltbwx03kZO1roD3pxqODWUX4PieJqS2HHOB+lQmpeDbNwEQkL1zmqkGFuW0FIKVrzTAO8xpC2kZtJOKmp7Gh19gl23gPJnlmbqMIqQ8Cd6Igh9jdEki2rWHTdKBl3SnZo-MSEjqM3MDQgjAoGYOSXa1BYwDUz7O3I2x9NJwFOj6LzNg3xcI4BgGACTDxHmq5mBm6zRJJEnOC44LGyDfSEqqtZwgpOuBJilDA06MkgM6eE-wxaw6Pu5xXUt93X7+ygh1rEIdlTg127QIG0pkMoQB066UZLBVTXsyqZI1Fdc65XXOMEZKwek-wGiNELmSU7YE6wQcl6B9jh7weeRdIb4IEDUQ8FhIuAhLyLU9DPsUeg3WcBOo7gseq8xLUbNUn+r8AAAKQ0BtoQ20y11mAuQ1B7wtzVGhlL2C2OUQF4QL0IHoj6Gbd5kkzeW6HKWZC04AQ7PSgq2yqaO8NbfdFMRzFx7vmW3NZIx0Yy+8BhEkWHkEIs1+M2du8lHchA6SD48szuv7rqTSZmxCgdICojrTBjw6xkre5bcPvIx8CxN5PCteICI3uNxdqFHfq8LBhf79gj2mtUHAriFge9ElPEIxiN329SQ0jP-GrPJ5tkc452SrbRW6CSrDgfY7CXLtlH5bgKLic1Ya0sT5tRgLtQg4OBfgdJcUz0BibJzX6pERAtkeFmEm0ADRWYIocUCvWqDH6lUybQYMGtbVnlcclqr3McgywTQPeoYbaowbB5ORmWZGYpONzEhWkKiyI0JmNG0AmwjAsoc+IAswPwBX08h3QdiDcA8GzoF0ZrFqzeBjC1+hBQqJ+mENfaT24hmdjIYe528jpihyZRvO2QEy-QJcMaNxDYC+0vwHBrg0yWagolPY1uSFBzDk5g8AAAoZg2g5wf+hYUMc8XECjqeiWW8nuqE+wlx-60cdbI1FYA8K8mkUcHCi0E3MBn6X8QtFPR1BjMnKtRiFjTt6JLi+SP6pA-drBCsJVlSsf+nKy9CFR8BuG6iaQA6RnoKSiTPKsoSCHw8QIRIc1dCBYNEw5wP09OCotXpXQOk8GbkLDiKFRY9FsqDmPXVqBm0r9n0A401kNWTtPA07V+sNoB42tAudEECCEYH7UcQYf+aPIMBogP0Ulp3bKklEaCDd66F026S8Gu4jcvmCYePiCci1fg8VECK9vWoUUQcYcx+nbJOvZJJBDppugHK12P0k4KZHIqkH-0qSTsKgtJupBsmMjpRuKI67bnkTnDnSxIAhJvs-joi4tAFjAPReeCsidwIJmhWoA50qCMhzsVBb2VIdKGTbn6FJR5epDyCsrGdsMWaHLLnr25A47Mn7p8VUlN7hs0ssrFSHUr7Uf+p1CABQcKj0AKIBan2Yqd7FxxTDCnfAAAEqnmcgeJFAGFAamSTqptgCQNx0y99QonHgExFk42pCg4xxXmU0907w+QaAAaEQHSisx7A9gOQNXoaCcB7AhNdZDahdR6LE+ShSLPCzJ1XIliN4aLfFrVDJIK6j6VAc6PMIYbn4x+unPrwDbKdigBYG9oVCIDOhhox+jVmrVNCVAwRcu8lg5nKi9nVOFYHo2B0TiZ092zQ6pSp37MaJKuLa6dAUuSClKJD1J4c+ymXgEAFOHyG0ulHShpGhQm0b6sNFtgvJB8dfLif8jdB5ZLDqi5EC8lxRbL1A4UwiXAJhYkTKidY1mN-klxCKMBAALROCOgT+qOjgNgjEC6Jp6YMPqCdF4PB6OJT5hQJQD5DChxQT0I9D+fJoOAGcTxrtgQFIZ5ip5E2zkooeqN1iq9fIfdXw0-nJcQIhJ9QMRZrGCBIz5hC47pVFwuh4k8Qf+gGAMj7muO8aYi6+NFQlxBsZzMVoHSI6hTOmoYDs1YBeTwY+AfwGZmjriUNlx0XRr8F0Y+Daa8sQRo4HwHkvW8wgS4JLRpL6XWQk1iO6nOUFXhApJsVeX8oY3XVdStN+qXiw9EsYphASeNc5b7CT7fwEQtheLrGEWN5ADL62FSuGklyBBSC-a0K53vi5zDJN9MpaJIsS0vtNYnxGy32bEBP7tILwHyw1K7Z4XTpnBJHM8NCvPBwc3hITQxw7A8X8WZSSjlWjIug6WrStcIFmnksDCR4aLGRD-GK7bd2zKtcNeclzgrIqVsCJDk8CKXzisSbWWTEEGNj+Q8sD7K5g9XY1j14r3krzB7IYD2RDopSUIHYiMy5s4h+AC8FE0iAQACwDCPC-aToiyX2AeWOy09Fg4l8J8cprlrJmDZBgFIn519edFUj2z4WeFr9WnXV4lYqQ+NQs7mCOjTDFYjc1eeoPktoKUK4VEMiqCIHA87uR0YIo4F6TBXMYBNj-GkBGD08QCroMqPSEfg8XOSeFjVuFeBjz7wSsoC4+pdIs6WXkFFidt1yQA0XBgSPN0Clszp50Lp-cvWLEAD5BhCOwS8njxcJ1pBy0he3TDeJCyvXI2MXUWWug200g8Ih6afGEiEQL6MBFcZYObavJUEhsgFp8zigcBrr3KYuxBNkYkzO1pk9OrrPbbVvTYqCtYAO+thyWuaR5haLsHiqBth3go0KtwEei0CTjOm5rTi9PtISYS+MYUi2wFBVpC3Os6dsW9Pm9tKpa96gWZIXrkBoA8FWBsJCdW0CyJVAnedQIfxL1Pq+DEts9P+bg5mzG20y0jAXtiEZwP9sow2tNljuNxNQadsibDBZp6nagP2dJjjOtMpD8F5c2REdC9CxsxynmrwjXrr23MkTdzYOP6T0X4Czgghzjm5xz2cQhGdrNGBGO7B5ZWYdaYEWrkAtQiXIVsYC1XjGaAWS2KFKWZWY-ukbHmMeGxa6G4jwkOCoTKezHtqFV7a9baMUTLwAHQaYA3t+DPrzTAN8x4HINQHZQRzijccTIVqPsDIe8mArSeoOO8l6Te2msbD-4IOWybnV2wIgQdLDEeWARGSUKGHoCNI30igQe9p4Ig+TRAXg7pfUWQfJOhlxs47p3JZZD4bNSTBh4981X1IFYS5+GjJK9TlSEugK4UsVzo-C4cUCEitO2AcpbACqOA6oDmYfEJSXXa9+o4CWKsrgk-mbAO2OvroDT1J0gwD0SfWwBkjGgngJ1Fh1zmpjZAAnJOCkn3rGhJ7tNSKfq7Y9qFI0s0jd2IfuXpDWYNZKtTBjeEvmLLwwSk9OYnHniFQ0nYMDJ2Ehyej7sFGei6Zg0id5B8hpI7UOSJoUuZCoDCyoc3Cq61CBlLIpKKGE2tJ5+lsMZyAsDVwFOMH7+2uvwqMj2Ly9EesXlBhjzOlm838eMeoknD3jNnY0AG0qYIGwOv7JcH+3-aIUAXgpQyKkIiJ8htQ-+rZL2wE792fEOYnwWmJLroiT86ncy+9uEBjzNOEnHybIOWkpW7XWE3q5PhzLCbnMgpWiPYBhvXglZGGAubLgFf+eiZ-gDwLay4AMQWMAnHeUyh-q2cAvpEPFyp9yM4KNOqQULoMK0+NN1juhah+UBob84DZQgcrFWW4WtUI3CoRSIUw9urWD1-z3Q3B3cDkAZT4ZLZtwGfPeIVPlV2mtq5C6QC9IqzrT0Jk45cedxoh9I-RWZvJ6tjgIw2w1KqDrarwzXMjjEutfaQ2AB86EHeNy7zTpwsHl9tnpmXBLPBLk8rxym92kRaybwBpj82U6DBYNGXNMyvV5qSBv92DGgUObK5FEhv4tj6Q0y+I+DThU+OFwcT4ULB6k7dqCajvTbLkN2YhMep8xfg9f1SUARLigWD2QtJ8I8KLpvaPa+AN7wm5ym+wpHgfpPdXsLlp4k85ySQwgPqrt3WJ7eTzCoWbq+yFe6FRuz7odN-kdC-4TxQyv0N3rDCXeSijAmcyt-8EnC2PDi7PT7MfnzcDTWd4cotwUlHFuv16WgHQwTTodELjpbrs9Be92Plvz00QI6BJAJCFRFH4Ny2zFe8i8Qv3fqrzaYUwJcgjZYbp4FXrTAEAL32R-KjiFKjth+UwTWojag3F-1-xnWRLBO84LCPReKj1S9nAkR56Ej9iVSZcYLqUgzYD9qXoFSRzpADQl-d2wgQo-pxnyKkcurSZa2iA2tF3TrfyvJHXhhTqQUU8OM-euuJAUXGfsBuwlk9qKf8eVG3ehjxjLkaZGyDBN+gXvGwzR-svW6ax6iTqcRTT+1rBkpFM4cAMyoPaIBuuRrRjuXuT2scqRbH+5hfpsc35rVOxPjvuz732qijqHMvDY90FRw0e1HTA+tzjrGi2uXPkTUA89s5nn2AAisu7WHgvH46Dj6LUP88Mf5Kyn8vAYsZ6+ML3KK+8C4FZr7h9h++k2zCsxvmL63dOAANLZ3sEv8fBN+4kAd5HjMtggNKhLiyodPACG5v9XqIbaymEOTgrsHKAcVawEsDqNxjDOUDJcEGh9VBtuLpEHUBTA8+EHPC6VxNq07XPbwul7e2NQW-ilcp0rWRvh7KAzYtMnPZ6ny33KIFAAoPVyheY0CbwN-lRJBGwWyE4E+aOqUBJ1o+CICHZeCsxRpRMH8xTUoDA+pvg30a2IVTXz1FYswlfd+GR-4Zkum3ouEbNkncZ9mYE+laTn6+Y-Qf0vVq2DfB4A9yNEaze5MpK+SoIUlcl9gesKZrobWQBRsHw0wbhMWf2dj+SXO7AY-6tBCI07sNDSyUmNw28g1D6iIMSNd+3wCbvR0soQz0fAcML+hUhy-pvgCHoyBJHmP61b51u4qAxxaJTTQoaRFc4kg9ocC1e4t97LpCvqgsokuPjZAZpWj17ftPowNGFajz126E6aoy8DmFTLQpn6M+qFMO93IW8c+KH-BjvWa6B7phTL4hCKc6T1vv0Yj9vLN-FjU-qD9gBCc+XhsrrSsSv2bMmmhon9A+unzKnl8JXYSG8hwgNOZiOZ7NOfkP0d+WCyQSIXMky3IFFDZ+df4gVIhdZMBQK5AN+76x-pAiWOP2QFhc0t8g0KwK3dcwv6XbdVehVlM-+79Rw41fBtr69sPutbXi9FWyQYShD5GM9HBy-8qOSApAlDrWl-YSJHD8VFpRWdayh9mrZYVo0E9XRnI1ZNX3Hk1tWB7hmAWbTJS7AY8ZjQc1H1YfztAJdE8g-1PcFUCk18dTdgYA2yH0W0phNUKg-kJmVrCmYpjU8Q-dhoP-VzlMA6xWdFigfKmBZ1zC7DQCoNef1D9EQUgVWRQFDGVnht9dxjewsxV6WYCsZUXGXw93Qf1n8L-BfybVSfNkBUsy4NZ2PAAqEwGd9WOE4AuF6UbxUU4ZlZUTcBVlH-XoDCwWSAnQ3mOkhA4kWNtz-AxWfWmZhRMMIhaZKgAoDSAOQIjUCAu2d0Gb8HaJXXf8GtWO2fcUIHbFnoazAv04Ch-HgJH8yBGLyvcO5S-zzRawCSAIANnIOEbAamdlFgVSFRxDy46zSIHAxnlYP1NM2DWmyCoutNOCXhz7L4DmZY0WSGGM08MX1b99wIIOmAsg4EXDAy-en3l8DIYNDOd8AIbSUDnDPQBbgAqEQJQpVhZzQGCoAIyFtcBdUkEDgx9S40YxP0QoMkptgEoOS47vRzVz8q1GJgfI9ZKsw28VAw+QDpiWOSDAAjIMwJupQmU0nQFlgRa2EwofFLzLwu9RnFG0JoKDntsdjC+UAcPiBajgNdZKD1EDog+QNiC7kVugNAvwfPCcV2AxeSTJOUSoDywRfIoGWAa-ZYEbVyFMAFCg-OJsz4ZKfVeXh8gFGezD5UgAwK-sgdVHzpw6+V6BLBfvUYFR8O8fwFNBtWXrWqg5zXfjTkVEDlAnAwYHJVqFSdLSXJ0fvYxC8wS4doP7JhwA7gogOQPJkGE5gJ80TZKAJ+yJ9kKca1JhMraNCQRogOQCG0joDKTKBRAXaC5BGIOj38NIZLRSUx0gEFBOZkAUaQDAZICyyZN-YQhTrZ-sEWkjEs4B0zABGQ8nn00M7Ksz10x-UF260cxUUHpC-Q4xF-9M8P7wmBJgJODW9xYIv1VdQWA7hskaqFpHpBBwP+hGw5APlkRpeIZx3-RbCFwBGADxDpzMBCIMTiAwRMP-lrDvgIQDwRoAchU+ETgFoHehZQGp15CbbXgX7J6FfZHSZLUYRRIU3dR4FCowAFk3eIGvXa36sFIKMP9CWvQMKI40LOFWDcFEW2wiIfzXtkoAiARlmqg8IHcLHZKLMb0MdZ+bzwADx0NpDDAWwDJTYRfPbi3QwpeLz3UZcJNqUMAQGOZ3CAHTbTUG4NKYhAYZW8dsBzEJjI5wbxBgIbVcx+Tc3TxCzYD4i90n9UhCJ9VvWKXc9roM9EnVZ1VsFsgdw+DCphEdZUUf9D5WgXfR7baqld9xCbzHSMMoXKBwiEsGwzdt8DB7A7dJiL4Doi3sD-Hi4bvQ5H0037ba31Bz2JKiuVDwsiISBg0JVw8BcENlGl5wPcHhW9WDW8COAOBHYhoEZIBiGVCmsfXkNABATRET45AbQBHg9I2BEKgkfVCO-droHbHmN4uVqEQA8kI2AbB4udYNWAjTXSN7MfcHTAUhhPNXiUCJYGgRWR3dZUJJw1QhSI4oMNCcnjgQVRyMOsXQHyNRp20IhGij0SWKPd05AM-Xi52tcQE-QfiBqEhAso1GCUiFITcVWlIo8ihxV-ID5WVDfnG7Dci7EZiLZBMgLOBpAGyFSFI4ndDKKcj2lTcn-RjIzMXd0VEOyPKonkHS2ugLRMHRQjFImPGajHTWrA+NyAlqDagsmCHRl9fifqP+c+1KkBJd-IFrxjwP4cqJdA4xHhCsl1QyHXkRssYyL8YASSBmdwwQx-V+VpYVZxh4tEHYBO1Lo98ifAlDcSjvZsGYFmWBWYDLm3AOCK7hY1FAt5SUpK5XyUSM40FyQH4fzC3nwA6+PaJijVIXYDUwaQYNBuN8AOIgrQGEOGNxRxQUSK-AP4SejdRlgJli1B4RPOGBU+VThkSjS4UiNWx3dNRUDk+mdOEyiUXOxDgiJwDFjJUoooOA7RMcBsBSwpSfuXDC1ud+2I8beElUjxMjASgyjL9AiHRwqzF7H3Q4XRHSPlZQKmJCB9rP6TOjbIdyKliGEWMz0AlY8ni1jHAaRkoo1tL3AalArCSLhkpIkjhtZEmHiIxZcXS109dkAdIFu13OaGkiB9orOm8ASBfZnoRokebm-x+wFuW9x7HNLGwF6OSIOdt5Yk8FjAnzbvkoACYhmLcBiYm6i+BjQUgnsA-bG1ljtftdmOTgSYt5Vc4e0dQAGt3uRIhkpXo5GSucHo7nyw9EgwtzmZ+onKLDdRKanHJ9-gGnwhIVvTMCp8qmYuWnMzvYsKbji414FbkpkHeDrigKTuBgF247JVSiduZ3BJtwgf2yNs8bUmL8ZdFWUCysOKPFWJARIZuGBU9pamJjRM4j2KsJMSFb1YREmcDVp4iYPeN+ITgIOMhFphf1wLBwMInA85AbcuzTtRbELGnlyeXQHnxo4VOPilrkR4Hoih6GcMRFOISoDXA5AGtGgdtNGgSOBfw10ELDeeDyJE1Wsf4EmQQsDaODAHQOgHHJfoKU0BIY6VSDfdE4TtAa5UqPkiwSvIm8K7FvXVx1kgjqG4M5CC1OmlgS37SqPUA84SUnpi8uTl09tnnZwVLcTAI6ENjGw9K0S00kI1k8UAPbsWkSzTbuU1Ya0UYwZF6NZ3AlgcErqFag3sPLGDNqwVfgUM7yC3UWwa5R-29DXGc+0bRIvChGJJBwLNU8gjIIeOPjc2XojeV5mZaB98vGa0iUi0eOGPgxB4LOl5iJ4HeAajOdXNHiAAk-qwzoFgDfUHUgSVGO3xUVMhEPx05F+PVN9iOehhZZMN0JblLkTyCYAjIRYwKo8gcL3lEATWEGYSs4IERpBVyDHi08qGLrE4AmZdRF-DvBb0QBR3Aj1ltsbcLGWbBdkOSGUTvibSF6TQwXeLeUeLLuXexgRGpK1MbiPpRziLTBgDXV9QLtWQd4PQ1zrEygvCFTimsSQUFgqAgegyIdLO2B2wc7OFi0p6LLyQWoITJ4DyYHg3wKqJCkvxnkTNBRbmIESKb6zkAM4gmJtxpyUg3IJR0QIQmVWsbUitVCY2ZNFCrElziDxJmFpl1tnwuGNWZ0eez1L0J0DOKPC7kongPoNPYx1wlSMAZPK9S5eZLMRmwdJXOxh1QrwLVebUnGl9AOK50wk6LLBMpNwdMZXexSoO9wEYTAFB3MJmU5vVO1YqRiOQkzxE9wUgM1E4A0UAjKuV2cQiQBKsYSmTbSj9RAIpwvC3w8nlNwPk3kWLh3AQCQmUX0RFJvimySeKkZN4WChZImfRymBDDTJGjUiZZEGN4DU4jvAGgs+AGN7Ve3IMD0g2A25Pc9xxKWy65jVWW1IEeHMEK4ZKcYv29gzE46MgB9KK4FyoI4mPEb8vgWzgqofzWiRh9N6HvH9S7QfNIEMgLRMXxTc-ejQU8TgcOABi3orCkJZnw0gVIofwAMCyihmYxnmiyfblC2iXQHaLGgfQLZB4RnLDRCdAogEYibgntcwiiBXGJ4gdAOQHK1itkAa03dIXsPhjyJwwWkg+ZKgnon24MBLsmLoS0jgnRJRgF8LkTQ0Z9nTkG0+HlwMXCfA2WAqrYZSKhnAdWBdCnzRQDPRtI0JX+iD4QGNDTAneDGsjWVFCwxYgwFlwwD7iW4FdlmwdwX-1rtQA2pMBjEA2lcTmMqBchGgVXkzlXreWRcAS0B-UAtBCf4DnSgvYA2BD3RdqLogquWoj8ZCw+lABSbuVXU+AArNvVC90CE-RkQWFFSHbSCYJmiCIzHD3S+BaxcXhQ4kg0GIctDyV0GEgkSSqTLi-vRYRPRWeM3WSDrGObxVBcQDwACIzYeNLRN1wAGNxMdLRQHJI5Y4F0coaMiaH3c0U6ySh4TZTOUNNVxUwADFkdYWiCJGxP0TnBhBcsEMyw0nbB0ic0+x26MqMq6Rrk3gbELcI9AJO1t0L9V3QPxk1Hx3UcDGPxmso+WbAUalYvWyCeAD8ADU4AO4LOGyyT0y61qTlEScDqNjIhWm1wWxOsRdCT8ZYE4yuAbjPk1-0gNMnlisy61KyjI3s0-SScOvjyxDeWoGDSljfNNRsrGIAgjcXaQIAF0y6FsiWN94pm3zEX0vyNjQcrZ0yUiNvMxIStbtGUKITccVUjw1XhbbKyA+ZW40IQcXbrQGiyqECOsMLEkkDVM+hNtxusIQXXRtYolb3CvC8A81DWzfoTb0-SO8SQVHxNsC3B-M35NEGUVO2Mcj+CnnbRKyTHAX4G9hBXXjXmQoEYYHW5SoP0DbVBM6Eni4nOdHIslpAjgmepZnbIT7iJCDhXtlp2Hk3HgT7FkFsJf4mSj50RAmDylBFkFTlc9LkMN09DDgZxix4nzVpUoAzaBiVK5Pw-7GbThMYHJPDpbKNL8AqJIogzJzEKWGWxGAVIE-D6xLV0ihoBJtWUwkM6UNdcpATCK0AqAKLGVzIRIRTK4QGL4CJIHHMAGBz4MeEQlcuw01BdclxWSBsAfElkCY4dvaAiFyqUUOgw08mNQyfSjckwEhE0ibtSUsxZYoltwyiFNkaB3pIwB-xJwGywLsEAD4UqBZICQAKhUwy6TASQIRixLttE9REp91EW4JK8yOAbUIUzc-7AW5zXOXU-RFc6LCGVA4W5GYB1RH0lqByM+xxJIJZWsEQiPwn3LHJXFVm2byJIGgGgF5yTE0gNlgc5CshipcJng8l3XLPoAJ8GPGI95FPLiS9gcrSK0AiAFDJuMGjOXT6ztcL+FdBfACum6BgcnbFNzhc0OjhAA5E72fSg4YpgW9XAIEEQA4Mn6gOimlZqA+CrkfbmlEKhACiJChMIKC9DgZXJWqRmcoomaRWkEyLJhNHGcUeUlEciDN1kuI5mhJx5BLjftgC4GFzJO8gaSyYdFMF2S5feeZR48Ws7fJQygC-1jTo2KLtUmAz8y1nW4QwPeJ4tgDRk15yesrQExjxQN9Kts01Nrh0spAEbJAL4+N+lJQopTbUqtrcRZCOh3KPvPNyzAS5HrzjcjoDcF9MEPi49u9DG2OAaQDBG9wJCspl5yO8NMDfdGcsxOAhDgXwDpygKMIB-M1NCNKNVnjE1ShVOUb6ObovMCSH8oqoIXhPIBAiNE2jePGShvCHiHZ1g5pUplj8M8AueLCLz7DcBt4h5RFiGBEAiKky1SwWGBogWaa8CfMfEXFH807dFAVWzzZFmLftRQBv1MB8wIMFKLNQSiNCRCggxEv4ksiWClNEPHbJri+fIUX0oNpDe1BCYPbPPqL642PVCAFc3U2zJewlBE5p7ZIWCRJl-e7Tv0AZQophtii+CKvdvHVoo5z7iX6H6LUAJLOEVRpIdix4CwowGnQ1Yh2iPlYAHjR2skhaiCMAaQMxRwZPE5Glw8xXIMGI8MsomDOS7CpVCodDlGYGsKrsHvKWLTMq6SKAVfMGAoyEDYNB9hk8+IIop0YeIHsg5M64sQAcxPRjewKEZsJcA8wooEhL0ineGzSp8gDwqDoSm+Bw98WGYucZ5RbOGbDrwHEsTTkLJfPgLRPOcCfituakpVEwAWkqeJ3KFkuF4nEKiKWzdYc4tJUyfP8lbDcwS4KhLAS9+2E8QIP0Hsh-CnQKpBaeOADjlqiaHA1Bsi8-lMYQHejPO5c-QqHIMVIdxhFiGeQpV8YEHaay+tijCoGnDJUhqH-YwUT1JH9lUl50VKrED+Ie186DsCxdAS7IvgxxQbfLJymaQ4Bb5+7F+R0sfEB41PCpckPh-ynGNsDs4uAbxirNjSmaHzYtrc0oudDLbUDDLmGY4KCF3CqFKEA9A-JBl8pEzUC9sPoyIsgFUXedyIJ4iyiE6k2ixhDBgDgmdIwE1hbIpGsOGVIrRkYudliBKZeeMry41hIOFOCD5c5ku5QC40sA1UgfQCZMTxGzH2R7GQjVkQbUd7K8hHVZ1T9JQ4KBENpnVPI1l09goOCwAmkHjT50vGUxEVcHY8gnTK0hUKTKgnLJBTsKScId32yS8wxEkDzxFSBjxceW9A7AccHbRsAfEOnEfCZw3Mo8EIAoX2A4gKnxA7wJYLez+xx6ZUUW5ifIDF8tfA0rO3144GXWREcrM7R-MT9SgGhKsnNLDiT6iWlEgNMbL-Mu97OIIWDZKIoCtoNKARpgxScNYK3zxXGEAlvQIcgKwiEzANAS7YqzGxSYqlUdLkkUEDcRwqBQEiU1OZzgldlI0CKnS1mNKACWDFoTfXFmshiyRP0GADAem3mUAwJGTVTBmZ+3XkrnS4LUA1K2FG4B4geVlf85TK5yfNDjSgAIiykCCvftu4tIs1INCXjUcpXtGyVF9fSJ0v4hfY4aEx59gw4FMDLytRCUKwjBHjEk7I4eWRTk7b13+CZEoCxhB0cN0GEFHEEKoBBVMLGWPLCtPKzog3cbAITKCU0Av0SAYUrIohncfZLdBFUucEbBZ476PCy+wTfCcqmsHL3R4lDQqHiRWc9W1LTlKjrmjKnC6NOJ5c03CUfD3OQHjVDlSg5gQBo4soyDgXKFrxLhsMiaFCYxM5av2z1gOMo7k3nEMycrgoqpjdwNquVK2qy1NuS4QW4VBNzFS7RkEiK8scKN+hPjXI2U90hReG1JF3aKo8gD4m3C1t3c-I0fVh4Q4EElJTQ1D-8kcoYITDwMkiWGDjBar21gz3bYhnDkuDEyuQUHDsG2qtczaumMbADpFJTtJUuzS9DAUfLhh0hegAgzXrZwFZs8mZUo-1XqkyDxkzAeaPervwT6rcqHPcVlwySkx-n3MbKlwHHAWFU0D+gTIu8pRqWMvxkucFiueOgrc9InJnIZeTyoIdXnL4KTMtE+FiRCGMUKTywXcoyFWR1kfU2QLPiegvjzCQ24wLVoPVqC+qPQIDDNImEVIADAyqWyAGCM8uTDYB4A6UA6rNNHK1jBqa9x3ISw4NgxysbathU3MKgB2sMDmiV2pdBZIPIjnjrM7H2DqEoX6HDq7aqOqUxHawiOgBvuD5N7kUBOMT7DnuBr00VF9PqWWxJ6N1hVo+TcQG5yB7foLCQeEw2vyKCHbPPaqmwBbUigD4TZD8ZMi-5CcqO8GIiz5ifbTRYFp5ZEAHxB8UbxjL5jFcVMrBMZtWH88qyPzKZ26UKOmUxodRWVqxMiaLUQdSJKX+Lr4Vyx7q3AZ6k0Cj634thC0xMWjryW5BaIEoo8EWG7BBwZyF7QXgDlmypmxIcIpqm9aByToe0jbOCzMCimohVZK9UgEdcjMerCQa-T4jJ9Q7FaX1RTMKetsBLeDTxDAjgabj7qorGTW3058IrNDIfWF5Jqwg2OaNJ8zEl1Xi5-0D5RIbZsXPM85SNMgKoTYxLXPUkKgXZBKryBbezGhwqECEgaoNTeu00TTCB3r83vN+y8g6ZEyIkJJlNwCOouM8RtqtkGYn3aMngSLPnhuUfDmnEiQ6KipBVsvJVaMXQB-IcrcoVTjiM5c0olrpI7cYt4iwYCmXejf7fNyIUgQaXQghpmMyuDY8stzJQp5GhrPV0-8nDPzzyg0WRQo5UISrjQtaj4qsAB8JVHhErKyxEQr+8mnL8ZXG2XSmMnTBU1-ypRQJoAamOMaDCbeKuhqhtpU7IlIpixUjCEbJ8SMnttuTNyj9QvzBGzb1hoogAHw5jDBrVMsGttzpKyfe018YEG+bkoaLZX+qHAoPHCrcbJEVy3yQaY1AS8tUAHMW44-UWSFALHA0tBQAjILQ0OyKfW41tgB8A1UGht9PjPHADbbuwJMPWJ4CIB9qVBqawIgwdhCtxZZwQaSB1aYC3TFSi4RLZIm1eHB8FgPhg5UUQmN3RZypFGk4q7ShZomhNyYNkLAjFL+3YSMcbsI04C1DqnMokbWTG9YP4jcCYzjOfCqRsVIf6NchC0QwDkRCglfzOZT1XrAXkQIX3mpzu2QxyDAKZOizjzWfMWS3FPURoDM5ZaDDjNkgwMIx98w6ykBvBcMc7DxVWYRz1fQc0JLPsAKYjvlbACabpjZhAJfFrbAYZG8qEAxYJT16LgY6Wm5pGgRkHch4qUcF+QlHbsH+1-LH6O5kdmkgB2x9lbI0koBmXNGS42W0wAs4EQc1pvUuC+RKN9TaHmrc8B8YQuBh06M1hzxrFZbCe1OWaptIam4j0FtLYbFWlnVQoBGyFoQpI4jpr1sVnSxgs1PyKlBfyV5kXi0UIBragNmknJSb3csbCVr7+EURUF13M1skEwzELQDbAiZCwrVfZPqSBluKfPwwFOXMNvoayGj8UnBY2sKERsooKLSQ8z3AUJEBJwc2oh8RU-5DGxqeCgKw1qA28KUIwnSoBoz2y38FqAUVZ1D3hzWpTV7R4PPkG2BGYTB3gBVOJdRabJbPFAKYjZERvSrCEFjjrKYBcqBuLhkooN1alMXOHyQ2RLyJXMRwIVHIiga8ur3IEMZ7PPspRRkkKhJKN9qBQP2wcW1NQ3AYzKjDGnZp9t8Af7MEkIKuQExirC8iBVawkAHPRz6QKerddVQ5Ki+lpam9uhz04cBlT40yIOE-A8M3R0bDyJRMxNas0QBx5LJReyBBDBIKLBEiLmUwDFr+6H6kKFyMa01diVkFjobgXYqqyCrcouiAVlFTdRsYBWiH9h8hJ8vjulrNZKHQU7kuKloia0q6HIOrf839UVhfinDtGgwSh7O078M+b08wqW8j28MSTcsqhy2DSKTRzJcDb0xyEQijuRsiOs9D1FUWjhohLX0GwImhTkw7GiabAeDH-Nwur8HhorqKcF+xxi5WRmACQjFh9YZIBolucMWNio7BrxEkCQLGgJ8OEwT5eHPuo6GJ4FPla6hqjCaOwGWzvJeXfeDNhQmKvRHq2YGBpogJ6rO2A7O24psd0HQd9izhjkjVKCg+2+NqRsQpfLri0LVULsU7mWncWBBB21BgUhcmr8C+b0QqqhprkOprBi7AHKKSlAYpHUJFNhoStUIjvAVxkAd9pcAzS6SMQAMsR5C-7HW6fmoPFpaVaGUz59IPOSK21AVRuO6wlaghW197vSJl8qdQOgIT9Vun3Ui6dseiXwAcvWXQPSzAIjpJw4eh-0PT-AhSAYs8CAqQfQVDZixO9o2zVOfzymSKF1SQAOQBAAjaskAwBsAPAEIBgATECwAHkIBAIB6ekADfrPoWnsxAJgSEExAGVEAHxl7IYskxACATEEMiAUdvORh-azcNXgo8gQQV4zGE4BF7zATEHJsR4czX2R2AJ6FuwrSvKWV7MQXXrJ7z0QmnhRhe-AFZ7I4WXVN77oGRubQ7qMpDbl3OS2Ey7kW5gMFVoBOkirpyUMwCWdee89FKMggK3pABMY6rgLUnemXssaJksJkxAAAX2j6+eiAw56WezEHZ7A+pCk4hfe8aTZrBe0FED7+JYEhD6pe6SFXheHBsUDAFeoIggAlelXucAGHUvotC4kR6TRZde5XpAADevnuN6PS03tZ7rAEgFN6IIUED57rAGwD768owfrIAJAEfoH7z0awBQhJ+3CkxBrAa6Dn6x+kgDthl+6ftfh1+hfrIApALfuIAyAHxD37OkI-tsBe+2nv775+-fpxQT+t1xv7Z+8-tH6N+qLpv61+h-qn7t+wJxv7d+t-sv7SAYCpv6OkE-oHwgB4fp-6x+iQAn6wBjfokB7+ggAv7wBpfqgHt+iQFf64Bx-uQHFAIAe-60B9-v36JAQ-qQG8BwAcIGdmM-pwHf+8mlAHyBsfpQhIB6gY36DfE-uIYmB1AZdx0B-frCCmB7AbYHcBnZgIH6B7fpQhiBgQf37E2E-t7ZxBugZ4GKBjCPEHEBkQdIBroVgfgGN+yyPEHuBlQe37rofgekGx+0aJP7+4AwaoHdBjfu74DB2AZMHt+u2HkHLB-frthlB9gdIB7kgwY0HHB1fp0HNBuweEHbBscTIGfBi1uMHPBscSkGghi1osHQhxQBsGIhhwd4GLWzAZIGLW1wdiHFADwbcHFAbwdCG35E-taVshkIbcG9c7IaiH8hmIYoGV1bIaSHSh1IdiGpADIbcG1NE-pyKGhvIdiHZtBoaKGWhkobH6QdBoYqGuhqoYoG4Kk-pP0hhwIbcGOkZoYoHZjIYfaHJhzoY36OkeIYUGSADpF6H5h-obH6OkWod4HnzI-t-NdhhQH2Hwhxwd0t9huYYX6XkRYZ8GXkVYfOHfEfYa2Hf+nFD8GghnFFGHth2-pIGcUI4feGZhwfpxQzh4gBxRLhl4ZsAbhwEf-7Phwmt2HgBz4YvxoRiYb+GYB6Ed+Hp+t1wBH3PJQGhGwRjEfWHUR4b12GjqAkbeHHh2gYJHvhkkZRHzhpRgJHgR44ZQhsR1tFxGqRh4b+GxBz4YkH2RhEdRHZB9kcpHARpQd2G1B9kYZHtBwUZZHURwwc+Ga+XYbMGpR8kb+HrBmUfRHGsWke2G7YBkbtgmRwEbthxR84fHFdh2iQNGuRvUflHURyIYNHlR4WQNGGRlIYNHdRwEayHPhnIadHjRh0dNHzhqQD5H3PKQGVGyhp0YZGhC3YZqHdh+oc+HGhsMddH3PVobDGvR4CuVHuhsMYZGQKkMftH3PYYc+HaDXYfGGsx90cBHDjLMeVGFhrMYZGiarMdTHp6o-oHxiRwfpibKx8mjrGvRgfHRGB8VUd-6B8bEZ9a6x8sZeRKx6-pIGL8SMYvxcx89sbHGsXsdbGax0Ebn7Y+6PsN6QALRCYAAANSjTaekABYAbAOcYOtrwEsCGhxnWnoABtEAEmwSwAAH0hOD4BAAAAXWj6gAA
 
@@ -13567,7 +15317,7 @@ playground_link = make_playground_link(
     models=[TYPESAFE_MODEL],
 )
 # Print a usable URL in a script; render a clickable link in a notebook.
-if "__file__" in globals():
+if __name__ == "__main__" and "__file__" in globals():
     print(f"Open the state + questions in the TypeSafe playground:\n{playground_link}")
 else:
     display(Markdown(f"🔗 [Open the state + questions in the TypeSafe playground]({playground_link})"))
@@ -15623,7 +17373,6 @@ How you act on a Box's confidence is up to your application. A common pattern is
 
 * **Ask again on a better image.** Send a larger version of the image, or crop to the region around the box at a higher resolution and ask the same Box question on the crop. [Writing Box questions](#writing-box-questions) covers finding a small target in a large image.
 * **Pad the box before cropping.** When a crop must not cut off any part of the target, move each edge outward before you crop.
-* **Check the box with edge questions.** Ask whether the target continues past each edge, as in [Check a box with edge questions](#check-a-box-with-edge-questions).
 
 This code pads the box when confidence is below a threshold, and keeps it inside the image:
 
@@ -15664,12 +17413,6 @@ Then crop with the padded `edges` as in the code above.
 **One box per question.** Box is designed to find one target, and every answer is a single box. To find several different things, ask one Box question for each in the same request. When the image might hold more than one of the same thing, describe the one you want so that only it fits: "the mug nearest the sink in `photo`". When you can't tell them apart in words, add a Choice with the options `none`, `one`, and `several` next to the Box. When the answer is `several`, split the image into regions and ask again on each.
 
 **Crop large images before looking for small things.** A target a few dozen pixels wide in a very large image can be missed. Find the region first, for example with a Choice that has tiles of the image as its options. Then ask the Box question on that tile, and convert its edges back to fractions of the full image.
-
-### Check a box with edge questions
-
-To check whether a box cuts off part of the target, crop to the box and ask one Noul per edge, such as "Does the mug in `crop` continue past the left edge of the image?". Move out each edge where the Noul answer is yes, and ask again.
-
-On 36 test crops of paintings, each with a known part of the target cut off, the four edge questions caught 30 of the cuts. A single "Is all of the mug inside `crop`?" question caught 26. Drawing the box as an outline on the full image and asking about that caught 20.
 
 
 # Choice

@@ -26,15 +26,9 @@ The whole pipeline is two API requests per document, run in sequence:
   carries companion questions for every block (heading level, step order, callout kind)
   whose answers are read only when the block's type makes them relevant.
 * **Direct evidence stays in code.** Blank lines and explicit markers (`- `, `1.`, `#`)
-  are read in code, never sent to the model to reconsider; this memo kept its blank lines
-  but lost every marker. The model gets only the questions code cannot answer from the
-  text.
-
-All of the behavior is specified in the pass-2 question criteria: three dicts of
-one-line descriptions, plus the step question's true/false criteria inside
-`classify_questions`. The rest of the code is plumbing around them. The cost and latency
-numbers are in the appendix: two round trips, 10,211 tokens, 0.8s, \$0.0015 for this
-memo.
+  are read directly and never sent to the model to reconsider; this memo kept its blank
+  lines but lost every marker. The model gets only the questions code cannot answer from
+  the text.
 
 ## Setup
 
@@ -42,9 +36,11 @@ memo.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`, which ships
-with the cookbook, so re-rendering replays the published numbers without calling the API.
-Delete that file to re-run everything live.
+then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`. Download it
+from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/autoformat)
+into the folder you run the script from to replay the published numbers without calling the
+API, or leave it out to run everything live.
 
 ```python
 import os
@@ -58,7 +54,6 @@ from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.12"
-PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output); TypeSafe jev-1.12 as of 2026-09
 client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
 json_cache = JsonCache(Path("json_cache.json"))
 ```
@@ -67,13 +62,11 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 The test document is a memo about a build-system migration, in the state it arrives in a
 plain-text inbox: paragraphs hard-wrapped mid-sentence, a shell command sitting on a bare
-line, two lists with no bullets or numbers, a warning with nothing marking it as one. The
-text is fetched from a pinned gist so the cookbook's numbers stay reproducible.
+line, two lists with no bullets or numbers, a warning with nothing marking it as one.
 
 ```python
-GIST = (
-    "https://gist.githubusercontent.com/eugene-shvarts/6df7daf97233bf92bcdd6b386a0fa561"
-    "/raw/5da03690611fb6ddcbaabdb91fb9f91d9751b113/build-memo.txt"
+DOCUMENT_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/cookbooks/autoformat/build-memo.txt"
 )
 
 @json_cache
@@ -82,7 +75,7 @@ def fetch_document(url: str) -> str:
     with urllib.request.urlopen(request) as response:
         return response.read().decode()
 
-RAW = fetch_document(GIST)
+RAW = fetch_document(DOCUMENT_URL)
 print(RAW[:560])
 ```
 
@@ -106,11 +99,11 @@ Generated artifacts no longer need to be committed. The new pipeline
 uploads them
 ```
 
-Line splitting, blank-line tracking, and id tagging all happen in code; no model is
-involved.
-Each line gets a short id (`L014| `); the ids are ordinary text the model reads as part of
-the state, and questions and answers refer to lines by these ids (the same scheme as the
-[semantic search cookbook](https://docs.typesafe.ai/cookbooks/semantic_find.md)).
+Splitting lines, tracking blank lines and tagging ids all happen before the request; no
+model is involved. Each line gets a short id (`L014| `). The model reads the ids as
+ordinary text in the state, and questions and answers refer to lines by them. The
+[semantic search cookbook](https://docs.typesafe.ai/cookbooks/semantic_find.md)
+uses the same scheme.
 
 ```python
 def to_lines(text: str) -> list[dict]:
@@ -154,8 +147,7 @@ L017| Whoever still owns the release tooling
 
 One Noul question per adjacent pair of lines, all in one request; pairs separated by a
 blank line are skipped. The question is deliberately narrow ("does this line pick up
-mid-sentence?"), which is close to an objective fact about the text. The appendix covers
-both the wording choice and how the merge thresholds were derived.
+mid-sentence?"), which is close to an objective fact about the text.
 
 ```python expandable
 def join_question(i: int) -> Noul:
@@ -195,8 +187,7 @@ print(f"{sum(1 for l in LINES if not l['gap']) - 1} pair questions, one request,
 
 The cutoff for merging depends on how the previous line ends. After a dangling line (one
 with no sentence-ending punctuation), a join probability of 0.2 or above merges the
-pair; after terminal punctuation (`.` `!` `?` `:` `;`), the cutoff rises to 0.5. The
-appendix walks through the probabilities behind the two numbers.
+pair; after terminal punctuation (`.` `!` `?` `:` `;`), the cutoff rises to 0.5.
 
 ```python
 JOIN_AFTER_DANGLING, JOIN_AFTER_TERMINAL = 0.2, 0.5
@@ -250,11 +241,10 @@ B016  1 line   Thanks, and shout if anything looks off.
 
 ## Pass 2: classifying blocks
 
-Each stitched block gets a `Choice` question: *what kind of content is this?* These
-three
+Each stitched block gets a `Choice` question: *what kind of content is this?* These three
 dicts, plus the step question's true/false criteria inside `classify_questions` below,
-are the entire specification of the classifier. There is no other logic. To adapt the
-pipeline to your own documents, edit these descriptions.
+are the entire specification of the classifier. To adapt the pipeline to your own
+documents, edit these descriptions.
 
 ```python
 TYPE_CRITERIA = {
@@ -277,14 +267,13 @@ CALLOUT_CRITERIA = {
 }
 ```
 
-Everything below is plumbing: build the questions, send one request, read the answers back.
 If the type comes back `heading`, the renderer needs a heading level; if `list_item`,
 whether order matters; if `callout`, which kind. The types are not known yet, and waiting
 for them would mean a third round trip, so the companion questions are asked up front in
-the same request. Most of these answers are never read: the step probability of a paragraph
-means nothing and is simply ignored. An extra question adds little, since the state is
-most of the tokens and is sent once either way, while an extra round trip adds a full
-request of latency.
+the same request. Most of these answers are never read: the step probability of a
+paragraph goes unused. An extra question adds little, since the state is most of the
+tokens and is sent once either way, while an extra round trip adds a full request of
+latency.
 
 ```python expandable
 HEADING_MAX_CHARS = 90  # longer blocks can't render as headings, so don't ask
@@ -380,19 +369,16 @@ B015  quote      0.99  -                 As Dana put it in the kickoff, "a migra
 B016  paragraph  0.92  -                 Thanks, and shout if anything looks off.
 ```
 
-Every block's judgment is in that table, and the companion column shows the up-front
-answers being put to use: the three "Things to do before Monday" lines carry step
-probabilities near 0.9 (they will render as a numbered list), the three team lines sit
-near 0.1 (bulleted), and the unmarked warning about the doctor script was classified as
-a callout of kind `warning`. The appendix looks at the one block the model was unsure
-about.
+The companion column shows the up-front answers in use: the three "Things to do before
+Monday" lines carry step probabilities near 0.9 (they will render as a numbered list),
+the three team lines sit near 0.1 (bulleted), and the unmarked warning about the doctor
+script was classified as a callout of kind `warning`.
 
 ## Rendering
 
 Code assembles the page from the judgments. Consecutive list items become one list,
 numbered when the mean of the items' step probabilities is at least 0.5. That threshold
-is a
-group-level decision no single question asked directly.
+is a group-level decision no single question asked directly.
 
 ````python expandable
 STEP_THRESHOLD = 0.5
@@ -488,27 +474,6 @@ display(Markdown(f"🔗 [Open the stitched memo + questions in the TypeSafe play
 
 # Appendix
 
-## Cost and latency
-
-```python
-tokens = [result["usage"], classified["usage"]]
-total_in, total_out = sum(t[0] for t in tokens), sum(t[1] for t in tokens)
-cost = total_in / 1e6 * PRICE[0] + total_out / 1e6 * PRICE[1]
-n_joins = sum(1 for l in LINES if not l["gap"]) - 1
-print(f"pass 1  {n_joins} questions  {result['seconds']}s")
-print(f"pass 2  {classified['n_questions']} questions  {classified['seconds']}s")
-print(f"total   {total_in + total_out:,} tokens  "
-      f"{result['seconds'] + classified['seconds']:.1f}s  ${cost:.4f}")
-```
-
-```
-pass 1  16 questions  0.32s
-pass 2  62 questions  0.51s
-total   10,211 tokens  0.8s  $0.0003
-```
-
-Two round trips, 10,211 tokens, 0.8s, \$0.0015.
-
 ## Where the join thresholds come from
 
 The per-line join probabilities from pass 1:
@@ -553,21 +518,17 @@ directly:
   paragraphs.
 * After *terminal* punctuation (a character that ends a sentence or clause: `.` `!` `?`
   `:` `;`), the cutoff rises to 0.5. The memo's team list shows why: `L015| The platform
-  team` follows a colon and scores 0.22. That is a low but nonzero "this continues the
-  sentence" signal, and it would clear the 0.2 cutoff and merge the list into the
-  sentence
-  introducing it. No single threshold works for both cases; once code checks the
-  punctuation first, the two bands separate.
+  team` follows a colon and scores 0.22, which would clear the 0.2 cutoff and merge the
+  list into the sentence introducing it. No single threshold works for both cases; once
+  code checks the punctuation first, the two bands separate.
 
 ## Why the question is "mid-sentence" and not "same paragraph"
 
 The first version of this pipeline asked the obvious question: "are these two lines part
-of the same paragraph?" It failed in a specific way. A run of short lines under a
-heading (a list typed without bullets) *is* a paragraph in the loose sense: the lines sit
-together and share a topic. Asked about paragraphs, the model says yes to every pair, and
-the stitch pass merges the whole list into one long block.
-
-Same document, same request shape, only the wording changed:
+of the same paragraph?" A run of short lines under a heading (a list typed without
+bullets) *is* a paragraph in the loose sense: the lines sit together and share a topic.
+Asked about paragraphs, the model says yes to every pair, and the stitch pass merges the
+whole list into one long block.
 
 ```python
 def naive_join_question(i: int) -> Noul:
@@ -600,11 +561,10 @@ blocks after merge: 17 (mid-sentence) vs 12 (same paragraph)
 ```
 
 With the paragraph wording, every unmarked list item scores above 0.75 and both lists
-collapse. The memo merges into a few run-on blocks. "Same paragraph" asks the model to
-judge whether the topic carries over, and between list items it does. "Picks up
-mid-sentence" asks about the text itself. When a judgment call feeds a threshold, the
-question should name the narrowest fact that decides it. Here the wording is the
-difference between 17 blocks and 12.
+collapse. "Same paragraph" asks the model to judge whether the topic carries over, and
+between list items it does. "Picks up mid-sentence" asks about the text itself. When a
+judgment call feeds a threshold, the question should name the narrowest fact that
+decides it. Here the wording is the difference between 17 blocks and 12.
 
 ## The lowest-confidence block
 
@@ -621,10 +581,10 @@ print(", ".join(f"{k} {v:.2f}" for k, v in
 confidence 0.43: paragraph 0.53, list_item 0.24, callout 0.19
 ```
 
-The sentence introducing the team list is genuinely ambiguous - it names what follows
+The sentence introducing the team list is ambiguous: it names what follows
 (heading-like), is a complete sentence (paragraph-like), and sits where a callout would
 go. The probabilities spread accordingly (paragraph 0.53, list_item 0.24, callout 0.19),
-and a UI can surface that - for example, underline for review any block whose type
+and a UI can surface that, for example by underlining for review any block whose type
 confidence (the probability behind the winning choice) is under 0.55.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

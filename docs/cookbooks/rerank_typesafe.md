@@ -3,7 +3,7 @@
 > Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.
 
 You have thousands of documents, and you need to find the one that answers a specific
-question. So how do you find it?
+question.
 
 First, use a quick method such as keyword matching to cut those thousands of candidates
 down to a shortlist of plausible ones. We call this fast search.
@@ -17,24 +17,15 @@ fast search shortlist of 30 candidates for each of 40 queries, then TypeSafe re-
 shortlist. With re-ranking, the correct passage lands in first place for 18% of queries, up
 from 5% with fast search alone.
 
-**Along the way, you're going to learn:**
-
-* What fast search does, and why it isn't the whole answer
-* What re-ranking is, and how it fits after a fast search step
-* How TypeSafe scores one candidate against a query, and how much that improves the result
-
 ## Try it yourself
 
-[Open a query, candidate, and re-ranking question in the TypeSafe Playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAngPpZTUAOKpBpUANgIYCWcfADMIVfADc+EXiilIAzvghD8AaWQoYUANY18UPpK75mVaAjAwqCADT4UACwR6h-Yygj55KHigT4efV4BfBhmCCR8AHcHPigHfGsuPgQVKB5IgCN-AHMqDL8wADp8NCd8AFk+bUVIfCQIFHw+MA0+IRpAFAIMsCUrRIR5BB4qePxIQfrGgfFhrm79HhghpRUeKFkI4VEJKRk5RWU1DS1dfUM+YwByEzMmS2sSitEECFmqOwAxazAwFMr1tEeIoGk1AswRig9B57OURNZuBB5FZ-OtNpEeoskKD8Nl8E4uL1rPJwgo+JkuP54QEkHpTOYHjxjK0hAgNoo+JFHP56UwLJycvISmhPNz8Fg-KhYb5Yf4qjUvAgENp7J5MlQBQEgvxBNTJNJfAdVrK+GJLDy7oNFBqcg4UIoYEhWmIxZ92o58ABBRBOn1NGFigCqSD4hXwAGUfH5FABhCLeUMwdF2bkuNyqrxR1HakJhLYxOIJJIpNIZXG5fKoCzl9LLfzfCx-OWAvgg6aBHJvahIP0BDY7GKedJZfwE3rJHgUqk7KDx2SadFM3YG9FC-AASUi+AASgBRAAinpjaAP+FlEbC1kQ+DjViagx8FNbTl6gSE+UQUVEKuprT8VDgTlNRiZAtU7d4ew0ABaEl4xeXpZyocJ8nRZpFA7LsqEgqU0R2alZwUeckzkJdmCscIhjXdcmjHaUmkAHAIQOsfAilY88AHFMOwpooGsXxJkCRDkMNLZMj0Ek2T4JdeCiOxqTFIQ7ycSsmGNcDuz9JcIEyAArNlZFmeQ7ExawfE5RRqVDIYuBUZhqDgDINACJMHFEUNoU8HhmHCTkwXwBydLcqFjTFP4EQ8KhDhURwZSE0QRKQFNyjilC5DQkxISgkLyk4iDe2pMikKRSYjldU1vC9H0wD9IpAFwCDdigCJoAGYAE5WrsABGTqAFYIyKGMUBKVqADZOqKOxg2dc8ABkEHVABnyJ3x4T9vy+H4mwBKB0pxDC8qc3CxEHLFy3xBBCXwCcp22MR9X2eNsvrd0Em9ZBqo0QBMAkUfdKHwAAFS15FjXg6xKcMlTsBAihyCbKpKAAhDJtGoRRnioFBYZvURmBKcQSk+CwSgACQga8ZogMt0cxko4yQuGAHY+s+Ipmt6TqABYAAZOq67mRqgrnWvwAAKVqPRjU0ik69qRoASlIOxOB6Fp+LoCFgZ4HIEHYfBSB8bRNWUFQtjjUR5E+gIwHeWR5GA2IxjrRQxXkLgIByMsjkADAJw0ud58ARmAuEpFBLcs+1y2oLEjPPPxsFuaBgjgZ2HBlM3IvSr2yn8X2uH9wPg4Qf1U7BARFGz-BPhGHc+FtUPFHCZJZHSYwtfewIZTFJxIWNN6NXSIpLfqgAObrK-BsJcfwdrmrsdq+pF8N9wAOQATXwGXWuauWSm9FB8m0b7dlU0xBhaJy-nkLz6VmXoxR4a3qFthA-TsTlxAgQ2kBySr954Q+G7SDiDQN+SBlKhmrO+MmzQI6n1aEwYGOxgRXR6G7KgvQjj-WQJESMCUkr+CwdieQNA84ZCkjuNwZgH7YzgBCWkdh6IxSaKGaIlxjB7WDhAKIJggHNyXA-G2rYjZcnKAAbXDDpOyGx1hB2rgIp+Qjv5eFrkgOqXpvIlAAEzDx6iUOai0RGgSEJcasyIWFa34IRX+B8aS9DQPudcdhuA6gFKA-8AQJxJU7uUawikr7uE8MwXgqlYjoUfhjVsL8nJbDFOGKRPhYC8DEKnXo91+K9FCZXcqYInRZKEB6N6vonI2jtGuT0+So5YDsn8MMl9ZzvBAeefcrZ95xCaLeDGiQg7ViYdY-+dhsi1hWEcKyQRir2BSM7UU5RCbOiXLlDSGg7BRGQYEBZWFexHWMk0SkwImjUjdJFJohSPpSkKhRQYxlcm9NGdYPSGw0pHH0WYJAR96QXNfOE5+myHQKBgKGSclJbrjFbEEngehOQA2wRGKMaUUnLhkD0mZ2TKrvRqqUZKEA7z4DyAUaszylo0maEgHSjoHlbExKIZ01Y942MxPY9cGZL5gr0M8iIR95ERKGL2GJ5Q4n6RkUk4U5RgwQN6Lg6M2NsVHE9N5OYFkdixLZBEXoktRj-KaNYd4QxGqdU0ePfAbNDXD2HqLTe29hU8kclwI+EBmBAS2MYo5Uwwy9Npf-IEMcxKx3slFc8lIcitgeiI2KfEwyhjsHtfA6zuLilQO5N+xRtmGtalzAA3LY2UkQCLcBgK0O+JdzyzOoPMrivYVltiaPITw79pC31YQUuAf8VS9LFDIf8R94FCMerOIOvQ8QETttS3orI5mt3JYlZoSamops6lBNqmjaaxFSPgAAUnm7W+Bl4ICiA5SIl8hhVkagAdQrHihCCj4oahKD1MegZwYlG6lzBem8OY7w3Iy09+IeCzHOpdCITA7CBwxlsfG+Bj2XEAt-DwkR-ojC-j-T0LkgqNOaiNPq97+r4AZr1M1o1Opyyub0K+LR-IZGhAIS5dE+yrmNKYQw-E43zkmadatiBZCIEUHiawHt0HVmQepDZGh+ETuBYOoii5jDnOKmuCGthxQlFhnYcMZZvgZAMPIWcXoMaKAAGRekcCHOIMdNxQDxiUUVYYJWTAAPJcBoLQuINC4Bww5sPZq+BMPhhvZozRdgeocxGnh4eDM5YZoRlweAEgSirxGEXeQug7Acx6gzTzD7p6tV5hvLmXMObBc0WFyoEBxkUzAJu5eEBH1c1S2B9cVBJAx25qlrzj6Rqzw3gzfVIsZadffdRdKrhTQZivtCQt9EsViHSJRcYkk-hKJApEej4hGNojSoBOuZ1WhRILTKUq5RvCMdTr+nE2RkCkAAL4gDsCAektD7QYGwHgQgJAQCtjoAYQodBq1WCYLrF7UI7K61IA0IOis9avcIlQLQq4gcgArhQagehGAsB4mTSYUDBCBEDOGYQFgS3GF7Z0u1DqMS5IrdEDUKBJTNDgIgP4-F7MBDMI6V85xYUxM8rcNkePUAZrFB9hKMDrIqFTlxpUkQrxdkareS6-OVZgEYxrK+m68QY+ox96sp97hOU6OMCAkwWEPkBc+c8EkDDGJ2gG0iZgKKhjSmKBHtBxSYCYEhZhSAP4o3QswiOAvUI+VQAAfjB5wSn1ApJ-f1lDnWT3SAV2HH8BXfgMqa03QdyVOwjdPnkE4FO-gzftCc1DykdgDtOhGGAOwrlCSuKUGIVwGwMpU+7NRh3lAnfI7d01VpmQkyTBhLcl+Uu2cJSKCHkArguBDFh-H+XivgTK-8K2fy1ALp6ApcowCSTVT2p2jsSAGwNRIAQBmlhExK1eEnozl2UjC87XeUiO3vL-CO6Ry7lHAxkglVURd87l3rteR8AABqqMcgT2IA4gnUV2hA1k+kFgzwrQU+T2oiIAEkFgdAiK3gIAAAuudkAA)
+[Open this example in the TypeSafe Playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAngPpZTUAOKpBpUANgIYCWcfADMIVfADc+EXiilIAzvghD8AaWQoYUANY18UPpK75mVaAjAwqCADT4UACwR6h-Yygj55KHigT4efV4BfBhmCCR8AHcHPigHfGsuPgQVKB5IgCN-AHMqDL8wADp8NCd8AFk+bUVIfCQIFHw+MA0+IRpAFAIMsCUrRIR5BB4qePxIQfrGgfFhrm79HhghpRUeKFkI4VEJKRk5RWU1DS1dfUM+YwByEzMmS2sSitEECFmqOwAxazAwFMr1tEeIoGk1AswRig9B57OURNZuBB5FZ-OtNpEeoskKD8Nl8E4uL1rPJwgo+JkuP54QEkHpTOYHjxjK0hAgNoo+JFHP56UwLJycvISmhPNz8Fg-KhYb5Yf4qjUvAgENp7J5MlQBQEgvxBNTJNJfAdVrK+GJLDy7oNFBqcg4UIoYEhWmIxZ92o58ABBRBOn1NGFigCqSD4hXwAGUfH5FABhCLeUMwdF2bkuNyqrxR1HakJhLYxOIJJIpNIZXG5fKoCzl9LLfzfCx-OWAvgg6aBHJvahIP0BDY7GKedJZfwE3rJHgUqk7KDx2SadFM3YG9FC-AASUi+AASgBRAAinpjaAP+FlEbC1kQ+DjViagx8FNbTl6gSE+UQUVEKuprT8VDgTlNRiZAtU7d4ew0ABaEl4xeXpZyocJ8nRZpFA7LsqEgqU0R2alZwUeckzkJdmCscIhjXdcmjHaUmkAHAIQOsfAilY88AHFMOwpooGsXxJkCRDkMNLZMj0Ek2T4JdeCiOxqTFIQ7ycSsmGNcDuz9JcIEyAArNlZFmeQ7ExawfE5RRqVDIYuBUZhqDgDINACJMHFEUNoU8HhmHCTkwXwBydLcqFjTFP4EQ8KhDhURwZSE0QRKQFNyjilC5DQkxISgkLyk4iDe2pMikKRSYjldU1vC9H0wD9IpAFwCDdigCJoAGYAE5WrsABGTqAFYIyKGMUBKVqADZOqKOxg2dc8ABkEHVABnyJ3x4T9vy+H4mwBKB0pxDC8qc3CxEHLFy3xBBCXwCcp22MR9X2eNsvrd0Em9ZBqo0QBMAkUfdKHwAAFS15FjXg6xKcMlTsBAihyCbKpKAAhDJtGoRRnioFBYZvURmBKcQSk+CwSgACQga8ZogMt0cxko4yQuGAHY+s+Ipmt6TqABYAAZOq67mRqgrnWvwAAKVqPRjU0ik69qRoASlIOxOB6Fp+LoCFgZ4HIEHYfBSB8bRNWUFQtjjUR5E+gIwHeWR5GA2IxjrRQxXkLgIByMsjkADAJw0ud58ARmAuEpFBLcs+1y2oLEjPPPxsFuaBgjgZ2HBlM3IvSr2yn8X2uH9wPg4Qf1U7BARFGz-BPhGHc+FtUPFHCZJZHSYwtfewIZTFJxIWNN6NXSIpLfqgAObrK-BsJcfwdrmrsdq+pF8N9wAOQATXwGXWuauWSm9FB8m0b7dlU0xBhaJy-nkLz6VmXoxR4a3qFthA-TsTlxAgQ2kBySr954Q+G7SDiDQN+SBlKhmrO+MmzQI6n1aEwYGOxgRXR6G7KgvQjj-WQJESMCUkr+CwdieQNA84ZCkjuNwZgH7YzgBCWkdh6IxSaKGaIlxjB7WDhAKIJggHNyXA-G2rYjZcnKAAbXDDpOyGx1hB2rgIp+Qjv5eFrkgOqXpvIlAAEzDx6iUOai0RGgSEJcasyIWFa34IRX+B8aS9DQPudcdhuA6gFKA-8AQJxJU7uUawikr7uE8MwXgqlYjoUfhjVsL8nJbDFOGKRPhYC8DEKnXo91+K9FCZXcqYInRZKEB6N6vonI2jtGuT0+So5YDsn8MMl9ZzvBAeefcrZ95xCaLeDGiQg7ViYdY-+dhsi1hWEcKyQRir2BSM7UU5RCbOiXLlDSGg7BRGQYEBZWFexHWMk0SkwImjUjdJFJohSPpSkKhRQYxlcm9NGdYPSGw0pHH0WYJAR96QXNfOE5+myHQKBgKGSclJbrjFbEEngehOQA2wRGKMaUUnLhkD0mZ2TKrvRqqUZKEA7z4DyAUaszylo0maEgHSjoHlbExKIZ01Y942MxPY9cGZL5gr0M8iIR95ERKGL2GJ5Q4n6RkUk4U5RgwQN6Lg6M2NsVHE9N5OYFkdixLZBEXoktRj-KaNYd4QxGqdU0ePfAbNDXD2HqLTe29hU8kclwI+EBmBAS2MYo5Uwwy9Npf-IEMcxKx3slFc8lIcitgeiI2KfEwyhjsHtfA6zuLilQO5N+xRtmGtalzAA3LY2UkQCLcBgK0O+JdzyzOoPMrivYVltiaPITw79pC31YQUuAf8VS9LFDIf8R94FCMerOIOvQ8QETttS3orI5mt3JYlZoSamops6lBNqmjaaxFSPgAAUnm7W+Bl4ICiA5SIl8hhVkagAdQrHihCCj4oahKD1MegZwYlG6lzBem8OY7w3Iy09+IeCzHOpdCITA7CBwxlsfG+Bj2XEAt-DwkR-ojC-j-T0LkgqNOaiNPq97+r4AZr1M1o1Opyyub0K+LR-IZGhAIS5dE+yrmNKYQw-E43zkmadatiBZCIEUHiawHt0HVmQepDZGh+ETuBYOoii5jDnOKmuCGthxQlFhnYcMZZvgZAMPIWcXoMaKAAGRekcCHOIMdNxQDxiUUVYYJWTAAPJcBoLQuINC4Bww5sPZq+BMPhhvZozRdgeocxGnh4eDM5YZoRlweAEgSirxGEXeQug7Acx6gzTzD7p6tV5hvLmXMObBc0WFyoEBxkUzAJu5eEBH1c1S2B9cVBJAx25qlrzj6Rqzw3gzfVIsZadffdRdKrhTQZivtCQt9EsViHSJRcYkk-hKJApEej4hGNojSoBOuZ1WhRILTKUq5RvCMdTr+nE2RkCkAAL4gDsCAektD7QYGwHgQgJAQCtjoAYQodBq1WCYLrF7UI7K61IA0IOis9avcIlQLQq4gcgArhQagehGAsB4mTSYUDBCBEDOGYQFgS3GF7Z0u1DqMS5IrdEDUKBJTNDgIgP4-F7MBDMI6V85xYUxM8rcNkePUAZrFB9hKMDrIqFTlxpUkQrxdkareS6-OVZgEYxrK+m68QY+ox96sp97hOU6OMCAkwWEPkBc+c8EkDDGJ2gG0iZgKKhjSmKBHtBxSYCYEhZhSAP4o3QswiOAvUI+VQAAfjB5wSn1ApJ-f1lDnWT3SAV2HH8BXfgMqa03QdyVOwjdPnkE4FO-gzftCc1DykdgDtOhGGAOwrlCSuKUGIVwGwMpU+7NRh3lAnfI7d01VpmQkyTBhLcl+Uu2cJSKCHkArguBDFh-H+XivgTK-8K2fy1ALp6ApcowCSTVT2p2jsSAGwNRIAQBmlhExK1eEnozl2UjC87XeUiO3vL-CO6Ry7lHAxkglVURd87l3rteR8AABqqMcgT2IA4gnUV2hA1k+kFgzwrQU+T2oiIAEkFgdAiK3gIAAAuudkAA)
 
 ## How do we find one document in thousands?
 
-You have a pile of documents, and a query, a piece of text describing what you're looking
-for. Somewhere in the pile is the one document that answers it.
-
-Checking every document against the query one at a time works, at one comparison per
-document: millions of documents means millions of comparisons per query. You can improve
-performance with a two-step approach:
+Checking every document against the query, one at a time, takes one comparison per
+document: millions of documents means millions of comparisons per query. Two steps are
+faster:
 
 1. Cut the pile down to a short list of likely candidates, using a method fast enough to
    run on the whole pile.
@@ -44,27 +35,21 @@ performance with a two-step approach:
 reorders that shortlist so the correct answer rises to the
 top](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/two-step-search-intro-diagram.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=796d5d4efd82f8396f380f2e1e14a9de)
 
-This cookbook tests that setup on a dataset of court opinions, in
-[A re-ranking example](#a-re-ranking-example) below.
-
 ## What is fast search?
 
 Fast search is any method that can compare a query against every document in a large corpus
 and quickly return a ranked shortlist. Common methods include keyword search, such as BM25,
-and dense embeddings, which compare passages by meaning. Systems often combine both
-methods.
+and dense embeddings, which compare passages by meaning.
 
 The first step here is BM25 and nothing else. BM25 ranks passages by shared words.
-Keeping this step simple leaves the attention on re-ranking, which is the point of the
-cookbook. The choice of fast search method is a side issue: re-ranking only ever sees
-the passages that make the shortlist.
+The choice of fast search method is a side issue: re-ranking only ever sees the passages
+that make the shortlist.
 
 ## What is re-ranking?
 
-Re-ranking takes the shortlist fast search already produced and puts it in a better order.
-Instead of comparing the query against the whole corpus at once, it compares the query
-against each candidate on the shortlist individually, and sorts the shortlist by that
-score.
+Re-ranking puts the shortlist in a better order. Instead of comparing the query against
+the whole corpus at once, it scores the query against each candidate on the shortlist and
+sorts by that score.
 
 ![Diagram: a ranked shortlist on the left, an arrow labeled "re-rank," and the re-ordered
 version on the right with the true answer moving from the middle to the
@@ -76,16 +61,11 @@ on the shortlist even when its wording differs from the query's.
 
 ## Re-ranking with TypeSafe
 
-A re-ranker needs a comparable score for every query-candidate pair. A general-purpose
-language model can produce these scores, or rank the whole shortlist directly. For
-independent pair scoring, however, you need to define a scoring scale and prompt the model
-to apply the same standard to every candidate. Repeated calls can still produce different
-scores for the same pair, while general-purpose generation adds time and cost to a task
-that only needs one number.
+A re-ranker needs a comparable score for every query-candidate pair.
 
 ### What TypeSafe returns
 
-With TypeSafe, the scoring request can remain a yes/no question:
+With TypeSafe, the scoring request is a yes/no question:
 
 ```text
 Could this candidate passage be from the cited precedent?
@@ -98,8 +78,7 @@ of how likely the answer is to be yes.
 
 The question's criteria define what counts as true and false. TypeSafe applies them to
 every query-candidate pair and returns the noul directly. That noul is the score the
-application sorts on. No scoring scale has to be invented for a general-purpose model, and
-TypeSafe is built to do this repeated scoring faster, cheaper, and more consistently.
+application sorts on.
 
 In simplified pseudocode, one TypeSafe scoring call looks like this:
 
@@ -115,25 +94,18 @@ response = client.system_one(state={...}, questions={"is_cited_source": question
 response.answers["is_cited_source"].noul  # -> 0.87
 ```
 
-TypeSafe reads the query and one candidate together against that question, and returns a
-noul.
-
-You can use this to re-rank a shortlist by running the same question against every
-candidate on it, then sorting the shortlist by the noul each call comes back with, highest
-first.
+To re-rank a shortlist, ask the same question about every candidate and sort by noul,
+highest first:
 
 ```python
 nouls = {candidate: ask_typesafe(query, candidate) for candidate in shortlist}
 reranked = sorted(shortlist, key=lambda c: nouls[c], reverse=True)  # highest noul first
 ```
 
-The diagram below shows how one request per candidate produces the scores used to reorder
-the shortlist.
-
 ```mermaid actions={true}
 flowchart LR
     q["query excerpt<br/><i>one opinion passage,<br/>citation removed</i>"]
-    sl["shortlist from fast search<br/><i>30 candidate passages</i>"]
+    sl["shortlist from fast search"]
     quest["<b>one Noul</b><br/>could this candidate be<br/>from the cited precedent?<br/><i>criteria fix true and false</i>"]
 
     %% direction LR inside an LR chart keeps each state beside its noul, two columns,
@@ -143,18 +115,18 @@ flowchart LR
         d1["state<br/>{query, candidate 1}"] --> n1["noul<br/>0.87"]
         d2["state<br/>{query, candidate 2}"] --> n2["noul<br/>0.41"]
         dx["⋮"] --> nx["⋮"]
-        d30["state<br/>{query, candidate 30}"] --> n30["noul<br/>0.12"]
+        d30["state<br/>{query, candidate n}"] --> n30["noul<br/>0.12"]
     end
 
     sort["sort by noul,<br/>highest first"]
-    out["re-ranked shortlist<br/><i>same 30, better order</i>"]
+    out["re-ranked shortlist<br/><i>same candidates, better order</i>"]
 
     q --> fan
     sl --> fan
     quest --> fan
     fan --> sort --> out
 
-    %% the elision is not a node - drop its box so it reads as "and so on"
+    %% the elision is not a node, so drop its box and it reads as "and so on"
     classDef elide fill:none,stroke:none
     class dx,nx elide
     linkStyle 2 stroke:none
@@ -168,8 +140,6 @@ This example uses 3,565 court opinion passages and 40 queries.
 
 ### Setup
 
-The first step installs the packages this walkthrough depends on.
-
 * `bm25s` and `datasets` build the fast search shortlist.
 * `typesafe-sdk` and `cooksafe` handle re-ranking and API caching.
 * `matplotlib` draws the result charts.
@@ -178,9 +148,10 @@ The first step installs the packages this walkthrough depends on.
 pip install bm25s datasets matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-The next block sets up the TypeSafe client and the constants the rest of the walkthrough
-uses, such as which TypeSafe model to call and how large a shortlist fast search hands to
-the re-ranker. Calling TypeSafe needs a `TYPESAFE_API_KEY`.
+To replay the published numbers without an API key, download `json_cache.json` from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/rerank_typesafe) into the folder you run the script from.
+
+Calling TypeSafe needs a `TYPESAFE_API_KEY`.
 
 ```python
 import hashlib
@@ -195,10 +166,6 @@ from IPython.display import display
 from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.12"
-PRICE = (
-    0.042,
-    0.00,
-)  # $ per 1M tokens (input, output); TypeSafe jev-1.12 as of 2026-08
 N_ROWS = 170  # CLERC rows pooled into the shared corpus
 N_QUERIES = 40  # rows we evaluate
 TOP_K = 30  # candidates the shortlist hands to the re-ranker, per query
@@ -227,12 +194,8 @@ row breaks down like this:
 Of the 170 rows, 40 are picked to evaluate as queries. The other 130 only ever appear as
 candidates.
 
-The next cell builds the shortlist, using the technique described above:
-
-1. Load the corpus.
-2. Rank it against every query with BM25.
-
-There's no TypeSafe here yet, this is only the fast search step.
+Fast search loads the corpus and ranks it against every query with BM25. TypeSafe isn't
+involved yet.
 
 ```python expandable
 CLERC_FILE = (
@@ -350,27 +313,21 @@ bar_chart(
 
 The chart shows where fast search puts the correct passage, out of 3,565 candidates.
 
-Fast search reliably narrows the corpus down to a shortlist that contains the right answer.
-It contains the right answer for 100% of the 40 queries. But that passage is rarely the
-top-ranked one on the shortlist, only 5% of the time.
+The shortlist contains the right answer for 100% of the 40 queries, but ranks it first
+only 5% of the time.
 
-Re-ranking below only reorders the top 30 candidates already on the shortlist. It cannot
-add a passage that fast search did not select. Here, the shortlist contains the correct
-passage for all 40 queries, so re-ranking can focus on putting each one in a better
-position.
+Re-ranking only reorders the top 30 candidates already on the shortlist. It cannot add a
+passage that fast search did not select.
 
-### Re-ranking it with TypeSafe
+### Re-ranking the shortlist with TypeSafe
 
-Re-ranking scores every candidate on the shortlist against its query, then sorts by that
-score. The question TypeSafe asks about each pair is whether the candidate could be the
-passage the query's removed citation points to.
-
-The next cell does the following:
+The question TypeSafe asks about each pair is whether the candidate could be the passage
+the query's removed citation points to. Re-ranking takes three steps:
 
 1. Define that question.
-2. Ask it once per candidate on every shortlist, 40 queries times 30 candidates, 1,200
-   calls in total, run concurrently instead of one after another.
-3. Sort each shortlist by the score TypeSafe returns, producing the re-ranked result.
+2. Ask it once per candidate on every shortlist: 40 queries times 30 candidates, or 1,200
+   calls, run concurrently.
+3. Sort each shortlist by the noul TypeSafe returns.
 
 ```python expandable
 is_cited_source = Noul(
@@ -411,7 +368,7 @@ def score_candidate(model: str, query: str, candidate: str, question_json: str) 
     }
 
 # Each of the 40 queries has 30 candidates, so re-ranking every shortlist means 1,200 independent
-# calls — cheap enough to fire all at once with a thread pool instead of one after another.
+# calls, cheap enough to fire all at once with a thread pool instead of one after another.
 pair_list = [(q, c) for q in queries for c in candidates[q]]
 question_json = is_cited_source.model_dump_json(exclude_none=True)
 with ThreadPoolExecutor(max_workers=12) as pool:
@@ -487,19 +444,6 @@ def chart_before_after(
 chart_before_after(
     {"Fast search": candidates, "+ TypeSafe re-rank": reranked}, [1, 5, 10]
 )
-
-calls = [pair_scores[q][c] for q in queries for c in pair_scores[q]]
-input_tokens = sum(call["input_tokens"] for call in calls)
-output_tokens = sum(call["output_tokens"] for call in calls)
-cost = input_tokens / 1_000_000 * PRICE[0] + output_tokens / 1_000_000 * PRICE[1]
-print(
-    f"{len(calls)} TypeSafe calls used {input_tokens:,} input and "
-    f"{output_tokens:,} output tokens, costing ${cost:.4f}."
-)
-```
-
-```
-1200 TypeSafe calls used 1,536,002 input and 25,200 output tokens, costing $0.0645.
 ```
 
 ![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=46bea6ecf0dbb89f8df634eb6cda16b7)
@@ -509,18 +453,9 @@ print(
 The chart compares fast search against fast search plus re-ranking, at three thresholds.
 Re-ranking moves the correct passage closer to the top at every one of them:
 
-* **Top 1** — 5% → 18%
-* **Top 5** — 15% → 35%
-* **Top 10** — 38% → 62%
-
-The reported token count and cost cover all 1,200 TypeSafe calls used to re-rank the 40
-shortlists.
-
-Each CLERC row contains one correct passage and 20 negative passages. This walkthrough
-pools the passages from 170 rows into one shared corpus. For each of the 40 evaluation
-queries, BM25 selects 30 candidates from that full corpus, not only the 20 negatives
-supplied with that row. TypeSafe then reads the query against each selected candidate and
-re-ranks those 30 passages.
+* **Top 1**: 5% → 18%
+* **Top 5**: 15% → 35%
+* **Top 10**: 38% → 62%
 
 This walkthrough asked one question per pair for clarity. A real application would
 ask several questions about the same pair in one call. See the [parallel questions
@@ -530,8 +465,6 @@ cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md) and the
 ***
 
 ## What's next
-
-The same building blocks show up elsewhere in TypeSafe's docs:
 
 * [Noul](https://docs.typesafe.ai/primitives/noul.md), for how TypeSafe turns a yes/no
   question into a score.

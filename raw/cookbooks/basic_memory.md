@@ -14,8 +14,8 @@ Python dict.
 Our example routes support tickets. In August, a customer said they self-host on Windows
 Server. In September they write "Dashboards have been really slow since this morning".
 Without memory, Jev sends that ticket to the cloud team instead of the self-hosted team.
-In the example below, adding memory sends all six later tickets to the expected teams.
-Routing each ticket alone gets two out of six correct.
+With memory, all six later tickets reach the expected teams. Routing each ticket alone
+gets three out of six correct.
 
 The simple memory system has two parts:
 
@@ -23,14 +23,15 @@ The simple memory system has two parts:
   `Noul` question, which we call the gate, asks whether the request states an important
   fact about the customer that should be remembered. If P(yes) is at least 0.5, the
   ticket and Jev's answer are saved as a memory for that customer.
-* A wrapper function, `ask_with_memory()`, takes the same `state` and `questions`
-  arguments as `ask()`, which is the TypeSafe Python SDK `client.system_one` method with
-  the model pinned and the call cached, and returns the Jev response. Before each call, it
-  adds the customer's saved tickets and Jev's answers to them to the state.
+* Before each call, we add the customer's saved tickets, with Jev's answers to them, to
+  the state. We do this in a wrapper, `ask_with_memory()`, with the same arguments and
+  response as `ask()`: the TypeSafe Python SDK's `client.system_one`, with the model
+  pinned and the call cached.
 
-That wrapper is a basic agent harness. A harness is the code around a model that
-gives it extra capabilities such as tool calls and running in loops. This basic toy one
-only gives it memory in a plain Python dict with one list per customer ID.
+That wrapper is a basic agent harness. A harness is the code around a model that gives it
+extra capabilities such as [tool calls](https://docs.typesafe.ai/cookbooks/function_calling.md) and running in loops.
+Ours only gives the model memory, kept in a plain Python dict with one list per customer
+ID.
 
 ```mermaid actions={true} theme={null}
   %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 25, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 8, "bottom": 20}}}}%%
@@ -42,31 +43,26 @@ flowchart TB
     subgraph G["Jev: judge the routed ticket"]
         Q2["<b>Noul:</b> does the request state<br/>an important fact about the customer?"]
     end
-    DEC{"P(yes) ≥ 0.5?<br/>your code"}
+    DEC{"P(yes) ≥ threshold?<br/>your code"}
     SAVE["save the memory<br/>under this customer's ID"]
-    OUT["handle the support ticket response in your code"]
-    MEM[("MEMORIES<br/>saved memories per customer")]
-    IN -- "state with memories<br/>+ routing question" --> R
-    R -- "original request + answer<br/>+ memory question" --> G
-    G -- "P(yes)" --> DEC
-    DEC -- "yes: save" --> SAVE
-    DEC -- "no: don't save" --> OUT
+    OUT["your code acts on<br/>the routing answer"]
+    MEM[("saved memories<br/>per customer")]
+    IN -- "state with memories" --> R
+    R -- "original request + answer" --> G
+    G --> DEC
+    DEC -- "yes" --> SAVE
+    DEC -- "no" --> OUT
     SAVE --> OUT
     SAVE --> MEM
-    IN -. "added to the state<br/>on this customer's<br/>next support tickets" .- MEM
+    IN -. "added to this customer's<br/>next requests" .- MEM
 ```
 
-The wrapper makes two Jev requests, one after the other: the routing request, then the
-gate, which judges the ticket together with Jev's answer. The wrapper returns the routing
-response whether or not anything is saved.
+Each call makes two Jev requests, one after the other: the routing request, then the gate,
+which judges the ticket together with Jev's answer. You get the routing response back
+whether or not anything is saved.
 
 Because `ask_with_memory()` takes the same arguments as `ask()` and returns the same
-response, you can swap one for the other without changing any other code. The wrapper
-finds the customer's memories, adds them to the state and saves new ones itself.
-
-The example sends five earlier tickets from two customers through the wrapper, then routes
-three later messages from each customer twice: once with the memories it saved, once
-without. A table puts the two answers side by side for all six.
+response, you can swap one for the other without changing any other code.
 
 ## Setup
 
@@ -79,9 +75,7 @@ Set `TYPESAFE_API_KEY`. Every API call is cached in
 Download it into the folder you run this code from to replay the published numbers
 instead of calling the API, or leave it out to run everything live.
 
-Numbers below came from `jev-1.13.0` on 2026-09-28.
-The memory threshold of 0.5 is a starting point. You should evaluate it against
-your own examples.
+Numbers below came from `jev-1.14.0` on 2026-10-29.
 
 ```python theme={null}
 import json
@@ -92,7 +86,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, SystemOneResponse, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.13.0"
+TYPESAFE_MODEL = "jev-1.14.0"
 REMEMBER_AT = 0.5  # save when P(lasting customer fact) reaches this starting threshold
 MEMORY_KEY = "earlier_tickets_from_this_customer"  # where saved tickets go in the state
 
@@ -107,23 +101,23 @@ json_cache = JsonCache(Path("json_cache.json"))
 ## Define the tickets
 
 Two customers, five earlier tickets and three later messages, all written for this
-cookbook. C-1042 (Harbor Logistics) runs the self-hosted edition on Windows Server under an
-Enterprise contract. C-2210 (Fernwood Studio) is on the cloud edition's self-serve Team
+cookbook. C-1042 (Acme Corp) runs the self-hosted edition on Windows Server under an
+Enterprise contract. C-2210 (Example Studio) is on the cloud edition's self-serve Team
 plan. Three of the earlier tickets state a lasting fact: an edition, a plan, a contract.
 Two don't: a phone at the airport, a public holiday. No later message mentions the
 customer's setup, so without memory Jev has to guess it.
 
-Each ticket becomes a state with two parts: `customer`, who the customer is, and
-`ticket`, the ticket thread. The `ticket_state()` function builds a
-simplified ticket, like one from a helpdesk. In your app, the state is each ticket as
-your helpdesk sends it, and `ask_with_memory()` adds the customer's saved tickets to it.
+Each ticket becomes a state with two parts, built by `ticket_state()`: `customer`, who the
+customer is, and `ticket`, a simplified helpdesk thread. In your app, the state is each
+ticket as your helpdesk sends it, and `ask_with_memory()` adds the customer's saved
+tickets to it.
 The split into earlier tickets and later messages is only for this example.
 
 ```python expandable theme={null}
 DATA = {
     "customers": {
-        "C-1042": {"id": "C-1042", "company": "Harbor Logistics"},
-        "C-2210": {"id": "C-2210", "company": "Fernwood Studio"},
+        "C-1042": {"id": "C-1042", "company": "Acme Corp"},
+        "C-2210": {"id": "C-2210", "company": "Example Studio"},
     },
     "earlier_tickets": [
         {"id": "T-101", "customer_id": "C-1042", "received_on": "2026-08-04",
@@ -196,7 +190,7 @@ print(json.dumps(EARLIER[0], indent=2))
 {
   "customer": {
     "id": "C-1042",
-    "company": "Harbor Logistics"
+    "company": "Acme Corp"
   },
   "ticket": {
     "id": "T-101",
@@ -216,10 +210,6 @@ print(json.dumps(EARLIER[0], indent=2))
 
 One `Choice` question picks the support team. The `none_suitable` option gives Jev an
 answer for when no team fits, and a ticket with too little context can end up there.
-
-The helper `ask()` is `client.system_one` with the model version fixed and every call
-cached. It takes a state and a dict of questions and returns the SDK's own response
-object, so code that already reads `client.system_one` responses works with it unchanged.
 
 ```python expandable theme={null}
 ROUTE = {
@@ -274,7 +264,7 @@ print(f"  plain Jev -> {team.choice} {team.probabilities[team.choice]:.2f}")
 
 ```
 C-1042: 'Dashboards have been really slow since this morning.'
-  plain Jev -> cloud_ops 0.80
+  plain Jev -> cloud_ops 0.55
 ```
 
 Plain Jev sends C-1042's slow dashboards to the cloud team. This ticket alone gives it no
@@ -282,10 +272,10 @@ reason to do anything else.
 
 ## Ask Jev whether the ticket is worth remembering
 
-First, `as_memory()` pairs the original state with Jev's answer: the memory the wrapper
-may save. The `request` key
-holds the state before memories were injected, and `jev_answered` maps each question
-to its answer. This keeps old memories from being nested inside every new memory.
+First, we pair the original state with Jev's answer in `as_memory()`. This pair is the
+memory the wrapper may save. The `request` key holds the state from before memories were
+added, so old memories never end up nested inside new ones. `jev_answered` maps each
+question to its answer.
 
 A second Jev call reads that pair. The gate asks whether the request
 states an important fact about the customer, such as their edition, operating system, plan
@@ -345,9 +335,8 @@ def remember_probability(memory: dict) -> float:
 
 ## Wrap the call so it remembers
 
-The wrapper, `ask_with_memory()`, has the same arguments and return value as `ask()`. The
-memory store is a plain dict with one list per customer ID. The wrapper uses the ID in
-the state to select the customer's memories.
+We keep memories in `MEMORIES`, one list per customer ID, and look them up by the ID in
+the state.
 
 ```python theme={null}
 MEMORIES: dict[str, list[dict]] = {}  # customer ID -> that customer's saved memories
@@ -370,27 +359,32 @@ def ask_with_memory(state: dict, questions: dict) -> SystemOneResponse:
     return response
 ```
 
-Adding memory this way has four consequences for your app:
+Adding memory this way has five consequences for your app:
 
-* **Every call makes two sequential requests**, your call followed by the memory gate.
-  The gate judges the ticket together with Jev's answer, so it runs after the routing
-  request. If your gate ignores the answer, it could instead be a second question in the
-  routing request (see [fan-out](https://docs.typesafe.ai/patterns/fan-out.md)).
+* **Every call makes two sequential requests:** the routing request, then the memory
+  gate. The gate judges the ticket together with Jev's answer, so it runs after the
+  routing request. If your gate ignores the answer, it could instead be a second question
+  in the routing request (see [fan-out](https://docs.typesafe.ai/patterns/fan-out.md) and
+  [parallel questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md)).
 * **Memory only grows.** Every saved memory goes into every later call for that
-  customer. There is no size limit, no check for relevance and no expiry date here. The
-  Next steps section has ideas for each.
+  customer. There is no size limit, no check for relevance and no expiry date here.
 * **Your questions never mention the memories.** The memories go into the state under
   `earlier_tickets_from_this_customer`, and Jev reads the whole state. Nothing in
   `ROUTE` changes.
 * **The state needs `customer.id`.** Plain Jev also accepts a string as the state, but
   this wrapper needs the ID to find the customer's list.
+* **A saved answer can repeat a mistake.** The gate ignores anything that appears only in
+  Jev's answer, so an answer can't get a ticket saved by itself. A saved ticket keeps its
+  answer, though, and every later call for that customer reads it, so a wrong inference
+  can carry forward.
 
 ## Send the earlier tickets and watch the answers change
 
-Send the five earlier tickets through `ask_with_memory()`, in the order they arrived. The
-same customer sends two of the later messages again: slow dashboards and 20 more seats.
-That shows how each saved memory changes Jev's answers. The repeated messages go through
-the wrapper too, so the gate judges them as well.
+Send the five earlier tickets through `ask_with_memory()`, in the order they arrived.
+Before the first ticket, and again after each one, that customer sends two of the later
+messages: slow dashboards and 20 more seats. This shows how each saved memory changes
+Jev's answers. The repeated messages go through the wrapper too, so the gate judges them
+as well.
 
 ```python theme={null}
 PROBES = {"Slow dashboards": 0, "More seats": 2}  # later messages to send after each ticket
@@ -425,55 +419,54 @@ for state in EARLIER:
 
 ```text expandable theme={null}
 C-1042, memories: none
-      Slow dashboards  -> cloud_ops           0.80
-      More seats       -> enterprise_desk     0.62
+      Slow dashboards  -> cloud_ops           0.55
+      More seats       -> enterprise_desk     0.53
 C-2210, memories: none
-      Slow dashboards  -> cloud_ops           0.75
-      More seats       -> enterprise_desk     0.52
+      Slow dashboards  -> cloud_ops           0.68
+      More seats       -> billing             0.58
 
-C-1042 T-101  selfhosted_windows  P(remember) 0.91  saved
+C-1042 T-101  selfhosted_windows  P(remember) 0.97  saved
     Hi, we run your self-hosted edition on Windows Server 2022 in our own data centre. H
 C-1042, memories: T-101
       Slow dashboards  -> selfhosted_windows  0.99
-      More seats       -> enterprise_desk     0.44
+      More seats       -> enterprise_desk     0.53
 
-C-2210 T-102  general             P(remember) 0.91  saved
+C-2210 T-102  general             P(remember) 0.98  saved
     We're a small design studio on your cloud edition, paying monthly on the self-serve 
 C-2210, memories: T-102
-      Slow dashboards  -> cloud_ops           0.91
+      Slow dashboards  -> cloud_ops           0.98
       More seats       -> billing             0.98
 
-C-1042 T-103  billing             P(remember) 0.07  not saved
+C-1042 T-103  billing             P(remember) 0.02  not saved
     Sorry for the typos, typing this on my phone at the airport. Where can I download la
 C-1042, memories: T-101
       Slow dashboards  -> selfhosted_windows  0.99
-      More seats       -> enterprise_desk     0.44
+      More seats       -> enterprise_desk     0.53
 
-C-2210 T-104  general             P(remember) 0.10  not saved
+C-2210 T-104  general             P(remember) 0.03  not saved
     Our whole team is out on Friday for a public holiday, so no rush on this one. Is the
 C-2210, memories: T-102
-      Slow dashboards  -> cloud_ops           0.91
+      Slow dashboards  -> cloud_ops           0.98
       More seats       -> billing             0.98
 
-C-1042 T-105  enterprise_desk     P(remember) 0.92  saved
+C-1042 T-105  enterprise_desk     P(remember) 0.96  saved
     For context, we signed an Enterprise contract with you in March. Can we get a sandbo
 C-1042, memories: T-101, T-105
-      Slow dashboards  -> selfhosted_windows  0.94
-      More seats       -> enterprise_desk     0.99
+      Slow dashboards  -> selfhosted_windows  0.98
+      More seats       -> enterprise_desk     1.00
 ```
 
-The three tickets that state an edition, a plan or a contract are saved at 0.91 to 0.92.
+The three tickets that state an edition, a plan or a contract are saved at 0.96 to 0.98.
 T-102 is saved even though Jev routed it to the general team, because the gate counts
-the customer's words, not the answer. The airport and public-holiday tickets score 0.07
-and 0.10 and are not saved, so the answers after them do not change.
+the customer's words, not the answer. The airport and public-holiday tickets score 0.02
+and 0.03 and are not saved, so the answers after them do not change.
 
 Each saved memory changes the answers it is relevant to. For C-1042, the Windows ticket
-moves slow dashboards from the cloud team (0.80) to the Windows team (0.99). The Enterprise
-contract then settles seats at 0.99. For C-2210, the Team-plan ticket raises the cloud team
-from 0.75 to 0.91 and moves seats from the Enterprise desk (0.52) to billing (0.98). Adding
-the Enterprise memory lowers C-1042's slow dashboards slightly, from 0.99 to 0.94, which is
-one reason to choose which memories to add (see Next steps). The gate saved none of the
-repeated messages.
+moves slow dashboards from the cloud team (0.55) to the Windows team (0.99), and the
+Enterprise contract raises the Enterprise desk's probability for more seats from 0.53 to
+1.00. For C-2210, the Team-plan ticket raises the cloud team's probability for slow
+dashboards from 0.68 to 0.98, and billing's for more seats from 0.58 to 0.98. The gate
+saved none of the repeated messages.
 
 ## Route the same messages for both customers
 
@@ -515,22 +508,22 @@ print(f"\nExpected routes: {plain_correct}/{total} without memory, "
 
 ```
 customer message          expected            plain Jev                  with memory                
-C-1042   Slow dashboards  selfhosted_windows  ✗ cloud_ops 0.80           ✓ selfhosted_windows 0.94  
-C-1042   Upgrade failing  selfhosted_windows  ✗ none_suitable 0.60       ✓ selfhosted_windows 1.00  
-C-1042   More seats       enterprise_desk     ✓ enterprise_desk 0.62     ✓ enterprise_desk 0.99     
-C-2210   Slow dashboards  cloud_ops           ✓ cloud_ops 0.75           ✓ cloud_ops 0.91           
-C-2210   Upgrade failing  cloud_ops           ✗ none_suitable 0.63       ✓ cloud_ops 0.86           
-C-2210   More seats       billing             ✗ enterprise_desk 0.52     ✓ billing 0.98             
+C-1042   Slow dashboards  selfhosted_windows  ✗ cloud_ops 0.55           ✓ selfhosted_windows 0.98  
+C-1042   Upgrade failing  selfhosted_windows  ✗ none_suitable 0.64       ✓ selfhosted_windows 1.00  
+C-1042   More seats       enterprise_desk     ✓ enterprise_desk 0.53     ✓ enterprise_desk 1.00     
+C-2210   Slow dashboards  cloud_ops           ✓ cloud_ops 0.68           ✓ cloud_ops 0.98           
+C-2210   Upgrade failing  cloud_ops           ✗ none_suitable 0.58       ✓ cloud_ops 0.95           
+C-2210   More seats       billing             ✓ billing 0.58             ✓ billing 0.98             
 
-Expected routes: 2/6 without memory, 6/6 with memory.
+Expected routes: 3/6 without memory, 6/6 with memory.
 ```
 
-With memory, all six messages reach the expected team, against two without. The same
+With memory, all six messages reach the expected team, against three without. The same
 message now goes to a different team for each customer: slow dashboards go to the
 Windows team for C-1042 and stay with the cloud team for C-2210, and 20 more seats go to
 the Enterprise desk for C-1042 and to billing for C-2210. Where plain Jev was already
-right, memory raises the probability, from 0.62 to 0.99 for C-1042's seats. The wrapper
-also judged the six later messages, and saved none: they state no important fact.
+right, memory raises the probability, from 0.53 to 1.00 for C-1042's seats. The gate also
+judged the six later messages and saved none, because they state no important fact.
 
 Each row's expected team follows from the customer's setup in the earlier tickets:
 C-1042's self-hosted edition and Enterprise contract, C-2210's cloud Team plan.
@@ -547,43 +540,24 @@ display(Markdown(
 ))
 ```
 
-[Open C-1042's ticket with its memories in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiLAM4oSIBOpBJIAlmPfqQMIC0AjAAwAWAEykANOzLUADgEMkATzakAEjJoAjCDXwAZCAHMmlJlHKkAvuNIoTAawQo2jFkpBouQvjzESaCKAhMAG4IYAD6EEiunkIAbFx8AJweABw+pOQw6gBW-o54EgDKADYQAO74YDLkABaaamBmIFYgiOTkMvoITQQA2owAZjTUrhRUtOkgKFj5BKQAItV1EA3k+DUyIfjqCMj4fjLFxfL45KUV5ExIAfgoNUb4cFpIV-oAdBYAupYSCGrFTAQNDCNig9hQ5DCQ2oIPukLG1CBbH6pD8AEcYN1ZvhGAiJgVnKwCpxeIIRM0JFBpHJFMSQKoNFpdAYjKCmj9rHYHE5SC46e5+N4Kaj-IEQuFItE+HEEikEgJJpkcnlXABBMBgV74OTasBwK6TNodLo9fAokDQuCjGCURF0YVTGauZRMcRlBD7GBIfDyCAwbTkBDFAZcGoQSihfChJg2SL4OMAdSukDKa0KQJC2hiQnwV3j-vjZW9VRQMnwAVQfje+GU5UqEHwAEldWBtfgkAgKjI9XmbUCAPxfcwckC5IJhOTkd1+IkMUgJ+5QGqnGBSKRaFC3P5wU5hmDFVsbJBgYoegAGoPBZ8HdPTwdD4emremMjg4iTx-K5AIV0oh2K5DiKu+g0N23Tase+BSECAxaHAcg3BAAy3DUHqBveYYRq20axt6ibJl++DpjQmYWD8jDopilA8mQNrjEiBK8rOEjcPwwiTFScCyAozpqJo2h6IYximBYLSXtyjHMMxpACnwACskx+AEwShBEUR0jE8RJKSipZLkUDYqQhRyGAmiYFGSBBEwwxIIgqCGt0xrdMigzDFadJ4gxYlOnSABiTJUqgMxumhTD6B2rY6gAokFNBSDQRgeoFKCgQZ+BlDGy6+jAubegAsmoS7VhwOruvgXSbmWHTHmZFlWTZdmbrB2jTMYSD6De5jfCOY4TkgU5AqENELiYy6ZGuG5bq+u5+ge6wmae+AXlyKDXq4MXTHFCWBpU3S2AQgYyBC4jJalEIQZFUBUl6m5LnIJr4M15Z0XaaxxtFsXxYl5aRClMhpQAFHcgQtf4NQvFAhxQcM6innAaz6A2VAoR60xLhDUMvvDACUZHfBSIDxdIEIYNgBRENY240Sg8jQaMYYmAgky-ilMAGUwkSmvOi5jau640JuWMzfuh4Lee4mrTeLRQAlm1MDINFQKUMASlIXMgBwyvPtuBBE7DCDw+lmUo+sj6RkrfrYZquHiDQXrbCcNqKkGAyYU+YQAkgMCYK4d4hm7kZY+IOhXN7P79aWRyAfgwGgWA4EmVBMFwQhHpISb6H+2bVsxhzeHeiHXvmYGJFAk0LSZwH4QZZ+qa+y7D5YVNb74B+Kbfrlf5R0BUggWBayJ9BNDNfB1xp8hwOnA3VdRtbefxt6beEcRpEOuoTBHK8rgAEIb57+jh0EECM9HsjyI10eHedg-FDqd3teBT2Z1wJdbFIt-9ZMyCbV9gZhPH5BbDrU+ttD0AD9pTyOtHU6-1r6QX+tdVA5YjwPSep5Ggb1vQfR-qAn6lZYH4CBqhayW50YmChnrOGCMkZI1QqQ8G5DijN3ILjB0XQOygWKK4AA4sgIEFDhhgDZpuDEWI84dwGH8FA-pujiDDGULgVBxCBhQDYdq5cJBIEiAgMImQYwyH1q4AActo+ME9UI7SxmsAYMY1iTwlmRcwBMZBSCYAANTLnncmQQeAE3QnkUIeUIDxwAgUXoo4EBBF4G8HgABmN4fAQDfCAA)
+[Open C-1042's ticket with its memories in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiLAM4oSIBOpBJIAlmPfqQMIC0AjAAwAWAEykANOzLUADgEMkATzakAglET4OEGlNIBfcaRRMoAawQo2jFkpBouQvjzESaCKAiYA3BGAD6EJBsHIQA2Lj4ATnsADmdSchgAIwArNws8CQBlABsIAHd8MBlyAAtEiBkaMHI4kERychkAcwQajIBtRgAzGmobCipaWpQsdIJSABFisoqq8nwSmW98RIRkfFcZbOz5fHJcgvImJHd8FBKmebgtJGOmgDo9AF19CQRK7KYEGl8jU3NyL4etRfhdAQNqN82J1SK4AI4wVpjfCMCFDDJWVgZTi8QQiEAGSRwWQKGyqdSabR6Ql-MzIzE2Oz8JwElxuDzePwBIJ8ULhaLhAS1BIpNJksBgO74OTSsBwY61eqNFptAgwkDAuD9GCUSF0VmGUY2AASTHEeQQGxgSHw8ggMBoewQ2S6XBKEEoPnwPiYRgC+H9AHVjpA8vNMt9vI7gkJ8McAw6A3kbUUUDJ8O5UK57vhjflChB8ABJWVgaX4JAIAoyOXxnXfAD8z10r1IqU8vjk5AtrixDFIgYuUBKexgUikWhQZ3ecD27pg2TLiyQYGyloABrTzOum9iQBGXW6PSMyyMZHBxMGV-lyARjpQttlyOIx00aDXWtKV-gpN8ulo4DkU4IC6M4SktchnVdd1PTLH0-RtIMQxvfAIxoKM9FeRh4URShLFINEoQxUhrD3bh+GEWooGkORFD3clLUpHQQFbEAt3pEi+wkJk+AAVlqVx3C8Hx-ECPdgjCSJcWFJJUigZFSEyOQwHKTBvSQTwmF6JBEFQRVWmVVpoW6XotT3Qj9RpI09wAMS0DMAhGbBzQgpgmkrMsZQAUVQb4pBoS5LWorMZHk-A8l9Ec7RgOMbQAWUqYccw4GULXwFop3TRoV1U9TNO03Sp3-R0RkoO5d10F5WPbTskG7b4fHwkBB2MEcEnHSdp3POd7UXBZlLXfBN2MOkdxsHyRm0ALIMKVoTAISCZBQZ8HJC+T5mU6UoGo60p2HOQVXwYqMx1QZvnmf1vN8qbAtWlB3zCgAKc4PBKtwSluKAth-XpEjXOB5iaQsqDAy0RmHT7vrPAGAEpMJeVkQH86RlowbAMiIQ1zyalB5F-fp3WMBBanve6YHkpgAlVCQWuHUcOpoKdoZ6hclwGjd2LGg0yACyamBkJqoFyGAuSkanOGF08ZwIZG-oQAHwsi0GFmPL0hftODJQQ8QaGtFZdh1YUoJgk9fE+JAYEwGwD2g1WpfPcQABljktu86rTbYVtfd8wE-TbfxoYrAJOS0QOVyDDxNr14MpxCbWdi21Mg9DzqNl0o78CLrzDa2oKPWCuovfAr1DW9YofT2XykN8Pw278A6DoDQ9Al6nUju3vS12OAxtEuULQjDucSJhtjuGwACER-Npo3c8CAiZW2R5EKlbFuWr8yykbIZX2pBDuOiPXWT5Yt67WpkEm-zAt8X3yBMcbrqvmbb-mp0lpW4L7tC9fNtCnbUAzMufe9kLIXRtFdS+00gqOQelOZ64EtLTghsYb6st-qA2BsDcCSCPooOyIXcgcNuYtErO+bINgADiyBvioN6GAcmU4ERIljmXLo7wUAOlaOId0eQuBUHEJBFARg95tEJEgAICBfAJF9DIOWNgAByEiAwt3AjNaG8wui+nmK3dimFdCIxkFIJgAA1c6scMaeB4IjCOaQfBxQgL7J8HQQDtl4PcHgAh7h8BAC8IAA)
 
 ## Next steps
 
 * **Choose what your app should remember.** Edit `GATE` to describe what is worth
-  remembering for your own task, and test `REMEMBER_AT` against examples you have labelled.
+  remembering for your own task. To set `REMEMBER_AT`, label request-and-answer pairs from
+  your traffic as worth remembering or not, pick the probability that best separates the
+  two groups, and check it on pairs you didn't use to pick it. Raise it if a misleading
+  memory costs more than a missing one. See [Confidence](https://docs.typesafe.ai/confidence.md) and
+  [confidence-based routing](https://docs.typesafe.ai/patterns/confidence-routing.md).
 * **Choose which memories to add.** The wrapper adds every saved memory. A relevance
   question can select a smaller set once the list gets long.
 * **Replace outdated memories.** Ask whether a new memory replaces an older one, then
   remove the old entry in code when appropriate.
 * **Keep memories between runs.** Replace `MEMORIES` with a database keyed by customer
   ID. The in-memory dict disappears when the process exits.
-* **Act on the route.** Map each team to a handler in code, such as booking a call for
-  Enterprise customers or sending a setup-specific article. See
-  [intent routing](https://docs.typesafe.ai/patterns/intent-routing.md) and
-  [confidence-based routing](https://docs.typesafe.ai/patterns/confidence-routing.md). Add your reply to the ticket
-  thread as a support message, and the gate can remember what you did.
-
-***
-
-# Appendix
-
-## Can a saved answer reinforce a mistake?
-
-Yes. The gate ignores anything that appears only in Jev's answer, so an answer can't get a
-ticket saved by itself. Once a ticket is saved, though, its answer is saved with it,
-mistaken inference and all, and every later call for that customer reads it. A later
-answer can then repeat the mistake.
-
-## How should I choose the threshold?
-
-The 0.5 in this wrapper is a starting value. To pick your own, label request-and-answer
-pairs from your traffic as worth remembering or not, and find the probability that best
-separates the two groups. Check it on pairs you didn't use to pick it. Raise it if a
-misleading memory costs more than a missing one; lower it if the reverse. See
-[Confidence](https://docs.typesafe.ai/confidence.md) and [Confidence-Gated Routing](https://docs.typesafe.ai/patterns/confidence-routing.md) for
-choosing thresholds and matching them to the risk of each action.
+* **Remember what your app did.** Add your reply to the ticket thread as a support
+  message, and the gate judges it along with the customer's words.
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

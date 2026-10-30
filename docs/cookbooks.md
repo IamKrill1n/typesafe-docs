@@ -29,7 +29,7 @@ Assign inputs to categories at any depth.
 | - | - | - |
 | [Hierarchical classification](https://docs.typesafe.ai/cookbooks/hierarchical_classification.md) | Classifies documents through deep patent, retail product, biomedical, and source-code hierarchies using parallel beam search over TypeSafe Choice probabilities. | Intermediate |
 | [Classification using confidence](https://docs.typesafe.ai/cookbooks/classification_using_confidence.md) | Classify SEC annual reports into 75 industry groups with one Choice each, then read the answer's own confidence to decide whether to report that group or the broader division above it. | Beginner |
-| [Twitch chat filter](https://docs.typesafe.ai/cookbooks/twitch_chat_filter.md) | Hide insults, spam, and unasked-for gameplay tips in Twitch chat, blur spoilers, and highlight questions. Each message gets one TypeSafe request containing multiple questions. Up to eight messages are processed concurrently, and the rules are defined in code. | Beginner |
+| [Twitch chat filter](https://docs.typesafe.ai/cookbooks/twitch_chat_filter.md) | Hides insults, spam, and unasked-for gameplay tips in Twitch chat, blurs spoilers, and highlights questions. Each message gets one TypeSafe request with three questions, requests run concurrently, and plain rules in code turn the answers into what the viewer sees. | Beginner |
 
 ## Extraction
 
@@ -39,7 +39,7 @@ Pull typed values and structure out of messy text.
 | - | - | - |
 | [SDE cascade](https://docs.typesafe.ai/cookbooks/sde_cascade.md) | Uses a 2-stage structured-data-extraction cascade (mini → verify → reasoning) to get most of the quality of a big reasoning model at a fraction of the cost. | Intermediate |
 | [Date extraction](https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md) | Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review. | Beginner |
-| [Pre-parsed value extraction](https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook.md) | Uses regexes to find candidate emails, phone numbers, and amounts, then has TypeSafe select the requested span so code can normalize a verbatim value. | Beginner |
+| [Pre-parsed value extraction](https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook.md) | Finds candidate emails, phone numbers, and amounts with a regex, has TypeSafe pick the one you ask for, and normalizes that exact span in code. | Beginner |
 | [Structure recovery](https://docs.typesafe.ai/cookbooks/autoformat.md) | Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout). | Beginner |
 
 ## Search and matching

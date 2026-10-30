@@ -1126,7 +1126,7 @@ Assign inputs to categories at any depth.
 | - | - | - |
 | [Hierarchical classification](/cookbooks/hierarchical_classification) | Classifies documents through deep patent, retail product, biomedical, and source-code hierarchies using parallel beam search over TypeSafe Choice probabilities. | Intermediate |
 | [Classification using confidence](/cookbooks/classification_using_confidence) | Classify SEC annual reports into 75 industry groups with one Choice each, then read the answer's own confidence to decide whether to report that group or the broader division above it. | Beginner |
-| [Twitch chat filter](/cookbooks/twitch_chat_filter) | Hide insults, spam, and unasked-for gameplay tips in Twitch chat, blur spoilers, and highlight questions. Each message gets one TypeSafe request containing multiple questions. Up to eight messages are processed concurrently, and the rules are defined in code. | Beginner |
+| [Twitch chat filter](/cookbooks/twitch_chat_filter) | Hides insults, spam, and unasked-for gameplay tips in Twitch chat, blurs spoilers, and highlights questions. Each message gets one TypeSafe request with three questions, requests run concurrently, and plain rules in code turn the answers into what the viewer sees. | Beginner |
 
 ## Extraction
 
@@ -1136,7 +1136,7 @@ Pull typed values and structure out of messy text.
 | - | - | - |
 | [SDE cascade](/cookbooks/sde_cascade) | Uses a 2-stage structured-data-extraction cascade (mini → verify → reasoning) to get most of the quality of a big reasoning model at a fraction of the cost. | Intermediate |
 | [Date extraction](/cookbooks/date_extraction_cookbook) | Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review. | Beginner |
-| [Pre-parsed value extraction](/cookbooks/pre_parsed_value_extraction_cookbook) | Uses regexes to find candidate emails, phone numbers, and amounts, then has TypeSafe select the requested span so code can normalize a verbatim value. | Beginner |
+| [Pre-parsed value extraction](/cookbooks/pre_parsed_value_extraction_cookbook) | Finds candidate emails, phone numbers, and amounts with a regex, has TypeSafe pick the one you ask for, and normalizes that exact span in code. | Beginner |
 | [Structure recovery](/cookbooks/autoformat) | Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout). | Beginner |
 
 ## Search and matching
@@ -3272,8 +3272,8 @@ Python dict.
 Our example routes support tickets. In August, a customer said they self-host on Windows
 Server. In September they write "Dashboards have been really slow since this morning".
 Without memory, Jev sends that ticket to the cloud team instead of the self-hosted team.
-In the example below, adding memory sends all six later tickets to the expected teams.
-Routing each ticket alone gets two out of six correct.
+With memory, all six later tickets reach the expected teams. Routing each ticket alone
+gets three out of six correct.
 
 The simple memory system has two parts:
 
@@ -3281,14 +3281,15 @@ The simple memory system has two parts:
   `Noul` question, which we call the gate, asks whether the request states an important
   fact about the customer that should be remembered. If P(yes) is at least 0.5, the
   ticket and Jev's answer are saved as a memory for that customer.
-* A wrapper function, `ask_with_memory()`, takes the same `state` and `questions`
-  arguments as `ask()`, which is the TypeSafe Python SDK `client.system_one` method with
-  the model pinned and the call cached, and returns the Jev response. Before each call, it
-  adds the customer's saved tickets and Jev's answers to them to the state.
+* Before each call, we add the customer's saved tickets, with Jev's answers to them, to
+  the state. We do this in a wrapper, `ask_with_memory()`, with the same arguments and
+  response as `ask()`: the TypeSafe Python SDK's `client.system_one`, with the model
+  pinned and the call cached.
 
-That wrapper is a basic agent harness. A harness is the code around a model that
-gives it extra capabilities such as tool calls and running in loops. This basic toy one
-only gives it memory in a plain Python dict with one list per customer ID.
+That wrapper is a basic agent harness. A harness is the code around a model that gives it
+extra capabilities such as [tool calls](/cookbooks/function_calling) and running in loops.
+Ours only gives the model memory, kept in a plain Python dict with one list per customer
+ID.
 
 ```mermaid actions={true} theme={null}
   %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 25, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 8, "bottom": 20}}}}%%
@@ -3300,31 +3301,26 @@ flowchart TB
     subgraph G["Jev: judge the routed ticket"]
         Q2["<b>Noul:</b> does the request state<br/>an important fact about the customer?"]
     end
-    DEC{"P(yes) ≥ 0.5?<br/>your code"}
+    DEC{"P(yes) ≥ threshold?<br/>your code"}
     SAVE["save the memory<br/>under this customer's ID"]
-    OUT["handle the support ticket response in your code"]
-    MEM[("MEMORIES<br/>saved memories per customer")]
-    IN -- "state with memories<br/>+ routing question" --> R
-    R -- "original request + answer<br/>+ memory question" --> G
-    G -- "P(yes)" --> DEC
-    DEC -- "yes: save" --> SAVE
-    DEC -- "no: don't save" --> OUT
+    OUT["your code acts on<br/>the routing answer"]
+    MEM[("saved memories<br/>per customer")]
+    IN -- "state with memories" --> R
+    R -- "original request + answer" --> G
+    G --> DEC
+    DEC -- "yes" --> SAVE
+    DEC -- "no" --> OUT
     SAVE --> OUT
     SAVE --> MEM
-    IN -. "added to the state<br/>on this customer's<br/>next support tickets" .- MEM
+    IN -. "added to this customer's<br/>next requests" .- MEM
 ```
 
-The wrapper makes two Jev requests, one after the other: the routing request, then the
-gate, which judges the ticket together with Jev's answer. The wrapper returns the routing
-response whether or not anything is saved.
+Each call makes two Jev requests, one after the other: the routing request, then the gate,
+which judges the ticket together with Jev's answer. You get the routing response back
+whether or not anything is saved.
 
 Because `ask_with_memory()` takes the same arguments as `ask()` and returns the same
-response, you can swap one for the other without changing any other code. The wrapper
-finds the customer's memories, adds them to the state and saves new ones itself.
-
-The example sends five earlier tickets from two customers through the wrapper, then routes
-three later messages from each customer twice: once with the memories it saved, once
-without. A table puts the two answers side by side for all six.
+response, you can swap one for the other without changing any other code.
 
 ## Setup
 
@@ -3337,9 +3333,7 @@ Set `TYPESAFE_API_KEY`. Every API call is cached in
 Download it into the folder you run this code from to replay the published numbers
 instead of calling the API, or leave it out to run everything live.
 
-Numbers below came from `jev-1.13.0` on 2026-09-28.
-The memory threshold of 0.5 is a starting point. You should evaluate it against
-your own examples.
+Numbers below came from `jev-1.14.0` on 2026-10-29.
 
 ```python theme={null}
 import json
@@ -3350,7 +3344,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, SystemOneResponse, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.13.0"
+TYPESAFE_MODEL = "jev-1.14.0"
 REMEMBER_AT = 0.5  # save when P(lasting customer fact) reaches this starting threshold
 MEMORY_KEY = "earlier_tickets_from_this_customer"  # where saved tickets go in the state
 
@@ -3365,23 +3359,23 @@ json_cache = JsonCache(Path("json_cache.json"))
 ## Define the tickets
 
 Two customers, five earlier tickets and three later messages, all written for this
-cookbook. C-1042 (Harbor Logistics) runs the self-hosted edition on Windows Server under an
-Enterprise contract. C-2210 (Fernwood Studio) is on the cloud edition's self-serve Team
+cookbook. C-1042 (Acme Corp) runs the self-hosted edition on Windows Server under an
+Enterprise contract. C-2210 (Example Studio) is on the cloud edition's self-serve Team
 plan. Three of the earlier tickets state a lasting fact: an edition, a plan, a contract.
 Two don't: a phone at the airport, a public holiday. No later message mentions the
 customer's setup, so without memory Jev has to guess it.
 
-Each ticket becomes a state with two parts: `customer`, who the customer is, and
-`ticket`, the ticket thread. The `ticket_state()` function builds a
-simplified ticket, like one from a helpdesk. In your app, the state is each ticket as
-your helpdesk sends it, and `ask_with_memory()` adds the customer's saved tickets to it.
+Each ticket becomes a state with two parts, built by `ticket_state()`: `customer`, who the
+customer is, and `ticket`, a simplified helpdesk thread. In your app, the state is each
+ticket as your helpdesk sends it, and `ask_with_memory()` adds the customer's saved
+tickets to it.
 The split into earlier tickets and later messages is only for this example.
 
 ```python expandable theme={null}
 DATA = {
     "customers": {
-        "C-1042": {"id": "C-1042", "company": "Harbor Logistics"},
-        "C-2210": {"id": "C-2210", "company": "Fernwood Studio"},
+        "C-1042": {"id": "C-1042", "company": "Acme Corp"},
+        "C-2210": {"id": "C-2210", "company": "Example Studio"},
     },
     "earlier_tickets": [
         {"id": "T-101", "customer_id": "C-1042", "received_on": "2026-08-04",
@@ -3454,7 +3448,7 @@ print(json.dumps(EARLIER[0], indent=2))
 {
   "customer": {
     "id": "C-1042",
-    "company": "Harbor Logistics"
+    "company": "Acme Corp"
   },
   "ticket": {
     "id": "T-101",
@@ -3474,10 +3468,6 @@ print(json.dumps(EARLIER[0], indent=2))
 
 One `Choice` question picks the support team. The `none_suitable` option gives Jev an
 answer for when no team fits, and a ticket with too little context can end up there.
-
-The helper `ask()` is `client.system_one` with the model version fixed and every call
-cached. It takes a state and a dict of questions and returns the SDK's own response
-object, so code that already reads `client.system_one` responses works with it unchanged.
 
 ```python expandable theme={null}
 ROUTE = {
@@ -3532,7 +3522,7 @@ print(f"  plain Jev -> {team.choice} {team.probabilities[team.choice]:.2f}")
 
 ```
 C-1042: 'Dashboards have been really slow since this morning.'
-  plain Jev -> cloud_ops 0.80
+  plain Jev -> cloud_ops 0.55
 ```
 
 Plain Jev sends C-1042's slow dashboards to the cloud team. This ticket alone gives it no
@@ -3540,10 +3530,10 @@ reason to do anything else.
 
 ## Ask Jev whether the ticket is worth remembering
 
-First, `as_memory()` pairs the original state with Jev's answer: the memory the wrapper
-may save. The `request` key
-holds the state before memories were injected, and `jev_answered` maps each question
-to its answer. This keeps old memories from being nested inside every new memory.
+First, we pair the original state with Jev's answer in `as_memory()`. This pair is the
+memory the wrapper may save. The `request` key holds the state from before memories were
+added, so old memories never end up nested inside new ones. `jev_answered` maps each
+question to its answer.
 
 A second Jev call reads that pair. The gate asks whether the request
 states an important fact about the customer, such as their edition, operating system, plan
@@ -3603,9 +3593,8 @@ def remember_probability(memory: dict) -> float:
 
 ## Wrap the call so it remembers
 
-The wrapper, `ask_with_memory()`, has the same arguments and return value as `ask()`. The
-memory store is a plain dict with one list per customer ID. The wrapper uses the ID in
-the state to select the customer's memories.
+We keep memories in `MEMORIES`, one list per customer ID, and look them up by the ID in
+the state.
 
 ```python theme={null}
 MEMORIES: dict[str, list[dict]] = {}  # customer ID -> that customer's saved memories
@@ -3628,27 +3617,32 @@ def ask_with_memory(state: dict, questions: dict) -> SystemOneResponse:
     return response
 ```
 
-Adding memory this way has four consequences for your app:
+Adding memory this way has five consequences for your app:
 
-* **Every call makes two sequential requests**, your call followed by the memory gate.
-  The gate judges the ticket together with Jev's answer, so it runs after the routing
-  request. If your gate ignores the answer, it could instead be a second question in the
-  routing request (see [fan-out](/patterns/fan-out)).
+* **Every call makes two sequential requests:** the routing request, then the memory
+  gate. The gate judges the ticket together with Jev's answer, so it runs after the
+  routing request. If your gate ignores the answer, it could instead be a second question
+  in the routing request (see [fan-out](/patterns/fan-out) and
+  [parallel questions](/cookbooks/parallel_questions)).
 * **Memory only grows.** Every saved memory goes into every later call for that
-  customer. There is no size limit, no check for relevance and no expiry date here. The
-  Next steps section has ideas for each.
+  customer. There is no size limit, no check for relevance and no expiry date here.
 * **Your questions never mention the memories.** The memories go into the state under
   `earlier_tickets_from_this_customer`, and Jev reads the whole state. Nothing in
   `ROUTE` changes.
 * **The state needs `customer.id`.** Plain Jev also accepts a string as the state, but
   this wrapper needs the ID to find the customer's list.
+* **A saved answer can repeat a mistake.** The gate ignores anything that appears only in
+  Jev's answer, so an answer can't get a ticket saved by itself. A saved ticket keeps its
+  answer, though, and every later call for that customer reads it, so a wrong inference
+  can carry forward.
 
 ## Send the earlier tickets and watch the answers change
 
-Send the five earlier tickets through `ask_with_memory()`, in the order they arrived. The
-same customer sends two of the later messages again: slow dashboards and 20 more seats.
-That shows how each saved memory changes Jev's answers. The repeated messages go through
-the wrapper too, so the gate judges them as well.
+Send the five earlier tickets through `ask_with_memory()`, in the order they arrived.
+Before the first ticket, and again after each one, that customer sends two of the later
+messages: slow dashboards and 20 more seats. This shows how each saved memory changes
+Jev's answers. The repeated messages go through the wrapper too, so the gate judges them
+as well.
 
 ```python theme={null}
 PROBES = {"Slow dashboards": 0, "More seats": 2}  # later messages to send after each ticket
@@ -3683,55 +3677,54 @@ for state in EARLIER:
 
 ```text expandable theme={null}
 C-1042, memories: none
-      Slow dashboards  -> cloud_ops           0.80
-      More seats       -> enterprise_desk     0.62
+      Slow dashboards  -> cloud_ops           0.55
+      More seats       -> enterprise_desk     0.53
 C-2210, memories: none
-      Slow dashboards  -> cloud_ops           0.75
-      More seats       -> enterprise_desk     0.52
+      Slow dashboards  -> cloud_ops           0.68
+      More seats       -> billing             0.58
 
-C-1042 T-101  selfhosted_windows  P(remember) 0.91  saved
+C-1042 T-101  selfhosted_windows  P(remember) 0.97  saved
     Hi, we run your self-hosted edition on Windows Server 2022 in our own data centre. H
 C-1042, memories: T-101
       Slow dashboards  -> selfhosted_windows  0.99
-      More seats       -> enterprise_desk     0.44
+      More seats       -> enterprise_desk     0.53
 
-C-2210 T-102  general             P(remember) 0.91  saved
+C-2210 T-102  general             P(remember) 0.98  saved
     We're a small design studio on your cloud edition, paying monthly on the self-serve 
 C-2210, memories: T-102
-      Slow dashboards  -> cloud_ops           0.91
+      Slow dashboards  -> cloud_ops           0.98
       More seats       -> billing             0.98
 
-C-1042 T-103  billing             P(remember) 0.07  not saved
+C-1042 T-103  billing             P(remember) 0.02  not saved
     Sorry for the typos, typing this on my phone at the airport. Where can I download la
 C-1042, memories: T-101
       Slow dashboards  -> selfhosted_windows  0.99
-      More seats       -> enterprise_desk     0.44
+      More seats       -> enterprise_desk     0.53
 
-C-2210 T-104  general             P(remember) 0.10  not saved
+C-2210 T-104  general             P(remember) 0.03  not saved
     Our whole team is out on Friday for a public holiday, so no rush on this one. Is the
 C-2210, memories: T-102
-      Slow dashboards  -> cloud_ops           0.91
+      Slow dashboards  -> cloud_ops           0.98
       More seats       -> billing             0.98
 
-C-1042 T-105  enterprise_desk     P(remember) 0.92  saved
+C-1042 T-105  enterprise_desk     P(remember) 0.96  saved
     For context, we signed an Enterprise contract with you in March. Can we get a sandbo
 C-1042, memories: T-101, T-105
-      Slow dashboards  -> selfhosted_windows  0.94
-      More seats       -> enterprise_desk     0.99
+      Slow dashboards  -> selfhosted_windows  0.98
+      More seats       -> enterprise_desk     1.00
 ```
 
-The three tickets that state an edition, a plan or a contract are saved at 0.91 to 0.92.
+The three tickets that state an edition, a plan or a contract are saved at 0.96 to 0.98.
 T-102 is saved even though Jev routed it to the general team, because the gate counts
-the customer's words, not the answer. The airport and public-holiday tickets score 0.07
-and 0.10 and are not saved, so the answers after them do not change.
+the customer's words, not the answer. The airport and public-holiday tickets score 0.02
+and 0.03 and are not saved, so the answers after them do not change.
 
 Each saved memory changes the answers it is relevant to. For C-1042, the Windows ticket
-moves slow dashboards from the cloud team (0.80) to the Windows team (0.99). The Enterprise
-contract then settles seats at 0.99. For C-2210, the Team-plan ticket raises the cloud team
-from 0.75 to 0.91 and moves seats from the Enterprise desk (0.52) to billing (0.98). Adding
-the Enterprise memory lowers C-1042's slow dashboards slightly, from 0.99 to 0.94, which is
-one reason to choose which memories to add (see Next steps). The gate saved none of the
-repeated messages.
+moves slow dashboards from the cloud team (0.55) to the Windows team (0.99), and the
+Enterprise contract raises the Enterprise desk's probability for more seats from 0.53 to
+1.00. For C-2210, the Team-plan ticket raises the cloud team's probability for slow
+dashboards from 0.68 to 0.98, and billing's for more seats from 0.58 to 0.98. The gate
+saved none of the repeated messages.
 
 ## Route the same messages for both customers
 
@@ -3773,22 +3766,22 @@ print(f"\nExpected routes: {plain_correct}/{total} without memory, "
 
 ```
 customer message          expected            plain Jev                  with memory                
-C-1042   Slow dashboards  selfhosted_windows  ✗ cloud_ops 0.80           ✓ selfhosted_windows 0.94  
-C-1042   Upgrade failing  selfhosted_windows  ✗ none_suitable 0.60       ✓ selfhosted_windows 1.00  
-C-1042   More seats       enterprise_desk     ✓ enterprise_desk 0.62     ✓ enterprise_desk 0.99     
-C-2210   Slow dashboards  cloud_ops           ✓ cloud_ops 0.75           ✓ cloud_ops 0.91           
-C-2210   Upgrade failing  cloud_ops           ✗ none_suitable 0.63       ✓ cloud_ops 0.86           
-C-2210   More seats       billing             ✗ enterprise_desk 0.52     ✓ billing 0.98             
+C-1042   Slow dashboards  selfhosted_windows  ✗ cloud_ops 0.55           ✓ selfhosted_windows 0.98  
+C-1042   Upgrade failing  selfhosted_windows  ✗ none_suitable 0.64       ✓ selfhosted_windows 1.00  
+C-1042   More seats       enterprise_desk     ✓ enterprise_desk 0.53     ✓ enterprise_desk 1.00     
+C-2210   Slow dashboards  cloud_ops           ✓ cloud_ops 0.68           ✓ cloud_ops 0.98           
+C-2210   Upgrade failing  cloud_ops           ✗ none_suitable 0.58       ✓ cloud_ops 0.95           
+C-2210   More seats       billing             ✓ billing 0.58             ✓ billing 0.98             
 
-Expected routes: 2/6 without memory, 6/6 with memory.
+Expected routes: 3/6 without memory, 6/6 with memory.
 ```
 
-With memory, all six messages reach the expected team, against two without. The same
+With memory, all six messages reach the expected team, against three without. The same
 message now goes to a different team for each customer: slow dashboards go to the
 Windows team for C-1042 and stay with the cloud team for C-2210, and 20 more seats go to
 the Enterprise desk for C-1042 and to billing for C-2210. Where plain Jev was already
-right, memory raises the probability, from 0.62 to 0.99 for C-1042's seats. The wrapper
-also judged the six later messages, and saved none: they state no important fact.
+right, memory raises the probability, from 0.53 to 1.00 for C-1042's seats. The gate also
+judged the six later messages and saved none, because they state no important fact.
 
 Each row's expected team follows from the customer's setup in the earlier tickets:
 C-1042's self-hosted edition and Enterprise contract, C-2210's cloud Team plan.
@@ -3805,43 +3798,24 @@ display(Markdown(
 ))
 ```
 
-[Open C-1042's ticket with its memories in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiLAM4oSIBOpBJIAlmPfqQMIC0AjAAwAWAEykANOzLUADgEMkATzakAEjJoAjCDXwAZCAHMmlJlHKkAvuNIoTAawQo2jFkpBouQvjzESaCKAhMAG4IYAD6EEiunkIAbFx8AJweABw+pOQw6gBW-o54EgDKADYQAO74YDLkABaaamBmIFYgiOTkMvoITQQA2owAZjTUrhRUtOkgKFj5BKQAItV1EA3k+DUyIfjqCMj4fjLFxfL45KUV5ExIAfgoNUb4cFpIV-oAdBYAupYSCGrFTAQNDCNig9hQ5DCQ2oIPukLG1CBbH6pD8AEcYN1ZvhGAiJgVnKwCpxeIIRM0JFBpHJFMSQKoNFpdAYjKCmj9rHYHE5SC46e5+N4Kaj-IEQuFItE+HEEikEgJJpkcnlXABBMBgV74OTasBwK6TNodLo9fAokDQuCjGCURF0YVTGauZRMcRlBD7GBIfDyCAwbTkBDFAZcGoQSihfChJg2SL4OMAdSukDKa0KQJC2hiQnwV3j-vjZW9VRQMnwAVQfje+GU5UqEHwAEldWBtfgkAgKjI9XmbUCAPxfcwckC5IJhOTkd1+IkMUgJ+5QGqnGBSKRaFC3P5wU5hmDFVsbJBgYoegAGoPBZ8HdPTwdD4emremMjg4iTx-K5AIV0oh2K5DiKu+g0N23Tase+BSECAxaHAcg3BAAy3DUHqBveYYRq20axt6ibJl++DpjQmYWD8jDopilA8mQNrjEiBK8rOEjcPwwiTFScCyAozpqJo2h6IYximBYLSXtyjHMMxpACnwACskx+AEwShBEUR0jE8RJKSipZLkUDYqQhRyGAmiYFGSBBEwwxIIgqCGt0xrdMigzDFadJ4gxYlOnSABiTJUqgMxumhTD6B2rY6gAokFNBSDQRgeoFKCgQZ+BlDGy6+jAubegAsmoS7VhwOruvgXSbmWHTHmZFlWTZdmbrB2jTMYSD6De5jfCOY4TkgU5AqENELiYy6ZGuG5bq+u5+ge6wmae+AXlyKDXq4MXTHFCWBpU3S2AQgYyBC4jJalEIQZFUBUl6m5LnIJr4M15Z0XaaxxtFsXxYl5aRClMhpQAFHcgQtf4NQvFAhxQcM6innAaz6A2VAoR60xLhDUMvvDACUZHfBSIDxdIEIYNgBRENY240Sg8jQaMYYmAgky-ilMAGUwkSmvOi5jau640JuWMzfuh4Lee4mrTeLRQAlm1MDINFQKUMASlIXMgBwyvPtuBBE7DCDw+lmUo+sj6RkrfrYZquHiDQXrbCcNqKkGAyYU+YQAkgMCYK4d4hm7kZY+IOhXN7P79aWRyAfgwGgWA4EmVBMFwQhHpISb6H+2bVsxhzeHeiHXvmYGJFAk0LSZwH4QZZ+qa+y7D5YVNb74B+Kbfrlf5R0BUggWBayJ9BNDNfB1xp8hwOnA3VdRtbefxt6beEcRpEOuoTBHK8rgAEIb57+jh0EECM9HsjyI10eHedg-FDqd3teBT2Z1wJdbFIt-9ZMyCbV9gZhPH5BbDrU+ttD0AD9pTyOtHU6-1r6QX+tdVA5YjwPSep5Ggb1vQfR-qAn6lZYH4CBqhayW50YmChnrOGCMkZI1QqQ8G5DijN3ILjB0XQOygWKK4AA4sgIEFDhhgDZpuDEWI84dwGH8FA-pujiDDGULgVBxCBhQDYdq5cJBIEiAgMImQYwyH1q4AActo+ME9UI7SxmsAYMY1iTwlmRcwBMZBSCYAANTLnncmQQeAE3QnkUIeUIDxwAgUXoo4EBBF4G8HgABmN4fAQDfCAA)
+[Open C-1042's ticket with its memories in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiLAM4oSIBOpBJIAlmPfqQMIC0AjAAwAWAEykANOzLUADgEMkATzakAglET4OEGlNIBfcaRRMoAawQo2jFkpBouQvjzESaCKAiYA3BGAD6EJBsHIQA2Lj4ATnsADmdSchgAIwArNws8CQBlABsIAHd8MBlyAAtEiBkaMHI4kERychkAcwQajIBtRgAzGmobCipaWpQsdIJSABFisoqq8nwSmW98RIRkfFcZbOz5fHJcgvImJHd8FBKmebgtJGOmgDo9AF19CQRK7KYEGl8jU3NyL4etRfhdAQNqN82J1SK4AI4wVpjfCMCFDDJWVgZTi8QQiEAGSRwWQKGyqdSabR6Ql-MzIzE2Oz8JwElxuDzePwBIJ8ULhaLhAS1BIpNJksBgO74OTSsBwY61eqNFptAgwkDAuD9GCUSF0VmGUY2AASTHEeQQGxgSHw8ggMBoewQ2S6XBKEEoPnwPiYRgC+H9AHVjpA8vNMt9vI7gkJ8McAw6A3kbUUUDJ8O5UK57vhjflChB8ABJWVgaX4JAIAoyOXxnXfAD8z10r1IqU8vjk5AtrixDFIgYuUBKexgUikWhQZ3ecD27pg2TLiyQYGyloABrTzOum9iQBGXW6PSMyyMZHBxMGV-lyARjpQttlyOIx00aDXWtKV-gpN8ulo4DkU4IC6M4SktchnVdd1PTLH0-RtIMQxvfAIxoKM9FeRh4URShLFINEoQxUhrD3bh+GEWooGkORFD3clLUpHQQFbEAt3pEi+wkJk+AAVlqVx3C8Hx-ECPdgjCSJcWFJJUigZFSEyOQwHKTBvSQTwmF6JBEFQRVWmVVpoW6XotT3Qj9RpI09wAMS0DMAhGbBzQgpgmkrMsZQAUVQb4pBoS5LWorMZHk-A8l9Ec7RgOMbQAWUqYccw4GULXwFop3TRoV1U9TNO03Sp3-R0RkoO5d10F5WPbTskG7b4fHwkBB2MEcEnHSdp3POd7UXBZlLXfBN2MOkdxsHyRm0ALIMKVoTAISCZBQZ8HJC+T5mU6UoGo60p2HOQVXwYqMx1QZvnmf1vN8qbAtWlB3zCgAKc4PBKtwSluKAth-XpEjXOB5iaQsqDAy0RmHT7vrPAGAEpMJeVkQH86RlowbAMiIQ1zyalB5F-fp3WMBBanve6YHkpgAlVCQWuHUcOpoKdoZ6hclwGjd2LGg0yACyamBkJqoFyGAuSkanOGF08ZwIZG-oQAHwsi0GFmPL0hftODJQQ8QaGtFZdh1YUoJgk9fE+JAYEwGwD2g1WpfPcQABljktu86rTbYVtfd8wE-TbfxoYrAJOS0QOVyDDxNr14MpxCbWdi21Mg9DzqNl0o78CLrzDa2oKPWCuovfAr1DW9YofT2XykN8Pw278A6DoDQ9Al6nUju3vS12OAxtEuULQjDucSJhtjuGwACER-Npo3c8CAiZW2R5EKlbFuWr8yykbIZX2pBDuOiPXWT5Yt67WpkEm-zAt8X3yBMcbrqvmbb-mp0lpW4L7tC9fNtCnbUAzMufe9kLIXRtFdS+00gqOQelOZ64EtLTghsYb6st-qA2BsDcCSCPooOyIXcgcNuYtErO+bINgADiyBvioN6GAcmU4ERIljmXLo7wUAOlaOId0eQuBUHEJBFARg95tEJEgAICBfAJF9DIOWNgAByEiAwt3AjNaG8wui+nmK3dimFdCIxkFIJgAA1c6scMaeB4IjCOaQfBxQgL7J8HQQDtl4PcHgAh7h8BAC8IAA)
 
 ## Next steps
 
 * **Choose what your app should remember.** Edit `GATE` to describe what is worth
-  remembering for your own task, and test `REMEMBER_AT` against examples you have labelled.
+  remembering for your own task. To set `REMEMBER_AT`, label request-and-answer pairs from
+  your traffic as worth remembering or not, pick the probability that best separates the
+  two groups, and check it on pairs you didn't use to pick it. Raise it if a misleading
+  memory costs more than a missing one. See [Confidence](/confidence) and
+  [confidence-based routing](/patterns/confidence-routing).
 * **Choose which memories to add.** The wrapper adds every saved memory. A relevance
   question can select a smaller set once the list gets long.
 * **Replace outdated memories.** Ask whether a new memory replaces an older one, then
   remove the old entry in code when appropriate.
 * **Keep memories between runs.** Replace `MEMORIES` with a database keyed by customer
   ID. The in-memory dict disappears when the process exits.
-* **Act on the route.** Map each team to a handler in code, such as booking a call for
-  Enterprise customers or sending a setup-specific article. See
-  [intent routing](/patterns/intent-routing) and
-  [confidence-based routing](/patterns/confidence-routing). Add your reply to the ticket
-  thread as a support message, and the gate can remember what you did.
-
-***
-
-# Appendix
-
-## Can a saved answer reinforce a mistake?
-
-Yes. The gate ignores anything that appears only in Jev's answer, so an answer can't get a
-ticket saved by itself. Once a ticket is saved, though, its answer is saved with it,
-mistaken inference and all, and every later call for that customer reads it. A later
-answer can then repeat the mistake.
-
-## How should I choose the threshold?
-
-The 0.5 in this wrapper is a starting value. To pick your own, label request-and-answer
-pairs from your traffic as worth remembering or not, and find the probability that best
-separates the two groups. Check it on pairs you didn't use to pick it. Raise it if a
-misleading memory costs more than a missing one; lower it if the reverse. See
-[Confidence](/confidence) and [Confidence-Gated Routing](/patterns/confidence-routing) for
-choosing thresholds and matching them to the risk of each action.
+* **Remember what your app did.** Add your reply to the ticket thread as a support
+  message, and the gate judges it along with the customer's words.
 
 
 # Double-checking citations
@@ -11585,32 +11559,31 @@ display(
 # Pre-parsed value extraction
 Source: https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook
 
-Uses regexes to find candidate emails, phone numbers, and amounts, then has TypeSafe select the requested span so code can normalize a verbatim value.
+Finds candidate emails, phone numbers, and amounts with a regex, has TypeSafe pick the one you ask for, and normalizes that exact span in code.
 
 *A regex finds the candidate values, TypeSafe picks the one the question asks for,
-and code copies it verbatim.*
+and we copy it verbatim.*
 
-The `find` and `pick` pair here is one you can point at your own documents, and three
-worked cases show it in use: the address a sender wants their receipt sent to, a phone
-number as `+14155550177`, and an invoice total as `1315.50 USD` flagged as a charge.
+We pull three values out of text: the address a sender wants their receipt sent to, a
+phone number as `+14155550177`, and an invoice total as `1315.50 USD` flagged as a charge.
+Each starts as a span copied unchanged from the document. TypeSafe only chooses among
+spans a regex already found, so it cannot invent a value or transpose a digit. You can
+point the same `find` and `pick` pair at your own documents. There are three steps:
 
-TypeSafe picks one of the options you hand it, so the candidates have to be found
-first. A regex finds them, TypeSafe picks one, and code copies the pick, in three steps:
-
-1. A regex finds the candidate values in the text. Tune it to over-find.
+1. A regex finds the candidate values in the text. Tune it to catch every real value,
+   even if it also catches some wrong ones.
 2. TypeSafe picks which candidate the question is asking for, and reads off any
-   attribute the code needs downstream (currency, country, whether an amount is a
-   credit or a charge).
-3. The code copies the picked value and normalizes it.
+   attribute we need downstream (currency, country, whether an amount is a credit or a
+   charge).
+3. We copy the picked value and normalize it.
 
-Because TypeSafe only ever chooses among the spans the regex found, the value you get
-back is one of those spans, copied unchanged. It cannot invent a value or transpose a
-digit.
+[Date extraction](/cookbooks/date_extraction_cookbook) splits the work the same way:
+TypeSafe reads a date's parts off the text, and we do the calendar math in code.
 
-![Overview diagram](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/pre_parsed_value_extraction_cookbook/overview.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=4df592e42d251f25fe30c2269f2d182a)
+![A regex finds candidate values, TypeSafe picks one, and code normalizes it](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/pre_parsed_value_extraction_cookbook/overview.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=4df592e42d251f25fe30c2269f2d182a)
 
-*The regex finds candidate values in the document, TypeSafe picks one, and downstream
-code normalizes it and acts on it.*
+*The regex finds candidate values in the document, TypeSafe picks one, and we normalize
+it and act on it.*
 
 ## Setup
 
@@ -11618,7 +11591,9 @@ code normalizes it and acts on it.*
 pip install ipython phonenumbers 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`.
+then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
+`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/pre_parsed_value_extraction_cookbook) into the folder you run
+the script from.
 
 ```python theme={null}
 import os
@@ -11631,7 +11606,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 NONE = "none"  # the escape hatch on every selection: "none of the candidates fits"
 
 # base_url defaults to https://api.typesafe.ai/ ; the env override points at another deployment.
@@ -11647,12 +11622,11 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 ## Helpers
 
-`find` runs a regex tuned to over-find and dedupes the matches. `pick` is a
-`Choice` question whose options are the spans `find` returns, so its answer is one of
-those spans copied exactly, or `none` when no candidate fits. `classify` is a
-`Choice` question over a fixed set of labels, used here for the currency and the
-country.
-`is_true` is a `Noul`, used here to ask whether an amount is a credit.
+We find candidates with a regex that catches every real value, and drop duplicate
+matches (`find`). We pick one with a `Choice` question whose options are those spans
+(`pick`), so the answer is one of them copied exactly, or `none` when no candidate fits.
+The currency and the country come from a `Choice` question over a fixed set of labels
+(`classify`), and whether an amount is a credit from a `Noul` question (`is_true`).
 
 Every call is cached to `json_cache.json`, so re-rendering makes no API calls.
 
@@ -11679,7 +11653,7 @@ def pick(document: str, candidates: list[str], question: str) -> dict:
     """TypeSafe selects which found span plays the role. Returns {choice, confidence}.
 
     The options ARE the candidate spans, so ``choice`` is a verbatim copy of one of them (or the
-    ``none`` hatch) - the model chooses, code owns the string."""
+    ``none`` hatch). The model chooses; code owns the string."""
     criteria = {c: None for c in candidates} | {
         NONE: "None of these is the requested value."
     }
@@ -11720,18 +11694,18 @@ def is_true(document: str, question: str) -> float:
 
 ## Email: pick the right address by role
 
-Four addresses in the headers. The body asks for the receipt to go to a personal
+The headers hold four addresses. The body asks for the receipt to go to a personal
 address instead of the `To:` billing alias, so the answer depends on reading the body.
-Two questions here: which address gets the receipt, and which one sent the message.
+We ask two questions: which address gets the receipt, and which one sent the message.
 
 ```python theme={null}
-EMAIL_DOC = """From: Dana Whit <dana.whit@acme-corp.com>
-To: billing@acme-corp.com
-Cc: orders@acme-corp.com
-Reply-To: dana.personal@gmail.com
+EMAIL_DOC = """From: Jane Doe <jane.doe@example.com>
+To: billing@example.com
+Cc: orders@example.com
+Reply-To: jane.personal@example.net
 
 Hi team - please don't use the billing alias for this one. Send my receipt to my
-personal address instead. Thanks, Dana."""
+personal address instead. Thanks, Jane."""
 
 emails = find(EMAIL_RE, EMAIL_DOC)
 receipt = pick(
@@ -11750,20 +11724,20 @@ print(f"sender  -> : {sender['choice'].lower():<28} (conf {sender['confidence']:
 ```
 
 ```
-candidates : ['dana.whit@acme-corp.com', 'billing@acme-corp.com', 'orders@acme-corp.com', 'dana.personal@gmail.com']
-receipt -> : dana.personal@gmail.com      (conf 0.98)
-sender  -> : dana.whit@acme-corp.com      (conf 1.00)
+candidates : ['jane.doe@example.com', 'billing@example.com', 'orders@example.com', 'jane.personal@example.net']
+receipt -> : jane.personal@example.net    (conf 0.97)
+sender  -> : jane.doe@example.com         (conf 1.00)
 ```
 
-`receipt` is the personal Gmail address on the `Reply-To:` line, which is what the body
-asks for; `sender` is the one on the `From` line. Both are copies of regex matches,
-lowercased in code.
+The receipt goes to the personal address on the `Reply-To:` line, as the body asks. The
+sender is the address on the `From` line. Both are copies of regex matches, which we
+lowercase.
 
 ## Phone: pick the mobile, normalize to E.164
 
-Three numbers, none of them carrying a country code. TypeSafe picks the mobile and
-reads the country from the text; `phonenumbers` combines those two answers into E.164,
-the international format that starts with a `+` and the country code.
+The text has three numbers, and none of them carries a country code. TypeSafe picks the
+mobile and reads the country from the text; `phonenumbers` combines those two answers
+into E.164, the international format that starts with a `+` and the country code.
 
 ```python theme={null}
 PHONE_DOC = """Reach our San Francisco office at these numbers: main desk (415) 555-0199,
@@ -11790,7 +11764,7 @@ print(f"E.164   -> : {e164}")
 ```
 candidates : ['(415) 555-0199', '(415) 555-0142', '(415) 555-0177']
 mobile  -> : (415) 555-0177  (conf 1.00)
-country -> : US  (conf 0.90)
+country -> : US  (conf 1.00)
 E.164   -> : +14155550177
 ```
 
@@ -11800,9 +11774,9 @@ number as `+14155550177`.
 
 ## Money: pick the amount, classify the currency, flag credit vs charge
 
-An invoice with four amounts on it. TypeSafe picks the total due and the credit, reads
-the currency, and flags each picked amount as a charge or a credit. The code copies each
-picked string and parses it into a `Decimal`.
+The invoice has four amounts on it. TypeSafe picks the total due and the credit, reads
+the currency, and flags each picked amount as a charge or a credit. We copy each picked
+string and parse it into a `Decimal`.
 
 ```python expandable theme={null}
 MONEY_DOC = """Invoice INV-2087.
@@ -11842,24 +11816,25 @@ print("\ncandidates :", amounts)
 ```
 
 ```
-total due : $1,315.50  -> 1315.50 USD (charge, P(credit)=0.01)
-credit    : $50.00     -> 50.00 USD (credit, P(credit)=0.99)
+total due : $1,315.50  -> 1315.50 USD (charge, P(credit)=0.03)
+credit    : $50.00     -> 50.00 USD (credit, P(credit)=0.98)
 
 candidates : ['$1,200.00', '$115.50', '$1,315.50', '$50.00']
 ```
 
 The total due is \$1,315.50 and the credit is \$50.00, both in USD. The credit-or-charge
-`Noul` answers 0.01 on the total and 0.99 on the credit, so the code knows the
-sign of each `Decimal` it parses.
+`Noul` question gives 0.03 for the total and 0.98 for the credit, so we know the sign of
+each `Decimal` we parse.
 
-> `to_decimal` assumes the comma groups thousands and the dot is the decimal point. That
-> holds for `$1,315.50`; in `€1.315,50` it is the other way round. Ask a `Noul` question
-> which convention the document uses, and branch on it in code.
+> We parse amounts on the assumption that the comma groups thousands and the dot is the
+> decimal point. That holds for `$1,315.50`; in `€1.315,50` it is the other way round. Ask a
+> `Noul` question such as "Does this document use a comma as the decimal point?" and branch
+> on the answer.
 
 ## Open it in the TypeSafe playground
 
-A share link that opens the email thread in the browser, with the receipt question on it
-and the four addresses the regex found among its options.
+To try the receipt question yourself, open the email thread in the playground. The four
+addresses the regex found are the question's options.
 
 ```python theme={null}
 receipt_criteria = {e: None for e in emails} | {
@@ -11882,13 +11857,14 @@ display(
 )
 ```
 
-[Open this thread + selection in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAYgE4RwEAiAhktfgOoAWAlivgDxi3UB0A7qxQABalEQBaKBBIAHXtLgA+ADpI0EAgCMWAG10skAc1HiEUmfMVqAwlAIywCEgGdTk6XIXk1AJQSyugCeEhoE3HS8ss4uEHS6wkZw1HrecGpqABIs+CgI1HD4EviB+S4I+JBIAOTsMOW5TBU6+oZG+NQG1C74AGYyjSw9cQi8+ADKyGD4cEH4JAhQCCyy7CgQM0Fq0a5xnR1gYAsuPYYuedRgY2hMtADWLgA0+DSRIM8gsmRwqy4Y2HhCMAVCAFksVigQQRgSAUEFolD8CCoEwICwliDniCzigSDAoCgWHEXIiQcx0Ux8AhknoDkcECdKhAGY0KuUkE4SPh+LQ1k0WFywctVvh2WsIAB+TFIkBQEhsZwsaiImERPiCNjucyeKw+QFIGD6LEgFoGYxaixeaz6w26Y2OGIWnVpREGo0ytVRGJ7BJJFK6F0290gpAjUkgAByI3wEF6rIaQ1Z8wQAEcYAy8tMAG6ddO8EEAXyL70I1FkLAAajEiUhASAswBGEsgcq6RaZgCyECcuhcgIA2iAAFYILMSBu8BsAJhAAF0C0A)
+[Open this thread + selection in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAYgE4RwEBSAhkgvgCIT0A8AVrQgHSQIACWanAAOAG25RyAPgA6SNBAIAjAJajRKpAHMBmIWInk5AYSgEIJMAhIBnXfvFdJcOQCUEYgJ4BaBQQ50XMLWNhBI1KL2Io50KHJyABIq+CgIQvje+AbUNvSQSADkKPgwuSkAFvSq6ppa+BEqOfgAZhYVKjb4Ydz4AMrIYPhwnvgkCFAIKsLFKBBDnnLBtmER9WBgYzadmjap1GBc+GjltADWNgA0+DSBIFcgwmQiKDYY2HiEwDIgYxNTcR8viAUJ5gt8CN8oOUICoJt8rt8digSDAoCgVGEbOD8N8AOrlWHlfAIODUNRrDYILb4XidFCVfC5JBWEj4ADutBmlRUrN+k2mjOQMwgAH54TiQFASCpUtLqNigQFuLwogYnEYPkgYOoESBqhptKrHM5sVqdRKLCy7IJooYXJrtaJdUqgiEVpEbWrYqbHbqkN1sd8AHLdLrNCpU+gdCOjBAARxgVNSgwAbhFE1xvgBfHN3QjUYQqABqIQxSA+IBTAEY8yBcuI0QgwABZCBWUQ2D4AbRAbAQKe8Va4VYALFwAAwgAC6WaAA)
 
 ## Two limits
 
 * A `Choice` question allows at most 255 options. With more candidates than that, narrow
-  in two
-  stages: pick the section first, then the span inside it.
+  in two stages: pick the section first, then the span inside it.
+  [Line-by-line search](/cookbooks/semantic_find) shows the first stage: tag each line
+  with an ID and let a `Choice` point to the lines that match.
 * Finding the candidates is the part that takes work. Emails, phone numbers and amounts
   have regexes that cover them; a name does not, so its candidates have to come from a
   roster you already have, or from a named-entity recognizer or an LLM that proposes
@@ -13809,9 +13785,35 @@ so it can fall near zero when the document has no answer.
 
 Both questions go in one `system_one` call, so the document is sent once.
 
-![A tagged document and user question enter one TypeSafe request. A Choice question scores
-every line while a Noul question checks whether an answer exists. Local code then ranks the
-lines and applies the document verdict.](https://mintcdn.com/ts-docs/eQrFXXTYsK3Nx7hz/cookbooks/semantic_find/recipe.png?fit=max\&auto=format\&n=eQrFXXTYsK3Nx7hz\&q=85\&s=75c4719d00dc85dc01f84451ffb5927d)
+```mermaid actions={true} theme={null}
+flowchart LR
+    doc["tagged document<br/><i>lines with IDs</i>"]
+    query["user question"]
+
+    subgraph request["one TypeSafe request · both questions see the full document"]
+        direction TB
+        shared["shared document<br/>and user question"]
+        choice["<b>one Choice question</b><br/>which line answers<br/>the question?"]
+        noul["<b>one Noul question</b><br/>does the document contain<br/>an answer at all?"]
+        relevance["probability<br/>for every line ID"]
+        exists["exists noul<br/>0 to 1"]
+        shared --> choice
+        shared --> noul
+        choice --> relevance
+        noul --> exists
+    end
+
+    rank["sort lines by<br/>Choice probability"]
+    verdict["apply verdict<br/>answered · partial · absent"]
+    out["ranked evidence<br/>and document verdict"]
+
+    doc --> shared
+    query --> shared
+    relevance --> rank
+    exists --> verdict
+    rank --> out
+    verdict --> out
+```
 
 ```python theme={null}
 @json_cache
@@ -14865,34 +14867,32 @@ question in one request.
 # Twitch chat filter
 Source: https://docs.typesafe.ai/cookbooks/twitch_chat_filter
 
-Hide insults, spam, and unasked-for gameplay tips in Twitch chat, blur spoilers, and highlight questions. Each message gets one TypeSafe request containing multiple questions. Up to eight messages are processed concurrently, and the rules are defined in code.
+Hides insults, spam, and unasked-for gameplay tips in Twitch chat, blurs spoilers, and highlights questions. Each message gets one TypeSafe request with three questions, requests run concurrently, and plain rules in code turn the answers into what the viewer sees.
 
-You are watching a Twitch stream, and the chat moves faster than you can read it. This
-cookbook sorts each message as it arrives: questions are highlighted, spam, insults and
-unrequested gameplay tips are hidden, and spoilers are blurred. A keyword list could
-catch spam links, but "Go left, there's a treasure box behind the tree" has no bad words
-in it, and neither does a plot twist.
+You are watching a Twitch stream, and the chat moves faster than you can read it. We sort
+each message as it arrives: questions are highlighted, spam, insults and unrequested
+gameplay tips are hidden, and spoilers are blurred. A keyword list could catch spam
+links, but "go left, there's a site of grace behind the tree" has no bad words in it, and
+neither does a plot twist.
 
 Send each message to Jev in its own request, with the stream title and game. Ask
 three questions about it: what kind of message it is, whether it is toxic (insulting,
-hateful, or harassing), and whether it spoils the game. Plain code then turns those
-answers into what the viewer sees.
-The video demo below shows a Jev-powered Chrome extension filtering a live Twitch
-chat:
+hateful, or harassing), and whether it spoils the game. A few plain rules then turn those
+answers into what the viewer sees. [Guardrails for LLMs](/cookbooks/llm_guardrails) uses
+the same pattern to screen messages going into and out of an LLM.
+
+This demo shows a Jev-powered Chrome extension filtering a real, live Twitch chat:
 
 [Twitch chat filtering Chrome extension demo](https://player.vimeo.com/video/1230896366)
 
-This cookbook covers how messages are categorized and filtered by Jev using 29
-example chat messages. Seven were hidden, two blurred, and six highlighted as questions.
+Here we run 29 chat messages, written for an Elden Ring stream, through the filter. It
+hides seven, blurs two, and highlights six as questions.
 
 ![Five chat messages go to Jev at once, each in its own request with the stream's game. The category, toxic, and spoiler answers come back, and decide() shows, highlights, hides, or blurs each message in the viewer's chat](https://mintcdn.com/ts-docs/TYTnI8jOLDlVpJfa/cookbooks/twitch_chat_filter/twitch-chat-filter-hero-light.gif?s=b2b03e7fd60ef3d43c74bb21cc7404f4)
 
-By the end of this cookbook you will have `classify()`, which asks the three questions
-about one message, and `decide()`, which turns the answers into show, highlight, dim,
-hide, or blur. When you change a rule, for example if spam then hide, only `decide()`
-runs again, with no new request to Jev. To filter live chat on Twitch or another
-platform, connect this logic to a custom chat viewer, moderation tool, or browser
-extension, adapting the message input and questions to your stream.
+We build two functions: `classify()` asks the three questions about one message, and
+`decide()` turns the answers into show, highlight, dim, hide, or blur. When you change a
+rule, such as hiding spam, you rerun only `decide()`, with no new request to Jev.
 
 ## Setup
 
@@ -14903,7 +14903,7 @@ pip install 'typesafe-sdk>=0.7.1,<0.8.0' ipython 'cooksafe>=0.2.0,<0.3.0'
 Create a new file named `twitch_chat_filter.py`. As you work through this cookbook,
 copy each Python code block into that file, in order. For a live run, set
 `TYPESAFE_API_KEY` in your environment. Once you have added all the blocks, run this
-command from the directory containing it:
+command from the file's directory:
 
 ```bash theme={null}
 python twitch_chat_filter.py
@@ -14917,7 +14917,7 @@ everything live again, move the cache aside and set your key. Do the same when c
 `TYPESAFE_MODEL`, because the cache key below includes the state and questions, not the
 model.
 
-Numbers below came from `jev-1.13.0` on 2026-09-25.
+Numbers below came from `jev-1.14.0` on 2026-10-29.
 
 ```python theme={null}
 from concurrent.futures import ThreadPoolExecutor
@@ -14929,7 +14929,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.13.0"
+TYPESAFE_MODEL = "jev-1.14.0"
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # cached re-renders need no key
@@ -14942,9 +14942,9 @@ json_cache = JsonCache(CACHE_DIR / "json_cache.json")
 
 ## Load a stretch of chat
 
-We wrote these 29 messages ourselves for an Elden Ring stream, so every kind of message
-turns up at least twice. Two of the messages are emote-only lines (emotes are small
-chat images on Twitch, typed as words like `PogChamp`).
+We wrote the messages ourselves so that every kind of message turns up at least twice.
+Two of them are emote-only lines (emotes are small chat images on Twitch, typed as words
+like `PogChamp`).
 
 Whether a message is a spoiler or backseat advice (gameplay tips the streamer did not ask
 for) depends on which game is being played, so the stream title and game go into every
@@ -14954,35 +14954,35 @@ request.
 STREAM = {"title": "Elden Ring first playthrough! No spoilers please", "game": "Elden Ring"}
 
 CHAT = [
-    ("NightOwl_22", "hi chat, first time catching a stream live"),
-    ("ggwp_andy", "PogChamp PogChamp PogChamp"),
-    ("mira_plays", "how many hours have you played so far?"),
-    ("tarnished_tom", "this area looks so good at night"),
-    ("backseat_bert", "go left, there's a site of grace behind the tree"),
-    ("follow4follow_bot", "Want more viewers? Buy 1000 followers for $5 at cheapviewz dot com"),
-    ("LoreHound", "wait till you find out Ranni planned the Night of Black Knives"),
-    ("kappa_kev", "LUL LUL LUL"),
-    ("sunny_d", "are you going to do a no-hit run after this?"),
-    ("rage_ryan", "you're genuinely the worst player i've ever seen, uninstall trash"),
-    ("cozy_cat", "the music in this area is so good"),
-    ("backseat_bert", "use your flask NOW, why are you not healing"),
-    ("mira_plays", "W streamer"),
-    ("ggwp_andy", "GG that was insane"),
-    ("quiet_quinn", "anyone else watching from Brazil?"),
-    ("tarnished_tom", "what build are you going for?"),
-    ("LoreHound", "the ending where you become Elden Lord with Ranni is the best one"),
-    ("kappa_kev", "chat is wild today lol"),
-    ("backseat_bert", "the boss is weak to fire, equip the torch before you go in"),
-    ("rage_ryan", "nobody cares about your opinion, go back to your basement"),
-    ("cozy_cat", "you're so bad at this boss lmao, love you tho"),
-    ("sunny_d", "who is the final boss?"),
-    ("ggwp_andy", "LETS GOOOO"),
-    ("NightOwl_22", "i just got this game too, it's so hard"),
-    ("promo_pete", "check out my channel, I stream every day, follow me!"),
-    ("quiet_quinn", "dodge rolling through that was clean"),
-    ("mira_plays", "is the DLC worth it?"),
-    ("cozy_cat", "your character looks so cool"),
-    ("NightOwl_22", "this boss took me 40 tries lol"),
+    ("night-owl-22", "hi chat, first time catching a stream live"),
+    ("ggwp-andy", "PogChamp PogChamp PogChamp"),
+    ("mira-plays", "how many hours have you played so far?"),
+    ("tarnished-tom", "this area looks so good at night"),
+    ("backseat-bert", "go left, there's a site of grace behind the tree"),
+    ("follow4follow-bot", "Want more viewers? Buy 1000 followers for $5 at cheapviewz dot example"),
+    ("lore-hound", "wait till you find out Ranni planned the Night of Black Knives"),
+    ("kappa-kev", "LUL LUL LUL"),
+    ("sunny-skies", "are you going to do a no-hit run after this?"),
+    ("rage-ryan", "you're genuinely the worst player i've ever seen, uninstall trash"),
+    ("cozy-cat", "the music in this area is so good"),
+    ("backseat-bert", "use your flask NOW, why are you not healing"),
+    ("mira-plays", "W streamer"),
+    ("ggwp-andy", "GG that was insane"),
+    ("quiet-quinn", "anyone else watching from Brazil?"),
+    ("tarnished-tom", "what build are you going for?"),
+    ("lore-hound", "the ending where you become Elden Lord with Ranni is the best one"),
+    ("kappa-kev", "chat is wild today lol"),
+    ("backseat-bert", "the boss is weak to fire, equip the torch before you go in"),
+    ("rage-ryan", "nobody cares about your opinion, go back to your basement"),
+    ("cozy-cat", "you're so bad at this boss lmao, love you tho"),
+    ("sunny-skies", "who is the final boss?"),
+    ("ggwp-andy", "LETS GOOOO"),
+    ("night-owl-22", "i just got this game too, it's so hard"),
+    ("promo-pete", "check out my channel, I stream every day, follow me!"),
+    ("quiet-quinn", "dodge rolling through that was clean"),
+    ("mira-plays", "is the DLC worth it?"),
+    ("cozy-cat", "your character looks so cool"),
+    ("night-owl-22", "this boss took me 40 tries lol"),
 ]
 
 print(f"{len(CHAT)} messages. What one request sends as its state:")
@@ -14991,20 +14991,19 @@ print({"stream": STREAM, "message": {"user": CHAT[4][0], "text": CHAT[4][1]}})
 
 ```
 29 messages. What one request sends as its state:
-{'stream': {'title': 'Elden Ring first playthrough! No spoilers please', 'game': 'Elden Ring'}, 'message': {'user': 'backseat_bert', 'text': "go left, there's a site of grace behind the tree"}}
+{'stream': {'title': 'Elden Ring first playthrough! No spoilers please', 'game': 'Elden Ring'}, 'message': {'user': 'backseat-bert', 'text': "go left, there's a site of grace behind the tree"}}
 ```
 
 ## Write the questions
 
-We'll ask three questions, which are all answered in one request, against the same
-state: the stream plus one message.
+One request asks three questions about the same state: the stream plus one message.
 
 * The `category` question is a `Choice` over five kinds of message. The label it picks
   decides what happens to the message: show, highlight, dim, or hide.
-* The `toxic` question is a `Noul`. If its probability is 0.7 or higher (the threshold
-  `TOXIC_AT`, set further down), the message is hidden, whatever its category.
-* The `spoiler` question is a `Noul`. If its probability is 0.7 or higher (the threshold
-  `SPOILER_AT`), the message is blurred, unless it is already hidden.
+* The `toxic` question is a `Noul`. If its probability reaches the threshold `TOXIC_AT`,
+  the message is hidden, whatever its category.
+* The `spoiler` question is a `Noul`. If its probability reaches the threshold
+  `SPOILER_AT`, the message is blurred, unless it is already hidden.
 
 The category describes the message's main purpose. Repeated emotes and cheering count
 as `hype`; unsolicited promotion counts as `spam`. A link alone is not spam.
@@ -15042,10 +15041,10 @@ QUESTIONS = {
 
 ## Classify one message
 
-The `classify()` function below builds the state from one message and sends the request.
-The cache saves each answer under a key made from the state and the questions, written
-out as JSON. Editing a question changes that key, so the next run sends a new request
-instead of replaying the old answer.
+Each message becomes one request: we build the state from the message and send it with
+the three questions. The cache key is the state and the questions written out as JSON,
+and each answer is saved under that key. Editing a question changes that key, so the next
+run sends a new request instead of replaying the old answer.
 
 ```python expandable theme={null}
 def classify(user: str, text: str, stream: dict | None = None) -> dict:
@@ -15074,7 +15073,6 @@ def _ask(state: dict, questions: dict) -> dict:
         "spoiler": response.answers["spoiler"].noul,
         "model": response.model,
         "seconds": round(perf_counter() - started, 2),
-        "input_tokens": response.usage.input_tokens,
     }
 
 
@@ -15087,50 +15085,50 @@ def show(user: str, text: str) -> None:
     print(f"  {'spoiler':<13}{result['spoiler']:5.2f}\n")
 
 
-show("backseat_bert", "go left, there's a site of grace behind the tree")
-show("LoreHound", "wait till you find out Ranni planned the Night of Black Knives")
-show("cozy_cat", "you're so bad at this boss lmao, love you tho")
+show("backseat-bert", "go left, there's a site of grace behind the tree")
+show("lore-hound", "wait till you find out Ranni planned the Night of Black Knives")
+show("cozy-cat", "you're so bad at this boss lmao, love you tho")
 ```
 
 ```
-backseat_bert: go left, there's a site of grace behind the tree
+backseat-bert: go left, there's a site of grace behind the tree
   backseat      1.00  ##############################
   question      0.00
   hype          0.00
   conversation  0.00
   spam          0.00
-  toxic         0.02
-  spoiler       0.09
-
-LoreHound: wait till you find out Ranni planned the Night of Black Knives
-  conversation  0.57  #################
-  backseat      0.42  #############
-  hype          0.01
-  spam          0.00
-  question      0.00
   toxic         0.03
-  spoiler       0.94
+  spoiler       0.07
 
-cozy_cat: you're so bad at this boss lmao, love you tho
-  conversation  0.81  ########################
-  hype          0.18  #####
-  backseat      0.01
+lore-hound: wait till you find out Ranni planned the Night of Black Knives
+  conversation  0.67  ####################
+  backseat      0.32  ##########
+  hype          0.01
   question      0.00
   spam          0.00
-  toxic         0.21
+  toxic         0.04
+  spoiler       0.95
+
+cozy-cat: you're so bad at this boss lmao, love you tho
+  conversation  0.79  ########################
+  hype          0.21  ######
+  question      0.00
+  backseat      0.00
+  spam          0.00
+  toxic         0.28
   spoiler       0.02
 ```
 
 The backseat advice comes back as `backseat` at 1.00, with low `toxic` and `spoiler`. The
-Night of Black Knives message narrowly favors `conversation` over `backseat`, and the
-`spoiler` question catches it. The last message reads like an insult, but `toxic` stays
+Night of Black Knives message favors `conversation` over `backseat`, 0.67 to 0.32, and
+the `spoiler` question catches it. The last message reads like an insult, but `toxic` stays
 low. With "love you tho" on the end, it fits the "light banter" description in the
 question.
 
 ## Decide what the viewer sees
 
-The `decide()` function below only reads the answers, it doesn't send requests. It checks
-three things and decides what to do based on a set of rules:
+Deciding what the viewer sees needs no new request. We read only the answers and apply
+three checks in order:
 
 1. A message at or above `TOXIC_AT` is hidden.
 2. A message whose category has the rule `hide` is hidden.
@@ -15138,10 +15136,11 @@ three things and decides what to do based on a set of rules:
 
 Any message left gets the rule for its category.
 
-On the sample messages, every toxic probability is 0.97 or higher or 0.24 or lower, and
-every spoiler probability 0.94 or higher or 0.20 or lower, so any threshold between those
-gives the same result here. Chat from your own channel will land in between; check both
-thresholds against it before using them live.
+On the sample messages, every toxic probability is either at least 0.97 or at most 0.38,
+and every spoiler probability either at least 0.95 or at most 0.38. Any threshold above
+0.38 and up to 0.95 gives the same result here. Your own channel's chat is likely to have
+probabilities inside that range, so check both thresholds against it before using them
+live.
 
 ```python theme={null}
 RULES = {
@@ -15169,8 +15168,8 @@ def decide(result: dict, rules: dict = RULES) -> str:
 ## Filter the whole chat
 
 The three messages above get cached, leaving 26 new requests on a first live run.
-No message depends on another, so the requests run
-eight at a time, and `pool.map` returns the answers in chat order.
+No message depends on another, so the requests run in parallel, and `pool.map` returns
+the answers in chat order.
 
 The chat prints below as the viewer sees it. A hidden message shows only the reason it was
 hidden, a blurred one shows only its author, and highlighted questions are marked with
@@ -15199,35 +15198,35 @@ for action, n in sorted(counts.items(), key=lambda kv: -kv[1]):
 ```
 
 ```text expandable theme={null}
-   NightOwl_22: hi chat, first time catching a stream live                      conversation
-   ggwp_andy: PogChamp PogChamp PogChamp                                        hype
->> mira_plays: how many hours have you played so far?                           question
-   tarnished_tom: this area looks so good at night                              conversation
+   night-owl-22: hi chat, first time catching a stream live                     conversation
+   ggwp-andy: PogChamp PogChamp PogChamp                                        hype
+>> mira-plays: how many hours have you played so far?                           question
+   tarnished-tom: this area looks so good at night                              conversation
    · hidden, backseat                                                           backseat
    · hidden, spam                                                               spam
-   LoreHound: ░░░░░░░░ spoiler                                                  conversation
-   kappa_kev: LUL LUL LUL                                                       hype
->> sunny_d: are you going to do a no-hit run after this?                        question
+   lore-hound: ░░░░░░░░ spoiler                                                 conversation
+   kappa-kev: LUL LUL LUL                                                       hype
+>> sunny-skies: are you going to do a no-hit run after this?                    question
    · hidden, toxic                                                              conversation
-   cozy_cat: the music in this area is so good                                  conversation
+   cozy-cat: the music in this area is so good                                  conversation
    · hidden, backseat                                                           backseat
-   mira_plays: W streamer                                                       hype
-   ggwp_andy: GG that was insane                                                hype
->> quiet_quinn: anyone else watching from Brazil?                               question
->> tarnished_tom: what build are you going for?                                 question
-   LoreHound: ░░░░░░░░ spoiler                                                  conversation
-   kappa_kev: chat is wild today lol                                            conversation
+   mira-plays: W streamer                                                       hype
+   ggwp-andy: GG that was insane                                                hype
+>> quiet-quinn: anyone else watching from Brazil?                               question
+>> tarnished-tom: what build are you going for?                                 question
+   lore-hound: ░░░░░░░░ spoiler                                                 conversation
+   kappa-kev: chat is wild today lol                                            conversation
    · hidden, backseat                                                           backseat
    · hidden, toxic                                                              conversation
-   cozy_cat: you're so bad at this boss lmao, love you tho                      conversation
->> sunny_d: who is the final boss?                                              question
-   ggwp_andy: LETS GOOOO                                                        hype
-   NightOwl_22: i just got this game too, it's so hard                          conversation
+   cozy-cat: you're so bad at this boss lmao, love you tho                      conversation
+>> sunny-skies: who is the final boss?                                          question
+   ggwp-andy: LETS GOOOO                                                        hype
+   night-owl-22: i just got this game too, it's so hard                         conversation
    · hidden, spam                                                               spam
-   quiet_quinn: dodge rolling through that was clean                            hype
->> mira_plays: is the DLC worth it?                                             question
-   cozy_cat: your character looks so cool                                       conversation
-   NightOwl_22: this boss took me 40 tries lol                                  conversation
+   quiet-quinn: dodge rolling through that was clean                            hype
+>> mira-plays: is the DLC worth it?                                             question
+   cozy-cat: your character looks so cool                                       conversation
+   night-owl-22: this boss took me 40 tries lol                                 conversation
 
 show                 14
 highlight             6
@@ -15237,22 +15236,19 @@ blur (spoiler)        2
 hide (toxic)          2
 ```
 
-That is the whole filter: `QUESTIONS`, `classify()`, and `decide()`. To run it on your own
-chat, replace `STREAM` and `CHAT`, or pass a different `stream` to `classify()` for each
-channel.
+To run the filter on your own chat, replace `STREAM` and `CHAT`. For several channels, pass
+each channel's `stream` to `classify()`.
 
-If you hit a rate
-limit, lower `max_workers` and run again; completed answers are already cached.
-Here, `pool.map()` preserves chat order, so each result matches its message by position
-in the list. In a live integration, you can instead keep the platform's message ID or a
-reference to the message's page element alongside each request to update the right
-message when its answers arrive.
+If you hit a rate limit, lower `max_workers` and run again; completed answers are already
+cached. In a live integration, store the platform's message ID, or a reference to the
+message's page element, with each request. Use it to update the right message when its
+answers arrive.
 
 ## Change a rule without a new request
 
-The answers describe the message, and `decide()` turns them into an action. The example
-below hides hype (cheering and emote-only lines) and dims conversation, reusing the 29
-results from the step above.
+Because the answers only describe the message, we can change the rules and reuse the 29
+results from the step above. Here we hide hype (cheering and emote-only lines) and dim
+conversation.
 
 ```python theme={null}
 QUIET = RULES | {"hype": "hide", "conversation": "dim"}
@@ -15267,20 +15263,20 @@ print(f"\n{changed} messages changed, 0 new requests")
 ```
 
 ```
-NightOwl_22: hi chat, first time catching a stream live         show       -> dim
-ggwp_andy: PogChamp PogChamp PogChamp                           show       -> hide (hype)
-tarnished_tom: this area looks so good at night                 show       -> dim
-kappa_kev: LUL LUL LUL                                          show       -> hide (hype)
-cozy_cat: the music in this area is so good                     show       -> dim
-mira_plays: W streamer                                          show       -> hide (hype)
-ggwp_andy: GG that was insane                                   show       -> hide (hype)
-kappa_kev: chat is wild today lol                               show       -> dim
-cozy_cat: you're so bad at this boss lmao, love you tho         show       -> dim
-ggwp_andy: LETS GOOOO                                           show       -> hide (hype)
-NightOwl_22: i just got this game too, it's so hard             show       -> dim
-quiet_quinn: dodge rolling through that was clean               show       -> hide (hype)
-cozy_cat: your character looks so cool                          show       -> dim
-NightOwl_22: this boss took me 40 tries lol                     show       -> dim
+night-owl-22: hi chat, first time catching a stream live        show       -> dim
+ggwp-andy: PogChamp PogChamp PogChamp                           show       -> hide (hype)
+tarnished-tom: this area looks so good at night                 show       -> dim
+kappa-kev: LUL LUL LUL                                          show       -> hide (hype)
+cozy-cat: the music in this area is so good                     show       -> dim
+mira-plays: W streamer                                          show       -> hide (hype)
+ggwp-andy: GG that was insane                                   show       -> hide (hype)
+kappa-kev: chat is wild today lol                               show       -> dim
+cozy-cat: you're so bad at this boss lmao, love you tho         show       -> dim
+ggwp-andy: LETS GOOOO                                           show       -> hide (hype)
+night-owl-22: i just got this game too, it's so hard            show       -> dim
+quiet-quinn: dodge rolling through that was clean               show       -> hide (hype)
+cozy-cat: your character looks so cool                          show       -> dim
+night-owl-22: this boss took me 40 tries lol                    show       -> dim
 
 14 messages changed, 0 new requests
 ```
@@ -15288,22 +15284,24 @@ NightOwl_22: this boss took me 40 tries lol                     show       -> di
 ## Before you use it on a live channel
 
 * **Each message waits for its answer.** Requests in this cookbook took a median of about
-  0.4 seconds, so a new line appears in chat before its answer comes back. Either hide
+  0.1 seconds, so a new line appears in chat before its answer comes back. Either hide
   each new line until its answer arrives, or accept that a toxic message is on screen
   for that long.
 * **One request at a time can't keep up with a busy chat.** Run several requests at once,
-  such as the eight in *Filter the whole chat*.
+  as in *Filter the whole chat*.
 * **At the time this cookbook was published, Jev was trained mainly on English.** It
   accepted other languages but answered them less accurately, so expect more misses on a
   non-English channel.
-* **A winning category can still be uncertain.** This example always applies the winning
-  label's rule. Before using it live, choose how to handle close category probabilities
-  and Noul values near 0.5. You could flag those messages for review or leave them visible
-  rather than hide them automatically. Test that policy on your own channel's chat.
+* **A winning category can still be uncertain.** Here we always apply the winning label's
+  rule. Before using it live, choose how to handle messages whose top two category
+  probabilities are close to each other, and Noul values near 0.5. You could flag those
+  messages for review or leave them visible rather than hide them automatically. Test that
+  policy on your own channel's chat.
 * **The spoiler check has no record of the streamer's progress.** It uses the game title
-  and the model's knowledge to identify likely plot revelations, not whether this viewer
-  or streamer already knows them. To filter only unseen plot points, supply the current
-  progress and relevant plot information, then adapt the question to use that context.
+  and the model's knowledge of the game to flag likely plot revelations. It cannot tell
+  whether this viewer or the streamer already knows them. To filter only unseen plot
+  points, supply the current progress and relevant plot information, then adapt the
+  question to use that context.
 
 ## Open it in the playground
 
@@ -15318,12 +15316,12 @@ playground_link = make_playground_link(
 )
 # Print a usable URL in a script; render a clickable link in a notebook.
 if __name__ == "__main__" and "__file__" in globals():
-    print(f"Open the state + questions in the TypeSafe playground:\n{playground_link}")
+    print(f"Open in the TypeSafe playground:\n{playground_link}")
 else:
-    display(Markdown(f"🔗 [Open the state + questions in the TypeSafe playground]({playground_link})"))
+    display(Markdown(f"🔗 [Open in the TypeSafe playground]({playground_link})"))
 ```
 
-[Open the state + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAfQSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkABaW140dZxBXoiA-1yUw6IY4NrQch0HmdJ8XzIOSVTlASNy-IcRx8psY3wOMVXPa0Wkva8XQYlIAkCFwUAgTBqIpZhvWeZUb0nISbhEh5UJwgBJJoNBYJofwiLUyBvVgJGce8fnS61716UIgw4v8NzAJp9MQDtCTQqcwR3FhyVKfYbh9OrHk6o9TD4uQak0LCmj5I45ACl0MhQDCjtFJiqGlDy+Q-FUoVlKiEHcuI5qkZ17GeAAxMFkDAdgVCVBAYCoZ03yC3QeSSVAPL-NhPmVEYNwiEpJkKMwLCsIqDiOUrtHYCrtSqvVngAEUgxrBha2lMQ5BA50ClolDC8wxB5PkgZGzo4JIgEEBGjUVGNWbJmmEAaH3AA1edHVWGcAEYpeshA7mNABZCBBHYMhSgAbRAAArZnbOVrFlYAZixAAGEAAF1-CAA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAWgSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkTJbXjR1nEFeiID-XJTDohjg2teyHQeZ0nxfMg5JVOUBI3L8hxHbymxjfA4xVc9rRaS9rxdBiUgCQIXBQCBMGoilmG9Z5lRvSchJuESHlQnCAEkmg0Fgmh-CItTIG9WAkZx7x+NLrXvXpQiDDi-w3MAmn0xAO0JNCpzBHcWHJUp9huH1aseDqj1MPi5BqTQsKaPkjjkfyXQyFAMMO0UmKoaV3L5D8VShWUqIQNy4lmqRnXsZ4ADEwWQMB2BUJUEBgKhnTfQLdB5JJUHcv82E+ZURg3CISkmQozAsKxCoOI4Su0dhyu1Sq9WeAARSCGsGZraUxDkEDnAKWiUULzDEHk+UB4bOjgkiAQQYaNRUY0ZsmaYQBofcADV50dVYZwARkl6yEDuY0AFkIEEdgyFKABtEAACsmcyJWsSVgAWLEAAYQAAXX8IA)
 
 
 # Demos

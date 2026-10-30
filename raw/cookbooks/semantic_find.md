@@ -152,9 +152,35 @@ so it can fall near zero when the document has no answer.
 
 Both questions go in one `system_one` call, so the document is sent once.
 
-![A tagged document and user question enter one TypeSafe request. A Choice question scores
-every line while a Noul question checks whether an answer exists. Local code then ranks the
-lines and applies the document verdict.](https://mintcdn.com/ts-docs/eQrFXXTYsK3Nx7hz/cookbooks/semantic_find/recipe.png?fit=max\&auto=format\&n=eQrFXXTYsK3Nx7hz\&q=85\&s=75c4719d00dc85dc01f84451ffb5927d)
+```mermaid actions={true} theme={null}
+flowchart LR
+    doc["tagged document<br/><i>lines with IDs</i>"]
+    query["user question"]
+
+    subgraph request["one TypeSafe request · both questions see the full document"]
+        direction TB
+        shared["shared document<br/>and user question"]
+        choice["<b>one Choice question</b><br/>which line answers<br/>the question?"]
+        noul["<b>one Noul question</b><br/>does the document contain<br/>an answer at all?"]
+        relevance["probability<br/>for every line ID"]
+        exists["exists noul<br/>0 to 1"]
+        shared --> choice
+        shared --> noul
+        choice --> relevance
+        noul --> exists
+    end
+
+    rank["sort lines by<br/>Choice probability"]
+    verdict["apply verdict<br/>answered · partial · absent"]
+    out["ranked evidence<br/>and document verdict"]
+
+    doc --> shared
+    query --> shared
+    relevance --> rank
+    exists --> verdict
+    rank --> out
+    verdict --> out
+```
 
 ```python theme={null}
 @json_cache

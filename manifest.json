@@ -96,10 +96,10 @@
       "url": "https://docs.typesafe.ai/cookbooks.md",
       "title": "Cookbooks",
       "description": "End-to-end recipes that show TypeSafe in real problems, from a few questions to full pipelines.",
-      "raw_sha256": "34d43d7d3b66783bba36645b7ff546c08acb3702d16a73e616bd86a1fc6e9983",
-      "clean_sha256": "32a0a29887a315e5c606f4c8b1e918cc6d02ea54a02ff400694fd0eecae3475a",
-      "bytes": 8655,
-      "changed_at": "2026-10-29T13:10:26.390Z"
+      "raw_sha256": "d06e1f72b2cafed2c473b208670b7657760247e99dfeaf110644bd5ff0719624",
+      "clean_sha256": "80a6a363652e1c1571d01a368f2bcb6e9d1059048bce96d7feb0a2984402ad81",
+      "bytes": 8653,
+      "changed_at": "2026-10-30T13:02:59.437Z"
     },
     "cookbooks/autoformat.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoformat.md",
@@ -123,10 +123,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/basic_memory.md",
       "title": "Simple memory system",
       "description": "Let Jev decide which requests and answers are worth remembering, then wrap the Jev call in a small function that adds memories to later calls.",
-      "raw_sha256": "39ba57d1b6ac472954d67900cb6ce976f663f255c3985098ccad687ab0c5905c",
-      "clean_sha256": "0126ecbfe02c5d39867b11663c09c9adcf60eccdb6407cee72c1a541b3444691",
-      "bytes": 28911,
-      "changed_at": "2026-10-24T11:09:30.121Z"
+      "raw_sha256": "8db01b5539acafd4ac90aae08d9067191cf7e18c4b8f38894f5e56e3ea6b2ed3",
+      "clean_sha256": "b0411588bd0abf2f72e6358059304fb45d759f4217a962a3e9021969bbc68d98",
+      "bytes": 27292,
+      "changed_at": "2026-10-30T13:02:59.443Z"
     },
     "cookbooks/citation_check.md": {
       "url": "https://docs.typesafe.ai/cookbooks/citation_check.md",
@@ -257,11 +257,11 @@
     "cookbooks/pre_parsed_value_extraction_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook.md",
       "title": "Pre-parsed value extraction",
-      "description": "Uses regexes to find candidate emails, phone numbers, and amounts, then has TypeSafe select the requested span so code can normalize a verbatim value.",
-      "raw_sha256": "71e547a710e414c7a3e30ca6386c1cc39f8e7980a1e98684e73e1d29ffcd25e8",
-      "clean_sha256": "adcd401120fe56255dc4e6dfcce421532d227bb69e8d44f75cf70163f449e75d",
-      "bytes": 12476,
-      "changed_at": "2026-10-21T11:57:40.993Z"
+      "description": "Finds candidate emails, phone numbers, and amounts with a regex, has TypeSafe pick the one you ask for, and normalizes that exact span in code.",
+      "raw_sha256": "bab2948436a513deb64d6a6b4de35e29c3255eaed98ba94b571d18e5884985ec",
+      "clean_sha256": "642e31ef1b520d5e407199f80746bdf3bfcd9b0dee63204901fdc33e0eed791a",
+      "bytes": 13066,
+      "changed_at": "2026-10-30T13:02:59.451Z"
     },
     "cookbooks/reading_scanned_documents.md": {
       "url": "https://docs.typesafe.ai/cookbooks/reading_scanned_documents.md",
@@ -294,10 +294,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/semantic_find.md",
       "title": "Line-by-line search",
       "description": "Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer.",
-      "raw_sha256": "960031d229924d8d22139233e761b915b77870ae7f2af29fae025637e5be4c62",
-      "clean_sha256": "2e3ae8e83b89055d2f0388e7b44f245a25b66f0aaa8c6815a414e341097deea9",
-      "bytes": 37067,
-      "changed_at": "2026-10-29T13:10:26.412Z"
+      "raw_sha256": "a3432b7d6c156d42cc8f6684d967c2241c648dcdb2d30616b35231fb6974f6ef",
+      "clean_sha256": "09888bc8b7eadbfe108bc828e228b4107b35de654f63ea7d10930025ab847338",
+      "bytes": 37653,
+      "changed_at": "2026-10-30T13:02:59.458Z"
     },
     "cookbooks/skill_suggestion.md": {
       "url": "https://docs.typesafe.ai/cookbooks/skill_suggestion.md",
@@ -311,11 +311,11 @@
     "cookbooks/twitch_chat_filter.md": {
       "url": "https://docs.typesafe.ai/cookbooks/twitch_chat_filter.md",
       "title": "Twitch chat filter",
-      "description": "Hide insults, spam, and unasked-for gameplay tips in Twitch chat, blur spoilers, and highlight questions. Each message gets one TypeSafe request containing multiple questions. Up to eight messages are processed concurrently, and the rules are defined in code.",
-      "raw_sha256": "ea9691f2c0e851ed2f02e5023c4f841efc61752eafcddf89285680a6412cd59a",
-      "clean_sha256": "19c20e6f137455d36c817df637be89ea5cae6b5405890110459bf385b46e5ee1",
-      "bytes": 23872,
-      "changed_at": "2026-10-29T13:10:26.402Z"
+      "description": "Hides insults, spam, and unasked-for gameplay tips in Twitch chat, blurs spoilers, and highlights questions. Each message gets one TypeSafe request with three questions, requests run concurrently, and plain rules in code turn the answers into what the viewer sees.",
+      "raw_sha256": "0ae7621f4d3a7f730b2e9e91812ff160872051bdfd69b34d48788ba1b5fa39e3",
+      "clean_sha256": "c03d15aafc4ee21a678bee4716703d2f840688cf63077df2a8007ce1a5637886",
+      "bytes": 23439,
+      "changed_at": "2026-10-30T13:02:59.448Z"
     },
     "demos.md": {
       "url": "https://docs.typesafe.ai/demos.md",

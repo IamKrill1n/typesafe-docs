@@ -22,7 +22,7 @@ See [System One](https://docs.typesafe.ai/go/system-one.md) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -565,7 +565,7 @@ Token counts for a request, when reported by the API.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -706,7 +706,7 @@ See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -788,7 +788,7 @@ See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -945,7 +945,7 @@ See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -1124,7 +1124,7 @@ A located box with its confidence.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -1285,7 +1285,7 @@ A box's edges as fractions of the image's height (`top`, `bottom`) and width (`l
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -1459,7 +1459,7 @@ The models available to the account.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -1591,7 +1591,7 @@ Metadata describing a single available model.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {

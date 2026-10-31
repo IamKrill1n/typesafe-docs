@@ -7,30 +7,30 @@ The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe
 
 ## Installation
 
-**Claude Code**
+> [tab] Claude Code
+>
+> Run these two commands in your terminal:
+>
+> ```bash theme={null}
+> claude plugin marketplace add typesafe-ai/skills
+> claude plugin install typesafe@typesafe-ai
+> ```
 
-Run these two commands in your terminal:
+> [tab] Other agents
+>
+> ```bash theme={null}
+> npx skills add typesafe-ai/skills --skill typesafe-ai
+> ```
+>
+> Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
 
-```bash theme={null}
-claude plugin marketplace add typesafe-ai/skills
-claude plugin install typesafe@typesafe-ai
-```
-
-**Other agents**
-
-```bash theme={null}
-npx skills add typesafe-ai/skills --skill typesafe-ai
-```
-
-Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
-
-**Copy to your agent**
-
-Paste this prompt into your coding agent:
-
-```text wrap theme={null}
-Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
-```
+> [tab] Copy to your agent
+>
+> Paste this prompt into your coding agent:
+>
+> ```text wrap theme={null}
+> Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
+> ```
 
 Read [SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md) or fetch the [raw Markdown](https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md) directly. For manual installation, copy the entire [skills/typesafe-ai directory](https://github.com/typesafe-ai/skills/tree/main/skills/typesafe-ai), including its reference files, into your agent's skills directory.
 
@@ -189,43 +189,43 @@ System One is TypeSafe's model for building AI-powered software, not agents. It 
 
 TypeSafe is designed for building **AI-powered software**, where code owns the workflow and AI handles narrow, structured decisions.
 
-**Traditional software**
+> [tab] Traditional software
+>
+> Traditional code is a complex decision tree made from simple software primitives. Because each primitive is reliable, developers can compose them into higher-level abstractions.
 
-Traditional code is a complex decision tree made from simple software primitives. Because each primitive is reliable, developers can compose them into higher-level abstractions.
+> [tab] LLM agents
+>
+> An agent processes instructions and chooses its next step. This works well when a person is monitoring the process, but every loop introduces another opportunity to go off the rails.
 
-**LLM agents**
-
-An agent processes instructions and chooses its next step. This works well when a person is monitoring the process, but every loop introduces another opportunity to go off the rails.
-
-**AI-powered software**
-
-Code handles deterministic work and owns the control flow. The model appears only where the system needs programmable common sense or needs to interpret unstructured data. Each AI task is kept atomic and constrained.
+> [tab] AI-powered software
+>
+> Code handles deterministic work and owns the control flow. The model appears only where the system needs programmable common sense or needs to interpret unstructured data. Each AI task is kept atomic and constrained.
 
 ![Traditional software, agents, and AI-powered software shown as three different system architectures.](https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-light.webp?fit=max\&auto=format\&n=aFVnpmCIX68NpsV1\&q=85\&s=35c7622176190d1b1f19dc712f2fbf11)
 
 ## What makes System One composable
 
-> **Structured**
+> [card] Structured
 >
 > System One is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
 
-> **Parallel**
+> [card] Parallel
 >
 > Questions are evaluated independently and in parallel. One primitive's result does not become hidden context that changes another primitive's result.
 
-> **Comparable**
+> [card] Comparable
 >
 > Outputs are sortable and can drive smart `if` statements, thresholds, and comparisons.
 
-> **Fast**
+> [card] Fast
 >
 > Most calls complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
 
-> **Calibrated confidence**
+> [card] Calibrated confidence
 >
 > [RLCD](/introduction/machine-learning-primer) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
 
-> **Self-consistent**
+> [card] Self-consistent
 >
 > System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](/cookbooks/consistency_noul_cookbook).
 
@@ -237,7 +237,7 @@ Because every output is constrained to the supplied options, the model returns a
 
 Keep deterministic work in code. It is reliable and cheap. Avoid agent `while` loops when a software workflow can express the same behavior.
 
-> **Example: keep deterministic rules in code**
+> [accordion] Example: keep deterministic rules in code
 >
 > ```python theme={null}
 > days_overdue = (today - invoice.due_date).days
@@ -252,7 +252,7 @@ Browse the [System One patterns](/patterns) for bounded ways to compose model de
 
 Include only the context relevant to the current questions. This helps the model avoid distractions and context rot. Do not rely on knowledge stored in model weights when current information can come from your own knowledge base.
 
-> **Example: send only relevant context**
+> [accordion] Example: send only relevant context
 >
 > Try it in the Playground →
 
@@ -260,7 +260,7 @@ Include only the context relevant to the current questions. This helps the model
 
 Use nested JSON for the `state` and `questions` fields. Point questions at specific values when that removes ambiguity, and include the backtick characters around each path inside the question.
 
-> **Example: reference a nested value**
+> [accordion] Example: reference a nested value
 >
 > Use a backticked dot-and-index path to point a question at a specific nested value, such as `support.tickets[0].message`.
 >
@@ -274,13 +274,13 @@ Ask the most explicit, narrow, specific, atomic questions you can. Break down co
 >
 > This is probably the most important concept in this guide. Broad questions hide several judgments behind one answer. Atomic questions expose those judgments so you can inspect, tune, and combine them in code.
 
-> **Example: decompose spam detection**
+> [accordion] Example: decompose spam detection
 >
 > Try it in the Playground →
 >
 > Try it in the Playground →
 
-> **Example: verify a tool-call trace**
+> [accordion] Example: verify a tool-call trace
 >
 > Try it in the Playground →
 >
@@ -296,7 +296,7 @@ Structure helps in these situations:
 * Part of the question comes from your code. When a value comes from a database, put it in its own field instead of splicing it into a string template.
 * Several questions have similar instructions. A request takes one state and can include multiple questions. Adding supplementary data can help make questions distinct.
 
-> **Example: reference a record from your code**
+> [accordion] Example: reference a record from your code
 >
 > This Noul question compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
 >
@@ -306,7 +306,7 @@ The "potential\_duplicate" data sourced from code can change over time. The "que
 
 The descriptions inside `criteria` can be objects too. For a Choice question, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
 
-> **Example: define contrastive Choice criteria**
+> [accordion] Example: define contrastive Choice criteria
 >
 > Try it in the Playground →
 
@@ -330,7 +330,7 @@ See the [Speculative Fan-Out pattern](/patterns/fan-out) and [Parallel questions
 
 Combine independent answers with deterministic rules or weighted sums. For learned composition, use the probabilities as features in a downstream classical machine-learning model.
 
-> **Example: combine signals with a weighted score**
+> [accordion] Example: combine signals with a weighted score
 >
 > ```python theme={null}
 > answers = response.answers
@@ -349,7 +349,7 @@ Combine independent answers with deterministic rules or weighted sums. For learn
 
 Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data. For a Noul, a good starting point is 0.7 for yes and 0.3 for no; see [Reading a Noul](/primitives/noul#reading-a-noul).
 
-> **Example: route by confidence**
+> [accordion] Example: route by confidence
 >
 > ```python theme={null}
 > answer = response.answers["card_help_topic"]
@@ -716,29 +716,29 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 ## Example use case categories
 
-> **AI Automation Software**
+> [card] AI Automation Software
 >
 > Interleave AI with reliable software in a way where you can run it a million times in the background without a human co-pilot. Code owns control flow (not markdown files) while TypeSafe handles the semantic decisions and language understanding.
 
-> **Real-time applications**
+> [card] Real-time applications
 >
 > Frontier intelligence at real-time speeds (150ms) means AI can make decisions faster than human perception. Fast and smart enough to be programmed to play games or embedded into a UI.
 
-> **AI Map Reduce over Big Data**
+> [card] AI Map Reduce over Big Data
 >
 > 100x cheaper means you can process giant datasets. Search for relevant information over giant corpuses, classify giant agent traces, and extract features to make predictions.
 
-> **Universal Verification**
+> [card] Universal Verification
 >
 > Verify the input prompt, extractions, reasoning traces, tool calls, or inputs of any other AI. Detect jailbreaks, citation errors, hallucinations, mistakes, or other error-modes that other AIs or LLMs make at a fraction of the cost for the actual LLM call.
 
-> **Harness Engineering**
+> [card] Harness Engineering
 >
 > Use Jev calls to make your harness smarter - model routing, semantic context retrieval, LLM error detection and guardrails, reasoning trace classification at lightspeed and a fraction of the cost.
 
 ## Example automation use cases
 
-> **Search and retrieval**
+> [accordion] Search and retrieval
 >
 > * Replace or supplement embeddings in RAG pipelines with semantic search, scoring, and ranking.
 > * Score query-to-candidate relevance.
@@ -746,7 +746,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 > * Cross-encode queries and candidates for higher precision.
 > * Select useful context for downstream AI workflows.
 
-> **Scientific discovery**
+> [accordion] Scientific discovery
 >
 > * Screen papers against inclusion and exclusion criteria for systematic reviews.
 > * Label passages in interview transcripts, open-ended survey responses, and field notes using predefined themes or categories.
@@ -754,7 +754,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 > * Flag missing methodological details, such as controls, dataset descriptions, and experimental settings.
 > * Identify entities and relationships across papers to build research knowledge graphs, linking findings to supporting passages.
 
-> **Model routing**
+> [accordion] Model routing
 >
 > * Use Jev to build a custom router that chooses which LLM receives each prompt.
 > * Set routing rules and thresholds for your specific workflow.
@@ -762,7 +762,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 > * Estimate difficulty and risk.
 > * Escalate requests that need a more expensive model.
 
-> **LLM guardrails**
+> [accordion] LLM guardrails
 >
 > * Place semantic checks on every LLM input, output, and tool call at a fraction of the cost of the LLM call.
 > * Detect jailbreaks and prompt injection.
@@ -770,19 +770,19 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 > * Detect tool-call errors and response-quality failures in real time.
 > * Log structured check results and probabilities to make AI system and harness failures easier to trace.
 
-> **Semantic code linting**
+> [accordion] Semantic code linting
 >
 > * Use Jev calls to add automated semantic lints to code and writing.
 > * Define checks for your team's coding conventions and writing guidelines.
 > * Run these checks in CI and flag violations for review.
 
-> **Feature extraction for predictive modeling**
+> [accordion] Feature extraction for predictive modeling
 >
 > * Use Jev to extract probabilistic features from natural-language data.
 > * Combine these features with structured data to train models for tasks with ground-truth outcomes.
 > * Use autoresearch workflows to propose feature definitions and evaluate their predictive value against held-out ground truth.
 
-> **Recruiting**
+> [accordion] Recruiting
 >
 > * Evaluate resumes, applications, and interview feedback against explicit, job-related criteria.
 > * Identify relevant experience.
@@ -791,14 +791,14 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 > * Route candidates to hiring managers or recruiters.
 > * Escalate uncertain cases for human review.
 
-> **Lead generation**
+> [accordion] Lead generation
 >
 > * Match company profiles, executive biographies, and inbound messages to an ideal customer profile.
 > * Score industry fit and company maturity.
 > * Detect buyer relevance, pain points, and purchase intent.
 > * Prioritize and route leads.
 
-> **Customer support**
+> [accordion] Customer support
 >
 > * Classify incoming tickets by issue, product area, and customer intent.
 > * Process call transcripts to extract customer issues, commitments, and follow-up actions.
@@ -806,56 +806,56 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 > * Route cases to the right team, queue, or automated workflow.
 > * Verify support responses against policies and the customer's request.
 
-> **Insurance claims**
+> [accordion] Insurance claims
 >
 > * Classify first-notice-of-loss reports, adjuster notes, and supporting documents.
 > * Detect claim complexity, missing information, and potential fraud indicators.
 > * Prioritize claims for straight-through processing or specialist review.
 > * Escalate uncertain or high-risk cases to a human adjuster.
 
-> **Financial crime**
+> [accordion] Financial crime
 >
 > * Evaluate transaction narratives, KYC documents, and alert histories for suspicious characteristics.
 > * Match entities across inconsistent names, profiles, and records.
 > * Prioritize alerts by risk, relevance, and evidence quality.
 > * Route ambiguous cases to investigators for review.
 
-> **Legal and compliance**
+> [accordion] Legal and compliance
 >
 > * Classify contracts, policies, regulatory filings, and marketing claims.
 > * Detect missing clauses, prohibited claims, and policy violations.
 > * Verify documents against explicit legal or compliance requirements.
 > * Escalate high-risk or uncertain findings to counsel or compliance teams.
 
-> **E-commerce marketplaces**
+> [accordion] E-commerce marketplaces
 >
 > * Classify and normalize product listings across inconsistent seller catalogs.
 > * Extract product attributes from titles and descriptions.
 > * Detect prohibited listings, counterfeit signals, review abuse, and policy violations.
 > * Rank products and route uncertain listings for human review.
 
-> **Moderation and trust and safety**
+> [accordion] Moderation and trust and safety
 >
 > * Apply company-specific, nuanced criteria to decide which posts meet your moderation standards.
 > * Moderate user content and automated conversations across communities, customer support, and SDR workflows.
 > * Detect toxicity, harassment, spam, fraud, unsafe advice, personal-data exposure, opt-out requests, and policy-violating claims.
 > * Combine severity and confidence to allow, warn, review, or block content.
 
-> **Advertising**
+> [accordion] Advertising
 >
 > * Evaluate creative assets, campaign copy, landing pages, and placement context.
 > * Classify brand safety and audience suitability.
 > * Check regulatory compliance and prohibited claims.
 > * Evaluate creative quality and ad-to-landing-page alignment.
 
-> **Gaming**
+> [accordion] Gaming
 >
 > * Evaluate player reports, in-game chat, reviews, and support conversations.
 > * Moderate chat and detect abuse, toxicity, or suspicious behavior.
 > * Annotate content and score frustration or engagement.
 > * Detect churn signals and route player-support requests.
 
-> **Risk assessment**
+> [accordion] Risk assessment
 >
 > * Convert incident reports, claims notes, transaction descriptions, and vendor assessments into probabilistic risk indicators.
 > * Use these indicators in insurance and underwriting workflows.
@@ -863,14 +863,14 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 > * Score severity and prioritize review.
 > * Extract features for broader risk models.
 
-> **Demand forecasting**
+> [accordion] Demand forecasting
 >
 > * Enrich forecasting models with semantic signals from customer inquiries, sales notes, product reviews, support tickets, and market reports.
 > * Extract purchase intent, urgency, and product interest.
 > * Detect supply concerns, competitive pressure, and emerging demand themes.
 > * Feed those features into a forecasting model alongside historical time-series data.
 
-> **Graphs and knowledge graphs**
+> [accordion] Graphs and knowledge graphs
 >
 > * Annotate and verify knowledge graphs with typed semantic decisions.
 > * Classify relationships and entity types.
@@ -1112,7 +1112,7 @@ Use Jev alongside an LLM or agent: pick tools and skills, screen what goes in an
 | Cookbook | What it does | Level |
 | - | - | - |
 | [Function calling](/cookbooks/function_calling) | Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware TypeSafe questions. | Intermediate |
-| [Skill suggestion](/cookbooks/skill_suggestion) | Picks at most one skill for an agent turn out of the 182 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates. | Intermediate |
+| [Skill suggestion](/cookbooks/skill_suggestion) | Picks at most one skill for an agent turn out of the 194 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates. | Intermediate |
 | [Guardrails for LLMs](/cookbooks/llm_guardrails) | Screen every message going into and out of an LLM app with one TypeSafe request, thresholding hazard probabilities and severity to pass, review, block, or route. | Intermediate |
 | [Double-checking citations](/cookbooks/citation_check) | Catch wrong or hallucinated citations by checking against the source document. One Choice question decides whether the quote's context supports the claim. | Beginner |
 | [Classifying RAG passages](/cookbooks/classifying_rag_passages) | Score each retrieved passage with one TypeSafe request, then decide in code which ones reach the answering model. | Intermediate |
@@ -1138,6 +1138,7 @@ Pull typed values and structure out of messy text.
 | [Date extraction](/cookbooks/date_extraction_cookbook) | Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review. | Beginner |
 | [Pre-parsed value extraction](/cookbooks/pre_parsed_value_extraction_cookbook) | Finds candidate emails, phone numbers, and amounts with a regex, has TypeSafe pick the one you ask for, and normalizes that exact span in code. | Beginner |
 | [Structure recovery](/cookbooks/autoformat) | Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout). | Beginner |
+| [Shopping cart](/cookbooks/cart_from_primitives) | Turns a natural-language cafe order into a structured cart: a shrinking-options loop of Choice questions finds every item, then one batched request per item fills its known fields. | Beginner |
 
 ## Search and matching
 
@@ -3816,6 +3817,397 @@ display(Markdown(
   ID. The in-memory dict disappears when the process exits.
 * **Remember what your app did.** Add your reply to the ticket thread as a support
   message, and the gate judges it along with the customer's words.
+
+
+# Shopping cart
+Source: https://docs.typesafe.ai/cookbooks/cart_from_primitives
+
+Turns a natural-language cafe order into a structured cart: a shrinking-options loop of Choice questions finds every item, then one batched request per item fills its known fields.
+
+A customer can describe an order in one sentence, but an application needs a structured
+cart with separate items and fields.
+
+[TypeSafe shopping cart demo](https://player.vimeo.com/video/1230923854)
+
+The TypeSafe part of that demo builds the cart out of several
+[`Choice` questions](/primitives/choice), each of which returns one value. Here it runs on
+a small cafe menu and one hard-coded order.
+
+## How the cart builder works
+
+The input is one sentence:
+
+```text theme={null}
+Can I get a large oat milk latte and a blueberry muffin please
+```
+
+The application builds this cart:
+
+```text theme={null}
+latte
+  size: large
+  milk: oat
+blueberry_muffin
+```
+
+A `Choice` question returns one option, not a whole cart. The application therefore uses
+two stages:
+
+1. **Find the items.** Repeatedly ask which remaining menu item the order mentions.
+   Remove each selected item from the next request. Stop when Jev selects
+   `nothing_else`.
+2. **Fill the fields.** For each found item, send one request with a `Choice` question per
+   known field. Your code assembles the returned values into the cart.
+
+### Finding an unknown number of items with a loop
+
+The number of ordered items is not known in advance. Each request asks which remaining
+menu item appears first in the order. The loop in your code then:
+
+1. saves the selected item;
+2. removes it from the next request's options; and
+3. sends the full order again with the shorter option list.
+
+A `Choice` question must select an option, so every request also includes
+`nothing_else`. That option tells the loop to stop when the order contains no remaining
+menu item.
+
+```mermaid actions={true} theme={null}
+  %%{init: {"flowchart": {"rankSpacing": 45, "wrappingWidth": 260}}}%%
+flowchart LR
+    order["order<br/><i>large oat milk latte and<br/>a blueberry muffin</i>"]
+
+    subgraph local["your code"]
+        direction TB
+        options["build the options<br/><b>remaining menu items<br/>+ nothing_else</b>"]
+        save["save the selected item<br/>and drop it from<br/>the next request"]
+    end
+
+    subgraph jev["TypeSafe AI model: Jev"]
+        choice["<b>Choice:</b> which remaining<br/>item does the order mention?"]
+    end
+
+    order --> choice
+    options --> choice
+    choice --> result{"selected option"}
+    result green_item@-->|"a menu item"| save
+    save -.-> options
+    result purple_stop@-->|"nothing_else"| stop["stop the loop"]
+    %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.
+    %% "your code" is not a TypeSafe request, so it opts out of the pink boundary.
+    style local fill:none,stroke:#71717a,stroke-width:1.5px,stroke-dasharray: 6 4
+    class save neonGreen
+    class stop neonPurple
+```
+
+### Filling the known fields
+
+After the item loop, the application knows which schema applies to each item. The latte
+schema has `size` and `milk` fields. The application sends both field questions to Jev in
+one request. The muffin has no fields, so it needs no field request.
+
+```mermaid actions={true} theme={null}
+  %%{init: {"flowchart": {"rankSpacing": 40, "wrappingWidth": 260}}}%%
+flowchart TB
+    order["order<br/><i>large oat milk latte and a blueberry muffin</i>"]
+
+    subgraph stage1["stage 1 · find the items"]
+        %% RL: the loop edge makes dagre rank the Jev box first, so RL puts your code on the left.
+        direction RL
+        itemLoop["shrinking-options loop<br/>in your code"]
+        subgraph jev1["TypeSafe AI model: Jev"]
+            itemChoice["<b>one Choice question<br/>per request</b>"]
+        end
+        itemLoop --> itemChoice
+        itemChoice -. "selected item" .-> itemLoop
+    end
+
+    items["found items"]
+
+    subgraph stage2["stage 2 · fill the known fields"]
+        direction LR
+        fieldQuestions["your code builds<br/><b>one Choice per field</b>"]
+        subgraph jev2["TypeSafe AI model: Jev"]
+            fieldBatch["<b>one request per item<br/>with all its field questions</b>"]
+        end
+        fieldQuestions --> fieldBatch
+    end
+
+    cart["your code assembles the cart"]
+
+    order --> stage1
+    stage1 green_done@-->|"nothing_else"| items
+    items --> stage2
+    stage2 green_cart@--> cart
+    %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.
+    %% The stages group your code with the Jev call, so they are neutral; only the Jev boxes are pink.
+    style stage1 fill:none,stroke:#71717a,stroke-width:1.5px,stroke-dasharray: 6 4
+    style stage2 fill:none,stroke:#71717a,stroke-width:1.5px,stroke-dasharray: 6 4
+    class items,cart neonGreen
+```
+
+## Setup
+
+```bash theme={null}
+pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+```
+
+then set `TYPESAFE_API_KEY`. Every API call is cached in
+[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/cart_from_primitives/json_cache.json).
+Download it into the folder you run this code from to replay the published numbers
+instead of calling the API, or leave it out to run everything live.
+
+Numbers below came from `jev-1.14.0` on 2026-10-29.
+
+```python theme={null}
+import os
+from pathlib import Path
+
+from cooksafe import JsonCache, make_playground_link
+from IPython.display import Markdown, display
+from typesafe_sdk import Choice, TypeSafeClient
+
+TYPESAFE_MODEL = "jev-1.14.0"
+NOTHING_ELSE = "nothing_else"  # the sentinel option that ends the item loop
+MAX_ITEM_REQUESTS = 6  # a hard stop, so a bad answer can never loop forever
+
+client = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # cached re-renders need no key
+    model=TYPESAFE_MODEL,
+    timeout=30.0,
+)
+json_cache = JsonCache(Path("json_cache.json"))
+
+
+def fmt_confidence(confidence: float | None) -> str:
+    """A confidence for printing. The API can return None, so never format it blind."""
+    return f"{confidence:.2f}" if confidence is not None else "n/a"
+```
+
+### Creating the menu
+
+The menu has four items, and only the latte has fields.
+
+Each item's description carries the words a customer would use to order it. Jev matches
+the order against these descriptions. `fields` is the item's own schema. Each field is a
+list of allowed values, and those values are the options of that field's `Choice` question.
+
+```python theme={null}
+MENU = {
+    "latte": {
+        "description": "Espresso with steamed milk. Also ordered as a flat white or a milky coffee.",
+        "fields": {
+            "size": ["small", "medium", "large"],
+            "milk": ["whole", "oat", "almond"],
+        },
+    },
+    "filter_coffee": {
+        "description": "Plain brewed drip coffee, sometimes ordered as a black coffee.",
+        "fields": {},
+    },
+    "blueberry_muffin": {
+        "description": "A blueberry muffin.",
+        "fields": {},
+    },
+    "almond_croissant": {
+        "description": "An almond croissant, sometimes ordered as a pastry.",
+        "fields": {},
+    },
+}
+
+ORDER = "Can I get a large oat milk latte and a blueberry muffin please"
+```
+
+### Finding the items in the order
+
+Before each request, the loop builds a fresh option set from the items not yet found and
+adds the `nothing_else` sentinel. The order
+is the request's [state](/concepts/state), and the question changes from one request to
+the next. The loop stops when `nothing_else` is selected.
+
+The loop also caps its requests, so a bad answer can never make it loop forever. It ends
+when the sentinel is selected, the menu runs out, or the cap is reached.
+
+```python expandable theme={null}
+def item_question(remaining: dict[str, dict], found: list[str]) -> Choice:
+    """Build one request's question from the items not found yet."""
+    already = ", ".join(found) if found else "nothing yet"
+    criteria = {name: item["description"] for name, item in remaining.items()}
+    criteria[NOTHING_ELSE] = (
+        "The order mentions no menu item other than the ones already accounted for."
+    )
+    return Choice(
+        instructions=(
+            f"This is a cafe order. Items already accounted for: {already}. "
+            "Which remaining menu item does the order mention? If the order mentions more "
+            "than one remaining item, choose the one mentioned first."
+        ),
+        criteria=criteria,
+    )
+
+
+@json_cache
+def ask_item(order: str, question: dict) -> dict:
+    """One item request. The question arrives as its API JSON, which also keys the cache."""
+    answer = client.system_one(state=order, questions={"item": question}).choices["item"]
+    return {"choice": answer.choice, "confidence": answer.confidence}
+
+
+def find_items(order: str) -> list[dict]:
+    remaining = list(MENU)
+    found: list[dict] = []
+    item_requests = 0
+    for _ in range(MAX_ITEM_REQUESTS):
+        if not remaining:
+            break
+        question = item_question(
+            {name: MENU[name] for name in remaining},
+            [item["name"] for item in found],
+        )
+        result = ask_item(order, question.model_dump(mode="json", exclude_none=True))
+        item_requests += 1
+        print(
+            f"item request {item_requests}: {len(remaining)} items + sentinel "
+            f"-> {result['choice']} (confidence {fmt_confidence(result['confidence'])})"
+        )
+        if result["choice"] == NOTHING_ELSE:
+            break
+        remaining.remove(result["choice"])
+        found.append({"name": result["choice"], "confidence": result["confidence"]})
+    return found
+
+
+items = find_items(ORDER)
+print(f"\nfound {len(items)} items: {[item['name'] for item in items]}")
+```
+
+```
+item request 1: 4 items + sentinel -> latte (confidence 0.99)
+item request 2: 3 items + sentinel -> blueberry_muffin (confidence 1.00)
+item request 3: 2 items + sentinel -> nothing_else (confidence 1.00)
+
+found 2 items: ['latte', 'blueberry_muffin']
+```
+
+On this order, the first two item requests each found an item. The third selected the
+sentinel and ended the loop.
+
+Because each found item leaves the option list, the loop finds each menu item at most
+once. The cart also has no quantity field, so an order for "two flat whites" still
+produces one `latte`. To handle quantities, add a `quantity` field to each item's schema,
+with values such as `one`, `two` and `three`.
+
+### Filling in a found item's fields
+
+For each found item, we build one `Choice` question per known field and send them together
+in one `system_one` call against the same order. This is the
+[fan-out pattern](/patterns/fan-out).
+
+Each field question also includes `unspecified`, so a field the customer did not mention
+gets that option instead of a forced concrete value.
+
+An item with no fields skips the call entirely.
+
+```python expandable theme={null}
+UNSPECIFIED = "unspecified"
+
+
+def field_questions(item_name: str) -> dict[str, Choice]:
+    questions = {}
+    for field, values in MENU[item_name]["fields"].items():
+        criteria = {value: None for value in values}
+        criteria[UNSPECIFIED] = (
+            f"The order does not say which {field} for the {item_name}."
+        )
+        questions[field] = Choice(
+            instructions=f"Which {field} did the order ask for, for the {item_name}?",
+            criteria=criteria,
+        )
+    return questions
+
+
+@json_cache
+def ask_fields(order: str, questions: dict[str, dict]) -> dict:
+    """One field request. The questions arrive as their API JSON, which also keys the cache."""
+    response = client.system_one(state=order, questions=questions)
+    return {
+        field: {"choice": answer.choice, "confidence": answer.confidence}
+        for field, answer in response.choices.items()
+    }
+
+
+def fill_fields(order: str, item_name: str) -> dict:
+    if not MENU[item_name]["fields"]:
+        return {}
+    questions = {
+        field: question.model_dump(mode="json", exclude_none=True)
+        for field, question in field_questions(item_name).items()
+    }
+    return ask_fields(order, questions)
+
+
+cart = []
+for item in items:
+    fields = fill_fields(ORDER, item["name"])
+    cart.append(
+        {"name": item["name"], "confidence": item["confidence"], "fields": fields}
+    )
+```
+
+### The assembled cart
+
+This step makes no TypeSafe calls. It prints the cart assembled from the single-value
+answers collected above.
+
+```python theme={null}
+print(f'order: "{ORDER}"\n')
+for line in cart:
+    print(f"{line['name']}  (item confidence {fmt_confidence(line['confidence'])})")
+    for field, answer in line["fields"].items():
+        conf = fmt_confidence(answer["confidence"])
+        print(f"    {field:<6} {answer['choice']:<12} confidence {conf}")
+```
+
+```
+order: "Can I get a large oat milk latte and a blueberry muffin please"
+
+latte  (item confidence 0.99)
+    size   large        confidence 1.00
+    milk   oat          confidence 1.00
+blueberry_muffin  (item confidence 1.00)
+```
+
+## Try it in the playground
+
+The link below holds the first item-finding request: the full order as the state, and
+one `Choice` question over the four menu items plus `nothing_else`. The loop above repeats
+that request, each time without the item it just found. Edit the order there and the
+answer changes with it.
+
+```python theme={null}
+playground_link = make_playground_link(
+    ORDER, {"item": item_question(MENU, [])}, models=[TYPESAFE_MODEL]
+)
+display(
+    Markdown(
+        f"🔗 [Open the first item-finding request in the TypeSafe playground]({playground_link})"
+    )
+)
+```
+
+[Open the first item-finding request in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAwgIZL4CS+A5givifgDYkBOt+EJ9cAlkwGtm3FAgZIwDfACMmMBNIStWAT3xwYAM029yAByYISAZwQgANIT2sIcPSmMZseQsAA6IXqLgeC7kCgqegi++B5QABYQvFAhFmGeSMYorDBQKLwQSaEeaBG8xvgFUlAkmmIQrGBKAHSU3oUkTKxGYGokUFAQMKgIkpqVBEgQKPlI1PgqdHUA6vmR+C1wJLq6E4hIMEXe+JAIhaMVVUrqyBlZAPyUmviHnMesp6iZSeqVYqNknEhiSytIa22CDglkiEAgpluEQqPye5x+-V4rGSNQ8lnCrC8Sl4JFC-hYKFEORAAFFjNZ9sYIPgAO5eCL4ZJGRCSPiCOoAQSYVPu1RakhMUk0BNp+VE9ykbIEai62gQCFR8Q8OiYolYAH1ZeU4gQPAAFFi6GQtGl9XaYvT4LXyyxUxAZRCFSp8s2CxiyDpCa0KtEJWTyRTKFTqjTaXTEjkyOQKJSqdRaHRIRXokBNOBZMCamwFYxkFAR8hpjNW7PGXOoW22Oi8R28pSuxr4PQmFIqZMJYajNbqhDcnUJPJHPlwl6FYZPLZYuCcQ6PT7kO5ZfYMZqtdqdbq9fqVRUAX338VTel4ADUlMYXi4QAA3ACMh9MhnSfQAshBqtyXABtEAAKwQ14ALS3jUt4ACw1AADCAAC6u5AA)
+
+## What's next
+
+* [Primitives](/primitives) is the reference for the question types and the fields each
+  answer carries.
+* The [parallel questions cookbook](/cookbooks/parallel_questions) measures what sending
+  the field questions in one request saves against asking them one at a time.
+* The [function calling cookbook](/cookbooks/function_calling) turns a sentence into a call
+  to one of your own functions the same way: one `Choice` question picks the function, and
+  one per argument fills its values. It handles an argument the user didn't mention with a
+  separate yes/no question instead of an `unspecified` option.
+* [Confidence](/confidence) covers reading a confidence value as a signal.
 
 
 # Double-checking citations
@@ -7913,23 +8305,23 @@ sightings.
 
 Requires Python 3.10 or later. Choose a package manager to install the dependencies:
 
-**pip**
+> [tab] pip
+>
+> Create a virtual environment and add the dependencies:
+>
+> ```bash wrap theme={null}
+> python3 -m venv .venv
+> .venv/bin/pip install 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
+> ```
 
-Create a virtual environment and add the dependencies:
-
-```bash wrap theme={null}
-python3 -m venv .venv
-.venv/bin/pip install 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
-```
-
-**uv**
-
-Initialize a project and add the dependencies:
-
-```bash wrap theme={null}
-uv init --bare
-uv add 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
-```
+> [tab] uv
+>
+> Initialize a project and add the dependencies:
+>
+> ```bash wrap theme={null}
+> uv init --bare
+> uv add 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
+> ```
 
 Set your TypeSafe API key:
 
@@ -13945,27 +14337,27 @@ script works off `LINES`.
 # Skill suggestion
 Source: https://docs.typesafe.ai/cookbooks/skill_suggestion
 
-Picks at most one skill for an agent turn out of the 182 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates.
+Picks at most one skill for an agent turn out of the 194 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates.
 
-*Agents choose skills by truncating and loading them all into the system message, which
-increases costs, degrades skill selection performance, and induces context rot for the rest
-of the session. We address this by using two TypeSafe requests per turn, one to rank skills
-and one to verify the choice, and reduce incorrect skill loads by more than half.*
+*Agents choose skills from an index that puts every skill, with its description truncated,
+into the system message. This degrades skill selection and induces context rot for the rest
+of the session. We add two TypeSafe requests per turn, one to rank skills and one to verify
+the choice. They cut wrong skill loads by half and needless ones by nearly two thirds.*
 
 An agent with a large skill roster makes its choice on almost no information. The roster
 reaches it as an index: one line per skill, with the description truncated so the full text
 doesn't crowd out the conversation. Hermes, the agent harness used here, cuts it to 60
-characters by default. For example, at that width the skill that *edits* `.pptx` files
-reads nearly the same as the one that *authors* them. Ask for a pitch deck and the agent
-may load the wrong one. On a turn where no skill fits at all, it may still load
-one anyway, because a list of names invites a guess.
+characters by default. At that width, the Office skill that *edits* `.pptx` files and the
+finance skill that *builds* decks both read as PowerPoint tools. Ask for changes to an
+existing deck and the agent may load the one that builds new ones. On a turn where no skill
+fits at all, it may still load one anyway, because a list of names invites a guess.
 
-This cookbook leaves the descriptions alone and uses progressive disclosure instead,
-reading all 182 skills cheaply and then reading three of them in detail. Two TypeSafe
-requests go in front of the decision on which skill to load, if any. The first ranks every
-skill in the roster against the user's turn and answers whether the turn needs a skill at
-all. The second re-reads only the top three, now with each skill's full description and the
-opening of its instructions, and is free to reject all of them.
+We use progressive disclosure, reading all 194 skills cheaply and then reading three of
+them in detail. Two TypeSafe requests go in front of the decision on which skill to load,
+if any. The first ranks every skill in the roster against the user's turn and answers
+whether the turn needs a skill at all. The second re-reads only the top three, now with
+each skill's full description and the opening of its instructions, and is free to reject
+all of them.
 
 The winner's name goes into one extra line of the agent's system prompt for that turn:
 
@@ -13977,19 +14369,17 @@ actually asked for.
 ```
 
 The agent keeps its full index and its own judgement, and that one line only tells it which
-entry to look at first. The roster itself never changes, so any prefix caching over it
-still holds. Over 488 requests against `claude-haiku-4-5-20251001`, using skills from the
-Hermes roster:
+entry to look at first. Over 452 requests against `claude-haiku-4-5-20251001`, using skills
+from the Hermes roster:
 
 | | loads the wrong skill | loads one when nothing fits |
 | - | - | - |
-| agent alone, with just its roster | 16.8% | 9.8% |
-| **agent with a TypeSafe suggestion** | **7.3%** | **4.0%** |
-| agent handed the right answer | 2.5% | 1.2% |
+| agent alone, with just its roster | 15.7% | 14.0% |
+| **agent with a TypeSafe suggestion** | **7.9%** | **5.2%** |
+| agent handed the right answer | 3.2% | 4.1% |
 
-The third row shows the floor for making mistakes is not zero, because an agent given the
-right skill still does not always load it, and no selection method, however good, gets past
-that.
+The third row is the floor: an agent handed the right skill still does not always load it,
+and no selection method gets below that.
 
 You end up with a `suggest()` function that returns at most one skill name, a
 `suggestion_block()` that wraps it for the system prompt, and the harness that produced the
@@ -13997,17 +14387,17 @@ table above, ready to point at your own roster.
 
 ```mermaid actions={true} theme={null}
 flowchart LR
-    subgraph C1["Call 1 - skim all 182 skills"]
+    subgraph C1["Call 1 - skim every skill"]
         direction TB
-        Q1["<b>Choice:</b> which skill fits?<br/><i>all 182, one line each</i>"]
-        N1["<b>Nouls:</b> need a skill at all?<br/>· act on their stuff?<br/>· follow written steps?<br/>· or just talk?"]
+        Q1["<b>Choice:</b> which skill fits?<br/><i>one line each</i>"]
+        N1["<b>Nouls:</b> need a skill at all?"]
         %% invisible link: without an edge these two share a rank, which in a TB
         %% subgraph puts them side by side instead of stacked
         Q1 ~~~ N1
     end
-    subgraph C2["Call 2 - read those 3 properly"]
+    subgraph C2["Call 2 - read the top 3 in full"]
         direction TB
-        Q2["<b>Choice:</b> which of the 3?<br/><i>with real detail now</i>"]
+        Q2["<b>Choice:</b> which of the 3?"]
         N2["<b>Nouls:</b> does each one<br/>really do it?"]
         Q2 ~~~ N2
     end
@@ -14030,14 +14420,19 @@ export TYPESAFE_API_KEY=your-key-here
 export ANTHROPIC_API_KEY=your-key-here
 ```
 
-> **Note:** the code blocks below are one script, in order. To follow along, put them in a
-> single file in the order shown.
+> **Note:** this page's code blocks form one script. To run it, put them in one file in
+> the order they appear.
 
 ## Caching results
 
-`JsonCache` saves each call's result, keyed on its inputs, so re-running replays the
-numbers below instead of calling either API. Delete `json_cache.json` to run live. The
-published run used `jev-1.12` and `claude-haiku-4-5-20251001`, rendered 2026-07-31.
+`hermes_roster.json`, `requests.json` and the answer cache `json_cache.json` are in
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/skill_suggestion).
+Put them in the folder you run the script from.
+
+We cache each call's result in `json_cache.json`, keyed on its inputs, so re-running
+replays the numbers below instead of calling either API. Delete `json_cache.json` to run
+live. The published run used `jev-1.14.0` and `claude-haiku-4-5-20251001`, rendered
+2026-10-30.
 
 ```python expandable theme={null}
 import json
@@ -14050,14 +14445,14 @@ from time import perf_counter
 import anthropic
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.ticker import PercentFormatter
+from matplotlib.ticker import MultipleLocator, PercentFormatter
 from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, TypeSafeClient
 
 matplotlib.use("Agg")  # headless render
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 AGENT_MODEL = (
     "claude-haiku-4-5-20251001"  # the agent under test, pinned so scores are stable
 )
@@ -14067,7 +14462,10 @@ EXCERPT_CHARS = (
     700  # SKILL.md characters each candidate brings; the roster file stores 1600
 )
 GATE_THRESHOLD = (
-    0.30  # mean of the three request nouls, below which nothing is suggested
+    0.30  # mean of the three action nouls; at or above it, a skill is wanted
+)
+NAMED_THRESHOLD = (
+    0.50  # the "names a method" noul; at or above it, a skill is wanted too
 )
 FITS_THRESHOLD = (
     0.30  # a shortlist whose best "does this fit" noul is under this is dropped
@@ -14091,10 +14489,11 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 ## Step 1: load the roster
 
-`hermes_roster.json` holds the 182 skills of
-[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) (MIT) at one
-pinned commit. Each record holds a skill's name and category, the description as the index
-shows it, the full description, and the opening of its `SKILL.md`.
+`hermes_roster.json` holds the 194 skills of
+[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) at one pinned
+commit. Each record holds a skill's name and category, the description as the index shows
+it, the full description, and the opening of its `SKILL.md`. The skills' licences are in
+[`DATA_LICENSE.md`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/skill_suggestion/DATA_LICENSE.md).
 
 The index below, and the instructions above it in the prompt, are copied from Hermes.
 
@@ -14102,28 +14501,21 @@ The index below, and the instructions above it in the prompt, are copied from He
 ROSTER = json.loads(Path("hermes_roster.json").read_text(encoding="utf-8"))
 BY_NAME = {skill["name"]: skill for skill in ROSTER}
 
-# Verbatim from hermes-agent agent/prompt_builder.py:build_skills_system_prompt.
+# Verbatim from hermes-agent agent/prompt_builder.py:_render_skills_index.
 PREAMBLE = (
-    "## Skills (mandatory)\n"
-    "Before replying, scan the skills below. If a skill matches or is even partially relevant "
-    "to your task, you MUST load it with skill_view(name) and follow its instructions. "
-    "Err on the side of loading — it is always better to have context you don't need "
-    "than to miss critical steps, pitfalls, or established workflows. "
-    "Skills contain specialized knowledge — API endpoints, tool-specific commands, "
-    "and proven workflows that outperform general-purpose approaches. Load the skill "
+    "## Skills\n"
+    "Before replying, scan the skills below. If a skill matches or is even partially relevant to your "
+    "task, you MUST load it with skill_view(name) and follow its instructions. Err on the side of "
+    "loading — it is always better to have context you don't need than to miss critical steps, pitfalls, "
+    "or established workflows. Skills contain specialized knowledge — API endpoints, tool-specific "
+    "commands, and proven workflows that outperform general-purpose approaches. Load the skill "
     "even if you think you could handle the task with basic tools like web_search or terminal. "
-    "Skills also encode the user's preferred approach, conventions, and quality standards "
-    "for tasks like code review, planning, and testing — load them even for tasks you "
-    "already know how to do, because the skill defines how it should be done here.\n"
-    "Whenever the user asks you to configure, set up, install, enable, disable, modify, "
-    "or troubleshoot Hermes Agent itself — its CLI, config, models, providers, tools, "
-    "skills, voice, gateway, plugins, or any feature — load the `hermes-agent` skill "
-    "first. It has the actual commands (e.g. `hermes config set …`, `hermes tools`, "
-    "`hermes setup`) so you don't have to guess or invent workarounds.\n"
+    "Skills also encode the user's preferred approach, conventions, and quality standards for tasks like "
+    "code review, planning, and testing — load them even for tasks you already know how to do, because "
+    "the skill defines how it should be done here.\n"
     "If a skill has issues, fix it with skill_manage(action='patch').\n"
-    "After difficult/iterative tasks, offer to save as a skill. "
-    "If a skill you loaded was missing steps, had wrong commands, or needed "
-    "pitfalls you discovered, update it before finishing.\n"
+    "After difficult/iterative tasks, offer to save as a skill. If a skill you loaded was missing steps, "
+    "had wrong commands, or needed pitfalls you discovered, update it before finishing.\n"
     "\n"
 )
 FOOTER = "\n\nOnly proceed without loading a skill if genuinely none are relevant to the task."
@@ -14140,9 +14532,12 @@ def render_index() -> str:
         by_category[skill["category"]].append(skill)
     lines = []
     for category in sorted(by_category):
+        skills = sorted(by_category[category], key=lambda s: s["name"])
+        if len(skills) == 1:  # a one-skill category is a single top-level row
+            lines.append(f"  - {skills[0]['name']}: {skills[0]['description']}")
+            continue
         lines.append(f"  {category}:")
-        for skill in sorted(by_category[category], key=lambda s: s["name"]):
-            lines.append(f"    - {skill['name']}: {skill['description']}")
+        lines.extend(f"    - {skill['name']}: {skill['description']}" for skill in skills)
     return "\n".join(lines)
 
 
@@ -14174,9 +14569,9 @@ print("\n".join(index_lines[start:end]))
 ```
 
 ```
-182 skills in 33 categories
-roster prompt: 16,089 characters
-index description: 54 characters on average, 60 at most
+194 skills in 32 categories
+roster prompt: 16,376 characters
+index description: 55 characters on average, 60 at most
 
 one category, as the agent reads it:
   apple:
@@ -14188,13 +14583,13 @@ one category, as the agent reads it:
 
 ## Step 2: score the agent on its own
 
-`requests.json` holds 488 single-turn requests, 315 of them covered by exactly one skill
-and the other 173 covered by nothing.
+`requests.json` holds 452 single-turn requests, 280 of them covered by exactly one skill
+and the other 172 covered by nothing.
 
 The covered requests were written by Claude Sonnet 5 from each skill's own `SKILL.md`, so
 the labels are trustworthy and the requests are easier than the ones users send.
 
-The 173 uncovered ones were all written to punish guessing: 85 everyday requests, 42
+The 172 uncovered ones were all written to punish guessing: 84 everyday requests, 42
 technical questions no skill serves (*explain what a monad is*), and 46 that ask for
 something specific the roster has no skill for, like *post this to Mastodon* on a roster
 that covers X and nothing else.
@@ -14221,7 +14616,7 @@ print(f"uncovered  {NEGATIVES[0]['text']}")
 ```
 
 ```
-488 requests: 315 covered by a skill (171 distinct skills), 173 covered by none
+452 requests: 280 covered by a skill (145 distinct skills), 172 covered by none
 
 covered   [1password]  I've got a config.yaml with `{{ op://app-prod/db/password }}` placeholders in it — can you set up my project to pull the real values in at runtime instead of hardcoding them?
 uncovered  Add these three cards to our Trello backlog.
@@ -14236,11 +14631,9 @@ free-text name. The name must match the skill exactly for a correct load.
 ```python expandable theme={null}
 # Verbatim from hermes-agent tools/skills_tool.py:SKILL_VIEW_SCHEMA.
 SKILL_VIEW_DESCRIPTION = (
-    "Skills allow for loading information about specific tasks and workflows, as "
-    "well as scripts and templates. Load a skill's full content or access its "
-    "linked files (references, templates, scripts). First call returns SKILL.md "
-    "content plus a 'linked_files' dict showing available references/templates/"
-    "scripts. To access those, call again with file_path parameter."
+    "Load a skill's SKILL.md, or one of its linked references, templates or scripts. "
+    "The first call returns SKILL.md plus a 'linked_files' dict; call again with "
+    "file_path to read one."
 )
 TOOLS = [
     {
@@ -14299,15 +14692,12 @@ def run_turn(model: str, arm: str, request: str, suggestion: str) -> dict:
         tools=TOOLS,
         messages=[{"role": "user", "content": request}],
     )
-    usage = response.usage
     return {
         "loaded": [
             str(block.input.get("name", ""))
             for block in response.content
             if block.type == "tool_use" and block.name == "skill_view"
         ],
-        "input_tokens": usage.input_tokens or 0,
-        "output_tokens": usage.output_tokens or 0,
     }
 
 
@@ -14323,7 +14713,7 @@ def summarise(turns: dict[str, dict]) -> dict[str, float]:
 
 
 def run_arm(arm: str, suggestions: dict[str, str]) -> dict[str, dict]:
-    """One measured turn per request, in a small pool. 488 calls."""
+    """One measured turn per request, in a small pool. 452 calls."""
     texts = [request["text"] for request in REQUESTS]
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         turns = pool.map(
@@ -14333,7 +14723,7 @@ def run_arm(arm: str, suggestions: dict[str, str]) -> dict[str, dict]:
 ```
 
 The agent runs first with nothing but its roster, the way it works today. Its two error
-rates are the baseline the rest of the cookbook measures against.
+rates are the baseline.
 
 ```python theme={null}
 baseline = run_arm("baseline", {})
@@ -14363,10 +14753,10 @@ print(
 ```
 
 ```
-wrong loads    16.8%   (315 covered requests)
-needless loads 9.8%   (173 uncovered requests)
+wrong loads    15.7%   (280 covered requests)
+needless loads 14.0%   (172 uncovered requests)
 
-of 36 wrong first picks, 10 came from the right skill's own category
+of 26 wrong first picks, 11 came from the right skill's own category
 ```
 
 Wrong loads land in the right skill's own category far more often than chance would put
@@ -14378,23 +14768,29 @@ looking in roughly the right place.
 One request carries two kinds of question:
 
 * **`which`** is a [`Choice`](/primitives/choice) question
-  over all 182 skill names, with the index description as each option's criteria (the same
+  over all 194 skill names, with the index description as each option's criteria (the same
   text the agent itself gets). Its probabilities are the ranking.
 * **three [`Noul`](/primitives/noul) questions about the
-  request**, printed below, each asking a different way whether it wants an action taken
-  rather than an explanation given. `prose_suffices`
-  counts the other way round. Their mean decides whether to suggest anything at all, and
-  under 0.30 nothing is suggested.
+  request**, each asking in a different way whether the request wants an action taken
+  rather than an explanation given. We average the three, flipping `prose_suffices`
+  because a yes there means no skill is needed.
+* **one `Noul` question, `named`**: does the request ask for a specific named tool,
+  format, template, or method?
 
-Both go out in one request, so the ranking and the check cost one round trip.
+Both kinds go out in one request, so the ranking and the check cost one round trip.
 
-Write these three to ask whether an action is wanted. A question about subject matter will
-not separate *explain what a monad is* from a request that needs a skill, since both are
-software.
+Write the three action questions to ask whether an action is wanted. A question about
+subject matter will not separate *explain what a monad is* from a request that needs a
+skill, since both are software.
 
-One `Choice` question holds a roster this size comfortably. A few times larger and you
-would
-split it into chunks and rank each one, then run this same shortlist step over the winners.
+A turn can need a skill for either of two reasons: it wants an action taken, or it names a
+method a skill owns, such as a meme template or a Suno prompt. The three action questions
+measure the first reason, so we average them. `named` measures the second, so it opens the
+gate on its own instead of joining the average, where the three action answers would
+outvote it. We suggest nothing only when both reasons come back low.
+
+One `Choice` question holds a roster this size comfortably. A few times larger, you would
+split it into chunks, rank each chunk, and then rerank the chunk winners as in step 4.
 
 ```python expandable theme={null}
 CHOICE_INSTRUCTIONS = (
@@ -14416,6 +14812,10 @@ GATE_QUESTIONS = {
     ),
 }
 INVERTED = {"prose_suffices"}  # a yes here points away from needing a skill
+NAMED_QUESTION = (
+    "Does the request ask for a specific named tool, format, template, or method to be "
+    "used, rather than for general help?"
+)
 
 
 def build_state(request: str) -> dict:
@@ -14424,7 +14824,7 @@ def build_state(request: str) -> dict:
 
 @json_cache
 def rank_wide(request: str) -> dict:
-    """Request 1: rank all 182 skills, and score the request for whether a skill applies."""
+    """Request 1: rank all 194 skills, and score the request for whether a skill applies."""
     questions = {
         "which": Choice(
             instructions=CHOICE_INSTRUCTIONS,
@@ -14433,6 +14833,7 @@ def rank_wide(request: str) -> dict:
     }
     for key, text in GATE_QUESTIONS.items():
         questions[f"gate::{key}"] = Noul(instructions=text)
+    questions["named"] = Noul(instructions=NAMED_QUESTION)
     started = perf_counter()
     response = client.system_one(
         state=build_state(request), questions=questions, model=TYPESAFE_MODEL
@@ -14452,25 +14853,34 @@ def rank_wide(request: str) -> dict:
         ],  # more than any shortlist needs, and keeps the cache small
         "gate": sum(oriented) / len(oriented),
         "values": values,
+        "named": response.answers["named"].noul,
         "seconds": round(perf_counter() - started, 2),
-        "input_tokens": response.usage.input_tokens or 0,
-        "output_tokens": response.usage.output_tokens or 0,
     }
+
+
+def needs_skill(wide: dict) -> bool:
+    """Either reason is enough: an action is wanted, or a named method is asked for."""
+    return wide["gate"] >= GATE_THRESHOLD or wide["named"] >= NAMED_THRESHOLD
 
 
 DEMO = [
     "Can you save this recipe as a new note in my 'Recipes' folder in Notes.app so it syncs"
     " to my phone? Just write it up in whatever editor pops up.",
-    "Can you put together a pitch deck skeleton (cover, situation overview, comps, precedent"
-    " transactions, DCF, LBO) as a .pptx, using our firm-template.pptx for branding and"
-    " footnoting each valuation number back to the cell it came from in the model?",
+    "I've got a client pitch deck as a .pptx template - I need to duplicate slide 4's layout"
+    " for three new product slides and then strip out any unused media/rels afterward so the"
+    " file isn't bloated.",
     "Post this announcement to my Mastodon account.",
+    "Can you make me a Gru's Plan meme about a developer's plan to refactor the codebase that"
+    " ends up breaking prod?",
 ]
 for request in DEMO:
     wide = rank_wide(request)
-    verdict = "suggest" if wide["gate"] >= GATE_THRESHOLD else "stay quiet"
+    verdict = "suggest" if needs_skill(wide) else "stay quiet"
     print(f'"{request[:78]}"')
-    print(f"  needs a skill {wide['gate']:.2f} -> {verdict}   ({wide['seconds']}s)")
+    print(
+        f"  action {wide['gate']:.2f}, names a method {wide['named']:.2f} -> {verdict}"
+        f"   ({wide['seconds']}s)"
+    )
     for name, probability in wide["ranked"][:SHORTLIST]:
         print(f"    {probability:.3f}  {name:<38}{BY_NAME[name]['description']}")
     print()
@@ -14478,32 +14888,42 @@ for request in DEMO:
 
 ```
 "Can you save this recipe as a new note in my 'Recipes' folder in Notes.app so "
-  needs a skill 0.75 -> suggest   (0.31s)
+  action 0.83, names a method 0.88 -> suggest   (0.14s)
     0.990  apple-notes                           Manage Apple Notes via memo CLI: create, search, edit.
-    0.010  computer-use                          Drive the user's desktop in the background — clicking, ty...
-    0.000  concept-diagrams                      Generate flat, minimal educational SVG visuals as HTML.
+    0.010  computer-use                          Drive the desktop background-first; escalate on signal.
+    0.000  apple-reminders                       Apple Reminders via remindctl: add, list, complete.
 
-"Can you put together a pitch deck skeleton (cover, situation overview, comps, "
-  needs a skill 0.76 -> suggest   (0.16s)
-    0.700  powerpoint                            Create, read, edit .pptx decks, slides, notes, templates.
-    0.300  pptx-author                           Build PowerPoint decks headless with python-pptx.
-    0.000  chroma                                Embedding database for RAG and semantic search.
+"I've got a client pitch deck as a .pptx template - I need to duplicate slide 4"
+  action 0.73, names a method 0.64 -> suggest   (0.25s)
+    0.730  pptx-author                           Build PowerPoint decks headless with python-pptx.
+    0.270  microsoft-office                      Create, read, and edit Word, PowerPoint, and Excel files.
+    0.000  apple-notes                           Manage Apple Notes via memo CLI: create, search, edit.
 
 "Post this announcement to my Mastodon account."
-  needs a skill 0.78 -> suggest   (0.16s)
-    0.550  xurl                                  X/Twitter via xurl CLI: raw post search, posting, DM, media.
-    0.140  computer-use                          Drive the user's desktop in the background — clicking, ty...
-    0.080  openhands                             Delegate coding to OpenHands CLI (model-agnostic, LiteLLM).
+  action 0.86, names a method 0.61 -> suggest   (0.1s)
+    0.280  xurl                                  X/Twitter via xurl CLI: raw post search, posting, DM, media.
+    0.240  social-media-content-calendar         Plan multi-platform social campaigns: briefs to posting.
+    0.190  computer-use                          Drive the desktop background-first; escalate on signal.
+
+"Can you make me a Gru's Plan meme about a developer's plan to refactor the cod"
+  action 0.12, names a method 0.87 -> suggest   (0.12s)
+    1.000  meme-generation                       Create meme PNGs from templates with Pillow text overlay.
+    0.000  apple-notes                           Manage Apple Notes via memo CLI: create, search, edit.
+    0.000  apple-reminders                       Apple Reminders via remindctl: add, list, complete.
 ```
 
 The Notes.app request is unambiguous, and its top option is the right one. Nothing a
-ranking can do will save the Mastodon one: the three questions say a skill is wanted,
-because posting to an account is an action, and with a skill for posting to X and nothing
-for Mastodon the closest skill wins anyway.
+ranking can do will save the Mastodon request. The three action questions say a skill is
+wanted, because posting to an account is an action. With a skill for posting to X and none
+for Mastodon, the closest skill wins anyway.
 
-That leaves the deck. Both leaders are `.pptx` skills, and on 60 characters the wide Choice
-question puts the editing skill ahead of the authoring one, for a request about
-authoring a deck.
+The meme request is the second reason at work. Making a meme acts on nothing of the
+user's, so the action questions come back low, but the request names a meme template and
+`named` opens the gate. Its top option is the meme skill.
+
+That leaves the deck. Both leaders are `.pptx` skills, and with only 60 characters of
+description each, the `Choice` question over all 194 skills puts the deck-building skill
+ahead of the Office skill, for a request to edit an existing deck.
 
 ## Step 4: rerank the top three
 
@@ -14512,10 +14932,12 @@ Three options leave room for the full description plus the opening of each skill
 
 * **`which`** is a `Choice` question over the shortlist, with that longer text as each
   option's criteria.
-* **`fits::{name}`** is one `Noul` question per candidate: does this skill do the
-  specific
+* **`fits::{name}`** is one `Noul` question per candidate: does this skill do the specific
   thing the request asks for? Each is answered on its own, so they can all come back low,
-  and a shortlist whose highest one lands under 0.30 gets dropped entirely.
+  and when they do the shortlist is dropped.
+
+The [Re-ranking cookbook](/cookbooks/rerank_typesafe) uses the same shortlist-then-rescore
+step on legal passages, with BM25 as the cheap first pass.
 
 ```python expandable theme={null}
 RERANK_INSTRUCTIONS = (
@@ -14564,14 +14986,12 @@ def rerank(request: str, names: tuple[str, ...], excerpt: int) -> dict:
             if key.startswith("fits::")
         },
         "seconds": round(perf_counter() - started, 2),
-        "input_tokens": response.usage.input_tokens or 0,
-        "output_tokens": response.usage.output_tokens or 0,
     }
 
 
 for request in DEMO:
     wide = rank_wide(request)
-    if wide["gate"] < GATE_THRESHOLD:
+    if not needs_skill(wide):
         print(f'"{request[:78]}"\n  scored too low, nothing suggested\n')
         continue
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
@@ -14587,48 +15007,53 @@ for request in DEMO:
 
 ```
 "Can you save this recipe as a new note in my 'Recipes' folder in Notes.app so "
-  was apple-notes -> apple-notes   (0.12s)
-    fits 0.60  apple-notes
-    fits 0.54  computer-use
-    fits 0.01  concept-diagrams
+  was apple-notes -> apple-notes   (0.11s)
+    fits 0.81  apple-notes
+    fits 0.50  computer-use
+    fits 0.02  apple-reminders
 
-"Can you put together a pitch deck skeleton (cover, situation overview, comps, "
-  was powerpoint -> pptx-author   (0.09s)
-    fits 0.73  powerpoint
-    fits 0.38  pptx-author
-    fits 0.02  chroma
+"I've got a client pitch deck as a .pptx template - I need to duplicate slide 4"
+  was pptx-author -> microsoft-office   (0.11s)
+    fits 0.77  pptx-author
+    fits 0.76  microsoft-office
+    fits 0.01  apple-notes
 
 "Post this announcement to my Mastodon account."
-  was xurl -> xurl   (0.09s)
-    fits 0.56  xurl
-    fits 0.38  computer-use
-    fits 0.05  openhands
+  was xurl -> nothing fits   (0.07s)
+    fits 0.10  xurl
+    fits 0.27  social-media-content-calendar
+    fits 0.28  computer-use
+
+"Can you make me a Gru's Plan meme about a developer's plan to refactor the cod"
+  was meme-generation -> meme-generation   (0.16s)
+    fits 0.84  meme-generation
+    fits 0.03  apple-notes
+    fits 0.01  apple-reminders
 ```
 
 The two `.pptx` skills separate once each one brings its own text: the deck request flips
-to the authoring skill.
+to the Office skill, which edits existing files.
 
-The `fits` nouls and the Choice disagree there: the nouls score the editing skill higher
-while the Choice picks the authoring one. They are deciding different things. The Choice
-settles *which* skill, and the nouls settle *whether* to say anything at all.
+The `fits` nouls score both `.pptx` skills almost the same, because both can do something
+with a deck. They decide a different thing from the `Choice` question, which settles
+*which* skill, while the nouls settle *whether* to say anything at all. The
+[Line-by-line search cookbook](/cookbooks/semantic_find) pairs a `Choice` question and a
+`Noul` question the same way, to tell whether a document answers a query at all.
 
-The Mastodon request survives both checks: its best `fits` noul lands above 0.30, so the
-recipe suggests the X skill for a request about Mastodon. Most requests like it are caught.
-The second pass can only reject what the wide ranking hands it, and here that was three
-near-misses.
+The Mastodon request stops at the second pass. None of its three near-misses does what it
+asks, so even its best `fits` noul comes back under the threshold and nothing is suggested.
 
-The function below is the whole recipe: two requests and two thresholds, with at most one
-skill name coming back.
+The whole recipe is two requests and two thresholds, and it returns at most one skill name.
 
 To point it at your own roster, replace `hermes_roster.json`. Every question above reads
 `name`, `description`, `description_full`, and `body` out of that file, and nothing else
-knows about Hermes.
+in `suggest()` is specific to Hermes.
 
 ```python theme={null}
 def suggest(request: str) -> tuple[str, ...]:
     """At most one skill name for a request, or () for "nothing here applies"."""
     wide = rank_wide(request)
-    if wide["gate"] < GATE_THRESHOLD:
+    if not needs_skill(wide):
         return ()
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
     result = rerank(request, shortlist, EXCERPT_CHARS)
@@ -14661,18 +15086,18 @@ print(suggestion_block(suggest(DEMO[2])))
 
 
 <skill_relevance>
-Relevant to the current request: pptx-author. Ignore this if it does not fit what the user actually asked for.
+Relevant to the current request: microsoft-office. Ignore this if it does not fit what the user actually asked for.
 </skill_relevance>
 
 
 <skill_relevance>
-Relevant to the current request: xurl. Ignore this if it does not fit what the user actually asked for.
+No skill in the roster appears relevant to this request.
 </skill_relevance>
 ```
 
 ## Step 5: measure the suggestion
 
-Each of the 488 requests goes to the agent three times, one measured turn each. The runs
+Each of the 452 requests goes to the agent three times, one measured turn each. The runs
 differ only in what the agent is told:
 
 | | what goes in the system prompt |
@@ -14681,7 +15106,8 @@ differ only in what the agent is told:
 | agent with a suggestion | whatever `suggest()` returned |
 | agent given the answer | the covering skill's name, or "nothing applies" when there is none |
 
-The third is not achievable; it is the ceiling the other two get measured against.
+No real system knows the covering skill in advance, so the third arm sets the floor the
+other two are measured against.
 
 The wording of that suggestion is doing two jobs. It says the suggestion can be ignored,
 because pushing harder wins compliance on wrong suggestions too, and a wrong one is worse
@@ -14691,7 +15117,7 @@ unopposed.
 
 ```python expandable theme={null}
 texts = [request["text"] for request in REQUESTS]
-with ThreadPoolExecutor(max_workers=WORKERS) as pool:  # up to 488 x 2 TypeSafe requests
+with ThreadPoolExecutor(max_workers=WORKERS) as pool:  # up to 452 x 2 TypeSafe requests
     suggested = dict(zip(texts, pool.map(suggest, texts)))
 WIDE = {text: rank_wide(text) for text in texts}  # all cache hits now; reused below
 
@@ -14728,11 +15154,11 @@ print(
 
 ```
 run         wrong loads  needless loads
-baseline          16.8%            9.8%
-TypeSafe           7.3%            4.0%
-oracle             2.5%            1.2%
+baseline          15.7%           14.0%
+TypeSafe           7.9%            5.2%
+oracle             3.2%            4.1%
 
-baseline -> TypeSafe:  2.3x fewer wrong loads, 2.4x fewer needless ones
+baseline -> TypeSafe:  2.0x fewer wrong loads, 2.7x fewer needless ones
 ```
 
 ```python theme={null}
@@ -14753,18 +15179,23 @@ print(
 ```
 
 ```
-of 315 covered requests: 37 the suggestion fixed, 7 it broke
+of 280 covered requests: 29 the suggestion fixed, 7 it broke
 ```
 
 The suggestion fixes many more requests than it breaks, but it does break some the agent
-had right on its own. A confident wrong suggestion is more persuasive than no suggestion at
-all, which is the price of putting one in front of the turn.
+had right on its own: a confident wrong suggestion pulls the agent off its own right
+answer. That is the price of putting one in front of the turn.
 
 ```python expandable theme={null}
 SURFACE, INK, INK2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
 GRID, AXIS, BLUE, ORANGE = "#e1e0d9", "#c3c2b7", "#2a78d6", "#eb6834"
 
 ARM_COLOR = {"baseline": BLUE, "TypeSafe": ORANGE, "oracle": MUTED}
+ARM_LABEL = {  # display names only: the arm keys are part of each turn's cache key
+    "baseline": "agent alone",
+    "TypeSafe": "with suggestion",
+    "oracle": "given the answer",
+}
 
 
 def style(ax):
@@ -14788,7 +15219,7 @@ for ax, (metric, title) in zip(axes, panels):
     ax.grid(axis="y", color=GRID, linewidth=0.8)
     values = [scores[arm][metric] for arm in names]
     bars = ax.bar(
-        names,
+        [ARM_LABEL[arm] for arm in names],
         values,
         0.58,
         color=[ARM_COLOR[arm] for arm in names],
@@ -14807,10 +15238,11 @@ for ax, (metric, title) in zip(axes, panels):
     )
     ax.set_title(title, loc="left", color=INK2, fontsize=9.5)
     ax.set_ylim(0, max(values) * 1.28)
+    ax.yaxis.set_major_locator(MultipleLocator(0.05))
     ax.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
     ax.set_ylabel("% of those requests - lower is better", color=INK2, fontsize=9)
 fig.suptitle(
-    f"Hermes' {len(ROSTER)}-skill roster, {len(REQUESTS)} requests, {AGENT_MODEL}",
+    f"Hermes' {len(ROSTER)}-skill roster, {AGENT_MODEL}",
     x=0.02,
     ha="left",
     color=INK,
@@ -14821,17 +15253,15 @@ display(fig)
 plt.close(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/skill_suggestion/skill_suggestion.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=d367d7f1a110c8d0c7ba970e57203ef1)
+![output](https://mintcdn.com/ts-docs/F2Us7sR8VwvN7-49/cookbooks/skill_suggestion/skill_suggestion.executed.1.png?fit=max\&auto=format\&n=F2Us7sR8VwvN7-49\&q=85\&s=62894c38634495b522c8efaec7595102)
 
 ## What the results show
 
-* Wrong loads fell from 16.8% to 7.3% and needless ones from 9.8% to 4.0%, which is most of
-  the gap between guessing from a truncated index and being handed the answer.
+* Wrong loads fell from 15.7% to 7.9%, closing more than half the gap between guessing
+  from a truncated index and being handed the answer. Needless loads fell from 14.0% to
+  5.2%, closing nearly all of theirs.
 * Some requests the agent had right on its own come back wrong once a suggestion is
-  attached. Counts are above.
-
-Copy this shape when an agent of yours carries a large roster: a cheap ranking over
-everything, then a close look at two or three. Either step may come back empty-handed.
+  attached: of the 280 covered requests, the suggestion broke 7 and fixed 29.
 
 ## Open it in the playground
 
@@ -14852,16 +15282,14 @@ display(
 )
 ```
 
-[Open the shortlist + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAE4ICOMCAziqQaQMICGS+AnhDPgA4wU+FBADmCFAAsEZfK34BLFFEn4wCKAGt8tTQgA2EiBwAUUCADcZAGh1KYrFAuP5LMiwoQB3W+bh9aWz4KKAR1VGEydlpWKCdjQPwAEWYAMVsAGQAhAHkASjlaOXwAOj4+FExbGFoFJFFXGFkAMwUyOABaFAR-fUcEMorMfGaIWQAjKKQwOob2MBGICBQkZdn8BFjVC1Z9B3iOJHhxmXxx2O0RYWl8UP19fCVb1kQRsgg4R44pBHw4CHU+gA-KRbKQQsgUAB9cyoLAMPD4UikAC+IFsIGCHwqtAw2ERRFIXkkChUjHwJBAKE4fAQ5NIKggpLp6KRIDq9DIMDiziQtHpIAAophYih9JxXEhfhBmtc6L9dAp7kUFEUfvgyApRJIhMZfld9BBWAtRrJ1TUZAByIp9br0DVUGj0Er4ADqJJUkoQQPwACVNgtiY4Nls5HEHPcJZA6LZVkIAFY1IRKIpIF4DUFsqCa7qa1jkyl8CBeGRFuoIpggZgUfq2GtgWxhJ6DSpqDSaRK0fQKdSJOMx4Q9Pi2uguwAoBPgAMT4AAKxdLTIiAGVNEqHtXNt06wHbPMNjMhHOS2Q5+W21oihPmu9OrRs45PeIpVEDvgvEpVOVKk-44lur1+g6c5aDCfclHWDx5BmEIhAADQAWQyP52AUARbV5WxaFpVg9FkftEhUVgyBQRI917LUOAARQAQRdaj8AAAxbTAGMeIp5AALQASRnOQyBUBQrFcWUEKQ1pDFoF1J2nd1kGECB8AAVRApSVKkVUdFXe45CQCUnFeeRmNcWQymWYZxN+DS6gsCB9CsBY6h0iUvFYCUJ1YFUkAEFBbB4FBvN8iZlkkAhs03dYux7X51AvIIlE9GKO0C-gKBA1BHF5WgAG4HWNdYxg2bAoh5epB2wN4Pic0ov0wHKmycUqsFVBqGmCeV0oObLbg+cY6ny2QsO7FAWp0bt1BGJU6ByrwxlXUr3ykQcALtfATFMyo8lsPpuEETtsNw-B8OSvxEFQST8DQTVRHEWRiWQBArDNG4LVkU7OqRYhSES6xPtID7SEi3sfs+kB-sxVLIQy4xgb+gqKGaGRkFCdjqqGAB6dbzMmtNECk6cZwoChqFVJQWTBTEhg6VhBEkMYBSyGAlQWI8ZFPCJEqKaRjQkooFs-TgpGMDoavHKd+Ep6nBdkAmAW5X5DJqibDElNRVW0Gp1gYvgBdppBhaGJjVN+O6OB2w6EFAq5AUE04oPbQpigsvinGaUVY2WNRNSE+RuyElmT0XIQQNoWpjDosBWAqUDr0q6jUEkd4+FJa1GJqqmabGVi9y1+LJA6RLWMVZUvnwABtdgpET0laDR1o0yQKAFF2DoQLIDxkYAXRMHV-NoXA0bR0QPxgcYSj8NGK4TiAk6gGu6-YRvm9b9u6DyF00BueDmF4tH8ByZpWlCDoACklzOKYVDoYS5WMrU6l2diKE96faQWCd1PYkP4CvrmwB52cdZh3wKkAq6pJhGnUGQXc+h6ycBbiScooF-ZsyEJLWmmpSpFweCYQGA4sKbAOkdDYcAThgESIgGYrBNo6AtjfcYjN9AoA6I5LW84yBllQIXLS+h14kiKFgtixRuzalzB0EsWodT8EcLmb4MApQmgKv8QEQELigQ5qtJOyhVAc1sFxZgfwegQESJsMgSBZipmWKvN80gn4PRkBKI4JDThwCTJEWI+oFLyFoDwfixtZrjCWJoPGe9BB8EzAyKecB8yIlIIKJxYAZilQjigVgwFfimj9NRAA4jpBYIEomoFJDQoiKhRbTmYJE+QHQ960j1kuHxoR8BxNIYkhoSRHCpI8r8DevxqJcQ6GmJwQlkmdJUhk+hTN1gZAyPBOQ5RuxQChnyN8H4DH-DIJwYJslvgKQtPgCpN55AACojnKV+Acj48gTa4BOfgapDNJmlV9Nk1aFAUCages3amog3qgSfDIJZBRI7DlJEsoo1SAByFsFiGkWfoNGIF9DNA6LTegoErBxAKiMtJdy3QV1cLUluDSFS2UELyVa1E+BbF+AAJhKAABgKNUmWIhqRJ1Ko5fsASIAdlxUuHoFcikgRKaoNwshICwDeuC-AS4RAYIaD0Fp5iVmLUQCkkZ+ATnwQkJqWeJyCDVJOTSgALNYAAzPS+lABqfAWSlAAAkR46BSWQWgtzDVHIAIzWAAJyWptaaDs7rNVHIsJ6koZqI23JwSk8YhhbAlgQJocUDpDBdNoEykNlLqX4DpfS-ACzkAgVuScs5chGEyEGTbTyaLjT6txScmcdQNB6nrfBdgrBxALCgIaGADY5CCAgC3OF6wPWpD6UuJc9aZxNAVAoOASoiJKAlMK-ikh3YGPVR0htRzXSbEgt0ad7wwDclfIhAZGVhkdJxR6yiYApgoHrfaiRbIUQonJq0EiuBcBFmPBwisFJSBspZJWVYMB9DhPZHyd5p7MoCiSBAK+6oBGWl-Qucslo1AKWQ7SRuh9rjrHNK3FORMnSoN0EUU0PouLJiKL2bMChSGFAIBuWsuV+31VRq2HRo0op9ksX+IcI5JKog-Smb9ac0F00RJSYDAowMQdZKQDkMGeQJHg4htUNwUOSYzmQTDkAb74Lw0U9SpUiNWiKKRug5HeVUfwDRwR9HNRMY8gQB5+hmZsJQeeXlv9-5834IAvWItRNsk-X3XAKhDkFiAzSEDbIFOQZU1yNTfINNIe09w-AlpouXIM9h7TuGFD4bMw0Cz+mrOOhs4UOzYxqO0bbHeFzoE3NNPia0tQ16umLFkM8nJe58mCqgMUtdJRURogxJHBQAA1GQockAEjDayEAiKNDdDAPBAEBhaCIlLiAeMD0Ojhs9TSkAHcURAA)
+[Open the shortlist + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAE4ICOMCAziqQaQJIDkAbgvgOYQr4BDfFAA2AS2T8ADmJRQAFvjAIoAa0G1B+AHRSpKTPhQI4UkQOP4AtPmb4kCBGCMQlMM2KgWutccvwALKya5gCeEDD8AGYQZEbyFFwOAO74UmQQYDBQ-L5iypoCSM4o8sj49GRiUvgR-EWh+DBIMLRO+IhgYgIA9BQihVHGZMkCZM60rqVcUWIiXGK0SKz8AEYiEN5g2qQANPikFFCSAPpQEKhYDHgHIKQAviD7IOkQpii0GNg3RKTJ8p55Ix8CQQChQlIEMDSAoIJ4oU9bmIkJVsigxBdaNCQABRTACHIiRoXLgQKLxOg+VRzAb4RYU-BVbjyfgklz4DYCZwxOLTJptMjBDneeiMqg0ejafAAdQBClqDgA-PgAEoILn4f4WfDq+UElAwAQiIlKCB0fZIPj4ABWrX4sk0SAEiB2iJhVWG3WBoL0BisAki8li2IAQjA5s4AAoQZIIMjR5H8ZRqTRlLnzWiaZKyRRSUKlC5WX2YKWAFAJ8ABiNL6TD+wOxfCRjJZY5aXQ1-CzeYKpSLdStZHcfAAAzzBaQRZrw6lAFU2pqykh8OEYPZHCVXMpxJw4kJk+oBIVO3MuGN0VF9RarWAqpwtNuuNHY-G4agKnRaBikFKAIJgAT6O0UQZHA+A-qgCQQDIUBCqONZ1gWZDDoIxQjjIcjyFY+7IbQ1LGpoyL4AA2kUpQZNBtA9LMTpIFA3QiFYArsPCtAALoABQsigUi0LgPQ9NwOYwKs2jnHAPSkZBFFUciRR0UajFxsxxy0AAlFKaBlPgACyADCkb4D0+AAPJRLMxxWAAUgAyvgqxkHJZSaGSDKxGIglOrSYxcDeUGQs45alPSh60PAdD4GmYAZpokb5kG374AAYg2fL2ZsyhkPsRoUFyoSMQCejtE+cYJm+AaIYOFR4SI+DsXkBT7LQkICKocb2Hw5o6nAqxOLQ+ydN0qmNY4DKrOGIgoFYhHDnAngZJMQxWGS5kIDh1UaQCmi4TSdJHuIzLDFYsbuSyaQWMMS4Gg43INnAmQIAxqwEq1zj7po7HofKb37MwukdCYEB9TqYxIIOjodWpC5xlwCA7o0LTdW1cB2kYDmtigrhCJMMBkK2ySxKoqwQBAqhShWey3LNUDzWSk3LfC2K6Tlxj7DlYBZahTiyDKsTs42MYla+KAc84eLHDVXZ0GWlY6XNgO0yZZnwvg1nVfgTPqizYpcvsXPCyhJQmGY3g8+MtXTpAUCYMOQ388+pX8Ox07FjbIv4GLD3m9omADNb+zTlAtDsDbx4ZrUZniA4mo5hUcBGjVsXjurAAyzCaGNcyskuY7xVh0CYPsOeFsWbtQcgeY+1KpkrXSHwPeS9IODua5OE4UrMEmZrg6ykJLvM3AEo0qyyWQjQ8nHHxe5bw7++2KAzyO3sDCHRSvV37X8BQxRtVIAjcOF2YFpE+DJ2I9kINX8Jk1WsrlBj+Bzo+njqHy48WPs0xLmzteaBQUTQ7RLgh9FDDm2saE4zEEDJGQj1HkQCCaDgIAAHySiefAKC1T-y3q2FBaAISeCNBoVQmgUEoKsOQ9B1gKFkOoZQi2+dkIoOHH-ABKkej43GNoOAYBGFiikLED4+x5goGGEDc4qA0aCJHMAYAGNWpIHuPcZCxhTDmGMEDFAaMXrCHkEUfeYi3iIFQCQuhc9rZ0JYdgugPR+HPn4YmLhPDKGfUUN9OyDlihWBUcbSwbiFBnjFMBBE+xSAATMAgKwlp1HYm0kUPeXAfx6G7AAOQhvgZiQhEB3RTswAg1NNYIGGmMBQusugoGllWRJ4T8CpPUQ-ecM0AbKNcHHJ0+8wJJK4LU8KXQjgoBNMBN4DJhizU8lKbpW1Qi0UENTQGhRjQdOqcoZS4UMl0l0hsGA2xKxVibNDagixZDhRsAAKhOXHKAxlrJnOjqUGpENtBhOsLYFEKB44EGHOfVIbyaikQuBiZsZAehZNcAAMlBe4qBdJXnxxQhjUGsRMhApBcCppzyADiHj+A-kiG8CwX4ZkqU0PfCZjy9BQ2ziBQCzh2LWVCPQEwKsEAiLBvgQASYSNlvIPdlYFcUTy-KpHZMpFzskfs8x+u5cLEtcPk7w+xIHJH2A2NoxTFBVJSWkmw1kBDMSQEOZEb90QXHZKSp5PJhDzVoFhWGysCREuecZMgA9QYAC9KpRPComVwMQRAZU0DYPE-CyDoj1RvcK99YlkFUJAZISAegAAk0DaWTkK2+S5knGTQKK+cNhjKrE-F0Io6SAwTQ6HE-eRj+ActaFwPkw4ID5vyN0JAa0do2BDOqOIEyeVtF3g5SwTz2JRIqO4INxhnBlAoIKmwABFcMahBD71QEtJAJoPWaGrfOOtILR7NIgCIB49wQkgFmB8XAuBiwISDGQb0pBwSQmxJaGAB63QgGRKiHIX4sQ3FIAAEXXnyMBNVWCXvKte1gpoGRNRUGIcy8RKp8hrYKX+4o6D1ClZ2WIyoO67SUHQamZ92iHgIGGCMdtBaJjwymCK6oooflubmOKxcayuiPbcU9vFcBUxpotemxxb1gghAiJgIAn0vuPe+zRaIv3Yn-eGrSQH8CsG4-LXjStjgQcgFByEdE4NBVDYhgUQoKDUDQ0QzQPJsP2k0AUAjPVnDEfVszQp2s+arx1GU02fNiovkTG7D2EsTy0FY8ejj56wnzEiRDAT97hO3DExTUgkmyDScxLJgDCm1asAixE9dmmpgKZ07Bzw8GDNaSQ8Z1DopDzEMw2QKzuHbNVHsxoAgsS2kJM6fcupayQU5Lyc5opuN5ClNkKxx4zwAJiAAGpxk-BcH47AACMiIQBtHmDkJw2l7oDBuEREA1pYZWCW9oJbARtAAAYQCsXuEAA)
 
 ## What's next
 
 The same shape shows up elsewhere:
 [Intent Routing](/patterns/intent-routing) for routing to a
-handler rather than a skill, [Confidence](/confidence) for
-picking the two thresholds, and
-[Speculative Fan-Out](/patterns/fan-out) for putting every
-question in one request.
+handler rather than a skill, and [Confidence](/confidence)
+for picking the two thresholds.
 
 
 # Twitch chat filter
@@ -15552,83 +15980,83 @@ To put an image inside a sentence, or to choose your own references, see the [SD
 
 Without an SDK, send each image as a file part in a `multipart/form-data` request. Multipart is the better choice: it sends the file as it is, while base64 makes each image about a third larger, and that extra size counts toward the 32 MiB [request body limit](#limits). Base64-encode images into the JSON only when you can't send multipart.
 
-**Multipart (recommended)**
+> [tab] Multipart (recommended)
+>
+> Send the JSON body as the first part, named `request`, with content type `application/json`. Send each image as its own file part, and set that image's `part` in `assets` to the file part's name:
+>
+> ```bash theme={null}
+> curl https://api.typesafe.ai/v1/systemone \
+>   -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+>   -H "TypeSafe-Danger-Zone-Images: true" \
+>   -F 'request={
+>     "model": "jev-latest",
+>     "state": {"door": "a3f1c2e8-door"},
+>     "assets": {"a3f1c2e8-door": {"type": "image", "part": "door-photo"}},
+>     "questions": {
+>       "person_present": {"type": "noul", "instructions": "Is there a person in `door`?"}
+>     }
+>   };type=application/json' \
+>   -F 'door-photo=@door-camera.jpg;type=image/jpeg'
+> ```
+>
+> The rules for multipart requests:
+>
+> * The first part is named `request` and holds the JSON body.
+> * Part names are unique and not empty. `request` is reserved for the JSON body.
+> * Each image part has content type `image/png`, `image/jpeg`, `image/jpg`, or `application/octet-stream`, or no content type. Any other content type returns `400`.
+> * Each file part belongs to exactly one asset. A part that no asset names, two assets that name the same part, and an asset whose part is missing all return `400`.
+>
+> To use the same image in several places, write its reference in each of them.
 
-Send the JSON body as the first part, named `request`, with content type `application/json`. Send each image as its own file part, and set that image's `part` in `assets` to the file part's name:
-
-```bash theme={null}
-curl https://api.typesafe.ai/v1/systemone \
-  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
-  -H "TypeSafe-Danger-Zone-Images: true" \
-  -F 'request={
-    "model": "jev-latest",
-    "state": {"door": "a3f1c2e8-door"},
-    "assets": {"a3f1c2e8-door": {"type": "image", "part": "door-photo"}},
-    "questions": {
-      "person_present": {"type": "noul", "instructions": "Is there a person in `door`?"}
-    }
-  };type=application/json' \
-  -F 'door-photo=@door-camera.jpg;type=image/jpeg'
-```
-
-The rules for multipart requests:
-
-* The first part is named `request` and holds the JSON body.
-* Part names are unique and not empty. `request` is reserved for the JSON body.
-* Each image part has content type `image/png`, `image/jpeg`, `image/jpg`, or `application/octet-stream`, or no content type. Any other content type returns `400`.
-* Each file part belongs to exactly one asset. A part that no asset names, two assets that name the same part, and an asset whose part is missing all return `400`.
-
-To use the same image in several places, write its reference in each of them.
-
-**Base64 in JSON**
-
-Base64-encode the file into `data_base64` and set `format`, following the rules in [Asset fields](#asset-fields). Python's `base64.b64encode` produces the right encoding. This Python example sends one photo and asks two questions about it:
-
-```python theme={null}
-import base64
-import os
-import uuid
-
-import requests
-
-def image_asset(path: str) -> tuple[str, dict]:
-    """Return a new reference and the asset entry for one image file."""
-    fmt = "png" if path.lower().endswith(".png") else "jpg"
-    with open(path, "rb") as f:
-        data = base64.b64encode(f.read()).decode("ascii")
-    return str(uuid.uuid4()), {"type": "image", "format": fmt, "data_base64": data}
-
-photo_key, photo = image_asset("door-camera.jpg")
-
-response = requests.post(
-    "https://api.typesafe.ai/v1/systemone",
-    headers={
-        "Authorization": f"Bearer {os.environ['TYPESAFE_API_KEY']}",
-        "TypeSafe-Danger-Zone-Images": "true",
-    },
-    json={
-        "model": "jev-latest",
-        "state": {"door": photo_key},
-        "assets": {photo_key: photo},
-        "questions": {
-            "person_present": {
-                "type": "noul",
-                "instructions": "Is there a person in `door`?",
-            },
-            "carrying": {
-                "type": "choice",
-                "instructions": "What is the person in `door` carrying?",
-                "criteria": {
-                    "package": "A box or parcel.",
-                    "bag": "A bag of groceries or shopping.",
-                    "nothing": "Empty hands.",
-                },
-            },
-        },
-    },
-)
-print(response.json()["answers"])
-```
+> [tab] Base64 in JSON
+>
+> Base64-encode the file into `data_base64` and set `format`, following the rules in [Asset fields](#asset-fields). Python's `base64.b64encode` produces the right encoding. This Python example sends one photo and asks two questions about it:
+>
+> ```python theme={null}
+> import base64
+> import os
+> import uuid
+>
+> import requests
+>
+> def image_asset(path: str) -> tuple[str, dict]:
+>     """Return a new reference and the asset entry for one image file."""
+>     fmt = "png" if path.lower().endswith(".png") else "jpg"
+>     with open(path, "rb") as f:
+>         data = base64.b64encode(f.read()).decode("ascii")
+>     return str(uuid.uuid4()), {"type": "image", "format": fmt, "data_base64": data}
+>
+> photo_key, photo = image_asset("door-camera.jpg")
+>
+> response = requests.post(
+>     "https://api.typesafe.ai/v1/systemone",
+>     headers={
+>         "Authorization": f"Bearer {os.environ['TYPESAFE_API_KEY']}",
+>         "TypeSafe-Danger-Zone-Images": "true",
+>     },
+>     json={
+>         "model": "jev-latest",
+>         "state": {"door": photo_key},
+>         "assets": {photo_key: photo},
+>         "questions": {
+>             "person_present": {
+>                 "type": "noul",
+>                 "instructions": "Is there a person in `door`?",
+>             },
+>             "carrying": {
+>                 "type": "choice",
+>                 "instructions": "What is the person in `door` carrying?",
+>                 "criteria": {
+>                     "package": "A box or parcel.",
+>                     "bag": "A bag of groceries or shopping.",
+>                     "nothing": "Empty hands.",
+>                 },
+>             },
+>         },
+>     },
+> )
+> print(response.json()["answers"])
+> ```
 
 ## Image placement
 
@@ -15906,15 +16334,15 @@ Read the [TypeSafe manifesto](https://typesafe.ai/manifesto).
 
 Pretrained language models have been adapted in two major ways. TypeSafe adds a third. RLHF and RLVR are shown here for context; TypeSafe's training path is RLCD.
 
-> **RLHF**
+> [card] RLHF
 >
 > **Reinforcement learning from human feedback** turned pretrained models into chatbots. It trains models to produce responses people prefer.
 
-> **RLVR**
+> [card] RLVR
 >
 > **Reinforcement learning with verifiable rewards** created reasoning models that are strong at tasks such as mathematics, but slower and more expensive.
 
-> **RLCD**
+> [card] RLCD
 >
 > **Reinforcement learning for calibrated decisions** trains TypeSafe to return decisions and calibrated probabilities instead of generated text.
 
@@ -15952,7 +16380,7 @@ Preference optimization also causes **mode dropping**: the model learns to favor
 
 Mode dropping is a milder version of **mode collapse**. In the classic generative-adversarial-network failure mode, a generator learns to produce the same kind of output repeatedly because that output continues to fool the discriminator.
 
-> **Mode collapse analogy**
+> [accordion] Mode collapse analogy
 >
 > ![Repeated characters illustrate a GAN suffering from mode collapse.](https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/ai-primer/mode-collapse-light.webp?fit=max\&auto=format\&n=aFVnpmCIX68NpsV1\&q=85\&s=2896f125ad1a5835b31b088fbc64eff1)
 
@@ -16001,30 +16429,30 @@ The fastest way to add Jev to your project is to have your coding agent write th
 
 1. **[Install the TypeSafe skill](/agent-skill#installation)** using the Claude Code plugin or `npx skills add typesafe-ai/skills --skill typesafe-ai`. You can also [read SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md).
 
-**Claude Code**
+> [tab] Claude Code
+>
+> Run these two commands in your terminal:
+>
+> ```bash theme={null}
+> claude plugin marketplace add typesafe-ai/skills
+> claude plugin install typesafe@typesafe-ai
+> ```
 
-Run these two commands in your terminal:
+> [tab] Other agents
+>
+> ```bash theme={null}
+> npx skills add typesafe-ai/skills --skill typesafe-ai
+> ```
+>
+> Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
 
-```bash theme={null}
-claude plugin marketplace add typesafe-ai/skills
-claude plugin install typesafe@typesafe-ai
-```
-
-**Other agents**
-
-```bash theme={null}
-npx skills add typesafe-ai/skills --skill typesafe-ai
-```
-
-Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
-
-**Copy to your agent**
-
-Paste this prompt into your coding agent:
-
-```text wrap theme={null}
-Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
-```
+> [tab] Copy to your agent
+>
+> Paste this prompt into your coding agent:
+>
+> ```text wrap theme={null}
+> Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
+> ```
 
 2. **Tell your coding agent** to use the TypeSafe skill as you build.
 
@@ -16052,214 +16480,214 @@ export TYPESAFE_API_KEY="your-api-key"
 
 The example sends a customer support ticket and asks Jev three questions in one request: which team should handle it, how frustrated the customer sounds, and whether the issue is urgent.
 
-**Python**
+> [tab] Python
+>
+> Requires Python 3.10 or later. Choose a package manager to install the SDK:
+>
+> > [tab] pip
+> >
+> > With [pip installed](https://pip.pypa.io/en/stable/installation/), create a virtual environment and add the SDK:
+> >
+> > ```bash wrap theme={null}
+> > python3 -m venv .venv
+> > .venv/bin/pip install typesafe-sdk
+> > ```
+>
+> > [tab] uv
+> >
+> > With [uv installed](https://docs.astral.sh/uv/getting-started/installation/), initialize a project and add the SDK:
+> >
+> > ```bash wrap theme={null}
+> > uv init --bare
+> > uv add typesafe-sdk
+> > ```
+>
+> Save as `route_ticket.py`:
+>
+> ```python wrap theme={null}
+> from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
+>
+> ticket = "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed."
+>
+> with TypeSafeClient(model="jev-latest") as client:  # Reads TYPESAFE_API_KEY.
+>     response = client.system_one(
+>         state=ticket,
+>         questions={
+>             "department": Choice(
+>                 instructions="Which team should handle this",
+>                 criteria={
+>                     "billing": "Payment or subscription issues",
+>                     "technical": "Bugs or integration problems",
+>                     "sales": "Pricing or account questions",
+>                 },
+>             ),
+>             "frustration": Score(
+>                 instructions="How frustrated the customer appears",
+>                 criteria=[
+>                     "Calm, just stating facts",
+>                     "Frustrated but civil",
+>                     "Very angry, strong language",
+>                 ],
+>             ),
+>             "is_urgent": Noul(
+>                 instructions="The message conveys urgency or time-sensitivity",
+>             ),
+>         },
+>     )
+>
+> print(response.choices["department"].choice)
+> print(response.scores["frustration"].score)
+> print(response.nouls["is_urgent"].noul)
+> ```
+>
+> Run it with either installation method:
+>
+> ```bash wrap theme={null}
+> .venv/bin/python route_ticket.py
+> ```
 
-Requires Python 3.10 or later. Choose a package manager to install the SDK:
+> [tab] JavaScript
+>
+> Requires Node.js 20 or later. Install the SDK and mark the project as an ES module:
+>
+> ```bash wrap theme={null}
+> npm install @typesafe-ai/sdk
+> npm pkg set type=module
+> ```
+>
+> Save as `route_ticket.js`:
+>
+> ```javascript wrap theme={null}
+> import { choice, noul, score, TypeSafeClient } from "@typesafe-ai/sdk";
+>
+> const ticket = "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.";
+>
+> const client = new TypeSafeClient({ defaultModel: "jev-latest" }); // Reads TYPESAFE_API_KEY.
+> const response = await client.systemOne({
+>   state: ticket,
+>   questions: {
+>     department: choice("Which team should handle this", {
+>       billing: "Payment or subscription issues",
+>       technical: "Bugs or integration problems",
+>       sales: "Pricing or account questions",
+>     }),
+>     frustration: score("How frustrated the customer appears", [
+>       "Calm, just stating facts",
+>       "Frustrated but civil",
+>       "Very angry, strong language",
+>     ]),
+>     is_urgent: noul("The message conveys urgency or time-sensitivity"),
+>   },
+> });
+>
+> console.log(response.answers.department.choice);
+> console.log(response.answers.frustration.score);
+> console.log(response.answers.is_urgent.noul);
+> ```
+>
+> Run it:
+>
+> ```bash wrap theme={null}
+> node route_ticket.js
+> ```
 
-**pip**
+> [tab] TypeScript
+>
+> Requires Node.js 22.18 or later to run TypeScript directly. Install the SDK and mark the project as an ES module:
+>
+> ```bash wrap theme={null}
+> npm install @typesafe-ai/sdk
+> npm pkg set type=module
+> ```
+>
+> Save as `route_ticket.ts`:
+>
+> ```typescript wrap theme={null}
+> import { choice, noul, score, TypeSafeClient } from "@typesafe-ai/sdk";
+>
+> const ticket = "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.";
+>
+> const client = new TypeSafeClient({ defaultModel: "jev-latest" }); // Reads TYPESAFE_API_KEY.
+> const response = await client.systemOne({
+>   state: ticket,
+>   questions: {
+>     department: choice("Which team should handle this", {
+>       billing: "Payment or subscription issues",
+>       technical: "Bugs or integration problems",
+>       sales: "Pricing or account questions",
+>     }),
+>     frustration: score("How frustrated the customer appears", [
+>       "Calm, just stating facts",
+>       "Frustrated but civil",
+>       "Very angry, strong language",
+>     ]),
+>     is_urgent: noul("The message conveys urgency or time-sensitivity"),
+>   },
+> });
+>
+> console.log(response.answers.department.choice);
+> console.log(response.answers.frustration.score);
+> console.log(response.answers.is_urgent.noul);
+> ```
+>
+> Run it:
+>
+> ```bash wrap theme={null}
+> node route_ticket.ts
+> ```
+>
+> The SDK infers answer types from your questions, so `response.answers.department.choice` has the type `"billing" | "technical" | "sales"`.
 
-With [pip installed](https://pip.pypa.io/en/stable/installation/), create a virtual environment and add the SDK:
-
-```bash wrap theme={null}
-python3 -m venv .venv
-.venv/bin/pip install typesafe-sdk
-```
-
-**uv**
-
-With [uv installed](https://docs.astral.sh/uv/getting-started/installation/), initialize a project and add the SDK:
-
-```bash wrap theme={null}
-uv init --bare
-uv add typesafe-sdk
-```
-
-Save as `route_ticket.py`:
-
-```python wrap theme={null}
-from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
-
-ticket = "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed."
-
-with TypeSafeClient(model="jev-latest") as client:  # Reads TYPESAFE_API_KEY.
-    response = client.system_one(
-        state=ticket,
-        questions={
-            "department": Choice(
-                instructions="Which team should handle this",
-                criteria={
-                    "billing": "Payment or subscription issues",
-                    "technical": "Bugs or integration problems",
-                    "sales": "Pricing or account questions",
-                },
-            ),
-            "frustration": Score(
-                instructions="How frustrated the customer appears",
-                criteria=[
-                    "Calm, just stating facts",
-                    "Frustrated but civil",
-                    "Very angry, strong language",
-                ],
-            ),
-            "is_urgent": Noul(
-                instructions="The message conveys urgency or time-sensitivity",
-            ),
-        },
-    )
-
-print(response.choices["department"].choice)
-print(response.scores["frustration"].score)
-print(response.nouls["is_urgent"].noul)
-```
-
-Run it with either installation method:
-
-```bash wrap theme={null}
-.venv/bin/python route_ticket.py
-```
-
-**JavaScript**
-
-Requires Node.js 20 or later. Install the SDK and mark the project as an ES module:
-
-```bash wrap theme={null}
-npm install @typesafe-ai/sdk
-npm pkg set type=module
-```
-
-Save as `route_ticket.js`:
-
-```javascript wrap theme={null}
-import { choice, noul, score, TypeSafeClient } from "@typesafe-ai/sdk";
-
-const ticket = "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.";
-
-const client = new TypeSafeClient({ defaultModel: "jev-latest" }); // Reads TYPESAFE_API_KEY.
-const response = await client.systemOne({
-  state: ticket,
-  questions: {
-    department: choice("Which team should handle this", {
-      billing: "Payment or subscription issues",
-      technical: "Bugs or integration problems",
-      sales: "Pricing or account questions",
-    }),
-    frustration: score("How frustrated the customer appears", [
-      "Calm, just stating facts",
-      "Frustrated but civil",
-      "Very angry, strong language",
-    ]),
-    is_urgent: noul("The message conveys urgency or time-sensitivity"),
-  },
-});
-
-console.log(response.answers.department.choice);
-console.log(response.answers.frustration.score);
-console.log(response.answers.is_urgent.noul);
-```
-
-Run it:
-
-```bash wrap theme={null}
-node route_ticket.js
-```
-
-**TypeScript**
-
-Requires Node.js 22.18 or later to run TypeScript directly. Install the SDK and mark the project as an ES module:
-
-```bash wrap theme={null}
-npm install @typesafe-ai/sdk
-npm pkg set type=module
-```
-
-Save as `route_ticket.ts`:
-
-```typescript wrap theme={null}
-import { choice, noul, score, TypeSafeClient } from "@typesafe-ai/sdk";
-
-const ticket = "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.";
-
-const client = new TypeSafeClient({ defaultModel: "jev-latest" }); // Reads TYPESAFE_API_KEY.
-const response = await client.systemOne({
-  state: ticket,
-  questions: {
-    department: choice("Which team should handle this", {
-      billing: "Payment or subscription issues",
-      technical: "Bugs or integration problems",
-      sales: "Pricing or account questions",
-    }),
-    frustration: score("How frustrated the customer appears", [
-      "Calm, just stating facts",
-      "Frustrated but civil",
-      "Very angry, strong language",
-    ]),
-    is_urgent: noul("The message conveys urgency or time-sensitivity"),
-  },
-});
-
-console.log(response.answers.department.choice);
-console.log(response.answers.frustration.score);
-console.log(response.answers.is_urgent.noul);
-```
-
-Run it:
-
-```bash wrap theme={null}
-node route_ticket.ts
-```
-
-The SDK infers answer types from your questions, so `response.answers.department.choice` has the type `"billing" | "technical" | "sales"`.
-
-**Bash**
-
-Requires curl 7.76 or later. Save as `route_ticket.sh`:
-
-```bash wrap theme={null}
-#!/usr/bin/env bash
-set -euo pipefail
-: "${TYPESAFE_API_KEY:?Set TYPESAFE_API_KEY first.}"
-
-curl --fail-with-body --silent --show-error \
-  https://api.typesafe.ai/v1/systemone \
-  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
-  -H "Content-Type: application/json" \
-  --data-binary @- <<'JSON'
-{
-  "state": "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.",
-  "model": "jev-latest",
-  "questions": {
-    "department": {
-      "type": "choice",
-      "instructions": "Which team should handle this",
-      "criteria": {
-        "billing": "Payment or subscription issues",
-        "technical": "Bugs or integration problems",
-        "sales": "Pricing or account questions"
-      }
-    },
-    "frustration": {
-      "type": "score",
-      "instructions": "How frustrated the customer appears",
-      "criteria": [
-        "Calm, just stating facts",
-        "Frustrated but civil",
-        "Very angry, strong language"
-      ]
-    },
-    "is_urgent": {
-      "type": "noul",
-      "instructions": "The message conveys urgency or time-sensitivity"
-    }
-  }
-}
-JSON
-```
-
-Run it:
-
-```bash wrap theme={null}
-bash route_ticket.sh
-```
+> [tab] Bash
+>
+> Requires curl 7.76 or later. Save as `route_ticket.sh`:
+>
+> ```bash wrap theme={null}
+> #!/usr/bin/env bash
+> set -euo pipefail
+> : "${TYPESAFE_API_KEY:?Set TYPESAFE_API_KEY first.}"
+>
+> curl --fail-with-body --silent --show-error \
+>   https://api.typesafe.ai/v1/systemone \
+>   -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+>   -H "Content-Type: application/json" \
+>   --data-binary @- <<'JSON'
+> {
+>   "state": "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.",
+>   "model": "jev-latest",
+>   "questions": {
+>     "department": {
+>       "type": "choice",
+>       "instructions": "Which team should handle this",
+>       "criteria": {
+>         "billing": "Payment or subscription issues",
+>         "technical": "Bugs or integration problems",
+>         "sales": "Pricing or account questions"
+>       }
+>     },
+>     "frustration": {
+>       "type": "score",
+>       "instructions": "How frustrated the customer appears",
+>       "criteria": [
+>         "Calm, just stating facts",
+>         "Frustrated but civil",
+>         "Very angry, strong language"
+>       ]
+>     },
+>     "is_urgent": {
+>       "type": "noul",
+>       "instructions": "The message conveys urgency or time-sensitivity"
+>     }
+>   }
+> }
+> JSON
+> ```
+>
+> Run it:
+>
+> ```bash wrap theme={null}
+> bash route_ticket.sh
+> ```
 
 Jev evaluates each question against the same state and returns answers under the IDs you supplied. `choice` is the team label, `score` is the position on the three-level frustration rubric (0–2), and `noul` is the probability of urgency (0–1).
 
@@ -16285,7 +16713,7 @@ Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
-> **Raw Response**
+> [accordion] Raw Response
 >
 > ```json theme={null}
 > {
@@ -17179,15 +17607,15 @@ See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) for gui
 
 ## Next steps
 
-> **[Choice](/primitives/choice)**
+> [card] [Choice](/primitives/choice)
 >
 > Pick one option from a fixed list.
 
-> **[Score](/primitives/score)**
+> [card] [Score](/primitives/score)
 >
 > Rate the state along ordered levels.
 
-> **[Noul](/primitives/noul)**
+> [card] [Noul](/primitives/noul)
 >
 > Get the probability that a statement is true.
 
@@ -18462,11 +18890,11 @@ Our client SDKs provide typed questions and answers for the TypeSafe API and han
 
 Choose a client SDK for installation instructions, examples, and API details.
 
-> **[Python](/sdk/python)**
+> [card] [Python](/sdk/python)
 >
 > Install the Python client SDK and make your first request.
 
-> **[JavaScript / TypeScript](/sdk/javascript)**
+> [card] [JavaScript / TypeScript](/sdk/javascript)
 >
 > Install the JavaScript client SDK and make your first typed request.
 
@@ -22432,17 +22860,17 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
 
 1. Install the SDK:
 
-   **uv**
+   > [tab] uv
+   >
+   > ```sh theme={null}
+   > uv add typesafe-sdk
+   > ```
 
-   ```sh theme={null}
-   uv add typesafe-sdk
-   ```
-
-   **pip**
-
-   ```sh theme={null}
-   pip install typesafe-sdk
-   ```
+   > [tab] pip
+   >
+   > ```sh theme={null}
+   > pip install typesafe-sdk
+   > ```
 
    Extras (for example, `typesafe-sdk[http2]`) supported:
 
@@ -22452,63 +22880,63 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
 2. Set `TYPESAFE_API_KEY` in your environment (create it [here](https://console.typesafe.ai/))
 3. Call the System One API:
 
-   **Async**
+   > [tab] Async
+   >
+   > With [AsyncTypeSafeClient](/sdk/python/api/clients/async):
+   >
+   > ```python theme={null}
+   > from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
+   >
+   >
+   > async def main() -> None:
+   >     async with AsyncTypeSafeClient() as client:
+   >         response = await client.system_one(
+   >             state={"document": "I was charged twice. Please fix this ASAP."},
+   >             questions={
+   >                 "billing": Noul(instructions="Is this ticket about billing?"),
+   >                 "tone": Choice(
+   >                     instructions="What is the customer's tone?",
+   >                     criteria={"calm": None, "frustrated": None, "angry": None},
+   >                 ),
+   >                 "urgency": Score(
+   >                     instructions="How urgent is this ticket?",
+   >                     criteria=["can wait", "this week", "today"],
+   >                 ),
+   >             },
+   >         )
+   >
+   >     print(response.nouls["billing"].noul)
+   >     print(response.choices["tone"].choice)
+   >     print(response.scores["urgency"].score)
+   > ```
 
-   With [AsyncTypeSafeClient](/sdk/python/api/clients/async):
-
-   ```python theme={null}
-   from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
-
-
-   async def main() -> None:
-       async with AsyncTypeSafeClient() as client:
-           response = await client.system_one(
-               state={"document": "I was charged twice. Please fix this ASAP."},
-               questions={
-                   "billing": Noul(instructions="Is this ticket about billing?"),
-                   "tone": Choice(
-                       instructions="What is the customer's tone?",
-                       criteria={"calm": None, "frustrated": None, "angry": None},
-                   ),
-                   "urgency": Score(
-                       instructions="How urgent is this ticket?",
-                       criteria=["can wait", "this week", "today"],
-                   ),
-               },
-           )
-
-       print(response.nouls["billing"].noul)
-       print(response.choices["tone"].choice)
-       print(response.scores["urgency"].score)
-   ```
-
-   **Sync**
-
-   With [TypeSafeClient](/sdk/python/api/clients/sync):
-
-   ```python theme={null}
-   from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
-
-   with TypeSafeClient() as client:
-       response = client.system_one(
-           state={"document": "I was charged twice. Please fix this ASAP."},
-           questions={
-               "billing": Noul(instructions="Is this ticket about billing?"),
-               "tone": Choice(
-                   instructions="What is the customer's tone?",
-                   criteria={"calm": None, "frustrated": None, "angry": None},
-               ),
-               "urgency": Score(
-                   instructions="How urgent is this ticket?",
-                   criteria=["can wait", "this week", "today"],
-               ),
-           },
-       )
-
-   print(response.nouls["billing"].noul)
-   print(response.choices["tone"].choice)
-   print(response.scores["urgency"].score)
-   ```
+   > [tab] Sync
+   >
+   > With [TypeSafeClient](/sdk/python/api/clients/sync):
+   >
+   > ```python theme={null}
+   > from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
+   >
+   > with TypeSafeClient() as client:
+   >     response = client.system_one(
+   >         state={"document": "I was charged twice. Please fix this ASAP."},
+   >         questions={
+   >             "billing": Noul(instructions="Is this ticket about billing?"),
+   >             "tone": Choice(
+   >                 instructions="What is the customer's tone?",
+   >                 criteria={"calm": None, "frustrated": None, "angry": None},
+   >             ),
+   >             "urgency": Score(
+   >                 instructions="How urgent is this ticket?",
+   >                 criteria=["can wait", "this week", "today"],
+   >             ),
+   >         },
+   >     )
+   >
+   > print(response.nouls["billing"].noul)
+   > print(response.choices["tone"].choice)
+   > print(response.scores["urgency"].score)
+   > ```
 
 ## What's next
 
@@ -22712,66 +23140,66 @@ async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
 
 `async`
 
-**Implementation**
+> [tab] Implementation
+>
+> Copy signature
+> <pre aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
+> &#x20;   | None = None,
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
 
-Copy signature
-<pre aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
-&#x20;   | None = None,
-) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
+> [tab] Overload 1
+>
+> Copy signature
+> <pre aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: None = None,
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)`</pre>
 
-**Overload 1**
-
-Copy signature
-<pre aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: None = None,
-) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)`</pre>
-
-**Overload 2**
-
-Copy signature
-<pre aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
-) -> ResponseT`</pre>
+> [tab] Overload 2
+>
+> Copy signature
+> <pre aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
+> ) -> ResponseT`</pre>
 
 Answer named questions about text, structured state, or assets.
 
@@ -23116,66 +23544,66 @@ def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
 
 ### system\_one
 
-**Implementation**
+> [tab] Implementation
+>
+> Copy signature
+> <pre aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
+> &#x20;   | None = None,
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
 
-Copy signature
-<pre aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
-&#x20;   | None = None,
-) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
+> [tab] Overload 1
+>
+> Copy signature
+> <pre aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: None = None,
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)`</pre>
 
-**Overload 1**
-
-Copy signature
-<pre aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: None = None,
-) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)`</pre>
-
-**Overload 2**
-
-Copy signature
-<pre aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
-) -> ResponseT`</pre>
+> [tab] Overload 2
+>
+> Copy signature
+> <pre aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
+> ) -> ResponseT`</pre>
 
 Answer named questions about text, structured state, or assets.
 
@@ -24308,47 +24736,47 @@ Description of the no outcome as text, an asset, a JSON object, or an array; `No
 
 `pydantic-model`
 
-**Implementation**
+> [tab] Implementation
+>
+> Copy signature
+>
+> <pre aria-label="SDK signature">
+>   \`Noul
+>
+>   (
+>
+>   \*\*
+>
+>   data
+>
+>   :
+>
+>   &#x20;
+>
+>   [Any](https://docs.python.org/3/library/typing.html#typing.Any)
+>
+>   )\`
+> </pre>
 
-Copy signature
+> [tab] Overload 1
+>
+> Copy signature
+> <pre aria-label="SDK signature">`Noul(
+> &#x20;   \*,
+> &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
+> &#x20;   instructions: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
+> &#x20;   criteria: [NoulCriteria](/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria) | None = ...,
+> )`</pre>
 
-<pre aria-label="SDK signature">
-  \`Noul
-
-  (
-
-  \*\*
-
-  data
-
-  :
-
-  &#x20;
-
-  [Any](https://docs.python.org/3/library/typing.html#typing.Any)
-
-  )\`
-</pre>
-
-**Overload 1**
-
-Copy signature
-<pre aria-label="SDK signature">`Noul(
-&#x20;   \*,
-&#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
-&#x20;   instructions: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
-&#x20;   criteria: [NoulCriteria](/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria) | None = ...,
-)`</pre>
-
-**Overload 2**
-
-Copy signature
-<pre aria-label="SDK signature">`Noul(
-&#x20;   \*,
-&#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
-&#x20;   instructions: None = ...,
-&#x20;   criteria: \_DescribedTrue | \_DescribedFalse,
-)`</pre>
+> [tab] Overload 2
+>
+> Copy signature
+> <pre aria-label="SDK signature">`Noul(
+> &#x20;   \*,
+> &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
+> &#x20;   instructions: None = ...,
+> &#x20;   criteria: \_DescribedTrue | \_DescribedFalse,
+> )`</pre>
 
 Bases: `_Question`, `wire.NoulQuestion`
 
@@ -24360,7 +24788,7 @@ See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -24594,7 +25022,7 @@ See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -24810,7 +25238,7 @@ See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -25021,7 +25449,7 @@ def locate_dog(client: TypeSafeClient, photo: Path) -> BoxAnswer:
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ````json theme={null}
 > > {
@@ -25596,7 +26024,7 @@ See [System One](https://docs.typesafe.ai/go/system-one) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -26139,7 +26567,7 @@ Token counts for a request, when reported by the API.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -26280,7 +26708,7 @@ See the [noul primitive](https://docs.typesafe.ai/go/noul) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -26362,7 +26790,7 @@ See the [choice primitive](https://docs.typesafe.ai/go/choice) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -26519,7 +26947,7 @@ See the [score primitive](https://docs.typesafe.ai/go/score) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -26698,7 +27126,7 @@ A located box with its confidence.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -26859,7 +27287,7 @@ A box's edges as fractions of the image's height (`top`, `bottom`) and width (`l
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -27033,7 +27461,7 @@ The models available to the account.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -27165,7 +27593,7 @@ Metadata describing a single available model.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json theme={null}
 > > {
@@ -27431,25 +27859,25 @@ Keep the default HTTP/1.1 for high request rates. Use HTTP/2 for low to moderate
 
 To enable HTTP/2, install the `'typesafe-sdk[http2]'` extra and pass an HTTP/2 client. See the [`httpx2` HTTP/2 guide](https://pydantic.dev/docs/httpx2/guides/http2/) for details.
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import httpx2
+>
+> from typesafe_sdk import AsyncTypeSafeClient
+>
+> client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(http2=True))
+> ```
 
-```python theme={null}
-import httpx2
-
-from typesafe_sdk import AsyncTypeSafeClient
-
-client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(http2=True))
-```
-
-**Sync**
-
-```python theme={null}
-import httpx2
-
-from typesafe_sdk import TypeSafeClient
-
-client = TypeSafeClient(http_client=httpx2.Client(http2=True))
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> import httpx2
+>
+> from typesafe_sdk import TypeSafeClient
+>
+> client = TypeSafeClient(http_client=httpx2.Client(http2=True))
+> ```
 
 ### Keep a connection limit
 
@@ -27459,31 +27887,31 @@ The default clients open at most 100 connections and keep all of them open for 3
 >
 > **Example**
 >
-> **Async**
+> > [tab] Async
+> >
+> > ```python theme={null}
+> > import httpx2
+> >
+> > from typesafe_sdk import AsyncTypeSafeClient
+> >
+> > limits = httpx2.Limits(
+> >     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+> > )
+> > client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(limits=limits))
+> > ```
 >
-> ```python theme={null}
-> import httpx2
->
-> from typesafe_sdk import AsyncTypeSafeClient
->
-> limits = httpx2.Limits(
->     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
-> )
-> client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(limits=limits))
-> ```
->
-> **Sync**
->
-> ```python theme={null}
-> import httpx2
->
-> from typesafe_sdk import TypeSafeClient
->
-> limits = httpx2.Limits(
->     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
-> )
-> client = TypeSafeClient(http_client=httpx2.Client(limits=limits))
-> ```
+> > [tab] Sync
+> >
+> > ```python theme={null}
+> > import httpx2
+> >
+> > from typesafe_sdk import TypeSafeClient
+> >
+> > limits = httpx2.Limits(
+> >     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+> > )
+> > client = TypeSafeClient(http_client=httpx2.Client(limits=limits))
+> > ```
 
 ## Logging
 
@@ -27507,77 +27935,77 @@ The SDK keeps working as the TypeSafe API evolves, so you can adopt new API feat
 
 Send additional API request fields with [`extra_body`](/sdk/python/api/clients/sync). The `beam_width` field below is illustrative; only send fields supported by the API.
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Noul
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         await client.system_one(
+>             "I was charged twice.",
+>             {"billing": Noul(instructions="About billing?")},
+>             extra_body={"beam_width": 4},
+>         )
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="About billing?")},
-            extra_body={"beam_width": 4},
-        )
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import Noul, TypeSafeClient
-
-with TypeSafeClient() as client:
-    client.system_one(
-        "I was charged twice.",
-        {"billing": Noul(instructions="About billing?")},
-        extra_body={"beam_width": 4},
-    )
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import Noul, TypeSafeClient
+>
+> with TypeSafeClient() as client:
+>     client.system_one(
+>         "I was charged twice.",
+>         {"billing": Noul(instructions="About billing?")},
+>         extra_body={"beam_width": 4},
+>     )
+> ```
 
 ### Raw question dictionaries
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         await client.system_one(
+>             "I was charged twice.",
+>             {
+>                 "billing": {
+>                     "type": "noul",
+>                     "instructions": "About billing?",
+>                     "weight": 2,
+>                 }
+>             },
+>         )
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        await client.system_one(
-            "I was charged twice.",
-            {
-                "billing": {
-                    "type": "noul",
-                    "instructions": "About billing?",
-                    "weight": 2,
-                }
-            },
-        )
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import TypeSafeClient
-
-with TypeSafeClient() as client:
-    client.system_one(
-        "I was charged twice.",
-        {"billing": {"type": "noul", "instructions": "About billing?", "weight": 2}},
-    )
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import TypeSafeClient
+>
+> with TypeSafeClient() as client:
+>     client.system_one(
+>         "I was charged twice.",
+>         {"billing": {"type": "noul", "instructions": "About billing?", "weight": 2}},
+>     )
+> ```
 
 > [!TIP]
 >
@@ -27589,37 +28017,37 @@ with TypeSafeClient() as client:
 
 The SDK logs a warning and skips unrecognized answer kinds. Use `raw_http_response` to inspect the complete API response, including those answers:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Noul
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         result = await client.system_one(
+>             "I was charged twice.",
+>             {"billing": Noul(instructions="Is this about billing?")},
+>         )
+>         print(result.raw_http_response.json()["answers"])
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        result = await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-        )
-        print(result.raw_http_response.json()["answers"])
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import Noul, TypeSafeClient
-
-result = TypeSafeClient().system_one(
-    "I was charged twice.",
-    {"billing": Noul(instructions="Is this about billing?")},
-)
-raw_answers = result.raw_http_response.json()["answers"]
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import Noul, TypeSafeClient
+>
+> result = TypeSafeClient().system_one(
+>     "I was charged twice.",
+>     {"billing": Noul(instructions="Is this about billing?")},
+> )
+> raw_answers = result.raw_http_response.json()["answers"]
+> ```
 
 ### Unknown response fields
 
@@ -27633,105 +28061,105 @@ Guides and patterns for working with the TypeSafe Python SDK.
 
 ## Calling the System One API
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         result = await client.system_one(
+>             "I was charged twice. Please help ASAP.",
+>             {
+>                 "billing": Noul(instructions="Is this about billing?"),
+>                 "tone": Choice(
+>                     instructions="What is the tone?",
+>                     criteria={"calm": None, "angry": None},
+>                 ),
+>                 "urgency": Score(
+>                     instructions="How urgent is this?",
+>                     criteria=["low", "medium", "high"],
+>                 ),
+>             },
+>         )
+>         print(
+>             result.nouls["billing"].noul,
+>             result.choices["tone"].choice,
+>             result.scores["urgency"].score,
+>         )
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        result = await client.system_one(
-            "I was charged twice. Please help ASAP.",
-            {
-                "billing": Noul(instructions="Is this about billing?"),
-                "tone": Choice(
-                    instructions="What is the tone?",
-                    criteria={"calm": None, "angry": None},
-                ),
-                "urgency": Score(
-                    instructions="How urgent is this?",
-                    criteria=["low", "medium", "high"],
-                ),
-            },
-        )
-        print(
-            result.nouls["billing"].noul,
-            result.choices["tone"].choice,
-            result.scores["urgency"].score,
-        )
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
-
-client = TypeSafeClient()
-state = "I was charged twice. Please help ASAP."
-questions = {
-    "billing": Noul(instructions="Is this about billing?"),
-    "tone": Choice(
-        instructions="What is the tone?", criteria={"calm": None, "angry": None}
-    ),
-    "urgency": Score(
-        instructions="How urgent is this?", criteria=["low", "medium", "high"]
-    ),
-}
-result = client.system_one(state, questions)
-print(
-    result.nouls["billing"].noul,
-    result.choices["tone"].choice,
-    result.scores["urgency"].score,
-)
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
+>
+> client = TypeSafeClient()
+> state = "I was charged twice. Please help ASAP."
+> questions = {
+>     "billing": Noul(instructions="Is this about billing?"),
+>     "tone": Choice(
+>         instructions="What is the tone?", criteria={"calm": None, "angry": None}
+>     ),
+>     "urgency": Score(
+>         instructions="How urgent is this?", criteria=["low", "medium", "high"]
+>     ),
+> }
+> result = client.system_one(state, questions)
+> print(
+>     result.nouls["billing"].noul,
+>     result.choices["tone"].choice,
+>     result.scores["urgency"].score,
+> )
+> ```
 
 ## Choosing a model
 
 Inspect the available models:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         print(await client.models.list())
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        print(await client.models.list())
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import TypeSafeClient
-
-print(TypeSafeClient().models.list())
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import TypeSafeClient
+>
+> print(TypeSafeClient().models.list())
+> ```
 
 Select the model when constructing a client:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> client = AsyncTypeSafeClient(model="jev")
+> ```
 
-```python theme={null}
-client = AsyncTypeSafeClient(model="jev")
-```
-
-**Sync**
-
-```python theme={null}
-client = TypeSafeClient(model="jev")
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> client = TypeSafeClient(model="jev")
+> ```
 
 See the [Models resource reference](https://docs.typesafe.ai/go/models) for more information on available models, their capabilities, pricing details, and model aliases.
 
@@ -27783,49 +28211,49 @@ Both types of asset references may be used together in the same request.
 
 Place assets directly in `state` or in question instructions and criteria:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> from pathlib import Path
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
+>
+>
+> async def compare_return(
+>     client: AsyncTypeSafeClient, returned: Path, listing: Path, *, model: str
+> ) -> SystemOneResponse:
+>     return await client.system_one(
+>         state=["The customer returned this item:", Image(returned)],
+>         questions={
+>             "same_item": Noul(
+>                 instructions=["Is it the item in this listing photo?", Image(listing)]
+>             )
+>         },
+>         model=model,
+>     )
+> ```
 
-```python theme={null}
-from pathlib import Path
-
-from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
-
-
-async def compare_return(
-    client: AsyncTypeSafeClient, returned: Path, listing: Path, *, model: str
-) -> SystemOneResponse:
-    return await client.system_one(
-        state=["The customer returned this item:", Image(returned)],
-        questions={
-            "same_item": Noul(
-                instructions=["Is it the item in this listing photo?", Image(listing)]
-            )
-        },
-        model=model,
-    )
-```
-
-**Sync**
-
-```python theme={null}
-from pathlib import Path
-
-from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
-
-
-def compare_return(
-    client: TypeSafeClient, returned: Path, listing: Path, *, model: str
-) -> SystemOneResponse:
-    return client.system_one(
-        state=["The customer returned this item:", Image(returned)],
-        questions={
-            "same_item": Noul(
-                instructions=["Is it the item in this listing photo?", Image(listing)]
-            )
-        },
-        model=model,
-    )
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from pathlib import Path
+>
+> from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+>
+>
+> def compare_return(
+>     client: TypeSafeClient, returned: Path, listing: Path, *, model: str
+> ) -> SystemOneResponse:
+>     return client.system_one(
+>         state=["The customer returned this item:", Image(returned)],
+>         questions={
+>             "same_item": Noul(
+>                 instructions=["Is it the item in this listing photo?", Image(listing)]
+>             )
+>         },
+>         model=model,
+>     )
+> ```
 
 > [!NOTE]
 >
@@ -27837,45 +28265,45 @@ def compare_return(
 
 Use `client.attach_assets` to attach assets to the client, and `str(asset)` to reference them in text:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> from pathlib import Path
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
+>
+>
+> async def check_damage(
+>     client: AsyncTypeSafeClient, returned: Path, *, model: str
+> ) -> SystemOneResponse:
+>     photo = Image(returned)
+>     with client.attach_assets(photo):
+>         return await client.system_one(
+>             state=f"The customer says {photo} arrived scratched.",
+>             questions={"damaged": Noul(instructions="Is the item damaged?")},
+>             model=model,
+>         )
+> ```
 
-```python theme={null}
-from pathlib import Path
-
-from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
-
-
-async def check_damage(
-    client: AsyncTypeSafeClient, returned: Path, *, model: str
-) -> SystemOneResponse:
-    photo = Image(returned)
-    with client.attach_assets(photo):
-        return await client.system_one(
-            state=f"The customer says {photo} arrived scratched.",
-            questions={"damaged": Noul(instructions="Is the item damaged?")},
-            model=model,
-        )
-```
-
-**Sync**
-
-```python theme={null}
-from pathlib import Path
-
-from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
-
-
-def check_damage(
-    client: TypeSafeClient, returned: Path, *, model: str
-) -> SystemOneResponse:
-    photo = Image(returned)
-    with client.attach_assets(photo):
-        return client.system_one(
-            state=f"The customer says {photo} arrived scratched.",
-            questions={"damaged": Noul(instructions="Is the item damaged?")},
-            model=model,
-        )
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from pathlib import Path
+>
+> from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+>
+>
+> def check_damage(
+>     client: TypeSafeClient, returned: Path, *, model: str
+> ) -> SystemOneResponse:
+>     photo = Image(returned)
+>     with client.attach_assets(photo):
+>         return client.system_one(
+>             state=f"The customer says {photo} arrived scratched.",
+>             questions={"damaged": Noul(instructions="Is the item damaged?")},
+>             model=model,
+>         )
+> ```
 
 > [!WARNING]
 >
@@ -27887,43 +28315,43 @@ def check_damage(
 
 To choose your own reference for an asset, pass it through `assets`, keyed by that reference. Use distinct delimiters (such as `<product>`) to avoid matching ordinary text:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> from pathlib import Path
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
+>
+>
+> async def inspect_product(
+>     client: AsyncTypeSafeClient, photo: Path, *, model: str
+> ) -> SystemOneResponse:
+>     return await client.system_one(
+>         state="Inspect this returned product: <product>",
+>         questions={"damaged": Noul(instructions="Is the product damaged?")},
+>         assets={"<product>": Image(photo)},
+>         model=model,
+>     )
+> ```
 
-```python theme={null}
-from pathlib import Path
-
-from typesafe_sdk import AsyncTypeSafeClient, Image, Noul, SystemOneResponse
-
-
-async def inspect_product(
-    client: AsyncTypeSafeClient, photo: Path, *, model: str
-) -> SystemOneResponse:
-    return await client.system_one(
-        state="Inspect this returned product: <product>",
-        questions={"damaged": Noul(instructions="Is the product damaged?")},
-        assets={"<product>": Image(photo)},
-        model=model,
-    )
-```
-
-**Sync**
-
-```python theme={null}
-from pathlib import Path
-
-from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
-
-
-def inspect_product(
-    client: TypeSafeClient, photo: Path, *, model: str
-) -> SystemOneResponse:
-    return client.system_one(
-        state="Inspect this returned product: <product>",
-        questions={"damaged": Noul(instructions="Is the product damaged?")},
-        assets={"<product>": Image(photo)},
-        model=model,
-    )
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from pathlib import Path
+>
+> from typesafe_sdk import Image, Noul, SystemOneResponse, TypeSafeClient
+>
+>
+> def inspect_product(
+>     client: TypeSafeClient, photo: Path, *, model: str
+> ) -> SystemOneResponse:
+>     return client.system_one(
+>         state="Inspect this returned product: <product>",
+>         questions={"damaged": Noul(instructions="Is the product damaged?")},
+>         assets={"<product>": Image(photo)},
+>         model=model,
+>     )
+> ```
 
 > [!TIP]
 >
@@ -27935,112 +28363,112 @@ def inspect_product(
 
 It is possible to provide a response model to `system_one` to make using the response more *type-safe*:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Noul, NoulAnswer, SystemOneResponse
+>
+>
+> class BillingResponse(SystemOneResponse):
+>     billing: NoulAnswer
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         result = await client.system_one(
+>             "I was charged twice.",
+>             {"billing": Noul(instructions="Is this about billing?")},
+>             response_model=BillingResponse,
+>         )
+>         assert 0 <= result.billing.noul <= 1
+>         assert result.billing == result.nouls["billing"]
+>         print(result.request_id)
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul, NoulAnswer, SystemOneResponse
-
-
-class BillingResponse(SystemOneResponse):
-    billing: NoulAnswer
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        result = await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-            response_model=BillingResponse,
-        )
-        assert 0 <= result.billing.noul <= 1
-        assert result.billing == result.nouls["billing"]
-        print(result.request_id)
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import Noul, NoulAnswer, SystemOneResponse, TypeSafeClient
-
-
-class BillingResponse(SystemOneResponse):
-    billing: NoulAnswer
-
-
-with TypeSafeClient() as client:
-    result = client.system_one(
-        "I was charged twice.",
-        {"billing": Noul(instructions="Is this about billing?")},
-        response_model=BillingResponse,
-    )
-    assert 0 <= result.billing.noul <= 1
-    assert result.billing == result.nouls["billing"]
-    print(result.request_id)
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import Noul, NoulAnswer, SystemOneResponse, TypeSafeClient
+>
+>
+> class BillingResponse(SystemOneResponse):
+>     billing: NoulAnswer
+>
+>
+> with TypeSafeClient() as client:
+>     result = client.system_one(
+>         "I was charged twice.",
+>         {"billing": Noul(instructions="Is this about billing?")},
+>         response_model=BillingResponse,
+>     )
+>     assert 0 <= result.billing.noul <= 1
+>     assert result.billing == result.nouls["billing"]
+>     print(result.request_id)
+> ```
 
 ### Custom response types
 
 It is also possible to define a completely new response model without inheriting from `SystemOneResponse`:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from pydantic import BaseModel
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Noul, NoulAnswer
+>
+>
+> class BillingAnswers(BaseModel):
+>     billing: NoulAnswer
+>
+>
+> class BillingResponse(BaseModel):
+>     answers: BillingAnswers
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         result = await client.system_one(
+>             "I was charged twice.",
+>             {"billing": Noul(instructions="Is this about billing?")},
+>             response_model=BillingResponse,
+>         )
+>         assert 0 <= result.answers.billing.noul <= 1
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from pydantic import BaseModel
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul, NoulAnswer
-
-
-class BillingAnswers(BaseModel):
-    billing: NoulAnswer
-
-
-class BillingResponse(BaseModel):
-    answers: BillingAnswers
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        result = await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-            response_model=BillingResponse,
-        )
-        assert 0 <= result.answers.billing.noul <= 1
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from pydantic import BaseModel
-
-from typesafe_sdk import Noul, NoulAnswer, TypeSafeClient
-
-
-class BillingAnswers(BaseModel):
-    billing: NoulAnswer
-
-
-class BillingResponse(BaseModel):
-    answers: BillingAnswers
-
-
-result = TypeSafeClient().system_one(
-    "I was charged twice.",
-    {"billing": Noul(instructions="Is this about billing?")},
-    response_model=BillingResponse,
-)
-assert 0 <= result.answers.billing.noul <= 1
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from pydantic import BaseModel
+>
+> from typesafe_sdk import Noul, NoulAnswer, TypeSafeClient
+>
+>
+> class BillingAnswers(BaseModel):
+>     billing: NoulAnswer
+>
+>
+> class BillingResponse(BaseModel):
+>     answers: BillingAnswers
+>
+>
+> result = TypeSafeClient().system_one(
+>     "I was charged twice.",
+>     {"billing": Noul(instructions="Is this about billing?")},
+>     response_model=BillingResponse,
+> )
+> assert 0 <= result.answers.billing.noul <= 1
+> ```
 
 ## Retries
 
@@ -28048,89 +28476,89 @@ Pass a custom [`RetryPolicy`](/sdk/python/api/retries) as `retry` on the client 
 
 On the client:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
+>
+> client = AsyncTypeSafeClient(
+>     retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
+> )
+> ```
 
-```python theme={null}
-from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
-
-client = AsyncTypeSafeClient(
-    retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
-)
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import RetryPolicy, TypeSafeClient
-
-client = TypeSafeClient(retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0))
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import RetryPolicy, TypeSafeClient
+>
+> client = TypeSafeClient(retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0))
+> ```
 
 Per call:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         await client.system_one(
+>             state,
+>             questions,
+>             retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0),
+>         )
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, RetryPolicy
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        await client.system_one(
-            state,
-            questions,
-            retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0),
-        )
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import RetryPolicy
-
-client.system_one(
-    state, questions, retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
-)
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import RetryPolicy
+>
+> client.system_one(
+>     state, questions, retry=RetryPolicy(max_retries=3, backoff_max=0.2, timeout=1.0)
+> )
+> ```
 
 ## Error handling
 
 Handle [exceptions](/sdk/python/api/exceptions) raised by the SDK:
 
-**Async**
+> [tab] Async
+>
+> ```python theme={null}
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, TypeSafeAPIError
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         try:
+>             await client.system_one(state, questions)
+>         except TypeSafeAPIError as error:
+>             print(error.status, error.request_id)
+>
+>
+> asyncio.run(main())
+> ```
 
-```python theme={null}
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, TypeSafeAPIError
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        try:
-            await client.system_one(state, questions)
-        except TypeSafeAPIError as error:
-            print(error.status, error.request_id)
-
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python theme={null}
-from typesafe_sdk import TypeSafeAPIError
-
-try:
-    client.system_one(state, questions)
-except TypeSafeAPIError as error:
-    print(error.status, error.request_id)
-```
+> [tab] Sync
+>
+> ```python theme={null}
+> from typesafe_sdk import TypeSafeAPIError
+>
+> try:
+>     client.system_one(state, questions)
+> except TypeSafeAPIError as error:
+>     print(error.status, error.request_id)
+> ```
 
 ## Environment variables
 
@@ -28153,148 +28581,148 @@ In order to use the SDK with a different API url, set `base_url` on the client o
 
 For example, connect through an AI gateway using its API key and model ID.
 
-**OpenRouter**
+> [tab] OpenRouter
+>
+> Use an OpenRouter API key and an [OpenRouter model ID](https://openrouter.ai/~typesafe/jev-latest/):
+>
+> > [tab] Async client
+> >
+> > ```python theme={null}
+> > import asyncio
+> > import os
+> >
+> > from typesafe_sdk import AsyncTypeSafeClient, Noul
+> >
+> >
+> > async def main() -> None:
+> >     async with AsyncTypeSafeClient(
+> >         api_key=os.environ["OPENROUTER_API_KEY"],
+> >         base_url="https://openrouter.ai/api",
+> >         model="~typesafe/jev-latest",
+> >     ) as client:
+> >         result = await client.system_one(
+> >             "I was charged twice.",
+> >             {"billing": Noul(instructions="Is this about billing?")},
+> >         )
+> >         print(result.nouls["billing"].noul)
+> >
+> >
+> > asyncio.run(main())
+> > ```
+>
+> > [tab] Sync client
+> >
+> > ```python theme={null}
+> > import os
+> >
+> > from typesafe_sdk import Noul, TypeSafeClient
+> >
+> > with TypeSafeClient(
+> >     api_key=os.environ["OPENROUTER_API_KEY"],
+> >     base_url="https://openrouter.ai/api",
+> >     model="~typesafe/jev-latest",
+> > ) as client:
+> >     result = client.system_one(
+> >         "I was charged twice.",
+> >         {"billing": Noul(instructions="Is this about billing?")},
+> >     )
+> >     print(result.nouls["billing"].noul)
+> > ```
 
-Use an OpenRouter API key and an [OpenRouter model ID](https://openrouter.ai/~typesafe/jev-latest/):
+> [tab] Vercel AI Gateway
+>
+> [Vercel's TypeSafe-compatible API](https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe) can be used with the SDK:
+>
+> > [tab] Async client
+> >
+> > ```python theme={null}
+> > import asyncio
+> > import os
+> >
+> > from typesafe_sdk import AsyncTypeSafeClient, Noul
+> >
+> >
+> > async def main() -> None:
+> >     async with AsyncTypeSafeClient(
+> >         api_key=os.environ["AI_GATEWAY_API_KEY"],
+> >         base_url="https://ai-gateway.vercel.sh/typesafe",
+> >         model="typesafe-ai/jev",
+> >     ) as client:
+> >         result = await client.system_one(
+> >             "I was charged twice.",
+> >             {"billing": Noul(instructions="Is this about billing?")},
+> >         )
+> >         print(result.nouls["billing"].noul)
+> >
+> >
+> > asyncio.run(main())
+> > ```
+>
+> > [tab] Sync client
+> >
+> > ```python theme={null}
+> > import os
+> >
+> > from typesafe_sdk import Noul, TypeSafeClient
+> >
+> > with TypeSafeClient(
+> >     api_key=os.environ["AI_GATEWAY_API_KEY"],
+> >     base_url="https://ai-gateway.vercel.sh/typesafe",
+> >     model="typesafe-ai/jev",
+> > ) as client:
+> >     result = client.system_one(
+> >         "I was charged twice.",
+> >         {"billing": Noul(instructions="Is this about billing?")},
+> >     )
+> >     print(result.nouls["billing"].noul)
+> > ```
 
-**Async client**
-
-```python theme={null}
-import asyncio
-import os
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient(
-        api_key=os.environ["OPENROUTER_API_KEY"],
-        base_url="https://openrouter.ai/api",
-        model="~typesafe/jev-latest",
-    ) as client:
-        result = await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-        )
-        print(result.nouls["billing"].noul)
-
-
-asyncio.run(main())
-```
-
-**Sync client**
-
-```python theme={null}
-import os
-
-from typesafe_sdk import Noul, TypeSafeClient
-
-with TypeSafeClient(
-    api_key=os.environ["OPENROUTER_API_KEY"],
-    base_url="https://openrouter.ai/api",
-    model="~typesafe/jev-latest",
-) as client:
-    result = client.system_one(
-        "I was charged twice.",
-        {"billing": Noul(instructions="Is this about billing?")},
-    )
-    print(result.nouls["billing"].noul)
-```
-
-**Vercel AI Gateway**
-
-[Vercel's TypeSafe-compatible API](https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe) can be used with the SDK:
-
-**Async client**
-
-```python theme={null}
-import asyncio
-import os
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient(
-        api_key=os.environ["AI_GATEWAY_API_KEY"],
-        base_url="https://ai-gateway.vercel.sh/typesafe",
-        model="typesafe-ai/jev",
-    ) as client:
-        result = await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-        )
-        print(result.nouls["billing"].noul)
-
-
-asyncio.run(main())
-```
-
-**Sync client**
-
-```python theme={null}
-import os
-
-from typesafe_sdk import Noul, TypeSafeClient
-
-with TypeSafeClient(
-    api_key=os.environ["AI_GATEWAY_API_KEY"],
-    base_url="https://ai-gateway.vercel.sh/typesafe",
-    model="typesafe-ai/jev",
-) as client:
-    result = client.system_one(
-        "I was charged twice.",
-        {"billing": Noul(instructions="Is this about billing?")},
-    )
-    print(result.nouls["billing"].noul)
-```
-
-**Pydantic AI Gateway**
-
-Use a [Pydantic AI Gateway API key](https://pydantic.dev/articles/jev-pydantic-ai-gateway):
-
-**Async client**
-
-```python theme={null}
-import asyncio
-import os
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-
-async def main() -> None:
-    async with AsyncTypeSafeClient(
-        api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
-        base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
-        model="jev-latest",
-    ) as client:
-        result = await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-        )
-        print(result.nouls["billing"].noul)
-
-
-asyncio.run(main())
-```
-
-**Sync client**
-
-```python theme={null}
-import os
-
-from typesafe_sdk import Noul, TypeSafeClient
-
-with TypeSafeClient(
-    api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
-    base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
-    model="jev-latest",
-) as client:
-    result = client.system_one(
-        "I was charged twice.",
-        {"billing": Noul(instructions="Is this about billing?")},
-    )
-    print(result.nouls["billing"].noul)
-```
+> [tab] Pydantic AI Gateway
+>
+> Use a [Pydantic AI Gateway API key](https://pydantic.dev/articles/jev-pydantic-ai-gateway):
+>
+> > [tab] Async client
+> >
+> > ```python theme={null}
+> > import asyncio
+> > import os
+> >
+> > from typesafe_sdk import AsyncTypeSafeClient, Noul
+> >
+> >
+> > async def main() -> None:
+> >     async with AsyncTypeSafeClient(
+> >         api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
+> >         base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
+> >         model="jev-latest",
+> >     ) as client:
+> >         result = await client.system_one(
+> >             "I was charged twice.",
+> >             {"billing": Noul(instructions="Is this about billing?")},
+> >         )
+> >         print(result.nouls["billing"].noul)
+> >
+> >
+> > asyncio.run(main())
+> > ```
+>
+> > [tab] Sync client
+> >
+> > ```python theme={null}
+> > import os
+> >
+> > from typesafe_sdk import Noul, TypeSafeClient
+> >
+> > with TypeSafeClient(
+> >     api_key=os.environ["PYDANTIC_AI_GATEWAY_API_KEY"],
+> >     base_url="https://gateway-us.pydantic.dev/proxy/typesafe",
+> >     model="jev-latest",
+> > ) as client:
+> >     result = client.system_one(
+> >         "I was charged twice.",
+> >         {"billing": Noul(instructions="Is this about billing?")},
+> >     )
+> >     print(result.nouls["billing"].noul)
+> > ```
 
 

@@ -48,7 +48,7 @@
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks</loc>
-    <lastmod>2026-10-30T00:32:45.373Z</lastmod>
+    <lastmod>2026-10-31T00:16:23.039Z</lastmod>
   </url>
 
   <url>
@@ -64,6 +64,11 @@
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/basic_memory</loc>
     <lastmod>2026-10-29T19:38:02.145Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://docs.typesafe.ai/cookbooks/cart_from_primitives</loc>
+    <lastmod>2026-10-30T20:21:04.290Z</lastmod>
   </url>
 
   <url>
@@ -163,7 +168,7 @@
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/skill_suggestion</loc>
-    <lastmod>2026-09-22T08:57:49.383Z</lastmod>
+    <lastmod>2026-10-31T00:16:23.039Z</lastmod>
   </url>
 
   <url>
@@ -218,7 +223,7 @@
 
   <url>
     <loc>https://docs.typesafe.ai/models</loc>
-    <lastmod>2026-10-30T00:32:45.325Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.973Z</lastmod>
   </url>
 
   <url>
@@ -283,322 +288,322 @@
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript</loc>
-    <lastmod>2026-10-30T00:32:45.315Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.960Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api</loc>
-    <lastmod>2026-10-30T00:32:45.320Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.959Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError</loc>
-    <lastmod>2026-10-30T00:32:45.314Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.959Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/APIError</loc>
-    <lastmod>2026-10-30T00:32:45.320Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.958Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/APIPromise</loc>
-    <lastmod>2026-10-30T00:32:45.318Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.971Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/APITimeoutError</loc>
-    <lastmod>2026-10-30T00:32:45.310Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.986Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/APIUserAbortError</loc>
-    <lastmod>2026-10-30T00:32:45.314Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.985Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/AuthenticationError</loc>
-    <lastmod>2026-10-30T00:32:45.321Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.957Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/BadRequestError</loc>
-    <lastmod>2026-10-30T00:32:45.311Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.947Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/Image</loc>
-    <lastmod>2026-10-30T00:32:45.313Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.957Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/InternalServerError</loc>
-    <lastmod>2026-10-30T00:32:45.312Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.964Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/NotFoundError</loc>
-    <lastmod>2026-10-30T00:32:45.313Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.954Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/PermissionDeniedError</loc>
-    <lastmod>2026-10-30T00:32:45.328Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.963Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/RateLimitError</loc>
-    <lastmod>2026-10-30T00:32:45.319Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.970Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeClient</loc>
-    <lastmod>2026-10-30T00:32:45.316Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.955Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError</loc>
-    <lastmod>2026-10-30T00:32:45.312Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.969Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/classes/UnprocessableEntityError</loc>
-    <lastmod>2026-10-30T00:32:45.322Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.969Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/functions/box</loc>
-    <lastmod>2026-10-30T00:32:45.317Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.953Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/functions/choice</loc>
-    <lastmod>2026-10-30T00:32:45.324Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.956Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/functions/image</loc>
-    <lastmod>2026-10-30T00:32:45.323Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.968Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxCoordinates</loc>
-    <lastmod>2026-10-30T00:32:45.326Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.955Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxQuestion</loc>
-    <lastmod>2026-10-30T00:32:45.319Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.971Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxResponse</loc>
-    <lastmod>2026-10-30T00:32:45.316Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.953Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceQuestion</loc>
-    <lastmod>2026-10-30T00:32:45.323Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.947Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceResponse</loc>
-    <lastmod>2026-10-30T00:32:45.327Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.946Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/Logger</loc>
-    <lastmod>2026-10-30T00:32:45.274Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.948Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/ModelCard</loc>
-    <lastmod>2026-10-30T00:32:45.273Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.945Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/Models</loc>
-    <lastmod>2026-10-30T00:32:45.327Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.952Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulQuestion</loc>
-    <lastmod>2026-10-30T00:32:45.218Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.872Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulResponse</loc>
-    <lastmod>2026-10-30T00:32:45.217Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.871Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions</loc>
-    <lastmod>2026-10-30T00:32:45.217Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.870Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/RequestOptions</loc>
-    <lastmod>2026-10-30T00:32:45.216Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.867Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/RetryPolicy</loc>
-    <lastmod>2026-10-30T00:32:45.215Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.867Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreQuestion</loc>
-    <lastmod>2026-10-30T00:32:45.215Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.866Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreResponse</loc>
-    <lastmod>2026-10-30T00:32:45.214Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.865Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequest</loc>
-    <lastmod>2026-10-30T00:32:45.214Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.865Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneResult</loc>
-    <lastmod>2026-10-30T00:32:45.250Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.864Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/TextWithAssets</loc>
-    <lastmod>2026-10-30T00:32:45.254Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.864Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/TypeSafeClientConfig</loc>
-    <lastmod>2026-10-30T00:32:45.230Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.876Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/Usage</loc>
-    <lastmod>2026-10-30T00:32:45.236Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/interfaces/WithResponse</loc>
-    <lastmod>2026-10-30T00:32:45.236Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.876Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Asset</loc>
-    <lastmod>2026-10-30T00:32:45.235Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.862Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ChoiceCriteria</loc>
-    <lastmod>2026-10-30T00:32:45.228Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.862Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Compression</loc>
-    <lastmod>2026-10-30T00:32:45.226Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.861Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ContentValue</loc>
-    <lastmod>2026-10-30T00:32:45.229Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.857Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Description</loc>
-    <lastmod>2026-10-30T00:32:45.224Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.857Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType</loc>
-    <lastmod>2026-10-30T00:32:45.229Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.856Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EnvVar</loc>
-    <lastmod>2026-10-30T00:32:45.222Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.856Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Fetch</loc>
-    <lastmod>2026-10-30T00:32:45.228Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.855Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/JsonValue</loc>
-    <lastmod>2026-10-30T00:32:45.225Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.854Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/LogLevel</loc>
-    <lastmod>2026-10-30T00:32:45.225Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.853Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Question</loc>
-    <lastmod>2026-10-30T00:32:45.227Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.853Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ResultFor</loc>
-    <lastmod>2026-10-30T00:32:45.231Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.851Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreCriteria</loc>
-    <lastmod>2026-10-30T00:32:45.223Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.850Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreLegend</loc>
-    <lastmod>2026-10-30T00:32:45.221Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.849Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreOf</loc>
-    <lastmod>2026-10-30T00:32:45.224Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.848Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/type-aliases/SentContent</loc>
-    <lastmod>2026-10-30T00:32:45.222Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.848Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/variables/ENV</loc>
-    <lastmod>2026-10-30T00:32:45.227Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.860Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/variables/LOG_LEVELS</loc>
-    <lastmod>2026-10-30T00:32:45.219Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.860Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/variables/VERSION</loc>
-    <lastmod>2026-10-30T00:32:45.232Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.859Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/variables/noul</loc>
-    <lastmod>2026-10-30T00:32:45.219Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.858Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/variables/score</loc>
-    <lastmod>2026-10-30T00:32:45.218Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.846Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/api/variables/withAssets</loc>
-    <lastmod>2026-10-30T00:32:45.220Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.845Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/javascript/changelog</loc>
-    <lastmod>2026-10-30T00:32:45.231Z</lastmod>
+    <lastmod>2026-10-31T00:16:22.844Z</lastmod>
   </url>
 
   <url>

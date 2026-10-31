@@ -73,25 +73,25 @@ Keep the default HTTP/1.1 for high request rates. Use HTTP/2 for low to moderate
 
 To enable HTTP/2, install the `'typesafe-sdk[http2]'` extra and pass an HTTP/2 client. See the [`httpx2` HTTP/2 guide](https://pydantic.dev/docs/httpx2/guides/http2/) for details.
 
-**Async**
+> [tab] Async
+>
+> ```python
+> import httpx2
+>
+> from typesafe_sdk import AsyncTypeSafeClient
+>
+> client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(http2=True))
+> ```
 
-```python
-import httpx2
-
-from typesafe_sdk import AsyncTypeSafeClient
-
-client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(http2=True))
-```
-
-**Sync**
-
-```python
-import httpx2
-
-from typesafe_sdk import TypeSafeClient
-
-client = TypeSafeClient(http_client=httpx2.Client(http2=True))
-```
+> [tab] Sync
+>
+> ```python
+> import httpx2
+>
+> from typesafe_sdk import TypeSafeClient
+>
+> client = TypeSafeClient(http_client=httpx2.Client(http2=True))
+> ```
 
 ### Keep a connection limit
 
@@ -101,31 +101,31 @@ The default clients open at most 100 connections and keep all of them open for 3
 >
 > **Example**
 >
-> **Async**
+> > [tab] Async
+> >
+> > ```python
+> > import httpx2
+> >
+> > from typesafe_sdk import AsyncTypeSafeClient
+> >
+> > limits = httpx2.Limits(
+> >     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+> > )
+> > client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(limits=limits))
+> > ```
 >
-> ```python
-> import httpx2
->
-> from typesafe_sdk import AsyncTypeSafeClient
->
-> limits = httpx2.Limits(
->     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
-> )
-> client = AsyncTypeSafeClient(http_client=httpx2.AsyncClient(limits=limits))
-> ```
->
-> **Sync**
->
-> ```python
-> import httpx2
->
-> from typesafe_sdk import TypeSafeClient
->
-> limits = httpx2.Limits(
->     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
-> )
-> client = TypeSafeClient(http_client=httpx2.Client(limits=limits))
-> ```
+> > [tab] Sync
+> >
+> > ```python
+> > import httpx2
+> >
+> > from typesafe_sdk import TypeSafeClient
+> >
+> > limits = httpx2.Limits(
+> >     max_connections=200, max_keepalive_connections=200, keepalive_expiry=30
+> > )
+> > client = TypeSafeClient(http_client=httpx2.Client(limits=limits))
+> > ```
 
 ## Logging
 
@@ -149,73 +149,77 @@ The SDK keeps working as the TypeSafe API evolves, so you can adopt new API feat
 
 Send additional API request fields with [`extra_body`](https://docs.typesafe.ai/sdk/python/api/clients/sync). The `beam_width` field below is illustrative; only send fields supported by the API.
 
-**Async**
+> [tab] Async
+>
+> ```python
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Noul
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         await client.system_one(
+>             "I was charged twice.",
+>             {"billing": Noul(instructions="About billing?")},
+>             extra_body={"beam_width": 4},
+>         )
+>
+>
+> asyncio.run(main())
+> ```
 
-```python
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="About billing?")},
-            extra_body={"beam_width": 4},
-        )
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python
-from typesafe_sdk import Noul, TypeSafeClient
-
-with TypeSafeClient() as client:
-    client.system_one(
-        "I was charged twice.",
-        {"billing": Noul(instructions="About billing?")},
-        extra_body={"beam_width": 4},
-    )
-```
+> [tab] Sync
+>
+> ```python
+> from typesafe_sdk import Noul, TypeSafeClient
+>
+> with TypeSafeClient() as client:
+>     client.system_one(
+>         "I was charged twice.",
+>         {"billing": Noul(instructions="About billing?")},
+>         extra_body={"beam_width": 4},
+>     )
+> ```
 
 ### Raw question dictionaries
 
-**Async**
+> [tab] Async
+>
+> ```python
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         await client.system_one(
+>             "I was charged twice.",
+>             {
+>                 "billing": {
+>                     "type": "noul",
+>                     "instructions": "About billing?",
+>                     "weight": 2,
+>                 }
+>             },
+>         )
+>
+>
+> asyncio.run(main())
+> ```
 
-```python
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        await client.system_one(
-            "I was charged twice.",
-            {
-                "billing": {
-                    "type": "noul",
-                    "instructions": "About billing?",
-                    "weight": 2,
-                }
-            },
-        )
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python
-from typesafe_sdk import TypeSafeClient
-
-with TypeSafeClient() as client:
-    client.system_one(
-        "I was charged twice.",
-        {"billing": {"type": "noul", "instructions": "About billing?", "weight": 2}},
-    )
-```
+> [tab] Sync
+>
+> ```python
+> from typesafe_sdk import TypeSafeClient
+>
+> with TypeSafeClient() as client:
+>     client.system_one(
+>         "I was charged twice.",
+>         {"billing": {"type": "noul", "instructions": "About billing?", "weight": 2}},
+>     )
+> ```
 
 > [!TIP]
 >
@@ -227,35 +231,37 @@ with TypeSafeClient() as client:
 
 The SDK logs a warning and skips unrecognized answer kinds. Use `raw_http_response` to inspect the complete API response, including those answers:
 
-**Async**
+> [tab] Async
+>
+> ```python
+> import asyncio
+>
+> from typesafe_sdk import AsyncTypeSafeClient, Noul
+>
+>
+> async def main() -> None:
+>     async with AsyncTypeSafeClient() as client:
+>         result = await client.system_one(
+>             "I was charged twice.",
+>             {"billing": Noul(instructions="Is this about billing?")},
+>         )
+>         print(result.raw_http_response.json()["answers"])
+>
+>
+> asyncio.run(main())
+> ```
 
-```python
-import asyncio
-
-from typesafe_sdk import AsyncTypeSafeClient, Noul
-
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        result = await client.system_one(
-            "I was charged twice.",
-            {"billing": Noul(instructions="Is this about billing?")},
-        )
-        print(result.raw_http_response.json()["answers"])
-
-asyncio.run(main())
-```
-
-**Sync**
-
-```python
-from typesafe_sdk import Noul, TypeSafeClient
-
-result = TypeSafeClient().system_one(
-    "I was charged twice.",
-    {"billing": Noul(instructions="Is this about billing?")},
-)
-raw_answers = result.raw_http_response.json()["answers"]
-```
+> [tab] Sync
+>
+> ```python
+> from typesafe_sdk import Noul, TypeSafeClient
+>
+> result = TypeSafeClient().system_one(
+>     "I was charged twice.",
+>     {"billing": Noul(instructions="Is this about billing?")},
+> )
+> raw_answers = result.raw_http_response.json()["answers"]
+> ```
 
 ### Unknown response fields
 

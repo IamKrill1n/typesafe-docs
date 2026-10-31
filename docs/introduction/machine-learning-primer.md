@@ -20,15 +20,15 @@ Read the [TypeSafe manifesto](https://typesafe.ai/manifesto).
 
 Pretrained language models have been adapted in two major ways. TypeSafe adds a third. RLHF and RLVR are shown here for context; TypeSafe's training path is RLCD.
 
-> **RLHF**
+> [card] RLHF
 >
 > **Reinforcement learning from human feedback** turned pretrained models into chatbots. It trains models to produce responses people prefer.
 
-> **RLVR**
+> [card] RLVR
 >
 > **Reinforcement learning with verifiable rewards** created reasoning models that are strong at tasks such as mathematics, but slower and more expensive.
 
-> **RLCD**
+> [card] RLCD
 >
 > **Reinforcement learning for calibrated decisions** trains TypeSafe to return decisions and calibrated probabilities instead of generated text.
 
@@ -66,7 +66,7 @@ Preference optimization also causes **mode dropping**: the model learns to favor
 
 Mode dropping is a milder version of **mode collapse**. In the classic generative-adversarial-network failure mode, a generator learns to produce the same kind of output repeatedly because that output continues to fool the discriminator.
 
-> **Mode collapse analogy**
+> [accordion] Mode collapse analogy
 >
 > ![Repeated characters illustrate a GAN suffering from mode collapse.](https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/ai-primer/mode-collapse-light.webp?fit=max\&auto=format\&n=aFVnpmCIX68NpsV1\&q=85\&s=2896f125ad1a5835b31b088fbc64eff1)
 

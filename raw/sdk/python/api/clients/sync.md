@@ -168,66 +168,66 @@ def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
 
 ### system\_one
 
-**Implementation**
+> [tab] Implementation
+>
+> Copy signature
+> <pre tabIndex="0" aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
+> &#x20;   | None = None,
+> ) -> [SystemOneResponse](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
 
-Copy signature
-<pre tabIndex="0" aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
-&#x20;   | None = None,
-) -> [SystemOneResponse](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
+> [tab] Overload 1
+>
+> Copy signature
+> <pre tabIndex="0" aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: None = None,
+> ) -> [SystemOneResponse](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.SystemOneResponse)`</pre>
 
-**Overload 1**
-
-Copy signature
-<pre tabIndex="0" aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: None = None,
-) -> [SystemOneResponse](https://docs.typesafe.ai/sdk/python/api/types/responses.md#typesafe_sdk.SystemOneResponse)`</pre>
-
-**Overload 2**
-
-Copy signature
-<pre tabIndex="0" aria-label="SDK signature">`system\_one(
-&#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
-&#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
-&#x20;   \*,
-&#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
-&#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
-&#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
-&#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
-&#x20;   | httpx2.Timeout
-&#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
-&#x20;   | None = None,
-&#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
-&#x20;   | None = None,
-&#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
-) -> ResponseT`</pre>
+> [tab] Overload 2
+>
+> Copy signature
+> <pre tabIndex="0" aria-label="SDK signature">`system\_one(
+> &#x20;   state: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+> &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.Question)],
+> &#x20;   \*,
+> &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+> &#x20;   assets: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Asset](https://docs.typesafe.ai/sdk/python/api/types/assets.md#typesafe_sdk.Asset)] | None = None,
+> &#x20;   retry: [RetryPolicy](https://docs.typesafe.ai/sdk/python/api/retries.md#typesafe_sdk.RetryPolicy) | None = None,
+> &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
+> &#x20;   | httpx2.Timeout
+> &#x20;   | None = None,
+> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   | None = None,
+> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.JSONValue) | None]
+> &#x20;   | None = None,
+> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
+> ) -> ResponseT`</pre>
 
 Answer named questions about text, structured state, or assets.
 

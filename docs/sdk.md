@@ -6,11 +6,11 @@ Our client SDKs provide typed questions and answers for the TypeSafe API and han
 
 Choose a client SDK for installation instructions, examples, and API details.
 
-> **[Python](https://docs.typesafe.ai/sdk/python.md)**
+> [card] [Python](https://docs.typesafe.ai/sdk/python.md)
 >
 > Install the Python client SDK and make your first request.
 
-> **[JavaScript / TypeScript](https://docs.typesafe.ai/sdk/javascript.md)**
+> [card] [JavaScript / TypeScript](https://docs.typesafe.ai/sdk/javascript.md)
 >
 > Install the JavaScript client SDK and make your first typed request.
 

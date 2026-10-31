@@ -15,7 +15,7 @@ Use Jev alongside an LLM or agent: pick tools and skills, screen what goes in an
 | Cookbook | What it does | Level |
 | - | - | - |
 | [Function calling](https://docs.typesafe.ai/cookbooks/function_calling.md) | Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware TypeSafe questions. | Intermediate |
-| [Skill suggestion](https://docs.typesafe.ai/cookbooks/skill_suggestion.md) | Picks at most one skill for an agent turn out of the 182 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates. | Intermediate |
+| [Skill suggestion](https://docs.typesafe.ai/cookbooks/skill_suggestion.md) | Picks at most one skill for an agent turn out of the 194 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates. | Intermediate |
 | [Guardrails for LLMs](https://docs.typesafe.ai/cookbooks/llm_guardrails.md) | Screen every message going into and out of an LLM app with one TypeSafe request, thresholding hazard probabilities and severity to pass, review, block, or route. | Intermediate |
 | [Double-checking citations](https://docs.typesafe.ai/cookbooks/citation_check.md) | Catch wrong or hallucinated citations by checking against the source document. One Choice question decides whether the quote's context supports the claim. | Beginner |
 | [Classifying RAG passages](https://docs.typesafe.ai/cookbooks/classifying_rag_passages.md) | Score each retrieved passage with one TypeSafe request, then decide in code which ones reach the answering model. | Intermediate |
@@ -41,6 +41,7 @@ Pull typed values and structure out of messy text.
 | [Date extraction](https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md) | Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review. | Beginner |
 | [Pre-parsed value extraction](https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook.md) | Finds candidate emails, phone numbers, and amounts with a regex, has TypeSafe pick the one you ask for, and normalizes that exact span in code. | Beginner |
 | [Structure recovery](https://docs.typesafe.ai/cookbooks/autoformat.md) | Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout). | Beginner |
+| [Shopping cart](https://docs.typesafe.ai/cookbooks/cart_from_primitives.md) | Turns a natural-language cafe order into a structured cart: a shrinking-options loop of Choice questions finds every item, then one batched request per item fills its known fields. | Beginner |
 
 ## Search and matching
 

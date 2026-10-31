@@ -157,83 +157,83 @@ To put an image inside a sentence, or to choose your own references, see the [SD
 
 Without an SDK, send each image as a file part in a `multipart/form-data` request. Multipart is the better choice: it sends the file as it is, while base64 makes each image about a third larger, and that extra size counts toward the 32 MiB [request body limit](#limits). Base64-encode images into the JSON only when you can't send multipart.
 
-**Multipart (recommended)**
+> [tab] Multipart (recommended)
+>
+> Send the JSON body as the first part, named `request`, with content type `application/json`. Send each image as its own file part, and set that image's `part` in `assets` to the file part's name:
+>
+> ```bash theme={null}
+> curl https://api.typesafe.ai/v1/systemone \
+>   -H "Authorization: Bearer $TYPESAFE_API_KEY" \
+>   -H "TypeSafe-Danger-Zone-Images: true" \
+>   -F 'request={
+>     "model": "jev-latest",
+>     "state": {"door": "a3f1c2e8-door"},
+>     "assets": {"a3f1c2e8-door": {"type": "image", "part": "door-photo"}},
+>     "questions": {
+>       "person_present": {"type": "noul", "instructions": "Is there a person in `door`?"}
+>     }
+>   };type=application/json' \
+>   -F 'door-photo=@door-camera.jpg;type=image/jpeg'
+> ```
+>
+> The rules for multipart requests:
+>
+> * The first part is named `request` and holds the JSON body.
+> * Part names are unique and not empty. `request` is reserved for the JSON body.
+> * Each image part has content type `image/png`, `image/jpeg`, `image/jpg`, or `application/octet-stream`, or no content type. Any other content type returns `400`.
+> * Each file part belongs to exactly one asset. A part that no asset names, two assets that name the same part, and an asset whose part is missing all return `400`.
+>
+> To use the same image in several places, write its reference in each of them.
 
-Send the JSON body as the first part, named `request`, with content type `application/json`. Send each image as its own file part, and set that image's `part` in `assets` to the file part's name:
-
-```bash theme={null}
-curl https://api.typesafe.ai/v1/systemone \
-  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
-  -H "TypeSafe-Danger-Zone-Images: true" \
-  -F 'request={
-    "model": "jev-latest",
-    "state": {"door": "a3f1c2e8-door"},
-    "assets": {"a3f1c2e8-door": {"type": "image", "part": "door-photo"}},
-    "questions": {
-      "person_present": {"type": "noul", "instructions": "Is there a person in `door`?"}
-    }
-  };type=application/json' \
-  -F 'door-photo=@door-camera.jpg;type=image/jpeg'
-```
-
-The rules for multipart requests:
-
-* The first part is named `request` and holds the JSON body.
-* Part names are unique and not empty. `request` is reserved for the JSON body.
-* Each image part has content type `image/png`, `image/jpeg`, `image/jpg`, or `application/octet-stream`, or no content type. Any other content type returns `400`.
-* Each file part belongs to exactly one asset. A part that no asset names, two assets that name the same part, and an asset whose part is missing all return `400`.
-
-To use the same image in several places, write its reference in each of them.
-
-**Base64 in JSON**
-
-Base64-encode the file into `data_base64` and set `format`, following the rules in [Asset fields](#asset-fields). Python's `base64.b64encode` produces the right encoding. This Python example sends one photo and asks two questions about it:
-
-```python theme={null}
-import base64
-import os
-import uuid
-
-import requests
-
-def image_asset(path: str) -> tuple[str, dict]:
-    """Return a new reference and the asset entry for one image file."""
-    fmt = "png" if path.lower().endswith(".png") else "jpg"
-    with open(path, "rb") as f:
-        data = base64.b64encode(f.read()).decode("ascii")
-    return str(uuid.uuid4()), {"type": "image", "format": fmt, "data_base64": data}
-
-photo_key, photo = image_asset("door-camera.jpg")
-
-response = requests.post(
-    "https://api.typesafe.ai/v1/systemone",
-    headers={
-        "Authorization": f"Bearer {os.environ['TYPESAFE_API_KEY']}",
-        "TypeSafe-Danger-Zone-Images": "true",
-    },
-    json={
-        "model": "jev-latest",
-        "state": {"door": photo_key},
-        "assets": {photo_key: photo},
-        "questions": {
-            "person_present": {
-                "type": "noul",
-                "instructions": "Is there a person in `door`?",
-            },
-            "carrying": {
-                "type": "choice",
-                "instructions": "What is the person in `door` carrying?",
-                "criteria": {
-                    "package": "A box or parcel.",
-                    "bag": "A bag of groceries or shopping.",
-                    "nothing": "Empty hands.",
-                },
-            },
-        },
-    },
-)
-print(response.json()["answers"])
-```
+> [tab] Base64 in JSON
+>
+> Base64-encode the file into `data_base64` and set `format`, following the rules in [Asset fields](#asset-fields). Python's `base64.b64encode` produces the right encoding. This Python example sends one photo and asks two questions about it:
+>
+> ```python theme={null}
+> import base64
+> import os
+> import uuid
+>
+> import requests
+>
+> def image_asset(path: str) -> tuple[str, dict]:
+>     """Return a new reference and the asset entry for one image file."""
+>     fmt = "png" if path.lower().endswith(".png") else "jpg"
+>     with open(path, "rb") as f:
+>         data = base64.b64encode(f.read()).decode("ascii")
+>     return str(uuid.uuid4()), {"type": "image", "format": fmt, "data_base64": data}
+>
+> photo_key, photo = image_asset("door-camera.jpg")
+>
+> response = requests.post(
+>     "https://api.typesafe.ai/v1/systemone",
+>     headers={
+>         "Authorization": f"Bearer {os.environ['TYPESAFE_API_KEY']}",
+>         "TypeSafe-Danger-Zone-Images": "true",
+>     },
+>     json={
+>         "model": "jev-latest",
+>         "state": {"door": photo_key},
+>         "assets": {photo_key: photo},
+>         "questions": {
+>             "person_present": {
+>                 "type": "noul",
+>                 "instructions": "Is there a person in `door`?",
+>             },
+>             "carrying": {
+>                 "type": "choice",
+>                 "instructions": "What is the person in `door` carrying?",
+>                 "criteria": {
+>                     "package": "A box or parcel.",
+>                     "bag": "A bag of groceries or shopping.",
+>                     "nothing": "Empty hands.",
+>                 },
+>             },
+>         },
+>     },
+> )
+> print(response.json()["answers"])
+> ```
 
 ## Image placement
 

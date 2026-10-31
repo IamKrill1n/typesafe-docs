@@ -209,15 +209,15 @@ See [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-
 
 ## Next steps
 
-> **[Choice](https://docs.typesafe.ai/primitives/choice.md)**
+> [card] [Choice](https://docs.typesafe.ai/primitives/choice.md)
 >
 > Pick one option from a fixed list.
 
-> **[Score](https://docs.typesafe.ai/primitives/score.md)**
+> [card] [Score](https://docs.typesafe.ai/primitives/score.md)
 >
 > Rate the state along ordered levels.
 
-> **[Noul](https://docs.typesafe.ai/primitives/noul.md)**
+> [card] [Noul](https://docs.typesafe.ai/primitives/noul.md)
 >
 > Get the probability that a statement is true.
 

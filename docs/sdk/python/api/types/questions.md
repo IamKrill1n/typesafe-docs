@@ -74,47 +74,47 @@ Description of the no outcome as text, an asset, a JSON object, or an array; `No
 
 `pydantic-model`
 
-**Implementation**
+> [tab] Implementation
+>
+> Copy signature
+>
+> <pre tabIndex="0" aria-label="SDK signature">
+>   \`Noul
+>
+>   (
+>
+>   \*\*
+>
+>   data
+>
+>   :
+>
+>   &#x20;
+>
+>   [Any](https://docs.python.org/3/library/typing.html#typing.Any)
+>
+>   )\`
+> </pre>
 
-Copy signature
+> [tab] Overload 1
+>
+> Copy signature
+> <pre tabIndex="0" aria-label="SDK signature">`Noul(
+> &#x20;   \*,
+> &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
+> &#x20;   instructions: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
+> &#x20;   criteria: [NoulCriteria](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria) | None = ...,
+> )`</pre>
 
-<pre tabIndex="0" aria-label="SDK signature">
-  \`Noul
-
-  (
-
-  \*\*
-
-  data
-
-  :
-
-  &#x20;
-
-  [Any](https://docs.python.org/3/library/typing.html#typing.Any)
-
-  )\`
-</pre>
-
-**Overload 1**
-
-Copy signature
-<pre tabIndex="0" aria-label="SDK signature">`Noul(
-&#x20;   \*,
-&#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
-&#x20;   instructions: [Content](https://docs.typesafe.ai/sdk/python/api/types/common.md#typesafe_sdk.Content),
-&#x20;   criteria: [NoulCriteria](https://docs.typesafe.ai/sdk/python/api/types/questions.md#typesafe_sdk.NoulCriteria) | None = ...,
-)`</pre>
-
-**Overload 2**
-
-Copy signature
-<pre tabIndex="0" aria-label="SDK signature">`Noul(
-&#x20;   \*,
-&#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
-&#x20;   instructions: None = ...,
-&#x20;   criteria: _DescribedTrue | _DescribedFalse,
-)`</pre>
+> [tab] Overload 2
+>
+> Copy signature
+> <pre tabIndex="0" aria-label="SDK signature">`Noul(
+> &#x20;   \*,
+> &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
+> &#x20;   instructions: None = ...,
+> &#x20;   criteria: _DescribedTrue | _DescribedFalse,
+> )`</pre>
 
 Bases: `_Question`, `wire.NoulQuestion`
 
@@ -126,7 +126,7 @@ See the [noul primitive](https://docs.typesafe.ai/go/noul.md) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json
 > > {
@@ -360,7 +360,7 @@ See the [choice primitive](https://docs.typesafe.ai/go/choice.md) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json
 > > {
@@ -576,7 +576,7 @@ See the [score primitive](https://docs.typesafe.ai/go/score.md) for details.
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ```json
 > > {
@@ -786,7 +786,7 @@ def locate_dog(client: TypeSafeClient, photo: Path) -> BoxAnswer:
 >
 > **Show JSON schema:**
 >
-> > **Details**
+> > [accordion] Details
 > >
 > > ````json
 > > {

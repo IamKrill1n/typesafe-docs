@@ -22,43 +22,43 @@ System One is TypeSafe's model for building AI-powered software, not agents. It 
 
 TypeSafe is designed for building **AI-powered software**, where code owns the workflow and AI handles narrow, structured decisions.
 
-**Traditional software**
+> [tab] Traditional software
+>
+> Traditional code is a complex decision tree made from simple software primitives. Because each primitive is reliable, developers can compose them into higher-level abstractions.
 
-Traditional code is a complex decision tree made from simple software primitives. Because each primitive is reliable, developers can compose them into higher-level abstractions.
+> [tab] LLM agents
+>
+> An agent processes instructions and chooses its next step. This works well when a person is monitoring the process, but every loop introduces another opportunity to go off the rails.
 
-**LLM agents**
-
-An agent processes instructions and chooses its next step. This works well when a person is monitoring the process, but every loop introduces another opportunity to go off the rails.
-
-**AI-powered software**
-
-Code handles deterministic work and owns the control flow. The model appears only where the system needs programmable common sense or needs to interpret unstructured data. Each AI task is kept atomic and constrained.
+> [tab] AI-powered software
+>
+> Code handles deterministic work and owns the control flow. The model appears only where the system needs programmable common sense or needs to interpret unstructured data. Each AI task is kept atomic and constrained.
 
 ![Traditional software, agents, and AI-powered software shown as three different system architectures.](https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-light.webp?fit=max\&auto=format\&n=aFVnpmCIX68NpsV1\&q=85\&s=35c7622176190d1b1f19dc712f2fbf11)
 
 ## What makes System One composable
 
-> **Structured**
+> [card] Structured
 >
 > System One is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
 
-> **Parallel**
+> [card] Parallel
 >
 > Questions are evaluated independently and in parallel. One primitive's result does not become hidden context that changes another primitive's result.
 
-> **Comparable**
+> [card] Comparable
 >
 > Outputs are sortable and can drive smart `if` statements, thresholds, and comparisons.
 
-> **Fast**
+> [card] Fast
 >
 > Most calls complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
 
-> **Calibrated confidence**
+> [card] Calibrated confidence
 >
 > [RLCD](https://docs.typesafe.ai/introduction/machine-learning-primer.md) communicates uncertainty through calibrated probabilities instead of tending toward overconfidence.
 
-> **Self-consistent**
+> [card] Self-consistent
 >
 > System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md).
 
@@ -70,7 +70,7 @@ Because every output is constrained to the supplied options, the model returns a
 
 Keep deterministic work in code. It is reliable and cheap. Avoid agent `while` loops when a software workflow can express the same behavior.
 
-> **Example: keep deterministic rules in code**
+> [accordion] Example: keep deterministic rules in code
 >
 > ```python theme={null}
 > days_overdue = (today - invoice.due_date).days
@@ -85,7 +85,7 @@ Browse the [System One patterns](https://docs.typesafe.ai/patterns.md) for bound
 
 Include only the context relevant to the current questions. This helps the model avoid distractions and context rot. Do not rely on knowledge stored in model weights when current information can come from your own knowledge base.
 
-> **Example: send only relevant context**
+> [accordion] Example: send only relevant context
 >
 > Try it in the Playground →
 
@@ -93,7 +93,7 @@ Include only the context relevant to the current questions. This helps the model
 
 Use nested JSON for the `state` and `questions` fields. Point questions at specific values when that removes ambiguity, and include the backtick characters around each path inside the question.
 
-> **Example: reference a nested value**
+> [accordion] Example: reference a nested value
 >
 > Use a backticked dot-and-index path to point a question at a specific nested value, such as `support.tickets[0].message`.
 >
@@ -107,13 +107,13 @@ Ask the most explicit, narrow, specific, atomic questions you can. Break down co
 >
 > This is probably the most important concept in this guide. Broad questions hide several judgments behind one answer. Atomic questions expose those judgments so you can inspect, tune, and combine them in code.
 
-> **Example: decompose spam detection**
+> [accordion] Example: decompose spam detection
 >
 > Try it in the Playground →
 >
 > Try it in the Playground →
 
-> **Example: verify a tool-call trace**
+> [accordion] Example: verify a tool-call trace
 >
 > Try it in the Playground →
 >
@@ -129,7 +129,7 @@ Structure helps in these situations:
 * Part of the question comes from your code. When a value comes from a database, put it in its own field instead of splicing it into a string template.
 * Several questions have similar instructions. A request takes one state and can include multiple questions. Adding supplementary data can help make questions distinct.
 
-> **Example: reference a record from your code**
+> [accordion] Example: reference a record from your code
 >
 > This Noul question compares a resume in the state against a record from a candidate database. The record goes into `potential_duplicate` as it is, and the question refers to it by name.
 >
@@ -139,7 +139,7 @@ The "potential\_duplicate" data sourced from code can change over time. The "que
 
 The descriptions inside `criteria` can be objects too. For a Choice question, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
 
-> **Example: define contrastive Choice criteria**
+> [accordion] Example: define contrastive Choice criteria
 >
 > Try it in the Playground →
 
@@ -163,7 +163,7 @@ See the [Speculative Fan-Out pattern](https://docs.typesafe.ai/patterns/fan-out.
 
 Combine independent answers with deterministic rules or weighted sums. For learned composition, use the probabilities as features in a downstream classical machine-learning model.
 
-> **Example: combine signals with a weighted score**
+> [accordion] Example: combine signals with a weighted score
 >
 > ```python theme={null}
 > answers = response.answers
@@ -182,7 +182,7 @@ Combine independent answers with deterministic rules or weighted sums. For learn
 
 Make code take different actions for confident and unconfident answers. Escalate uncertain cases to a person or a more expensive reasoning model. Test thresholds by plotting confidence against accuracy on your data. For a Noul, a good starting point is 0.7 for yes and 0.3 for no; see [Reading a Noul](https://docs.typesafe.ai/primitives/noul.md#reading-a-noul).
 
-> **Example: route by confidence**
+> [accordion] Example: route by confidence
 >
 > ```python theme={null}
 > answer = response.answers["card_help_topic"]

@@ -1,45 +1,32 @@
 # SDE cascade
 
-> Uses a 2-stage structured-data-extraction cascade (mini → verify → reasoning) to get most of the quality of a big reasoning model at a fraction of the cost.
+> Extracts structured data with a cheap model, checks each field with TypeSafe, and escalates to a reasoning model only when a check fires.
 
 * Overview
   * big reasoning models extract structured data well, but are slow and expensive
   * small models are cheap, but make mistakes
-  * a *cascade* gets most of the quality at a fraction of the cost
-  * the models we use, and their price (\$ per 1M tokens, input / output; standard rates
-    checked September 15, 2026):
-    * rung 0 (mini): [`gpt-5.4-mini`](https://developers.openai.com/api/docs/models/gpt-5.4-mini)
-      at \$0.75 / \$4.50
-    * rung 1 (reasoning): [`gpt-5.5`](https://developers.openai.com/api/docs/models/gpt-5.5)
-      at \$5.00 / \$30.00 (roughly 7x the mini)
-    * verifier: TypeSafe `jev-1.12` at \$0.042 / \$0.00 (output tokens are free;
-      [published Jev pricing](https://typesafe.ai/blog/introducing-system-one-models-and-jev))
+  * a *cascade* runs the small model first and pays for the big one only when a check
+    flags the small model's answer
+  * the models we use:
+    * rung 0 (mini):
+      [`gpt-5.4-mini`](https://developers.openai.com/api/docs/models/gpt-5.4-mini)
+    * rung 1 (reasoning):
+      [`gpt-5.5`](https://developers.openai.com/api/docs/models/gpt-5.5)
+    * verifier: TypeSafe `jev-1.14.0`
 * Algorithm
   1. **Extract** with a cheap/small model.
-  2. **Verify** with **TypeSafe** primitives: a per-field yes/no ("Noul question")
-     question
-     * (e.g. "is this value absent from the source?", "was it lifted from unrelated
-       text?"), each returning P(something is wrong).
+  2. **Verify** with **TypeSafe**: ask yes/no questions ("Noul questions") about each
+     field, such as "is this value absent from the source?" or "was it lifted from
+     unrelated text?"; each returns P(something is wrong).
   3. **Escalate** to an expensive reasoning model if a verifier signal fires; otherwise
      keep the cheap answer.
-* This Cookbook
-  * walks one real example end-to-end, then shows the tradeoff across 100 prompts
-  * note: the two extraction rungs use text-mode OpenAI
-  * we do *not* use structured outputs, tool calls, or json mode, because:
-    * a *schema following* mistake is not the mistake we expect an LLM to make (it's
-      easy
-      to make synthetic data for this)
-    * if an LLM does fail to follow the schema, it's almost always very confused, so
-      constrained decoding doesn't fix the underlying issue
-    * we encourage you to try them though!
 
 ## Setup
 
-* install the dependencies (the TypeSafe verifier client is served from TypeSafe's package
-  index):
+* install the dependencies:
 
 ```bash
-pip install openai datasets jsonschema ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install openai jsonschema ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
 * then set `OPENAI_API_KEY` and `TYPESAFE_API_KEY` in your environment
@@ -47,18 +34,18 @@ pip install openai datasets jsonschema ipython 'cooksafe>=0.2.0,<0.3.0'
 ```python
 import json
 import os
+import urllib.request
 from pathlib import Path
 
 import jsonschema
 from cooksafe import JsonCache, make_playground_link
-from datasets import load_dataset
 from IPython.display import Markdown, display
 from openai import OpenAI
 from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
 
 MINI = "gpt-5.4-mini"  # rung 0: cheap + fast
 REASONING = "gpt-5.5"  # rung 1: strong, run with reasoning_effort="high"
-TS_MODEL = "jev-1.12"  # the TypeSafe verifier model
+TS_MODEL = "jev-1.14.0"  # the TypeSafe verifier model
 FIRE_T = 0.7  # escalate if any per-field P(wrong) exceeds this; also the "<== FIRES" display marker
 
 oai = OpenAI()
@@ -68,18 +55,23 @@ ts = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=30.0)
 
 ## Step 1: the data
 
-We choose a huggingface dataset called scrapegraphai
+* `example.json` holds one page written for this cookbook, in the shape of a row from
+  [ScrapeGraphAI-100k](https://huggingface.co/datasets/scrapegraphai/scrapegraphai-100k):
+  a prompt, a JSON Schema, and the page text as a scraper captured it
+* the code below downloads it from typesafe-public-examples unless it is already on disk
 
 ```python
-SCRAPEGRAPHAI_REVISION = "4bb9fba1dff9181c5acdb60a5a26fea62fa54fe9"
-row = load_dataset(
-    "scrapegraphai/scrapegraphai-100k",
-    revision=SCRAPEGRAPHAI_REVISION,
-    split="train",
-)[516]
-schema = json.loads(row["schema"])
-prompt = row["prompt"]
-content = row["content"]
+EXAMPLE = Path("example.json")
+EXAMPLE_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/sde_cascade/example.json"
+)
+if not EXAMPLE.exists():
+    urllib.request.urlretrieve(EXAMPLE_URL, EXAMPLE)
+example = json.loads(EXAMPLE.read_text())
+schema = example["schema"]
+prompt = example["prompt"]
+content = example["content"]
 
 print(
     f"""
@@ -101,144 +93,88 @@ CONTENT
 ```text expandable
 PROMPT
 ===========
-Find registration open date fall semester for New York University in New York, NY for the 2024-2025 school year.
+Find the date fall registration opens at Wrenfield Community College in Wrenfield, Oregon, for the 2026-2027 school year.
 
 SCHEMA
 ===========
 {
+  "title": "RegistrationOpen",
+  "type": "object",
   "properties": {
     "registration_open_date": {
-      "description": "The date that registration opens for the fall semester. MUST be in the format mm/dd/yyyy. For example, for a college in the 2024-2025 school year, it might be something like 09/05/2024. Return a blank string if you are unsure.",
       "title": "Registration Open Date",
-      "type": "string"
+      "type": "string",
+      "description": "The date registration opens for the fall semester, in mm/dd/yyyy format, such as 08/03/2026. Return a blank string if you are unsure."
     },
     "description": {
-      "description": "A brief description of the registration open date. For example, 'Registration opens for the fall semester'.",
       "title": "Description",
-      "type": "string"
+      "type": "string",
+      "description": "A short description of the registration open date, such as 'Registration opens for the fall semester'."
     }
   },
   "required": [
     "registration_open_date",
     "description"
-  ],
-  "title": "RegistrationOpen",
-  "type": "object"
+  ]
 }
 
 CONTENT
 ===========
-Skip to content Skip to current page navigation
+Skip to content
 
-[ ](https://www.nyu.edu/)
+[Wrenfield Community College](https://www.wrenfield.example/)
 
-Search Site
+  * [Academics](https://www.wrenfield.example/academics)
+  * [Admissions](https://www.wrenfield.example/admissions)
+  * [Student Life](https://www.wrenfield.example/life)
+  * [About](https://www.wrenfield.example/about)
 
-[ ](https://www.nyu.edu/)
-
-  * [ Academics](https://www.nyu.edu/academics.html)
-  * [ Admissions](https://www.nyu.edu/admissions.html)
-  * [ Research](https://www.nyu.edu/research.html)
-  * [ University Life](https://www.nyu.edu/life.html)
-  * [ About](https://www.nyu.edu/about.html)
-
-All NYU
-
-#  Mobile Navigation 
-
-[ ](https://www.nyu.edu/)
+[Log In](https://my.wrenfield.example/)
 
 Search Site
 
-  * [Academics](https://www.nyu.edu/academics.html)
-  * [Admissions](https://www.nyu.edu/admissions.html)
-  * [Research](https://www.nyu.edu/research.html)
-  * [University Life](https://www.nyu.edu/life.html)
-  * [About](https://www.nyu.edu/about.html)
+# Events Calendar
 
-All NYU
-
-Info for
-
-  * Back to main menu
-  * Info for 
-
-    * [Students](https://www.nyu.edu/students.html)
-    * [Faculty](https://www.nyu.edu/faculty.html)
-    * [Alumni](https://www.nyu.edu/alumni.html)
-    * [Employees](https://www.nyu.edu/employees.html)
-    * [Community](https://www.nyu.edu/community.html)
-
-[Log In](http://home.nyu.edu/)
-
-Info for
-
-  * [Students](https://www.nyu.edu/students.html)
-  * [Faculty](https://www.nyu.edu/faculty.html)
-  * [Alumni](https://www.nyu.edu/alumni.html)
-  * [Employees](https://www.nyu.edu/employees.html)
-  * [Community](https://www.nyu.edu/community.html)
-
-[Log In](https://home.nyu.edu/)
-
-Search Site Search
-
-#  Events Calendar 
-
-Search Events 
+Search Events
 
 Apply Reset
 
-  * [About the Events Calendar ](https://www.nyu.edu/employees/resources-and-services/media-and-communications/digital-communications/university-events-calendar.html)
-  * [Events Calendar Tutorial ](https://www.nyu.edu/employees/resources-and-services/media-and-communications/digital-communications/university-events-calendar/tutorials.html)
-  * [Report issue or provide feedback ](https://nyu.service-now.com/sp?id=sc_cat_item&sys_id=7698dd2a98bcf4004c8c03063d84e274)
+## Fall 2026 Census Date
 
-Search Filters Calendar
+Monday, September 14, 2026 · All day · Online
 
-New York University 
+The census date is the last day to drop a fall class and get a full tuition refund. Classes
+dropped after this date stay on your transcript with a grade of W.
 
-Equal Opportunity and Non-Discrimination at NYU - New York University is committed to maintaining an environment that encourages and fosters respect for individual values and appropriate conduct among all persons. In all University spaces--physical and digital--programming, activities, and events are carried out in accordance with applicable law as well as University policy, which includes but is not limited to its Non-Discrimination and Anti-Harassment Policy. 
+[Add to calendar](https://events.wrenfield.example/fall-2026-census-date.ics)
 
-Unless otherwise noted, all content copyright New York University. All rights reserved. 
+Related: [Academic calendar](https://www.wrenfield.example/academics/calendar) ·
+[Drop a class](https://my.wrenfield.example/drop)
 
-  * [Search](https://search.nyu.edu/)
-  * [Campus Map](https://www.nyu.edu/map.html)
-  * [Events](https://events.nyu.edu/)
-  * [Contact Us](https://www.nyu.edu/contact-us.html)
-  * [Give](https://www.nyu.edu/about/giving.html)
-  * [Copyright & Fair Use](https://www.nyu.edu/copyright-and-fair-use.html)
-  * [Privacy](https://www.nyu.edu/privacy.html)
-  * [Accessibility](https://www.nyu.edu/accessibility.html)
-  * [Feedback](https://www.nyu.edu/#feedback.html)
+Wrenfield Community College
 
-  * [New York Campus](https://www.nyu.edu/)
-  * [Abu Dhabi Campus](https://nyuad.nyu.edu/)
-  * [Shanghai Campus](https://shanghai.nyu.edu/)
+  * [Campus Map](https://www.wrenfield.example/map)
+  * [Contact Us](https://www.wrenfield.example/contact)
+  * [Privacy](https://www.wrenfield.example/privacy)
+  * [Accessibility](https://www.wrenfield.example/accessibility)
 
-  * [![](https://events.nyu.edu/live/resource/image/_i/themes/global/images/icons/facebook.rev.1773448757.svg)](https://facebook.com/)
-  * [![](https://events.nyu.edu/live/resource/image/_i/themes/global/images/icons/linkedin.rev.1773448758.svg)](https://linkedin.com/)
-  * [![](https://events.nyu.edu/live/resource/image/_i/themes/global/images/icons/x.rev.1773448757.svg)](https://x.com/)
-  * [![](https://events.nyu.edu/live/resource/image/_i/themes/global/images/icons/instagram.rev.1773448757.svg)](https://instagram.com/)
-  * [![](https://events.nyu.edu/live/resource/image/_i/themes/global/images/icons/youtube.rev.1773448758.svg)](https://youtube.com/)
+© 2026 Wrenfield Community College
 ```
 
-* This row is an **NYU events-calendar page** ("Fall 2024 Census Date"):
+* This page is a college **events-calendar page**:
   * the schema asks for just two fields: `registration_open_date` and `description`
-  * the prompt scrape captured only calendar nav and boilerplate: **there is no
-    registration date, or description**
-  * note the schema's `description` field even ships an *example* value ("Registration
-    opens for the fall semester") in its own field description
+  * the page's one event is the fall census date: it gives **no registration date and no
+    description of one**
+  * note the schema's own text for `description` includes an *example* value:
+    "Registration opens for the fall semester"
 * so a well-behaved extractor should *decline* to invent the fields the page doesn't
   contain
-* let's see if the small model does the right thing!
 
 ## Step 2: extract with the mini model (text mode)
 
-* note: `gpt-5.4-mini` is very stochastic on this input -- even at `temperature=0` it
-  invents a different `description` on nearly every run. For a reproducible walkthrough we
-  **hard-code** the one canonical fabrication the rest of this notebook explains (and that
-  the verifier flags at P(wrong) > 0.8). A real pipeline would just take `extract(MINI,
-  prompt, schema, content, temperature=0)` directly.
+* both rungs reply in plain text, not structured outputs, tool calls or JSON mode: the
+  mistakes this cascade catches are schema-valid, and constrained decoding would only hide
+  a model that breaks the schema because it misread the page
 
 ```python expandable
 EXTRACT_SYSTEM = (
@@ -246,8 +182,8 @@ EXTRACT_SYSTEM = (
     "Follow any value format specified by the schema or its field descriptions."
 )
 
-# LLM and TypeSafe calls are cached to ``json_cache.json``, which ships with the cookbook, so
-# re-rendering reproduces the published results with no API spend; delete the file to re-run live.
+# LLM and TypeSafe calls are cached in ``json_cache.json``, so a re-run reuses earlier answers
+# instead of calling the APIs again; delete the file to call them fresh.
 json_cache = JsonCache(Path("json_cache.json"))
 
 @json_cache
@@ -277,23 +213,17 @@ def extract(
         kwargs["temperature"] = temperature
     text = oai.chat.completions.create(**kwargs).choices[0].message.content
     # The prompt asks for ONLY a JSON object, so parse the reply as-is -- no regex fishing a
-    # substring out of a malformed reply. If ``json.loads`` fails, treat it as an empty extraction
-    # (the record-level analog of NaN): every field reads as absent, which the verifier flags and the
-    # gate escalates -- the safe direction. Schema-following errors are rare here (see the overview).
+    # substring out of a malformed reply. If ``json.loads`` fails, treat it as an empty extraction:
+    # every field reads as absent, which the verifier flags and the gate escalates -- the safe
+    # direction.
     try:
         return json.loads(text)
     except (ValueError, json.JSONDecodeError):
         return {}
 
-# Hard-coded canonical fabrication (see note above); a real pipeline would use extract(MINI, prompt, schema, content, temperature=0).
-mini_record = {
-    "registration_open_date": "",
-    "description": "Registration opens for the fall semester",
-}
+mini_record = extract(MINI, prompt, schema, content, temperature=0)
 print("mini extraction:\n", json.dumps(mini_record, indent=2))
 
-# The record is a perfect fit for the JSON Schema -- and still wrong. Schema validation is necessary
-# but not sufficient: it catches structural errors, never semantic ones. That gap is the whole point.
 print("\nschema-valid:", jsonschema.Draft202012Validator(schema).is_valid(mini_record))
 ```
 
@@ -310,31 +240,32 @@ schema-valid: True
 * The record is **schema-valid** (the line above prints `True`), yet it's wrong:
   * `registration_open_date` is left blank, which matches the page: it states no date
   * but `description` is fabricated: the page never describes a registration date, so
-    mini invents a plausible one. It may parrot the schema's own example, "Registration
-    opens for the fall semester", or narrate "...was not found in the document"
+    mini copies the schema's own example, "Registration opens for the fall semester"
   * a JSON-Schema check can't see this. A cheap model produces confident,
     schema-satisfying fabrications of this kind, and catching them is the job of a
     semantic verifier
 
 ## Step 3: verify with TypeSafe
 
-* the verifier is **TypeSafe**; for each field we build a `Noul` question:
+* the verifier is **TypeSafe**; for each field we build several `Noul` questions, each:
   * a narrow yes/no, framed so that `true` = something is wrong (escalate)
 * TypeSafe returns a calibrated `noul` = `P(true)` per question, in one system_one call
 * the question set:
   * one holistic **`__overall__::judge`** head ("should this record be escalated?"). We
-    compute and display it to contrast a whole-record judgment with the per-field heads,
-    but the gate in Step 4 does **not** use it -- escalation is driven by the per-field
-    battery.
+    compute and display it to contrast a whole-record judgment with the per-field heads;
+    it does not decide escalation, the per-field battery does.
   * a per-field battery
     * non-empty fields get the full set of heads
     * empty fields (null / "" / \[]) get only the `absence_wrong` head
-  * (the full pipeline also has a `spurious` head for whole containers and an overall
-    `difficulty` score; not shown here, to keep this walkthrough to the two gating heads)
 * **The TypeSafe Way: Decomposition**
-  * Notice how everything is *programmatically decomposed*, this is TypeSafe way.
-  * Decomposition maximizes the intelligence of every prompt, and makes the algorithm
-    tunable and interpretable.
+  * we split the check in code into narrow questions, one per field and failure mode,
+    never one question about the whole record
+  * a flag then names the field and what is wrong with it, and each question can be
+    reworded or re-thresholded on its own
+  * a single "is this extraction good?" returns one score that cannot say which field
+    went wrong
+  * see
+    [Decompose the questions](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md#decompose-the-questions)
   * ![this is the way](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/sde_cascade/this_is_the_way.jpg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=10bd7d99dc5f679022bb6763dde57330)
 
 ```python expandable
@@ -405,7 +336,6 @@ ABSENCE_CRITERIA = NoulCriteria(
     true="a value was wrongly omitted", false="returning nothing is correct"
 )
 
-# The pipeline also asks one holistic, whole-record head: "should this be escalated?"
 OVERALL_JUDGE = (
     "Is this extracted record an incorrect extraction -- some value unsupported by the source or "
     "not conforming to the schema, required information missing or wrong, or some field hallucinated -- "
@@ -435,13 +365,15 @@ def field_spec(name: str) -> dict:
 
 def build_questions(record: dict) -> dict[str, Noul]:
     """The verify question set: one holistic ``__overall__::judge`` head plus a per-field battery,
-    keyed ``field::metric`` (mirrors build_verify_prompts)."""
+    keyed ``field::metric``."""
     questions: dict[str, Noul] = {
         "__overall__::judge": Noul(
             instructions=OVERALL_JUDGE, criteria=OVERALL_JUDGE_CRITERIA
         ),
     }
-    for name, value in record.items():
+    # Loop over the schema, not the record, so a field the extractor left out still gets asked.
+    for name in schema["properties"]:
+        value = record.get(name)
         spec = field_spec(name)
         if is_empty(value):
             questions[f"{name}::absence_wrong"] = Noul(
@@ -472,7 +404,7 @@ def verify(record: dict) -> dict[str, float | str]:
     state = {
         "system_message": EXTRACT_SYSTEM,
         "instruction": "Extract the structured record from this document",
-        "source_text": row["content"],
+        "source_text": content,
         "schema": schema,
         "extraction": record,
     }
@@ -482,8 +414,6 @@ def verify(record: dict) -> dict[str, float | str]:
         "playground_link": make_playground_link(state, questions)
     }
 ```
-
-### Run the whole battery over the mini extraction
 
 ```python
 checks = verify(mini_record)
@@ -504,31 +434,35 @@ for fld, p in sorted(checks.items(), key=lambda c: -c[-1]):
 ```
 qid                                      P(wrong)
 --------------------------------------------------
-description::hallucinated                    0.95  <== FIRES
-description::off_target                      0.85  <== FIRES
-description::unreasonable                    0.58
-__overall__::judge                           0.56
-description::incomplete                      0.16
-registration_open_date::absence_wrong        0.14
-description::format_violation                0.10
-description::name_desc_mismatch              0.08
-description::type_mismatch                   0.02
+description::hallucinated                    0.98  <== FIRES
+description::off_target                      0.97  <== FIRES
+__overall__::judge                           0.90  <== FIRES
+description::unreasonable                    0.86  <== FIRES
+description::incomplete                      0.54
+description::name_desc_mismatch              0.46
+description::format_violation                0.41
+registration_open_date::absence_wrong        0.05
+description::type_mismatch                   0.04
 ```
 
-[Open this verification in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4CeZKCcA+omWQIYDmCpBpAmhDPlhQAnZlBT5qQmGJhCEYfGGYpm+AGZCIcRdHjIUZAHT4ASghSyk+CEgA2FfADdmtmAjISYABy8QhNBQAjBxQACwR8GmxjADEIW1sIAHd8ZiQHZ1cItT84ZQkvBCgASzVi+XxgyPCJKHC86yF8YoN1ctsFMHcoIWKvFGKbI1IAGnxSYqRJaQGbTnGQAFFsETFqiOmZOQU5KD8FDS1q4o9IWERUUYWyPiEoBDoolHnSAGUAaz7IiHw91H18B8vigfrAhHJUPgvGwIkhmI5iqxlIMkMRiKj0QBtfAAXQAFKEUCgvGRcAB6MlJKmGdIwQzyGBkgCUaIxSFeCGYd1CgJaHHRrOx+MJxNJFKpSRpFDpDOZrNZ+HwACp8NiAIJQZhdODFKBkYVEknkynU2n0sCM0Ra2i6oyEuC2FnoxUq9VgHVMFH6gmGsUmyVm2Vaj1kL2Ge2OhXK1Wmdyc7kG0XGiVSmUWslyMjxurhlAOp1WaPYgCqSGKjgQQlDKAcABlSghE0bxabpebGbYG7n81HXfg1YE+Cgm36U4H08xBzAUN3IwL52y1Ql8AA5bjF+XogDEioAshBAsVbBEV-DEcibOMF0KfUmWwG27KC6yOVy6ryaJvC66NdadXqR2TVs00tTVtVtWcCxdVU1XdE5QyGQD71TdsyWDeCwwjKCizMLM31CJD-RQ2VM2zUJIN7VVS3LStqzrBtCLHR9007NQEAo50iwHIdGOA1DJyHDi2S-JdbFXdcvwASSQHJ1D8L9oIAIVEd5vnwPJJnU5AYEo6TZJyJoFMVItXgsLpUG9EVmyI8dGWoGBzIMITjKLGJRBgWwa14h8QLJNR3M8ihnOMn9XDgMtvOIicwrLYLoMxRY4C8RIKAQdxItsslaGSiBUvcOKiwAYS0OAYDLLzb2spjfL2OBSvKoKsK-L9MVrCBWHwaSm2NUItHYzLn3RPSfgMozXVMhz9Es30gJ81D7Mcu08znb9VTc2BAoy5jGX8jaa2C0L4AiyrRz4oMYuKA7VUSnK8umu8bO2rKkpStKlp7TjXWKuqypaCgtpqkrfv2pqFxatqOq6k6er6qLGUG9kyI-CJX25L8d3wRYKws-BCpcZAlEMhdUffLGpqvRcfHsWMs2eBd4u46d1kx7HWjx48kEJ3FoeQzLste9wM3cW57jIABaNIwDFrMhARUWyUQMBimYCXObF2r6t1C8pjJJXWBaFx1aBstNVmHXforKs-rFhBWfFzUOcJq6Ert3H8c5rl8DQac-GVsSAdQ-ncreoWblkUXValmW5cFxXlcjo2fpN7WyF1xEDdsRPNdNr0yQt2jrdtqb1fdwmyQsEFehcd6VvisxfH8ZomDcRooU0BEunUNKwECFTuasv0zWj3UEDFpBkkMWqyTILwAH5ijAABeMgoDoU26D5OAADJKDIDel4AdgANgATgADjAMAACZmHPwIoDUAAWAAGZ-H6gM+oGfgBmZ+j+-sAZ9H4ICvgfR+CMvwkx5DEI8NAqxu0dlyL8K4EApF4EIVS1FLZ0QpqyRYABHGALh8AAHkfB+AsA1VInNVw2DFgAEROD0YoOo4Rm1SOINcxZ8Bi1XKg-A6DMFlmwX9JuvwSotACGpDSqBmCTEmB1NIAgkAIk0EgC44gwj5GQHsWQMIPCSzktQWi+BMyFDWAZZonNywLyIWJTIbgDE0OYD4TQXgq40HEZzGYqQ4A2EUcuQoVYhjGGkqkZcWCC41gKKIdwYsxZeFCFQLWYlDF6wzvE9x7URB1QUWMUQAwEQDHcPkmhRccZcgiJqcE5QFBDisakKAewhBKCQPcfASQWg8hcclLWgRjz4FsMwFIzAPBJAQMuUZ+BIlW2ib4TsUAKBjCSKEXUPJJhQFcF0DwgQmYnHwOPcQnYdRSJBM0VoK46GMJXr0Vh2tqEKDVKgYoYsAASXJRlkA0fgAACvEXUQVcHolLMeJg1gwiVk6VmA5EAAj5OXH8GgkI9heAoL0VghI+FoL8EImiszAWiVMYiQkHhSKy3kMYMaqooGETwtyOGcpPqqjxklGAHhdwuIDrKPIXhnZkwsoRcpTkBqUUxMVWRaxiz3SqmddMiKClizZc7AA4jRLlE4pwoDJPrBESBWDO2Kqi9FmKt74DcsUJoUrGw80eoDI1xKUAJ38haxVWZnY-N6M4RZ6rGTuPLKIRqy1sI-iae4UMh5OwVQHrNBlohRbhqPH9Z2MRu69ygO8H1ZItxsXkGm94QlmpMsxCg7FGC3asuladOaT5RUDn4PQ0Ik5ijlq8GywitItQMuDdSxterG3NpZa2ytxoyC9oxXIrtha2TxQAISYkFXbBlnYKyhxFggMkLCYRkg3uXeogtWCJF7rYDdeR2Cp11EMPysTBwQHzXIRwhgACMB8D7f0fo-M+B8ACsB9DBkEcKwJkhFdoIBvfmqe3bMRzoXVNJdNFV3h3XZu9g27ii7toPuw9LgT36I3X8VOnYkDvHkJMQw96n0vrfR+79Z8-0AaAzawjxGlZIEnloRlq0oPzptUKowmVl3rszGunDKGd0QsYNqrDx7kOCwvTrTAZHbYUdfe+z9P66OAcIgpiDoroM8cXfx+DQnEMifXWJvdqcD0HmwzJ89+GN1TBUKwHJimH3PpU9R9T-7NM2smNQNgLmdNFr09GikvG4MruM3cJDp6zNofE5h6z0nYt2cvRQIcMBAjsXI+5qjanaPeYY6Fsk6XpyZfYkF4SAoQBjFICveozB5gkBAFkoJxSyBNdIHIfWkhtZ0AgIUJAdAlCfjwPgZr2zmH9BRC8EAaAagjYiFo8Q3WTjCHuQN5AHhLEQvUC4MSWZGBwOMLuYsrw0CVAiJpXbBk8jiDqrrMAJWKAvdiH4AQmBmAvQQGMSxqg9gJAQOwBpu2r7Pyvo-MWYOr5ftqL1eI+BUpcjGC0dSDrLsSD6mEBRgzijEfwM-E+ZJn5frJNDx+xgzAWCEFYVQ-S0iqUkDj0oiO+CpDkPgMqZBZDsSuKQAYKBjyzbMD19b7CyHIHwPQ5QHAasLBrIUWbTO9WkAAL61fAN0Xo025hjYm1rvoZtZtqkqL0BAahFAG511YCAFvdurd6+wzbVhFtvaaFgL7yUfv4AAOQi7WyIJ3g3tvvZu-tiQGHjFCB94YPnIABdC7G6QehVujdy-5xQRXSfyDCAUWr9XCw5CEItfIeYmIutA4D3153w2Zdx8m9rtPOINcJ9l1wEA-vHcogl6idP8fM9t4WAeAAVkUZ4IAC+kEEKsNPBBmsO7Fyifrg3a+jfb-X1PM3s+d8X5eZ3Iemhh+XId9wcD89y5a5oJKBgMDYDG0QUgdB+uW320-3AuBh8OXYJ1-vWf2-jw8jjz82EBmC9Fm0kg8Gxw8GnwKQqF2H2GoSsWaV2HEBgLEBRB4V4RuEQCcBcBbi528AbikSqF2zDmi1bkOS8VuxxzOVILqFoGYDGCLxgBLwUEmFu3uRDBx3eySDUVYDGHe2wOyHaAUEbQSGkEmBlwUHiUx3OQkF6g8iCAiG6BcCkLUlUC+S5DgXUggC6FsFnjj2YTgWVh-xAMH35xqHgJaTESUQ2T8BQI+3W3QN1w138lsCzFm3tyKAQP2X+3sLH0cJny31V0nxAAX0DyXxr0W3f0nCzDaQeF4P8VMIH1mwANsCAMcykGcKmB-zKAmTADoBniKB-2hDCFm3COrxX0WzjwV3MJz16BVz7wb0Ny33b3mwiEW2qHyAqKDy2zkkPxqDcIO0j2O3wFO3Owx2u0GNyHyAe0vme1ezNXew92+1+3ez8MB2BymIiHJyh3B1h3qwgARyRyEBR3u3Ryy0x0QGxz1Vx3x0J2J1J3J0p3MEsFSEqCGSIwkFz1uJZ1K3ZwiAILkFjz72YNYPmDMNCLQICDoDyI6FmzjxkToEIVP1aIWHaPwAAANoT5BYSRDMSxFsoawxgkAPJbABCmglEiSHAAdjxsjjB6EIB3BmYyD2kngvEVBtirEOD2FdtMS4SCiiioACTmissyAxg8hPhbjdtqTTF3APJxBEi9UDCJ8NcjDKwTC9d+cpA6jVAHEIgkgpklSD0HAtBJFS8+83CPDs85BqcyxbjDlVlfiPBkCx988Ndmjrd384REBhtugGATg7s6hki-8Fg0iMjNgzYOstSQABTCjzESjlBQhZtPS08W8Ujs9ldWAN8bkWjdd28TdAgzcLdUyMDbdmYeiyzBtFAZc3cPtPdjwxg-dK8u899g9+jmYhiI8jtKwY848wTtgISdSoSVhYCCiBThcWzd8bd2ydtBjw8T8o9ES5EhsUTqA0Tk8mTICahsTRyxBcSBSCTnUxIzkgyeQbsRCOEsTSjQgCTQ8dzSybACSuT+SRD4yihMTZ5Oo7cHzN8nzCTr8ll8BP8wBgc2AVzqBmZMSbyCSXAbBedVSFh1Sq5TCdTPCdycTxz8SdBmTKCzzOzLyfSIh3sWgPBMTHykBMS48rS6i+TMK8T8iCSzzmSLz8iDkvsIhDFyK-zKL3SFgKL39aiAzNCUBgyYzajUi+B0i+9gCsiozci3yhTEyyjs8KKaiMz28sycyptZ8FhCzizLdczrdrAfyIhKy2zJdXclj3dPtVjfcd8IiLKpgOyj9hiezo8QSNcByLSCBISNd6KJzt8pzHKZy+i5zsgFyRjKxlzJhkTHFdLNyWKMK9yYTDynBBghlPE+TaiRSighltgQcdy4yhTPy1c1TehjDGtxK0Ls86KUqDzsKER4gZdtyOi8rKkFBMScrqLq5aLkqnDUrsK-hbtICfhdsuhNkOqsTuqJ9QiBLcAyo5BRkbBJxE858M9QzSBwyZLMjQChgFL8j3yoBlLkzVKeL1LNr6i88mjzrs99LygSyeKTKKzgqNtqyrK4gbKGzvdmzRcQrrBZz7yIrj8oqPL+yEBi9Byxs-KFgAqRDJy-q3qwqga9sQb3KYrVz4qNyQAICoK4bGLrAkAltG1xBVAlqbg4R+kIggkKaOkpKFBKDG0KxAixyXLVkyLirzFSrELSBkLNT1r48ar28ybOQKbVrqbaJLwkh6aYVxAmblD6qFAoDcCsger3C+qFaBqMD9lyaVqqa+LSB5qxDXASg2EfLxsNq6jtqNdZK9qciYzObiiYybyUzbr0zLqtKbqjKEqQB7rzdDKdKyzTK5TEbeiXdazrL6y7Lfqq8w6D9OzIr3K+zQSIaWCobfLhz-LFaGL4SgrQ6qzkaBjga3LT9oq+8kS1yfbca6qBqGqCaCDyF-AKhggKTUhAg4jxBDg4AxhSC11IhBAVTQi+aqqBazD0KIhdza6sKCbfD8BjaJC2EMCZDKDudG7iCgL1j26AQu6e6ahWSltBA1brT28a6Z866OhnyPBV6iDm6Qg96+6ngDbNdvaUR39bc1BHguR2Bx9R6NKwypKIyQDsjoyBbHbjrnakzXaX6XD5c-66sfjsyvbA78y9LTcHqA7G8g6Xr86nKayaA6yVivcmyHKkbnLwrUaS6o9k6vLU7wTobM7Ybs7Ar28SG462bi7uzS6hAMa4rUSUHErWrMdEN+7sA9sjw1J2BSTJgJkHA5AiDmYbiOo+SwHcrcyxSxgbhmZ9SOkplW1AcDgr8kCF59BiEnhB7yq+QULqq3Bx6hHyDIBcLYV8BJGWCibqYskO5ib9kBTMCtG8CDTdGySKgu6jHHJTHD7LTerbH97nHtJpHqY5GKFtzvH4bZqPSeL387Dvs18Lbf8raAGdrIywCHbFKEyIGVL281K+8JLMyEHtLMH+Hfa0H-aKLnqvCcHQrw78HI7CHGz7LXq2HyGuzFy4FqHC9aH07IgGGp8mHUmWGBmC6yGUbhnQaeHK7sbGSkqJ78aL6xGTzQQXFqdOKVaW5e7hHr6kn8A8RDkDTwgIUi6sSVGxFMTvKwBMSmRzGkKKqNSR7cmx7arBjLz9ljTqZqSSSyTW6uDbi9T-GWS+6Ln-BozXComAXhC2LNR+gedBHtGznyCEWDAn75qeS6AmrMq0Tmsan-8CmbbdrgGDqOgjqTqoHkHe93a6jPb0noHe8CzmnHquW2nLCFncGPrljbKiH+mOmAbC6E60auGxmK9IbzaYaZmp6c6wAEbY7Fn47XLOGlzy6VzeH1zGnNnBHJ6z7p7dnSWZdOyZjxB3t8N1tJhWgWFelb6oKKLMTd6Nh6CGguqB9PWHlmZoTtbaWoyrn2J9U8HshbWxhgZxTlF4AtI4AssqxVkvAPmyqvnLH+a-mhb5d+rzW1WCSrWaBBGXXOxgnbXW4HWRAnWkWFgaLbGzWxyi2JBkQyA8jBGeTA2a2VyCXZrVcL8XFigAA1AuGwe-RwR9CfIAA)
+[Open this verification in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4CeZKCcA+omWQIYDmCpBpAmhDPlhQAnZlBT5qQmGJhCEYfGGYpm+AGZCIcRdHjIUZAHT4ASghSyk+CEgA2FfADdmtmAjISYABy8QhNBQAjBxQACwR8GmxjADEIW1sIAHd8ZiQHZ1cItT84ZQkvBCgASzVi+XxgyPCJKHC86yF8YoN1ctsFMHcoIWKvFGKbI1IAGnxSYqRJaQGbTnGQAFFsETFqiOmZOQU5KD8FDS1q4o9IWERUUYWyPiEoBDoolHnSAGUAaz7IiHw91H1iMQkICkABtADqciQZQQHXwAGEtHAYEgWg5EQkEOwALoAClCKBQXjIuAA9KSkpTDEkoTCOoYsMw4F5bAhSQBKEEg-D4ABU+FBAEEoMwunBilAyHiCUSSeTKUlqbT2mAGZgmSy2aJRbQJWROUCefyhWBxUxBlNpYTiWSKVSacg6arGczWaTRWayBb9dy+QLXhYuqh8AAZUoIK2y20KpWOlVqjVu2zhg1WP1CwJ8FCRm3y+3K2HO9WurWZmAoVMg0EhiCsfAASSQOblpLgFFj0PjLs1HK5QNeCGYd1C+FeLQ4QJBAGJ8ItHPoPPCXMglEI+0gB0O6rP56gyOvBT57KZ3OZ11OZzEXLZ8AAmAAMt4AbAjkGQYB4ACLKCfAoEAWRsJQKDGAd+loQIECaABGAAWMYH2ffAAHb8EFBJFGYBxUIAeTsSZfxBNAanuKYP0wmhmg8MIIlsZhqEwkIfjATQvFSdRr1+OimFSJAFHYcRVDUGAMIsFoLXwORhL44x4W4sh3BBFiIB8CpmDUGgmjCE4KI2FQHBsfAKFuSIRCmHo+nEJIWhHVRWBELprDUfBwUMdcTQUFAfhFVk+KHZtbQQXcDA7J0ExLUk1GvABaRCn2i0j3zIaKlBoQw9UrIEzDogICCFEUxQlX5lz8oQArzRUHU7Qtwp7bVCslUkfJXId2RQqtP1Y9ioHk8rW3bKqwu7N1lK8TKkEhONCwRJEUTRGbMXYdcjQFJdmXI-9mC8PqY0Grtix7PIxt9Y1EVQURxAAVSlfFrRbXaC3pYa2T+FQxFTFbQQABV6ZwoAoHb8ymp6DrdLxftECgPvTYV7nNQJimTFAAduqMKtC-bEy1KA4a9BGkah9cAEq70fF9JuquFETgZFUWRhbWSWycQDGUgyDqWhmHmEgQAGFBWReEAzFYE5hGUC0cMKYEWYWZHCkFiBAgAKyKZ4ZdIcGVKggZFLwfAebkEXJHFmw6C1pA6FSjg9Z5vmBb10hhdFkRZisSXkHwb8aCuUg5etrhyGESZWB98Bul6foLUF4iIitySsWdk2rHNjwci0mooowhTGE0sZJnwGnSTAMBSQoMuHDTvIUDGd9t3o-B7wADlJe8AGZSTi4wzAsIQrFUQI6KQd4JCDpA61KIy+FSOR8BRd85DckAAF9WbD9mI9d7nfZae2A8-cPLKj9XeYoeWHcD3ox9Drp18PuZz8FCRQj8cQb4syPDIgZyaPjo2xdd6wUtdI12kLZDwAByJ2xsAEp3UH4dYHEs60HcJpcBi8l4rwWHIAAjjAYo2x5iglIIbROrszZS0tj+a+B8P7S2xJg0gghVibxtsQhO0CLTkOQJQ7259qG31oYLKB-8JKwLTggzON5s4oKgqQDBMsQCa2ZAYDA2A9ZEFIHQM284RAJC0bgXASsYBgCWqwk+Z8A5ID4LYUOkxNiu33Ofes1FQg6SYRdCoux9i8WaEgPYQhdjiHcWICS0VooSC0BETIbhZ5kR8C-CoVQf43FkPcRo+ArHiD+JXYO3wEHs3qMwMYOC8HbF8ZXJOBcThejHukmkNhWBjHgTcRAbRpqhGvNISYP4FBhIic0cQZBn4iSCBEboLgel5NUGQPI-goIFwgF0WwAB+UOFlNLFC5mY4QbhBY-y8UIBQOk0i+P8YEgQKwLpH1XpnBSeyagHKOR4VQZzVYXLFiE++GDV4kI4abc2PCEAGOYIEBSfiHj1Kvts0+-sFhWJErYqYOzPlTC3iAJ0dAyCFCgGirwyhQiC1+SI-5FCrahz9oLSQwd+HvxYQHGOulf6kNEVLVO8Cf6SIkMg6gUE85WELsXUu5c4FCCriAuuHgm4t3bp3E8Pc+6VEHsPKltSJ7GX4EOCIc9ZAIEXj8hAuD8HyHmDshADCQDBICHQJ0gtQ55EmHQXBKCj70pqAAA0tfIa1Ko3VUQEMokCGSRK2CaU0E5tB+gOD2JiFFxhPwQHcPk24aSni-BsCofOP9JgVIAT-N1GKsVFF9W-XokEyBjDyJ8WpP8I30zkO+WwVlNBj1WcvVe6yoKbLRaawWqhokRCSPXSFrBjxaBaAEUOtzYVsPlbkzJrjVUeFeWIOR5qS13yQAYpATIHhvwYCcKudRu0wsFvCmxx87HIocWigt2LcX4sFuuwRx8KXnxVSHY+T66ULEfkMl+igaEwO-g89hxLk5AKtuKsB+BIGgZdiyt8IqJGcWkTyoQaDQ4lKNWAE1UgzWr09WAb1hYhFwcqWI9lGcUPcs0na5gDqnXUBdQseNia82EeIx0X1UVEZ5MPSODlKpUjiDdXisIvrKMRDdV+i0vrM3utvUW5ZDZgNSZkzYOTHha2BqMSYiIbB6NIoQaJ-FvqXA2F1XI9tvQNlbIILbPD9ypMcadMWhNHhMkF2UNuQT01t2tPgS0Dw0nAOycnS4O5592OXLEF61zXmUAcxcdkIT-n9N8XwCFgRrs3WrtXupzduA-b7pmd5gl0KLFwusYi+x3ob0qkxXesxYnysBwK+Sk9b7R4fvy6F++Adf3P38AB7LojVNMr+eBj2kHPASpg8I+Dn9WVIY5dRnOUEMPHywwQvWprzUuZVKRv+i2ptTBW1RpB621zH3tRbRj37SCseS5lg7hZfWOEGDlCIea-bFqKHRMp8mpOKagG61t5qO29Ds-rX2jmovute1xpwn2fzPa6D1TVCg3W-fC7YSLAdosfKtfF7JuRqI-B-ujgHFRscwty8vNdfXCsojkPRGwILd4w-MdOkAZ6atXrq2YkH96wiPqZx1yrbNus0o3sx0gg3-0FacggolJ3AHTZ-FB1IECFvkeW+I1bl2ZHob1Vgg1pTjW7bw-tmLxPDvn11zA-XknEFSJo7Im7hnHVuCY-1hYzjjOI7ABJpA32OmCXjmz7dA8IiFCEDcKwSRrEKE8x0+c7zmEVAN644LIOwdWYWJDrt2y4cB1UKzhPHPY9QQT-gJPIyMkQHEGnsZtuKjaQ8P23H+PZY1EtRJHSFf2cx7ywsArBiOkJC6duidFWed84vUiqQKLHH2dIML5rD7z7tZfZ1gO76ZcbsFgr4bSuv4q7I07jXNAtf11g8dvXiHs-ZDW8bzb+rDU7YIHtgjbeiM2od0vwQzO2f1dy5SuzowYx9wexAAD0J0z3-x9ViXfHiTmSCEDXgRBTBXEEODgDGGSWTW+0EHB2s3HCh27VL172cz-042Dz9VUEn1cBKBn1CXCU8xQN8DQMqAwLDVBX0HUE0DwKTVSSIOwG7x53gI8UQLez9Q4ISXQOELuFELVm+THyZwMS-jUEeCHAEmPUl152q0X1qyGHq0LEayKBF1azUNG3vlXlfX32l0-XFwfifkVyZ2V32SAKW2vwQFvx1y8NOzZXThfyNzQ3fzN0-0t2-2t1-yJzi3twDkd2AKCOQ1CNo09ygOdT90e3c0UJTUEA4l4y8nwHYCQDwVD2PDkE4PEB-m0mrQUwa0LVBxGwsjLRrgpxqH7Tr3ri8GDSz0ENOWKCDBUBvCeBIMLxs07Whwc12Xhw2EIJ0ETU81KPKNhAcE1g+0cg7zaThD6R-i6MHQ8F6MxAOAGMmBKGGJcEiEEHEKcwiREJKOQFWMqIQGqJcR0gANUNIHH1wHOK0E1F4TX251PUMNXkvWX2vSF0aKayBJazFxsOljsL32uEcN6wROP1cNP3cPP08IfyvysBm1rmg3v2ZW8JAJd05VQ1QVNzYUiJwytzcBtziOkI6CO1JMCPOxCLdwgIyLu2gLlxACe0DxoPix41GO8i2h7n0ycBcBiQIIeLkP8A8FxEyQHXCBomCMyzzz9TdW23kDdXZHGNICL2mNh1mIJwziEx0mHWPG0zGDKISFDSqXNFqT7VlLD3mIVO8DeNuLmJ2IUBFH6B1Wey6PlKUM8FQIMFH2+PUNwBzToA+3iCTj0Pn1BIWHBJmEFyBI31hK3za2cKRP0IPycPRJcL-SxIRI8JAzxOAOAVm2JKSLJJSMN25LfxpJAD1PpOiMZNiIQNoLZMm3V3JM1MpPd2u1Xlu29yyOlj3lyMkNixZLoMTK+wkVyHyHgT+GNkmFaGKFdHKAULzQKzdXwJqAKU5ky1+zGDSE8j71twHyX0zKGHwFxF1VYGMDjhzTGDmgMDGCeO0EQDgEgnj1cTGiNJABNIoPNKoJexFKQOXNRwQV3JZH3JFSrnSU3LFm3McRuQiwkIR1gpkJYAGDIBhGexzV4gDKGEwr3FXSXgUS2mKAADUa8LR1FHBoJl4gA)
 
-* TypeSafe concentrates the signal on the fields that are actually wrong.
-* Our results are calibrated: high on the field that is wrong, low on the field that is
-  correct, medium on a field that looks off without being clearly wrong
-* This is what a typesafe verifier buys you over a blunt "is this whole thing good?"
-  judge
+* Only the wrong field scores high:
+  * `description` fires `hallucinated` (0.98), `off_target` (0.97) and `unreasonable`
+    (0.86)
+  * the empty `registration_open_date` is right, and its `absence_wrong` head stays low
+    (0.05)
+* The holistic judge flags the record too (0.90), but only the per-field heads say which
+  field is wrong and why
 
 ## Step 4: the escalation gate
 
-* now we gate on **`any_flag`**: escalate if *any* field flag exceeds `FIRE_T` (0.7, set
-  above and shared with the `<== FIRES` marker in Step 3)
-* this is a `max`-style gate (escalate if *any* field fires), not a mean, so one confident
-  red flag is enough instead of being averaged into silence
+* now we gate on **`any_flag`**: escalate if *any* field flag exceeds `FIRE_T`
+* this is a `max`-style gate, not a mean, so one confident red flag is enough instead of
+  being averaged into silence
+* one threshold works only if the heads separate, scoring high on wrong fields and low on
+  right ones, as in Step 3
+* the verifier has to cost far less than the reasoning rung, or the cascade saves nothing
 
 ```python
 # any_flag is a per-field gate: the holistic __overall__ head is shown above but not part of it
@@ -548,8 +482,9 @@ for qid, p in sorted(fired.items(), key=lambda c: -c[1]):
 
 ```
 any_flag gate (threshold 0.7): ESCALATE
-  fired: description::hallucinated  (P=0.95)
-  fired: description::off_target  (P=0.85)
+  fired: description::hallucinated  (P=0.98)
+  fired: description::off_target  (P=0.97)
+  fired: description::unreasonable  (P=0.86)
 ```
 
 ## Step 5: escalate to the reasoning model
@@ -573,7 +508,7 @@ for name in mini_record:
 
 ```
 mini      : {"registration_open_date": "", "description": "Registration opens for the fall semester"}
-reasoning : {"description": "", "registration_open_date": ""}
+reasoning : {"registration_open_date": "", "description": ""}
 
 field-level diff (mini -> final):
   description: 'Registration opens for the fall semester'  ->  ''
@@ -582,54 +517,30 @@ field-level diff (mini -> final):
 * **The improvement**
   * The reasoning model drops the fabricated `description`, returning `""`
   * It recognized the page never describes a registration date, and declined to invent one
-  * The cascade turned a confident, schema-valid fabrication into an honest empty field
-  * And it only spent reasoning-model dollars on this one item *because the verifier told
-    it to*
+  * The cascade paid for the reasoning model on this item only because the verifier
+    flagged it
 
 ## Step 6: what this looks like on 100 prompts
 
-* **These are internal TypeSafe results**, produced with the general method above:
-  * the same `extract → verify → escalate` loop, `gpt-5.4-mini → gpt-5.5-reasoning`,
-    `any_flag` gate over the per-field heads, run over 100 scrapegraphai prompts
-  * each item's cheap-rung extraction is scored by TypeSafe; the gate threshold ("cut") is
-    swept 0→1, and every resulting config is plotted in (cost, quality) space
-  * the chart is a historical snapshot; its costs have not been recalculated at the
-    current Jev rate listed above
+* **These are internal TypeSafe results** from an earlier, separate run of the same loop:
+  * `extract → verify → escalate`, `gpt-5.4-mini → gpt-5.5-reasoning`, with the
+    `any_flag` gate over the per-field heads, on 100 ScrapeGraphAI-100k prompts
+  * TypeSafe scores each item's cheap-rung extraction; we sweep the gate threshold from 0
+    to 1 and plot every resulting config in (cost, quality) space
+  * quality is an LLM judge's score of each extraction (`mean llm_judge` on the chart)
+  * the verifier in that run was `jev-1.12`
 
 ![internal results: cost/quality frontier over 100 prompts](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/sde_cascade/pareto_100prompts.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=ca6731507e07b501a6627616ba0b767a)
 
 * how to read it:
-  * **black diamonds** = the four models run on their own (cost climbs with capability; the
-    strongest, `gpt-5.5-reasoning`, sits top-right at ≈0.81 quality for ≈\$0.10/extraction)
-  * **blue points** = the cascade at many gate thresholds; the dashed line is the **pareto
-    frontier**
-  * the cascade frontier sits **up-and-left of every single model**: sweeping the gate buys
-    you most of the top model's quality at a fraction of its cost
-  * the cheap rung handles the easy items for near-free, and only the flagged items pay for
-    the reasoning model
-
-## Appendix A: what makes a good verifier signal
-
-* the cascade is only as good as its verifier; what separates a useful signal from a
-  useless one:
-  * **Narrow and grounded.**
-    * one checkable yes/no about one field against the source (e.g. "is this value absent
-      from the source?"), not a vague "is this extraction good?"
-    * vague questions give mushy, uncalibrated scores
-  * **Bad = TRUE, with explicit criteria.**
-    * frame each question so the *escalate* case is the `true` case, and state what
-      `true`/`false` mean
-  * **Per-field, then aggregate with `max`.**
-    * a per-field flag localizes the error and stays sparse and strong
-    * `max` ("any flag fires") ensures one confident red flag escalates, instead of being
-      averaged into silence
-  * **Independent and cheap.**
-    * a dedicated verifier (here, TypeSafe) judging the output catches the extractor's own
-      blind spots
-    * it has to be cheap, or there are no savings left to capture
-  * **Separating / calibrated.**
-    * a good signal is high on real errors and low on correct ones, so a single threshold
-      cleanly splits accept vs escalate
-    * that separation is what pushes the pareto curve up-and-left
+  * **black diamonds** = the four models run on their own; cost climbs with capability,
+    and the strongest, `gpt-5.5-reasoning`, sits top-right
+  * **blue points** (`any_flag`) = the cascade at many gate thresholds; the dashed line is
+    the **pareto frontier**
+  * the cascade frontier sits **up-and-left of every single model**: a cascade point at
+    about \$0.02 per extraction scores about 0.79, against 0.82 for `gpt-5.5-reasoning` at
+    about \$0.045
+  * the cheap rung handles the easy items, and only the flagged items pay for the
+    reasoning model
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

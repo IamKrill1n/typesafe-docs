@@ -21,7 +21,7 @@ This demo shows a Jev-powered Chrome extension filtering a real, live Twitch cha
 Here we run 29 chat messages, written for an Elden Ring stream, through the filter. It
 hides seven, blurs two, and highlights six as questions.
 
-![Five chat messages go to Jev at once, each in its own request with the stream's game. The category, toxic, and spoiler answers come back, and decide() shows, highlights, hides, or blurs each message in the viewer's chat](https://mintcdn.com/ts-docs/TYTnI8jOLDlVpJfa/cookbooks/twitch_chat_filter/twitch-chat-filter-hero-light.gif?s=b2b03e7fd60ef3d43c74bb21cc7404f4)
+![Five chat messages go to Jev at once, each in its own request with the stream's game. The category, toxic, and spoiler answers come back, and decide() shows, highlights, hides, or blurs each message in the viewer's chat](https://mintcdn.com/ts-docs/kfHWxZoHUEHHJ394/cookbooks/twitch_chat_filter/twitch-chat-filter-hero-light.gif?s=1a332412668d6e213c93b2112ad49dc1)
 
 We build two functions: `classify()` asks the three questions about one message, and
 `decide()` turns the answers into show, highlight, dim, hide, or blur. When you change a
@@ -441,7 +441,6 @@ questions filled in. Run the call live there, or edit the questions and run it a
 playground_link = make_playground_link(
     {"stream": STREAM, "message": {"user": CHAT[4][0], "text": CHAT[4][1]}},
     QUESTIONS,
-    models=[TYPESAFE_MODEL],
 )
 # Print a usable URL in a script; render a clickable link in a notebook.
 if __name__ == "__main__" and "__file__" in globals():
@@ -450,6 +449,6 @@ else:
     display(Markdown(f"🔗 [Open in the TypeSafe playground]({playground_link})"))
 ```
 
-[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAWgSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkTJbXjR1nEFeiID-XJTDohjg2teyHQeZ0nxfMg5JVOUBI3L8hxHbymxjfA4xVc9rRaS9rxdBiUgCQIXBQCBMGoilmG9Z5lRvSchJuESHlQnCAEkmg0Fgmh-CItTIG9WAkZx7x+NLrXvXpQiDDi-w3MAmn0xAO0JNCpzBHcWHJUp9huH1aseDqj1MPi5BqTQsKaPkjjkfyXQyFAMMO0UmKoaV3L5D8VShWUqIQNy4lmqRnXsZ4ADEwWQMB2BUJUEBgKhnTfQLdB5JJUHcv82E+ZURg3CISkmQozAsKxCoOI4Su0dhyu1Sq9WeAARSCGsGZraUxDkEDnAKWiUULzDEHk+UB4bOjgkiAQQYaNRUY0ZsmaYQBofcADV50dVYZwARkl6yEDuY0AFkIEEdgyFKABtEAACsmcyJWsSVgAWLEAAYQAAXX8IA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAWgSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkTJbXjR1nEFeiID-XJTDohjg2teyHQeZ0nxfMg5JVOUBI3L8hxHbymxjfA4xVc9rRaS9rxdBiUgCQIXBQCBMGoilmG9Z5lRvSchJuESHlQnCAEkmg0Fgmh-CItTIG9WAkZx7x+NLrXvXpQiDDi-w3MAmn0xAO0JNCpzBHcWHJUp9huH1aseDqj1MPi5BqTQsKaPkjjkfyXQyFAMMO0UmKoaV3L5D8VShWUqIQNy4lmqRnXsZ4ADEwWQMB2BUJUEBgKhnTfQLdB5JJUHcv82E+ZURg3CISkmQozAsKxCoOI4Su0dhyu1Sq9WeAARSCGsGZraUxDkEDnAKWiUULzDEHk+UB4bOjgkiAQQYaNRUY0ZsmaYQBofcADV50dVYZwARhAfwgA)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

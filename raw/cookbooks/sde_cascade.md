@@ -195,6 +195,7 @@ json_cache = JsonCache(Path("json_cache.json"))
 @json_cache
 def extract(
     model: str,
+    system: str,
     prompt: str,
     schema: dict,
     content: str,
@@ -209,7 +210,7 @@ def extract(
     kwargs = {
         "model": model,
         "messages": [
-            {"role": "system", "content": EXTRACT_SYSTEM},
+            {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
     }
@@ -228,7 +229,7 @@ def extract(
         return {}
 
 
-mini_record = extract(MINI, prompt, schema, content, temperature=0)
+mini_record = extract(MINI, EXTRACT_SYSTEM, prompt, schema, content, temperature=0)
 print("mini extraction:\n", json.dumps(mini_record, indent=2))
 
 print("\nschema-valid:", jsonschema.Draft202012Validator(schema).is_valid(mini_record))
@@ -409,17 +410,20 @@ def build_questions(record: dict) -> dict[str, Noul]:
     return questions
 
 
-@json_cache
-def verify(record: dict) -> dict[str, float | str]:
-    """Run the whole Noul battery over a record in one TypeSafe call; return ``{field::metric: P(true)}``."""
-    state = {
+def verify_state(record: dict) -> dict:
+    return {
         "system_message": EXTRACT_SYSTEM,
         "instruction": "Extract the structured record from this document",
         "source_text": content,
         "schema": schema,
         "extraction": record,
     }
-    questions = build_questions(record)
+
+
+@json_cache
+def verify(state_json: str, questions_json: str) -> dict[str, float | str]:
+    """Run the whole Noul battery over a record in one TypeSafe call; return ``{field::metric: P(true)}``."""
+    state, questions = json.loads(state_json), json.loads(questions_json)
     answers = ts.system_one(state=state, questions=questions, model=TS_MODEL).answers
     return {qid: ans.noul for qid, ans in answers.items()} | {
         "playground_link": make_playground_link(state, questions)
@@ -427,7 +431,11 @@ def verify(record: dict) -> dict[str, float | str]:
 ```
 
 ```python theme={null}
-checks = verify(mini_record)
+battery = build_questions(mini_record)
+checks = verify(
+    json.dumps(verify_state(mini_record)),
+    json.dumps({qid: q.model_dump(mode="json", exclude_none=True) for qid, q in battery.items()}),
+)
 playground_link = checks.pop("playground_link")
 display(
     Markdown(
@@ -504,7 +512,7 @@ Since a signal fired, we pay for the strong model (`gpt-5.5`, `reasoning_effort=
 
 ```python theme={null}
 final_record = (
-    extract(REASONING, prompt, schema, content, reasoning_effort="high")
+    extract(REASONING, EXTRACT_SYSTEM, prompt, schema, content, reasoning_effort="high")
     if escalate
     else mini_record
 )

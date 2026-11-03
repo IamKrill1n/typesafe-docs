@@ -37,11 +37,6 @@ export TYPESAFE_API_KEY="your-key-here"
 pip install 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-`JsonCache` replays the API responses in `json_cache.json`, so the steps below run without
-an API key or any spend. Download it from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/semantic_find) into the folder you run the script from.
-To make the requests live instead, set `TYPESAFE_API_KEY` and leave it out.
-
 ### Create the script
 
 Start `semantic_search.py` with the imports and the client:
@@ -185,7 +180,6 @@ flowchart LR
 ```python theme={null}
 @json_cache
 def _find(
-    model: str,
     state: str,
     where: Choice,
     exists: Noul,
@@ -193,7 +187,7 @@ def _find(
     response = client.system_one(
         state=state,
         questions={"where": where, "exists": exists},
-        model=model,
+        model=TYPESAFE_MODEL,
     )
     probabilities = response.answers["where"].probabilities
     return {
@@ -204,7 +198,6 @@ def _find(
 
 def find(query: str) -> dict:
     return _find(
-        TYPESAFE_MODEL,
         DOCUMENT,
         where_question(query),
         exists_question(query),

@@ -154,8 +154,6 @@ List the models and aliases available to the authenticated account.
 
 Pass a returned model name as `model` in a POST /v1/systemone request.
 
-
-
 # System One
 Source: https://docs.typesafe.ai/api/system-one
 
@@ -166,6 +164,22 @@ You can mix question types in one request. Answers use the same names as the
 questions, so you can match each result to its question. The response also includes
 the model used and token usage.
 
+# Model changelog
+Source: https://docs.typesafe.ai/changelog
+
+The principal changes in each Jev release.
+
+Each entry lists what changed in a Jev release. For the models you can call today, their prices and context limits, see [Models](/models). For the shortcomings that remain, see [Model jaggedness](/model-jaggedness).
+
+**Jev 1.14**
+
+October 14, 2026
+
+* Model ID `jev-1.14.0`.
+* Better multilingual support.
+* New [Box](/primitives/box) question type, which finds where something is in an image and answers with a bounding box. Box questions need Jev 1.14.
+* [Images](/images) can go in the `state`, `instructions`, or `criteria` of a request. This also works on Jev 1.13.
+* [Long context](/models#long-context) raises both context limits to 262k tokens for requests that send the long-context header. This also works on Jev 1.13.
 
 
 # How to build with TypeSafe
@@ -1148,7 +1162,7 @@ Find the lines, passages, or records that match a query or each other.
 | - | - | - |
 | [Re-ranking](/cookbooks/rerank_typesafe) | Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%. | Beginner |
 | [Line-by-line search](/cookbooks/semantic_find) | Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer. | Beginner |
-| [Knowledge graph entity alignment](/cookbooks/entity_alignment) | Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree. | Beginner |
+| [Knowledge graph entity alignment](/cookbooks/entity_alignment) | Route candidate record pairs from two sources to a merge recommendation, manual review, or no link, using one Score question. Three Noul questions check individual fields. The worked example uses 450 album pairs from Wikidata and MusicBrainz. | Beginner |
 | [Intelliprompter](/cookbooks/intelliprompter) | Tick off a presenter's notes as they speak: TypeSafe scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold. | Beginner |
 
 ## Techniques
@@ -1216,13 +1230,10 @@ The whole pipeline is two API requests per document, run in sequence:
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`. Download it
-from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/autoformat)
-into the folder you run the script from to replay the published numbers without calling the
-API, or leave it out to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 ```python theme={null}
+import json
 import os
 import re
 import urllib.request
@@ -1346,13 +1357,21 @@ def join_question(i: int) -> Noul:
     )
 
 
+def as_json(questions: dict) -> str:
+    return json.dumps(
+        {k: q.model_dump(mode="json", exclude_none=True) for k, q in questions.items()}
+    )
+
+
+def stitch_questions(make) -> dict:
+    return {line_id(i): make(i) for i in range(1, len(LINES)) if not LINES[i]["gap"]}
+
+
 @json_cache
-def stitch(wording: str = "mid-sentence") -> dict:
-    make = join_question if wording == "mid-sentence" else naive_join_question
-    questions = {line_id(i): make(i) for i in range(1, len(LINES)) if not LINES[i]["gap"]}
+def stitch(state: str, questions_json: str) -> dict:
     started = perf_counter()
     response = client.system_one(
-        state=tag(LINES, "L"), questions=questions, model=TYPESAFE_MODEL
+        state=state, questions=json.loads(questions_json), model=TYPESAFE_MODEL
     )
     return {
         "joins": [
@@ -1364,7 +1383,7 @@ def stitch(wording: str = "mid-sentence") -> dict:
     }
 
 
-result = stitch()
+result = stitch(tag(LINES, "L"), as_json(stitch_questions(join_question)))
 print(f"{sum(1 for l in LINES if not l['gap']) - 1} pair questions, one request, "
       f"{result['seconds']}s")
 ```
@@ -1496,9 +1515,9 @@ def classify_questions(texts: list[str]) -> dict:
 
 
 @json_cache
-def classify(texts: list[str], gaps: list[bool]) -> dict:
+def classify(texts: list[str], gaps: list[bool], questions_json: str) -> dict:
     tagged = tag([{"text": t, "gap": g} for t, g in zip(texts, gaps)], "B")
-    questions = classify_questions(texts)
+    questions = json.loads(questions_json)
     started = perf_counter()
     response = client.system_one(state=tagged, questions=questions, model=TYPESAFE_MODEL)
     judgments = []
@@ -1524,7 +1543,8 @@ def classify(texts: list[str], gaps: list[bool]) -> dict:
     }
 
 
-classified = classify([b["text"] for b in blocks], [b["gap"] for b in blocks])
+texts = [b["text"] for b in blocks]
+classified = classify(texts, [b["gap"] for b in blocks], as_json(classify_questions(texts)))
 for block, judgment in zip(blocks, classified["judgments"]):
     block.update(judgment)
 print(f"{classified['n_questions']} questions about {len(blocks)} blocks, one request, "
@@ -1736,7 +1756,7 @@ def naive_join_question(i: int) -> Noul:
     )
 
 
-naive = stitch("same-paragraph")
+naive = stitch(tag(LINES, "L"), as_json(stitch_questions(naive_join_question)))
 print(f"{'':14}{'mid-sentence':>13}{'same paragraph':>16}")
 for i in (15, 16, 17, 20, 21):
     print(f"{line_id(i)}{'':2}{LINES[i]['text'][:36]:<38}"
@@ -2084,15 +2104,15 @@ def proposal_prompt(examples: str, feedback: str, accepted: list[dict]) -> str:
 
 
 @json_cache
-def propose(model: str, round_index: int, prompt: str) -> dict:
+def propose(round_index: int, prompt: str) -> dict:
     """One proposal call. Every number in `prompt` is rounded so a replay hits the cache."""
-    if model.startswith("claude"):
+    if PROPOSER.startswith("claude"):
         import anthropic
 
         response = anthropic.Anthropic(
             api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only")
         ).messages.create(
-            model=model,
+            model=PROPOSER,
             max_tokens=16000,
             output_config={
                 "effort": "medium",
@@ -2108,7 +2128,7 @@ def propose(model: str, round_index: int, prompt: str) -> dict:
         response = OpenAI(
             api_key=os.environ.get("OPENAI_API_KEY", "cache-only")
         ).chat.completions.create(
-            model=model,
+            model=PROPOSER,
             reasoning_effort="high",
             max_completion_tokens=16000,
             response_format={"type": "json_object"},
@@ -2183,22 +2203,20 @@ def feature_questions(features: list[dict]) -> dict:
 
 
 @json_cache
-def answer(model: str, note: str, features_json: str) -> dict:
+def answer(note: str, questions_json: str) -> dict:
     """One request per note; every question of the round rides it. Keeps every probability."""
-    features = json.loads(features_json)
+    questions = json.loads(questions_json)
     started = perf_counter()
-    response = client.system_one(
-        state=note, questions=feature_questions(features), model=model
-    )
+    response = client.system_one(state=note, questions=questions, model=TYPESAFE_MODEL)
     raw = {}
-    for feature in features:
-        got = response.answers[feature["name"]]
-        if feature["kind"] == "intensity":
-            raw[feature["name"]] = [
-                got.probabilities.get(i, 0.0) for i in range(len(INTENSITY_LEVELS))
+    for name, question in questions.items():
+        got = response.answers[name]
+        if question["type"] == "score":
+            raw[name] = [
+                got.probabilities.get(i, 0.0) for i in range(len(question["criteria"]))
             ]
         else:
-            raw[feature["name"]] = [got.noul]
+            raw[name] = [got.noul]
     return {
         "raw": raw,
         "seconds": round(perf_counter() - started, 2),
@@ -2209,10 +2227,13 @@ def answer(model: str, note: str, features_json: str) -> dict:
 
 def featurize(notes: list[str], features: list[dict]) -> dict:
     """Answer one question set for many notes: one request each, eight in flight."""
-    payload = json.dumps(features, sort_keys=True)
+    questions = feature_questions(features)
+    payload = json.dumps(
+        {name: q.model_dump(mode="json", exclude_none=True) for name, q in questions.items()}
+    )
     with ThreadPoolExecutor(max_workers=8) as pool:
         results = list(
-            pool.map(lambda note: answer(TYPESAFE_MODEL, note, payload), notes)
+            pool.map(lambda note: answer(note, payload), notes)
         )
     return {
         f["name"]: np.array([r["raw"][f["name"]] for r in results], dtype=float)
@@ -2438,7 +2459,6 @@ class Discovery(NamedTuple):
 
 def run_loop(
     split: Split,
-    proposer: str,
     rounds: int,
     examples: int,
     mode: str,
@@ -2456,9 +2476,7 @@ def run_loop(
 
     for round_index in range(1, rounds + 1):
         block = example_block(shown, split, out_of_fold, previous)
-        actions = propose(
-            proposer, round_index, proposal_prompt(block, feedback, accepted)
-        )["actions"]
+        actions = propose(round_index, proposal_prompt(block, feedback, accepted))["actions"]
         keep, drops = to_candidates(actions, accepted, round_index)
 
         if keep:  # one request per row, carrying every question this round proposed
@@ -2560,23 +2578,20 @@ def report(
 # ----------------------------------------------------------------- asking for the score
 
 
+QUALITY = Score(
+    instructions="Judging only by what this tasting note says, how good is the wine?",
+    criteria=SCORE_LEVELS,
+)
+
+
 @json_cache
-def ask_score(model: str, note: str) -> dict:
+def ask_score(note: str, quality: Score) -> dict:
     """One `Score` over ten quality bands, read as a level and rescaled to 80-100."""
     response = client.system_one(
-        state=note,
-        questions={
-            "quality": Score(
-                instructions=(
-                    "Judging only by what this tasting note says, how good is the wine?"
-                ),
-                criteria=SCORE_LEVELS,
-            )
-        },
-        model=model,
+        state=note, questions={"quality": quality}, model=TYPESAFE_MODEL
     )
     got = response.answers["quality"]
-    top = len(SCORE_LEVELS) - 1
+    top = len(quality.criteria) - 1
     expected = sum(k * v for k, v in got.probabilities.items())
     return {
         # level 0 is the bottom of the critic's scale, level 9 the top
@@ -2818,7 +2833,7 @@ on a first read - the recipe starts under it.
 ```python theme={null}
 N_DEV, N_TEST = 1200, 800  # the loop reads dev labels only; test is scored once
 ROUNDS = 5  # a round answers questions for all 2,000 rows: 2,000 requests
-PROPOSER = "claude-sonnet-5"  # or "gpt-5.6-luna"; the cache holds the Anthropic run
+PROPOSER = "claude-sonnet-5"  # or "gpt-5.6-luna"
 EXAMPLES = 60  # dev notes the proposer reads per round, half of them its worst misses
 MIN_SPREAD = 0.05  # a column this flat cannot separate anything, so it is not kept
 CHANGE_TOLERANCE = 0.0  # a revision or drop has to improve dev error, not just not hurt
@@ -2928,7 +2943,7 @@ error goes down. A refit costs no API calls, so trying a change and rejecting it
 
 ```python theme={null}
 run = run_loop(
-    split, PROPOSER, ROUNDS, EXAMPLES, ENCODING, MIN_SPREAD, CHANGE_TOLERANCE
+    split, ROUNDS, EXAMPLES, ENCODING, MIN_SPREAD, CHANGE_TOLERANCE
 )
 accepted, answers_for = run.accepted, run.answers_for
 snapshots, history = run.snapshots, run.history
@@ -3077,7 +3092,7 @@ text_predicted = fit_predict_text(split)
 
 # ask TypeSafe for the score itself, one request per row
 with ThreadPoolExecutor(max_workers=8) as pool:
-    direct = list(pool.map(lambda note: ask_score(TYPESAFE_MODEL, note), NOTES))
+    direct = list(pool.map(lambda note: ask_score(note, QUALITY), NOTES))
 asked = np.array([d["expected"] for d in direct])
 shift = float(SCORES[DEV].mean() - asked[DEV].mean())  # one number, from the dev labels
 
@@ -3326,10 +3341,7 @@ response, you can swap one for the other without changing any other code.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Set `TYPESAFE_API_KEY`. Every API call is cached in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/basic_memory/json_cache.json).
-Download it into the folder you run this code from to replay the published numbers
-instead of calling the API, or leave it out to run everything live.
+Set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
@@ -3490,18 +3502,19 @@ ROUTE = {
 
 
 @json_cache
-def _system_one(model: str, state: str, questions: str) -> dict:
+def _system_one(state: str, questions: str) -> dict:
     response = client.system_one(
-        state=json.loads(state), questions=json.loads(questions), model=model
+        state=json.loads(state), questions=json.loads(questions), model=TYPESAFE_MODEL
     )
-    return response.model_dump(mode="json")
+    return response.model_dump(mode="json", exclude={"model"})
 
 
 def ask(state: dict, questions: dict) -> SystemOneResponse:
     """client.system_one, with the model pinned and the call cached."""
     as_json = {qid: q.model_dump(mode="json", exclude_none=True) for qid, q in questions.items()}
-    raw = _system_one(TYPESAFE_MODEL, json.dumps(state), json.dumps(as_json))
-    return SystemOneResponse.model_validate(raw)
+    raw = _system_one(json.dumps(state), json.dumps(as_json))
+    # The cache leaves the model out; the response type needs one, so use the requested model.
+    return SystemOneResponse.model_validate({**raw, "model": TYPESAFE_MODEL})
 
 
 def later_state(customer_id: str, message_index: int) -> dict:
@@ -3949,10 +3962,7 @@ flowchart TB
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/cart_from_primitives/json_cache.json).
-Download it into the folder you run this code from to replay the published numbers
-instead of calling the API, or leave it out to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
@@ -4264,16 +4274,15 @@ and returns one of four verdicts: `verified`, `unsupported`, `contradicted`, or
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`, which ships
-with the cookbook, so re-running replays the published numbers instead of calling the
-API. Delete that file to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.12` on 2026-08-16.
 
-```python theme={null}
+```python expandable theme={null}
 import json
 import os
 import re
+import urllib.request
 from pathlib import Path
 from time import perf_counter
 
@@ -4290,6 +4299,21 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/citation_check"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the source and the citations
@@ -4305,7 +4329,7 @@ accurate; we edited the other four to fail the check.
 def load_source() -> str:
     """RFC 7519 verbatim, minus the page headers and footers that interrupt its paragraphs."""
     lines = []
-    for line in Path("rfc7519.txt").read_text().splitlines():
+    for line in download("rfc7519.txt").read_text().splitlines():
         bare = line.lstrip("\f")
         if re.match(r"Jones, et al\.\s.*\[Page \d+\]$", bare):
             continue
@@ -4329,7 +4353,7 @@ def split_sections(source: str) -> dict[str, str]:
 
 SOURCE = load_source()
 SECTIONS = split_sections(SOURCE)
-CITATIONS = json.loads(Path("citations.json").read_text())
+CITATIONS = json.loads(download("citations.json").read_text())
 
 print(f"{len(SOURCE):,} characters, {len(SECTIONS)} numbered sections, {len(CITATIONS)} citations")
 print("\nA citation with a quote:")
@@ -4447,11 +4471,11 @@ RELATION_TO_VERDICT = {
 
 
 @json_cache
-def ask(claim: str, section: str) -> dict:
+def ask(claim: str, section: str, relation: Choice) -> dict:
     started = perf_counter()
     response = client.system_one(
         state={"claim": claim, "section": section},
-        questions=QUESTIONS,
+        questions={"relation": relation},
         model=TYPESAFE_MODEL,
     )
     answer = response.answers["relation"]
@@ -4479,7 +4503,7 @@ def verdict(status: str, answer: dict | None) -> dict:
 
 def check_citation(sections: dict[str, str], citation: dict) -> dict:
     status, section = locate(sections, citation)
-    answer = ask(citation["claim"], section) if section is not None else None
+    answer = ask(citation["claim"], section, QUESTIONS["relation"]) if section is not None else None
     return {"id": citation["id"], "status": status, "answer": answer, **verdict(status, answer)}
 ```
 
@@ -4603,16 +4627,13 @@ flowchart LR
 pip install ipython matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Download `filings.jsonl`, `sic_codes.tsv` and
-`json_cache.json` from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/classification_using_confidence) into the folder you run
-the script from. Every API call is cached in `json_cache.json`, so the published numbers
-replay without calling the API; leave that file out to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.12` on 2026-08-12.
 
-```python theme={null}
+```python expandable theme={null}
 import json
+import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
@@ -4637,6 +4658,21 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/classification_using_confidence"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Build the two levels of the taxonomy
@@ -4665,7 +4701,7 @@ DIVISIONS = [
 ]
 
 INDUSTRIES: dict[str, str] = {}
-for line in Path("sic_codes.tsv").read_text().splitlines()[1:]:
+for line in download("sic_codes.tsv").read_text().splitlines()[1:]:
     code, _office, title = line.split("\t")
     INDUSTRIES[code] = title.lower()
 
@@ -4738,7 +4774,7 @@ filtered down to filings whose own text supports the code they carry, so the num
 measure the recipe rather than the state of EDGAR's metadata.
 
 ```python theme={null}
-FILINGS = [json.loads(line) for line in Path("filings.jsonl").read_text().splitlines()]
+FILINGS = [json.loads(line) for line in download("filings.jsonl").read_text().splitlines()]
 example = FILINGS[7]
 print(
     f"{len(FILINGS)} filings, {sum(f['words'] for f in FILINGS) // len(FILINGS)} words on average"
@@ -4784,9 +4820,9 @@ def questions() -> dict:
 
 
 @json_cache
-def ask(filing_id: str, text: str) -> dict:
+def ask(text: str, group: Choice) -> dict:
     response = client.system_one(
-        state=text, questions=questions(), model=TYPESAFE_MODEL
+        state=text, questions={"group": group}, model=TYPESAFE_MODEL
     )
     answer = response.answers["group"]
     return {
@@ -4807,7 +4843,7 @@ too coarse for your application to act on, this branch is where you hand it to a
 
 ```python theme={null}
 def classify(filing: dict) -> dict:
-    answer = ask(filing["id"], filing["text"])
+    answer = ask(filing["text"], questions()["group"])
     sure = answer["confidence"] >= CONFIDENT
     return {
         "level": "group" if sure else "division",
@@ -4827,10 +4863,10 @@ def show(filing: dict) -> None:
 
 
 print("three filings the model was sure about:")
-for f in sorted(FILINGS, key=lambda f: -ask(f["id"], f["text"])["confidence"])[:3]:
+for f in sorted(FILINGS, key=lambda f: -classify(f)["confidence"])[:3]:
     show(f)
 print("\nthree it was not:")
-for f in sorted(FILINGS, key=lambda f: ask(f["id"], f["text"])["confidence"])[:3]:
+for f in sorted(FILINGS, key=lambda f: classify(f)["confidence"])[:3]:
     show(f)
 ```
 
@@ -5041,14 +5077,12 @@ Set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. We use TypeSaf
 each retrieved passage, OpenAI to embed the corpus for the search step, and Claude to write
 the final answer out of whatever survives the scoring.
 
-None of the three needs a key to reproduce this page. `json_cache.json` ships with the
-cookbook and replays every recorded call, so a re-render costs nothing. Delete the file to
-run the pipeline live instead. The numbers here came out of `jev-1.12` and
-`claude-sonnet-5` on 2026-08-27.
+The numbers here came out of `jev-1.12` and `claude-sonnet-5` on 2026-08-27.
 
 ```python expandable theme={null}
 import json
 import os
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from time import perf_counter
@@ -5089,6 +5123,21 @@ generator = anthropic.Anthropic(
 )
 embedder = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "cache-only"))
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/classifying_rag_passages"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the docs corpus
@@ -5111,7 +5160,7 @@ We also wrote two of the six queries to state a premise the docs contradict, so 
 injection and conflict routes both have something to catch.
 
 ```python theme={null}
-PASSAGES = json.loads(Path("corpus.json").read_text(encoding="utf-8"))
+PASSAGES = json.loads(download("corpus.json").read_text(encoding="utf-8"))
 BY_ID = {p["id"]: p for p in PASSAGES}
 
 counts: dict[str, int] = {}
@@ -5278,14 +5327,15 @@ def gate_document(query: str, passage: dict) -> dict:
 
 
 @json_cache
-def gate(query: str, passage_id: str) -> dict:
+def gate(state_json: str, questions_json: str) -> dict:
     started = perf_counter()
+    questions = json.loads(questions_json)
     response = client.system_one(
-        state=gate_document(query, BY_ID[passage_id]),
-        questions=PASSAGE_QUESTIONS,
+        state=json.loads(state_json),
+        questions=questions,
         model=TYPESAFE_MODEL,
     )
-    answers = {key: response.answers[key].noul for key in PASSAGE_QUESTIONS}
+    answers = {key: response.answers[key].noul for key in questions}
     answers["seconds"] = round(perf_counter() - started, 2)
     # tokens and requests are the durable units; don't cache a derived dollar cost
     answers["input_tokens"] = response.usage.input_tokens or 0
@@ -5296,8 +5346,12 @@ def gate(query: str, passage_id: str) -> dict:
 def gate_all(query: str, passages: list[dict]) -> list[dict]:
     """One request per passage, four at a time. Keep the pool small: the public endpoint
     rate-limits, and JsonCache writes after every call so a retry only pays for the misses."""
+    questions = json.dumps(
+        {key: q.model_dump(mode="json", exclude_none=True) for key, q in PASSAGE_QUESTIONS.items()}
+    )
+    states = [json.dumps(gate_document(query, passage)) for passage in passages]
     with ThreadPoolExecutor(max_workers=4) as pool:
-        return list(pool.map(lambda passage: gate(query, passage["id"]), passages))
+        return list(pool.map(lambda state: gate(state, questions), states))
 ```
 
 ## Route each passage in code
@@ -6101,10 +6155,9 @@ RUBRIC_HASH = _rubric_fingerprint()
 
 @json_cache
 def _call_typesafe(sample_index: int, rubric_hash: str, model: str):
-    """Return distributions, token usage, latency, and model metadata for one call.
+    """Return distributions, token usage and latency for one call.
 
     ``rubric_hash`` and ``model`` prevent reuse across rubric or model changes.
-    Preserve the returned model because an alias can resolve to a different version later.
     """
     questions = {
         key: Choice(instructions=instructions, criteria=choices)
@@ -6127,7 +6180,6 @@ def _call_typesafe(sample_index: int, rubric_hash: str, model: str):
         response.usage.input_tokens,
         response.usage.output_tokens,
         perf_counter() - started,
-        {"requested_model": model, "response_model": response.model},
     )
 
 
@@ -6257,25 +6309,13 @@ typesafe_usage_results = [
     _call_typesafe(sample_index, RUBRIC_HASH, TYPESAFE_MODEL)
     for sample_index in range(NUM_SAMPLES)
 ]
-# Report every returned version so alias changes within a run remain visible.
-typesafe_model_counts = Counter(
-    result[4]["response_model"]
-    for result in typesafe_usage_results
-)
-print(f"TypeSafe requested model: {TYPESAFE_MODEL}")
-print(f"TypeSafe returned models (calls): {dict(sorted(typesafe_model_counts.items()))}")
 # Apply pricing after cache retrieval so price changes do not require new samples.
 typesafe_results = [
     (distributions, _cost(TYPESAFE_PRICE, input_tokens, output_tokens), latency)
-    for distributions, input_tokens, output_tokens, latency, _metadata in typesafe_usage_results
+    for distributions, input_tokens, output_tokens, latency in typesafe_usage_results
 ]
 typesafe_runs = [result[0] for result in typesafe_results]
 stats[TYPESAFE_LABEL] = [(result[1], result[2]) for result in typesafe_results]
-```
-
-```
-TypeSafe requested model: jev-latest
-TypeSafe returned models (calls): {'jev-1.13.0': 15}
 ```
 
 ### Cost + speed (per rubric query)
@@ -6820,7 +6860,6 @@ import hashlib
 import json
 import os
 import textwrap
-from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from secrets import token_hex
@@ -7059,10 +7098,9 @@ RUBRIC_HASH = _rubric_fingerprint()
 
 @json_cache
 def _call_typesafe(sample_index: int, rubric_hash: str, model: str):
-    """Return nouls, token usage, latency, and model metadata for one call.
+    """Return nouls, token usage and latency for one call.
 
     ``rubric_hash`` and ``model`` prevent reuse across rubric or model changes.
-    Preserve the returned model because an alias can resolve to a different version later.
     """
     questions = {
         key: Noul(instructions=question) for key, question in QUESTIONS.items()
@@ -7079,7 +7117,6 @@ def _call_typesafe(sample_index: int, rubric_hash: str, model: str):
         response.usage.input_tokens,
         response.usage.output_tokens,
         perf_counter() - started,
-        {"requested_model": model, "response_model": response.model},
     )
 
 
@@ -7217,25 +7254,13 @@ typesafe_usage_results = [
     _call_typesafe(sample_index, RUBRIC_HASH, TYPESAFE_MODEL)
     for sample_index in range(NUM_SAMPLES)
 ]
-# Report every returned version so alias changes within a run remain visible.
-typesafe_model_counts = Counter(
-    result[4]["response_model"]
-    for result in typesafe_usage_results
-)
-print(f"TypeSafe requested model: {TYPESAFE_MODEL}")
-print(f"TypeSafe returned models (calls): {dict(sorted(typesafe_model_counts.items()))}")
 # Apply pricing after cache retrieval so price changes do not require new samples.
 typesafe_results = [
     (nouls, _cost(TYPESAFE_PRICE, input_tokens, output_tokens), latency)
-    for nouls, input_tokens, output_tokens, latency, _metadata in typesafe_usage_results
+    for nouls, input_tokens, output_tokens, latency in typesafe_usage_results
 ]
 typesafe_runs = [result[0] for result in typesafe_results]
 stats["typesafe_noul"] = [(result[1], result[2]) for result in typesafe_results]
-```
-
-```
-TypeSafe requested model: jev-latest
-TypeSafe returned models (calls): {'jev-1.13.0': 15}
 ```
 
 ### Cost + speed (per rubric query)
@@ -7499,11 +7524,10 @@ The model reads what the text says and never does the calendar math.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
-`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/date_extraction_cookbook) into the folder you run
-the script from.
+then set `TYPESAFE_API_KEY`.
 
 ```python expandable theme={null}
+import json
 import os
 from datetime import date, timedelta
 from pathlib import Path
@@ -7654,10 +7678,10 @@ and `current` means this week.
 
 ```python expandable theme={null}
 @json_cache
-def read_parts(document: str, role: str) -> dict:
+def read_parts(document: str, questions_json: str) -> dict:
     """One TypeSafe call -> {part: {choice, confidence}} for the seven questions."""
     answers = client.system_one(
-        state=document, questions=date_questions(role), model=TYPESAFE_MODEL
+        state=document, questions=json.loads(questions_json), model=TYPESAFE_MODEL
     ).answers
     return {
         part: {"choice": ans.choice, "confidence": ans.confidence}
@@ -7757,7 +7781,11 @@ def assemble(parts: dict, today: date = TODAY) -> dict:
 
 
 def extract_date(document: str, role: str) -> dict:
-    return assemble(read_parts(document, role))
+    questions = {
+        part: question.model_dump(mode="json", exclude_none=True)
+        for part, question in date_questions(role).items()
+    }
+    return assemble(read_parts(document, json.dumps(questions)))
 ```
 
 ## Run it
@@ -7880,53 +7908,35 @@ if __name__ == "__cookbook__":
 # Knowledge graph entity alignment
 Source: https://docs.typesafe.ai/cookbooks/entity_alignment
 
-Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree.
+Route candidate record pairs from two sources to a merge recommendation, manual review, or no link, using one Score question. Three Noul questions check individual fields. The worked example uses 450 album pairs from Wikidata and MusicBrainz.
 
-*A key problem in knowledge graphs is deciding whether an incoming entity duplicates an
-existing one, especially when natural language from disparate sources is all that's
-available. Given potential duplicate pairs, a single TypeSafe `Score` decides
-whether each pair is a duplicate, or whether it deserves a closer look from a curator.*
+When data from two sources is combined, the same person, product, place, or work often
+appears on both sides, described differently on each. Entity alignment decides which
+record on one side describes the same entity as a record on the other. In a knowledge
+graph, each entity has facts and links to other entities. Comparing every record with
+every other is slow, so a cheap first step usually picks out pairs worth a closer
+look, such as records with similar names. Each of those candidate pairs then needs a
+decision, which we make here.
 
-Suppose two data sources describe overlapping sets of the same things, and you need to
-know which entry on one side is the same thing as which entry on the other. A knowledge
-graph calls those entries *entities*, and holds the facts recorded about each. Some cheap
-but rough first pass has already compared the two sources and picked out 450 pairs worth a
-closer look. What remains is to make a judgment call on each pair.
+A wrong merge combines facts and links from different entities. Undoing it means working
+out where each fact came from. A missed match leaves a duplicate. Pairs that need review
+get a third outcome: send them to a curator, a person who decides by hand.
 
-Merging two entities inappropriately is the more expensive mistake, since every fact about
-either entity now describes the merged one, and anything linked to either comes along too.
-Undoing it later means working out which fact came from where. Missing a match only leaves
-a duplicate, so the judgment call needs a third option: pairs that are neither safe to
-merge nor safe to drop.
-
-The judgment is a `Score` question with one level for each of the three outcomes:
-
-* **different product** — leave the two entities unlinked
-* **related, but possibly not the same** — hand it to a curator to decide
-* **same product** — merge them
-
-We use a Score question because we want to attach a semantic label, the score criteria,
-directly to each outcome, including the middle outcome. A Noul question could accomplish
-this indirectly through thresholding on its output instead, and a Choice question would
-lose the ordered relationship of the three outcomes.
-
-Next, for each field of the entity we want to consider, `Noul` questions about whether
-those
-fields match can ride along in the same request. These nouls provide more detailed
-information for the curator, if the score lands neither in the "same product" nor
-"different product" levels.
-
-You end up with a `route()` that takes one candidate pair and returns one of the three
-outcomes, with no threshold you had to fit to your own data.
+Jev makes this decision with a [`Score`](/primitives/score) question: you describe one
+level per outcome, and the answer is a score along those levels. Here the levels are
+leave unlinked, send for review, and recommend a merge (`assert sameAs`). On 450 album
+pairs from two public music catalogs, we got 57 merge recommendations, 79 pairs for
+review, and 314 left unlinked. The dataset records 48 of the 57 recommended merges as
+matches.
 
 ```mermaid actions={true} theme={null}
 flowchart LR
     PAIR["one candidate pair<br/><i>both entities, one state</i>"] --> CALL
 
-    subgraph CALL["one request, four questions"]
+    subgraph CALL["one Jev request, four questions"]
         direction TB
-        S["<b>Score:</b> how do the two relate?<br/>· different product<br/>· related, but possibly not the same<br/>· same product"]
-        N["<b>Nouls:</b> one per compared field<br/>· same name?<br/>· same brewery?<br/>· same style?"]
+        S["<b>Score:</b><br/>how do the two relate?"]
+        N["<b>Nouls:</b><br/>same title?<br/>same artist?<br/>same label?"]
         %% invisible link: without an edge these two share a rank, which in a TB
         %% subgraph puts them side by side instead of stacked
         S ~~~ N
@@ -7947,19 +7957,39 @@ flowchart LR
 
 ## Setup
 
-```bash theme={null}
-pip install matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
-```
+Requires Python 3.10 or later. Choose a package manager to install the dependencies:
 
-then set `TYPESAFE_API_KEY`. Every call is cached to `json_cache.json`, which ships with
-the cookbook, so re-rendering replays the published numbers without calling the API. Delete
-that file to re-run everything live.
+> [tab] pip
+>
+> Create a virtual environment and add the dependencies:
+>
+> ```bash wrap theme={null}
+> python3 -m venv .venv
+> .venv/bin/pip install matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> ```
 
-Numbers below came from `jev-1.12` on 2026-08-11.
+> [tab] uv
+>
+> Initialize a project and add the dependencies:
+>
+> ```bash wrap theme={null}
+> uv init --bare
+> uv add matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> ```
+
+Set `TYPESAFE_API_KEY`. Every response is saved in `json_cache.json`, so a second run
+makes no requests.
+
+[pairs]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/entity_alignment/candidate_pairs.json
+
+[license-data]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/entity_alignment/DATA_LICENSE.md
+
+Numbers below came from `jev-1.14.0` on 2026-10-16.
 
 ```python theme={null}
 import json
 import os
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -7971,8 +8001,8 @@ from typesafe_sdk import Noul, Score, TypeSafeClient
 
 matplotlib.use("Agg")  # headless render
 
-TYPESAFE_MODEL = "jev-1.12"
-MAX_WORKERS = 6  # small pool; the public endpoint rate-limits above roughly eight
+TYPESAFE_MODEL = "jev-1.14.0"
+MAX_WORKERS = 6  # small pool to stay under your organization's rate limits
 
 client = TypeSafeClient(
     api_key=os.environ.get(
@@ -7986,99 +8016,137 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 ## Load the candidate pairs
 
-The pairs come from a published benchmark set, the Beer data from the Magellan collection:
-two beer catalogues scraped from different websites, already cut down to 450 pairs by that
-first rough pass. Each entity carries four fields: name, brewery, style, and alcohol
-content. Each pair also carries `known_same_as`, the benchmark's own answer.
+The pairs in [`candidate_pairs.json`][pairs] come from two public music catalogs,
+Wikidata and MusicBrainz. Both release this data under CC0, which puts it in the public
+domain. In each pair, `entity_a` is an album record from Wikidata and `entity_b` is a
+release from MusicBrainz. Each entity has four fields: title, artist, year, and label.
+[`DATA_LICENSE.md`][license-data] credits both sources.
 
-The text is left exactly as published, without pre-processing: HTML entities that were
-never converted back to characters, apostrophes split off as separate words, a few
-characters decoded wrongly.
+Each pair also has `known_same_as`. It is true when a Wikidata editor linked the album to
+the MusicBrainz release group that the release belongs to. Wikidata is a knowledge graph,
+and that link is an entity alignment link. The 70 pairs marked true are called *known
+matches* here. In the other 380, the Wikidata album links to a different MusicBrainz entry.
+Nobody checked each pair by hand.
 
-One request goes out per pair, so what you spend follows the number of pairs you were
-handed rather than the size of either source.
+The text is left exactly as the catalogs publish it, with no cleanup: mixed casing and
+alphabet systems, straight and curly apostrophes, and placeholders such as `[no label]`.
+A missing value is `-`.
+
+We send one request per pair, so the number of requests depends on the number of
+candidate pairs, not the size of either catalog.
 
 ```python theme={null}
-PAIRS = json.loads(Path("candidate_pairs.json").read_text(encoding="utf-8"))
+DATA = Path("candidate_pairs.json")
+DATA_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/entity_alignment/candidate_pairs.json"
+)
+if not DATA.exists():
+    urllib.request.urlretrieve(DATA_URL, DATA)
+
+PAIRS = json.loads(DATA.read_text(encoding="utf-8"))
 BY_ID = {pair["id"]: pair for pair in PAIRS}
 
 print(f"{len(PAIRS)} candidate pairs. The first one, as the model will see it:")
-print(json.dumps({k: PAIRS[0][k] for k in ("entity_a", "entity_b")}, indent=2)[:420])
+print(json.dumps({k: PAIRS[0][k] for k in ("entity_a", "entity_b")}, indent=2))
 ```
 
 ```
 450 candidate pairs. The first one, as the model will see it:
 {
   "entity_a": {
-    "name": "C N Red Imperial Red Ale",
-    "brewery": "Redwood Lodge",
-    "style": "American Amber / Red Ale",
-    "abv": "8.10 %"
+    "title": "My Refuge",
+    "artist": "Alessandra Samadello",
+    "year": "2003",
+    "label": "-"
   },
   "entity_b": {
-    "name": "Kinetic Infrared Imperial Red Ale",
-    "brewery": "Kinetic Brewing Company",
-    "style": "American Strong Ale",
-    "abv": "9.30 %"
+    "title": "My Refuge",
+    "artist": "Kent Henry",
+    "year": "1989",
+    "label": "Hosanna! Music"
   }
 }
 ```
 
 ## Ask one Score question and three Noul questions per candidate pair
 
-Both entities go into one state, as `entity_a` and `entity_b`, so every question is about
-the pair. All four ride in one request.
+The decision is a `Score` question because a `Score` attaches a written description to
+each outcome in `LEVELS`, including the uncertain middle one, and keeps the three
+outcomes in order. A `Noul` question could reach the middle outcome only indirectly, by
+thresholding its output. A `Choice` question would lose the order of the three outcomes.
 
-The three level descriptions below are the entire decision: each level is one outcome.
-There is no threshold constant anywhere in this file. You can also write these descriptions
-before you have seen a single score, which is not true of a number you have to fit.
+Put both entities into one state, as `entity_a` and `entity_b`, so each question is about
+the pair. All four questions go in one request.
+Title, artist, and label each get a `Noul` question to indicate where the records
+disagree.
 
-The middle level is the one worth writing carefully. Here it covers variants, special
-editions, and names that could plausibly refer to either product, so those reach a curator
-instead of being merged or dropped.
+We round the score to the nearest level in `route()`. Write the level
+descriptions before looking at the scores; the cut points follow from rounding rather
+than being fitted to this dataset.
 
-`OUTCOME` names the three outcomes. The merge outcome is called `assert sameAs` because
-`sameAs` is the standard way to record that two entities are the same thing, and writing
-one is how the merge actually happens.
+The middle level's wording decides which pairs reach a curator instead of being merged or
+left unlinked, so it names the cases that need one: a reissue, a compilation, a special or
+live edition, or a title that could refer to either album.
 
-Three of the four fields get a `Noul` question: name, brewery, and style. Alcohol content
-gets none, because comparing two numbers is arithmetic; compute it in code if you want it.
-To use this on another kind of data you rewrite `QUESTIONS` and `LEVELS`. The only other
-code that knows about beer is the two functions that print results, which name the fields.
+The merge recommendation is called `assert sameAs`: a recommendation to record that the
+two entities are the same thing. That label is all `route()` returns; applying it to a
+graph is a separate step.
+
+There is no `Noul` question for the year, but the year is in the state.
+For a year check, compare the two years in code and allow for a missing `-`.
+
+The label question needs a rule, because catalogs disagree about which company to name.
+We count a shortened name or a regional branch as the same label (*Columbia Records* and
+*Columbia*, *EMI* and *EMI Music Brasil*). An imprint is a brand name a record company
+releases under. We count an imprint and its parent company as different labels (*RCA
+Victor* and *BMG*), because sharing a parent company does not establish that two albums
+are the same.
+
+To use this on another kind of data, swap in your own pairs and rewrite `QUESTIONS` and
+`LEVELS`. The only other code that knows about albums is `show()`, which prints a pair
+and names its fields.
 
 ```python expandable theme={null}
 LEVELS = [
-    "They describe two different products.",
-    "They describe closely related products that may or may not be the same one: "
-    "a variant, a special edition, or a name that could plausibly refer to either.",
-    "They describe one and the same product.",
+    "They describe two different albums.",
+    "They describe closely related albums that may or may not be the same one: "
+    "a reissue, a compilation, a special or live edition, or a title that could "
+    "plausibly refer to either.",
+    "They describe one and the same album.",
 ]
 OUTCOME = {0: "leave unlinked", 1: "curator queue", 2: "assert sameAs"}
 
 QUESTIONS = {
     "link_state": Score(
-        instructions="How do the two entity descriptions relate as products?",
+        instructions="How do the two entity descriptions relate as albums?",
         criteria=LEVELS,
     ),
-    "same_name": Noul(
-        instructions="Do the two entities state the same beer name?",
+    "same_title": Noul(
+        instructions="Do the two entities give the same album title? Differences in "
+        "casing, punctuation, or writing system (a title and its romanisation) do not "
+        "make two titles different.",
     ),
-    "same_brewery": Noul(
-        instructions="Are the two entities from the same brewery?",
+    "same_artist": Noul(
+        instructions="Do the two entities credit the same artist? A name written in "
+        "another script or word order, or a credit that adds collaborators to the same "
+        "lead artist, is the same artist.",
     ),
-    "same_style": Noul(
-        instructions="Do the two entities describe the same beer style?",
+    "same_label": Noul(
+        instructions="Do the two entities name the same record label? A shortened name "
+        "or a regional branch of a label is the same label; an imprint and its parent "
+        "company are different labels. A label of '-' or '[no label]' is not recorded.",
     ),
 }
 
 
 @json_cache
-def score(pair_id: str) -> dict:
+def score(state_json: str, questions_json: str) -> dict:
     """One request about one candidate pair -> the score plus the three noul answers."""
-    pair = BY_ID[pair_id]
+    questions = json.loads(questions_json)
     response = client.system_one(
-        state={"entity_a": pair["entity_a"], "entity_b": pair["entity_b"]},
-        questions=QUESTIONS,
+        state=json.loads(state_json),
+        questions=questions,
         model=TYPESAFE_MODEL,
     )
     link = response.answers["link_state"]
@@ -8087,12 +8155,15 @@ def score(pair_id: str) -> dict:
         "probabilities": link.probabilities,
         "confidence": link.confidence,
         "properties": {
-            k: response.answers[k].noul for k in QUESTIONS if k != "link_state"
+            k: response.answers[k].noul for k in questions if k != "link_state"
         },
-        # tokens and requests are the durable units; don't cache a derived cost
-        "input_tokens": response.usage.input_tokens or 0,
-        "output_tokens": response.usage.output_tokens or 0,
     }
+
+
+def score_pair(pair: dict) -> dict:
+    state = {"entity_a": pair["entity_a"], "entity_b": pair["entity_b"]}
+    questions = {k: q.model_dump(mode="json", exclude_none=True) for k, q in QUESTIONS.items()}
+    return score(json.dumps(state), json.dumps(questions))
 
 
 def route(score_value: float) -> str:
@@ -8101,59 +8172,66 @@ def route(score_value: float) -> str:
 
 
 def show(pair_id: str) -> None:
-    pair, result = BY_ID[pair_id], score(pair_id)
+    pair = BY_ID[pair_id]
+    result = score_pair(pair)
     print(
         f"{pair_id}  score {result['score']:.2f}  confidence {result['confidence']:.2f}"
         f"  ->  {route(result['score'])}"
     )
     for side in ("entity_a", "entity_b"):
         e = pair[side]
-        print(f"    {e['name'][:44]:<46}{e['brewery'][:30]:<32}{e['style'][:22]}")
+        print(
+            f"    {e['title'][:40]:<42}{e['artist'][:26]:<28}{e['year']:<6}"
+            f"{e['label'][:22]}"
+        )
     nouls = result["properties"]
     print(
-        f"    name {nouls['same_name']:.2f}   brewery {nouls['same_brewery']:.2f}   "
-        f"style {nouls['same_style']:.2f}"
+        f"    title {nouls['same_title']:.2f}   artist {nouls['same_artist']:.2f}   "
+        f"label {nouls['same_label']:.2f}"
     )
 ```
 
-Four pairs. `c446` is one product and `c427` is two. The other two land in the middle level
-for different reasons: `c100` has the same name and brewery but the sources word its style
-differently, while `c428` pairs a beer with a fruit-and-hop variant of it.
-
 ```python theme={null}
-for pair_id in ("c446", "c427", "c100", "c428"):
+for pair_id in ("c115", "c133", "c190", "c159"):
     show(pair_id)
     print()
 ```
 
 ```
-c446  score 1.94  confidence 0.92  ->  assert sameAs
-    Thomas Hooker Old Marley Barleywine           Thomas Hooker Brewing Company   American Barleywine
-    Thomas Hooker Old Marley Barleywine           Thomas Hooker Brewing Company   Barley Wine
-    name 0.97   brewery 0.99   style 0.81
+c115  score 1.76  confidence 0.64  ->  assert sameAs
+    Lions                                     The Black Crowes            2001  V2 Records
+    Lions                                     The Black Crowes            2001  V2 Records Japan
+    title 0.99   artist 0.99   label 0.94
 
-c427  score 0.03  confidence 0.95  ->  leave unlinked
-    Frost Quake Bourbon Barrel Aged Barley Wine   Wellington County Brewery       American Barleywine
-    Lompoc Bourbon Barrel Aged Proletariat Red A  Lompoc Brewing                  Amber Ale
-    name 0.02   brewery 0.09   style 0.08
+c133  score 0.14  confidence 0.80  ->  leave unlinked
+    Freak of Nature                           Anastacia                   2001  Epic Records
+    Freak of Nature                           Taylor Deupree              1996  Rancho Relaxo
+    title 0.99   artist 0.01   label 0.01
 
-c100  score 1.30  confidence 0.27  ->  curator queue
-    Belle Gueule Rousse                           Brasseurs R.J.                  American Amber / Red A
-    Belle Gueule Rousse                           Brasseurs RJ                    Amber Lager/Vienna
-    name 0.95   brewery 0.94   style 0.35
+c190  score 1.27  confidence 0.55  ->  curator queue
+    Head Hunters                              Herbie Hancock              1973  Columbia Records
+    Headhunters                               Herbie Hancock              2008  Columbia
+    title 0.71   artist 0.99   label 0.96
 
-c428  score 1.10  confidence 0.77  ->  curator queue
-    Ambleside Amber Ale                           Bridge Brewing Company          American Amber / Red A
-    Bridge Ambleside Amber Ale - Pomegranate & G  Bridge Brewing Company          Amber Ale
-    name 0.63   brewery 0.98   style 0.74
+c159  score 0.75  confidence 0.62  ->  curator queue
+    McCartney III                             Paul McCartney              2020  Capitol Records
+    McCartney III Imagined                    Paul McCartney              2021  Capitol Records
+    title 0.02   artist 0.98   label 0.99
 ```
+
+In `c115` both sides are the same album, with the same title and
+artist. The label is *V2 Records* on one side and *V2 Records Japan* on the other. In
+`c133` the two sides are different albums that share a title. The other two round to the
+middle level for different reasons. In `c190` one side is a 2008 reissue of a 1973 album,
+with the title spelled as one word. In `c159` one side is an album and the other is a
+remix album made from it.
 
 ## Route every candidate pair
 
 ```python expandable theme={null}
-# 450 candidate pairs, one request each; a small pool keeps a live run to a few minutes.
+# 450 candidate pairs, one request each; a live run takes about a minute.
 with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-    scored = list(pool.map(lambda pair: score(pair["id"]), PAIRS))
+    scored = list(pool.map(score_pair, PAIRS))
 
 scores = [result["score"] for result in scored]
 by_outcome: dict[str, list[str]] = {name: [] for name in OUTCOME.values()}
@@ -8192,8 +8270,10 @@ ax.set_xticks([0, 0.5, 1, 1.5, 2])
 ax.set_xticklabels(["0\ndifferent", "0.5", "1\nrelated", "1.5", "2\nsame"])
 ax.set_xlabel("score for the pair", color=INK2, fontsize=9)
 ax.set_ylabel("candidate pairs", color=INK2, fontsize=9)
+n_queued = len(by_outcome["curator queue"])
 ax.set_title(
-    f"{len(PAIRS)} candidate pairs, scored once each",
+    f"{len(PAIRS) - n_queued} of {len(PAIRS)} pairs settled automatically;"
+    f" {n_queued} go to the curator",
     loc="left",
     color=INK,
     fontsize=11,
@@ -8208,38 +8288,105 @@ for name in ("assert sameAs", "curator queue", "leave unlinked"):
 ```
 
 ```
-assert sameAs      40  ( 8.9%)
-curator queue      50  (11.1%)
-leave unlinked    360  (80.0%)
+assert sameAs      57  (12.7%)
+curator queue      79  (17.6%)
+leave unlinked    314  (69.8%)
 ```
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=0a5cc0e7eb280ca54d6bd823fb5d2a43)
+![output](https://mintcdn.com/ts-docs/8UawRogf0VplN_sC/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max\&auto=format\&n=8UawRogf0VplN_sC\&q=85\&s=31b73ad6d566582e04236cf3cfd8f902)
 
-The two score values where `route()` changes its answer are the cut points. Most pairs
-settle: 360 score below the lower cut point and 40 above the upper one, leaving 50 for the
-curator.
+The cut points are the two scores where `route()` changes its answer: 0.5 and 1.5. Most
+pairs were routed without the curator: 314 scored below 0.5 and 57 scored at least 1.5,
+which left 79 for the curator.
 
-On this set, most scores land near 0.25 rather than on a whole number. Two beers with
-nothing in common might still share a style name, and their brewery names might look
-alike, so the model gives the middle level some of its probability instead of none. What
-decides a pair is which side of a cut point it falls on. How near it sits to a level does
-not enter into it.
+On this set, 257 of the 450 scores are between 0.1 and 0.4. Two different albums can
+share a title, and a label name is weak evidence on its own, so the model gives the
+middle level some probability even when a pair looks different. Routing depends only on
+which side of a cut point the score falls: a pair at 0.4 is left unlinked, the same as a
+pair at 0.
 
-The two cut points are not equally crowded. Nine pairs sit within 0.1 of the upper one, at
-1.5, which is the one deciding what gets merged into the graph. Forty-seven sit that close
-to the lower one, at 0.5, which only decides whether a curator sees the pair. Neither
-number is something you tune. Both follow from how you worded the levels, and the wording
-of the middle level is what moves pairs between the curator and the pairs left unlinked.
+The three Noul answers help a curator inspect a pair, but only the Score decides its
+route. Here are two pairs from the curator queue:
+
+| Pair (Wikidata / MusicBrainz title) | Score | Same title | Same artist | Same label |
+| :- | -: | -: | -: | -: |
+| `c190` *Head Hunters* / *Headhunters* | 1.27 | 0.71 | 0.99 | 0.96 |
+| `c159` *McCartney III* / *McCartney III Imagined* | 0.75 | 0.02 | 0.98 | 0.99 |
+
+In `c190` the artist and label agree and the title nearly does, and the 35 years between
+the two releases point to a reissue. In `c159` everything agrees except the title, which
+suggests a related album rather than the same one.
+
+## Compare with the catalogs' own answer
+
+Nothing above used `known_same_as`. We count it for each outcome to compare the routing
+with what the catalogs recorded.
+
+```python theme={null}
+print(f"{'':<16}{'known match':>13}{'known non-match':>17}")
+for name in ("assert sameAs", "curator queue", "leave unlinked"):
+    known = sum(BY_ID[pair_id]["known_same_as"] for pair_id in by_outcome[name])
+    print(f"{name:<16}{known:>13}{len(by_outcome[name]) - known:>17}")
+```
+
+```
+                  known match  known non-match
+assert sameAs              48                9
+curator queue              19               60
+leave unlinked              3              311
+```
+
+The "known non-match" column counts the pairs where `known_same_as` is false. Of the 57
+merges, 48 are known matches. Of the 314 pairs left unlinked, 311 are known non-matches.
+The curator queue has 19 known matches and 60 known non-matches. The `known_same_as`
+flag is not a checked answer, so this agreement is not a verified accuracy figure.
+
+Some of the disagreements are mistakes in the catalogs. We looked up two of them in
+MusicBrainz. In `c088`, both titles read *Um Novo Coração*, but the artists are Jozyanne
+and Maíra. MusicBrainz has a separate entry for Jozyanne's album, and the Wikidata item
+links to Maíra's instead, so `known_same_as` is true for two different albums. The model
+left the pair unlinked. In `c415`, both sides are *Tonight: In Person* by The Limeliters,
+from 1961 on RCA Victor. MusicBrainz lists the album twice and Wikidata links to the other
+entry, so `known_same_as` is false. The model merged the pair. Six of the nine merged known
+non-matches have the same title, artist, and year once case, punctuation, and accents are
+ignored.
+
+The model gets some pairs wrong too. It left two other known matches unlinked,
+including `c444`, where one side credits *Justin Lo* and the other *側田*, the same singer's
+Chinese name. Its `same_artist` answer is 0.03, and the pair scored 0.44, just under the
+lower cut point.
+
+```python theme={null}
+for pair_id in ("c088", "c415"):
+    show(pair_id)
+    print()
+```
+
+```
+c088  score 0.43  confidence 0.35  ->  leave unlinked
+    Um Novo Coração                           Jozyanne                    2001  MK Music
+    Um novo coração                           Maíra                       2001  Paradoxx Music
+    title 0.97   artist 0.01   label 0.01
+
+c415  score 1.97  confidence 0.97  ->  assert sameAs
+    Tonight: In Person                        The Limeliters              1961  RCA Victor
+    Tonight, In Person                        The Limeliters              1961  RCA Victor
+    title 0.86   artist 0.99   label 0.99
+```
 
 ## Open it in the playground
 
-The playground link below opens `c428`, which scored 1.10 and went to the curator.
-It pairs *Ambleside Amber Ale* with *Bridge Ambleside Amber Ale - Pomegranate & Galena
-Hops*: same brewery, same alcohol content. All four questions come with it.
+The link below opens `c190` in the playground, with all four questions. The pair scored
+1.27 and went to the curator. It's Herbie Hancock's *Head Hunters* from 1973 and the 2008
+reissue *Headhunters*: the same artist, and the same label written two ways. The
+playground runs `jev-latest`, so its score can differ from the 1.27 here.
 
 ```python theme={null}
 playground_link = make_playground_link(
-    {"entity_a": BY_ID["c428"]["entity_a"], "entity_b": BY_ID["c428"]["entity_b"]},
+    {
+        "entity_a": BY_ID["c190"]["entity_a"],
+        "entity_b": BY_ID["c190"]["entity_b"],
+    },
     QUESTIONS,
 )
 display(
@@ -8249,7 +8396,7 @@ display(
 )
 ```
 
-[Open this pair + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiMigJYoCeA+gIakEkhL2JP6kCCcARgBsEAZwpgE+XnwQAnSUNIAaLiD4yEAd1nVOpAEIyxAcwkHNFJEfwBhCHAAO9JDpDLSwmgrwresilCdJfll8AHp8ACUEMHkEJRV6PgA3XRAAVgA6AGYABnwAUlIAXzcyVCo6Pk4WNg5vfUMwEyDBETEJKRDuIXwAWnwABTsEIxknehQJADJ8AHF6ITZ8AAkIe2F40jVNbVSDY1N1DQsrWwcnF1KPai8CHmC5brjXBOTUzNyC4qKXkHsZOz2FDCDDYbxEUgCCwAa1oHgmz2YpBo9kRKmEUAg6k2IAsHhkMCglAgSA29RAqw0+Eg+BQAAsJCgNBB8OQKtSRFBDECKCThPh1AIEfh6Pz-hAwITgQB+HFcqh+RjeADapDQDOoHIxhmktOZ1IoADNDbJyPhxZKicIMjj1QhNeJtRRdVABBBhAgBJrBQiYhapfz6RN8HB6JqsSGw-gkBAUPhdfSJMJ2BISQgCPR8El6IYnChlJnhKioBQFqywFReUhlBHM7VGXTg5iYAI-UKYKJBN6ECa5CgWQgqAyZDaXmqNVr5bq0yKkDFE-hk4hzQDLShRwBdErolO0evVZHUVGpGMtnF4lAEolVsl3EAAERZC6ZA-KlBEi5QwoXS4k0hC9ayiA27uLu2xaDILhIiAKJoqQp4COepKXlKN6pNw6i0gyeqvpQ778oaAJwFhSYpvGRzaEBIEgL+cKeGiLCwSeEBnmOuLIVexKkqkj4kThrJvhQH6OlODakcu-5yNcQhUT8yggPQ9gUAAarIogkuCSQAIzAUAA)
+[Open this pair + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiMigJYoCeA+gIakEkiUoA2CT+pAEgvTD5eMVAgBOAZ1IAaHiHrjKklNz4SARhQTD6SKNADWs+dQHi1IAIwBOAOwBmE6Xb0NCdpYDCEdvC30+ABKCAbiYNIgAL5ypORUdBrcLGyclvyCABaiKBKRsQpKFCrpmtq6+kbOIGaKlgBMAAyNABzVru6eePI+fnABpFFRIHIgAA7iEHBjKJIY2N1ELhRIhrQq9LnJpDRjXN2kkmH7BSsq4jBQlBBIkQR8EADu+JD4KJk6KI8Q+PE0LwgjuIKDMKDdJPhxB5Njp6BD6OwNPBJAB+apQYG5YGMboAbVIaA+1ABQIo7je3xeFAAZtSJOR8AikXBJAA6aqEhDEsCAjFknRQdgQSQeYlQ1y5IRM5FvTKbfBwejEiDiBVK-BICAofDk946ST0RD4G4IAiBKHFSQwBByQIGaYUCVgpC2-CSPZQCgI42q9gUABuOgQYCozrkKsZbyonFl8oMMHYQjGrhgkjJ7DFCDpqpQPwQVA+4nZI3knO5vOB5JNjKQQj1bsNsMR8GLAF0YvIDYhaKl9swdtQ9pZNQnqmcUBcrs67vIACI-etfPOoUOA-AAcwDnw+DaN0rgUY4CBR+FnNOzyCga5W+CgcJW67kY1EVxgmzDPvwj0xD7d1BUCAHgAFIEvY1kIVAQpMipIMU743AAlC8PyatqiqGJ8lK9hCIa0vSqDFh2hyNgwRQlN0KSDn28gjl0py3BOlzXLcljzrKmHLmw2gQhiwZUOxu6wmRKAngAghqjZfpiuRIPgN56FqhZunyMyft84Q+jy4jhqqdpQiG2rvPKggRLevgdCqmwqhCuYCV2OicIIjLCXIxR2ZJijKCghEFPZtAdB42ysFRw4QKOJakOOk7MTOpBsYulJ-NxElGvW9mQqEKpCAF7BiW6mQqjJwYpToEbmggm43N6GjiHoUCZMa1KRjlck2Tu6U5QA3DWcnTMCqDgXJsz4GMigMvao1IMSY1UnhUIDTlbL4OJLUQE1ADkAC062futuKavgOWtjtbmoRlYQ8mAhHDKM9BjBQABqeTOos-pWNEQA)
 
 
 # Feeder-cam visit log
@@ -8327,11 +8474,7 @@ with pip or uv:
 A full run sends about 180 requests. Pillow draws the boxes and matplotlib lays out the
 figures.
 
-Every response is saved in `json_cache.json`, so a second run makes no requests. To replay
-the published numbers without an API key, download [`json_cache.json`][cache] into the
-folder you run the script from.
-
-[cache]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/json_cache.json
+Every response is saved in `json_cache.json`, so a second run makes no requests.
 
 Numbers below came from `jev-1.14.0` on 2026-10-15.
 
@@ -8495,16 +8638,16 @@ header set above. The three frames below have two birds, one bird, and no bird.
 
 ```python expandable theme={null}
 @json_cache
-def ask_cached(model: str, frame: str, questions_json: str) -> dict:
+def ask_cached(frame: str, questions_json: str) -> dict:
     started = perf_counter()
     response = client.system_one(
         state={"frame": Image(FRAMES / frame)},
         questions=json.loads(questions_json),
-        model=model,
+        model=TYPESAFE_MODEL,
         extra_headers=IMAGE_HEADERS,
     )
     seconds = round(perf_counter() - started, 2)
-    return {"response": response.model_dump(mode="json"), "seconds": seconds}
+    return {"response": response.model_dump(mode="json", exclude={"model"}), "seconds": seconds}
 
 
 def ask(path: Path, questions: dict):
@@ -8512,8 +8655,10 @@ def ask(path: Path, questions: dict):
         {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()},
         sort_keys=True,
     )
-    cached = ask_cached(TYPESAFE_MODEL, path.name, as_json)
-    return SystemOneResponse.model_validate(cached["response"]), cached["seconds"]
+    cached = ask_cached(path.name, as_json)
+    # The cache leaves the model out; the response type needs one, so use the requested model.
+    response = SystemOneResponse.model_validate({**cached["response"], "model": TYPESAFE_MODEL})
+    return response, cached["seconds"]
 
 
 def edges(box) -> str:
@@ -9117,24 +9262,34 @@ you add is a spec that says in plain words what each argument means. By the end 
 pip install ipython polars matplotlib numpy 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Set `TYPESAFE_API_KEY`. Two modules sit beside this file. `trader.py` holds the ten
-functions, plus a TypeSafe client that reads answers from a cache, so re-rendering replays
-the numbers below without calling the API. `dispatch.py` holds the code that reads a
-signature and a spec and makes the call. Both modules, `spec.json`, the price bars and the
-answer cache are in
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/function_calling).
+Set `TYPESAFE_API_KEY`. The code below downloads two modules, with `spec.json` and the
+price bars, from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/function_calling)
+unless they are already on disk. `trader.py` holds the ten functions, plus a TypeSafe
+client that caches its answers. `dispatch.py` holds the code that reads a signature and a
+spec and makes the call.
 
 The prices are simulated from a fixed random seed, not real market data. The tickers are
 real, but every price, return and chart below is generated.
 
 ```python theme={null}
 import json
+import urllib.request
 from pathlib import Path
 
 from cooksafe import make_playground_link
-from dispatch import ROUTE, Dispatcher, closed_sets
 from IPython.display import Markdown, display
-from trader import TOOLS, client, load
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/function_calling"
+)
+for name in ["dispatch.py", "trader.py", "spec.json", "bars.parquet"]:
+    if not Path(name).exists():
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", name)
+
+from dispatch import ROUTE, Dispatcher, closed_sets  # noqa: E402  (downloaded above)
+from trader import TOOLS, client, load  # noqa: E402
 
 TYPESAFE_MODEL = "jev-1.12"
 print(f"{len(TOOLS)} functions over {load().height:,} one-minute bars")
@@ -10075,11 +10230,11 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 
 @json_cache
-def choose(state: str, labels: tuple[str, ...]) -> dict[str, float]:
+def choose(state: str, question: Choice) -> dict[str, float]:
     """Ask one atomic direct-child question and return its distribution."""
-    if len(labels) == 1:
-        return {labels[0]: 1.0}
-    question, keys = child_question(labels)
+    keys = question.criteria
+    if len(keys) == 1:
+        return {label: 1.0 for label in keys.values()}
     response = client.system_one(
         state=state, questions={"child": question}, model=MODEL
     )
@@ -10087,14 +10242,13 @@ def choose(state: str, labels: tuple[str, ...]) -> dict[str, float]:
     return {label: probabilities[key] for key, label in keys.items()}
 
 
-def child_question(labels: tuple[str, ...]) -> tuple[Choice, dict[str, str]]:
-    """Build the direct-child Choice and its reversible option mapping."""
+def child_question(labels: tuple[str, ...]) -> Choice:
+    """Build the direct-child Choice; its option keys map back to the labels."""
     keys = {f"c{i}": label for i, label in enumerate(labels)}
-    question = Choice(
+    return Choice(
         instructions="Which direct child category best matches this document?",
         criteria=keys,
     )
-    return question, keys
 
 
 def extend_candidate(
@@ -10143,7 +10297,7 @@ def beam_search(hierarchy: Hierarchy) -> dict:
                 executor.map(
                     lambda candidate: choose(
                         hierarchy.document,
-                        tuple(subtree(hierarchy.tree, candidate["path"])),
+                        child_question(tuple(subtree(hierarchy.tree, candidate["path"]))),
                     ),
                     expandable,
                 )
@@ -10182,7 +10336,7 @@ def greedy_search(hierarchy: Hierarchy) -> dict:
         labels = tuple(subtree(hierarchy.tree, path))
         if not labels:
             break
-        probabilities = choose(hierarchy.document, labels)
+        probabilities = choose(hierarchy.document, child_question(labels))
         records.append(choice_record(path, probabilities))
         label = max(probabilities, key=probabilities.get)
         if len(probabilities) > 1:
@@ -10395,14 +10549,10 @@ pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 export TYPESAFE_API_KEY="<ADD_YOUR_KEY>"
 ```
 
-Every API call is cached in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/intelliprompter/json_cache.json).
-Download it into the folder you run this code from to replay the published numbers
-instead of calling the API, or leave it out to run everything live.
-
 Numbers below came from `jev-1.13.0` on 2026-09-29.
 
 ```python theme={null}
+import json
 import os
 from pathlib import Path
 
@@ -10526,10 +10676,10 @@ def score_question(description: str) -> Score:
 
 
 @json_cache
-def score_tick(transcript: str, pending: tuple[tuple[str, str], ...]) -> dict:
+def score_tick(transcript: str, questions_json: str) -> dict:
     response = client.system_one(
         state={"transcript": transcript},
-        questions={key: score_question(description) for key, description in pending},
+        questions=json.loads(questions_json),
     )
     return {
         "answers": {
@@ -10591,7 +10741,11 @@ def run_loop(chunks: list[str]) -> tuple[set[str], dict[str, dict], list[dict]]:
             break
         ticks.append({"transcript": transcript, "pending": pending})
 
-        result = score_tick(transcript, pending)
+        questions = {
+            key: score_question(description).model_dump(mode="json", exclude_none=True)
+            for key, description in pending
+        }
+        result = score_tick(transcript, json.dumps(questions))
 
         new_checks = 0
         for key, answer in result["answers"].items():
@@ -10737,17 +10891,15 @@ flowchart LR
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. The sample messages and the answer cache are in
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/llm_guardrails);
-put them in the folder you run the script from. Every API call is cached in
-`json_cache.json`, so re-running replays the published numbers instead of calling the
-API. Delete that file to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.14.0` on 2026-10-31.
 
-```python theme={null}
+```python expandable theme={null}
+import json
 import os
 import textwrap
+import urllib.request
 from pathlib import Path
 
 from cooksafe import JsonCache, make_playground_link
@@ -10762,6 +10914,21 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/llm_guardrails"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the sample messages
@@ -10773,7 +10940,7 @@ and a made-up accessibility need used to ask for answers with no refusals, or fo
 tone with no warnings.
 
 ```python theme={null}
-def load_messages(path: str) -> dict[str, str]:
+def load_messages(path: Path) -> dict[str, str]:
     """Read an `id: <name>` / body record file into an ordered `{id: text}` dict."""
     messages = {}
     for record in Path(path).read_text().split("\n=====\n"):
@@ -10785,8 +10952,8 @@ def load_messages(path: str) -> dict[str, str]:
     return messages
 
 
-PROMPTS = load_messages("prompts.txt")  # user messages, screened on the way in
-REPLIES = load_messages("replies.txt")  # model replies, screened on the way out
+PROMPTS = load_messages(download("prompts.txt"))  # user messages, screened on the way in
+REPLIES = load_messages(download("replies.txt"))  # model replies, screened on the way out
 
 print(f"{len(PROMPTS)} prompts, {len(REPLIES)} replies. Two examples of each:\n")
 for name in ["prescription_info", "persona_jailbreak"]:
@@ -10946,16 +11113,24 @@ def route(nouls: dict[str, float], severity: float, policy: dict) -> str:
 
 
 @json_cache
-def screen(text: str, side: str) -> dict:
+def assess(text: str, battery_json: str) -> dict:
     """Send one message and its battery in a single call; return the raw assessment."""
-    response = client.system_one(
-        state=text, questions=BATTERIES[side], model=TYPESAFE_MODEL
-    )
+    battery = json.loads(battery_json)
+    response = client.system_one(state=text, questions=battery, model=TYPESAFE_MODEL)
     answers = response.answers
     return {
-        "nouls": {qid: answers[qid].noul for qid in BATTERIES[side] if qid != "severity"},
+        "nouls": {qid: answers[qid].noul for qid in battery if qid != "severity"},
         "severity": answers["severity"].score,
     }
+
+
+def screen(text: str, side: str) -> dict:
+    """Screen one message with its side's battery."""
+    battery = {
+        qid: question.model_dump(mode="json", exclude_none=True)
+        for qid, question in BATTERIES[side].items()
+    }
+    return assess(text, json.dumps(battery))
 
 
 def guard(text: str, side: str, policy_name: str = DEFAULT_POLICY) -> str:
@@ -11224,14 +11399,7 @@ flowchart TB
 pip install ipython pillow 'typesafe-sdk[pil]>=0.7.5' 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Then set `TYPESAFE_API_KEY`. Download the two invoice photos, `extractions.json` and
-`json_cache.json` from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/ocr_confidence_bounding_boxes),
-and put them beside the script, with the photos in an `inputs/` folder.
-
-Every API response is saved in `json_cache.json`, so running the cookbook reuses those
-saved responses and you get the published numbers without calling the API. Delete that
-file to send every request again.
+Then set `TYPESAFE_API_KEY`.
 
 > **Note** - Images and `Box` questions are dreamer-ready, which means they are not yet
 > ready for production, and their request format and answers can change between releases.
@@ -11240,17 +11408,18 @@ file to send every request again.
 
 The numbers below came from `jev-1.14.0` on 2026-10-15.
 
-```python theme={null}
+```python expandable theme={null}
 import io
 import json
 import os
+import urllib.request
 from pathlib import Path
 
 from cooksafe import JsonCache
 from IPython.display import display
 from PIL import Image as PILImage
 from PIL import ImageDraw, ImageFont
-from typesafe_sdk import Box, Image, Noul, TypeSafeClient
+from typesafe_sdk import Box, Image, Noul, SystemOneResponse, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.14.0"  # Box questions need Jev 1.14
 BAR = 0.25  # a check scoring below this flags the field
@@ -11266,6 +11435,21 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/ocr_confidence_bounding_boxes"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the photos and what the extractor read
@@ -11280,7 +11464,9 @@ values. Any extractor works here, because the check only needs the photo and the
 
 ```python theme={null}
 INPUTS = Path("inputs")  # the photos, keyed in extractions.json by file name
-EXTRACTIONS = json.loads(Path("extractions.json").read_text())
+EXTRACTIONS = json.loads(download("extractions.json").read_text())
+for photo in EXTRACTIONS:
+    download(f"inputs/{photo}")
 FIELDS = {
     # field: what it is, in the words every question uses
     "supplier_name": "the supplier's (seller's) business name",
@@ -11379,21 +11565,28 @@ def page_questions(values: dict) -> dict:
     return questions
 
 
+def as_json(questions: dict) -> str:
+    return json.dumps(
+        {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()}
+    )
+
+
 @json_cache
-def find_fields(photo: str, values_json: str) -> dict:
-    values = json.loads(values_json)
+def find_fields(photo: str, questions_json: str) -> dict:
+    questions = json.loads(questions_json)
+    fields = sorted(key.removeprefix("box_") for key in questions if key.startswith("box_"))
     with PILImage.open(INPUTS / photo) as page:
         image, _ = as_image(page)  # a whole page fills the size range, so no canvas
     response = client.system_one(
-        state={"page": image}, questions=page_questions(values), model=TYPESAFE_MODEL
+        state={"page": image}, questions=questions, model=TYPESAFE_MODEL
     )
     return {
-        "boxes": {f: response.boxes[f"box_{f}"].box.model_dump() for f in sorted(values)},
-        "fits": {f: response.nouls[f"fits_{f}"].noul for f in sorted(values)},
+        "boxes": {f: response.boxes[f"box_{f}"].box.model_dump() for f in fields},
+        "fits": {f: response.nouls[f"fits_{f}"].noul for f in fields},
     }
 
 
-found = {photo: find_fields(photo, json.dumps(values, sort_keys=True))
+found = {photo: find_fields(photo, as_json(page_questions(values)))
          for photo, values in sorted(EXTRACTIONS.items())}
 for photo, result in found.items():
     print(photo)
@@ -11437,6 +11630,10 @@ The code then pads each new box on every side, so that cropping to it can't cut 
 the value.
 
 ```python expandable theme={null}
+IMAGE = "{image}"  # stands for each question's own image until the request is sent
+ZOOM_TASK = "Locate fields in zoomed-in parts of a supplier invoice."
+
+
 def region_around(box: dict) -> dict:
     width = min(1.0, max(ZOOM_MIN[0], (box["right"] - box["left"]) * ZOOM))
     height = min(1.0, max(ZOOM_MIN[1], (box["bottom"] - box["top"]) * ZOOM))
@@ -11445,29 +11642,38 @@ def region_around(box: dict) -> dict:
     return {"left": left, "top": top, "right": left + width, "bottom": top + height}
 
 
+def zoom_questions(values: dict) -> dict:
+    return {
+        field: Box(
+            instructions=f"{FIELDS[field]}, printed as “{values[field]}” in this image: {IMAGE}"
+        )
+        for field in sorted(values)
+    }
+
+
+def ask_with_images(task: str, questions: dict, images: dict) -> SystemOneResponse:
+    """Put each field's image into its question, and send all the questions in one request."""
+    for field, question in questions.items():
+        question["instructions"] = question["instructions"].replace(IMAGE, str(images[field]))
+    with client.attach_assets(list(images.values())):  # resolves the references in the text
+        return client.system_one(state={"task": task}, questions=questions, model=TYPESAFE_MODEL)
+
+
 @json_cache
-def zoom_fields(photo: str, values_json: str, boxes_json: str) -> dict:
-    values, boxes = json.loads(values_json), json.loads(boxes_json)
-    questions, regions, images = {}, {}, []
-    for field in sorted(values):
-        region = region_around(boxes[field])
-        image, frame = as_image(crop(photo, region), upscale_to=1200)
-        regions[field], images = (region, frame), images + [image]
-        questions[field] = Box(
-            instructions=f"{FIELDS[field]}, printed as “{values[field]}” in this image: {image}"
-        )
-    with client.attach_assets(images):  # resolves the image references inside the text
-        response = client.system_one(
-            state={"task": "Locate fields in zoomed-in parts of a supplier invoice."},
-            questions=questions, model=TYPESAFE_MODEL,
-        )
+def zoom_fields(
+    photo: str, regions_json: str, task: str, questions_json: str, grow: tuple
+) -> dict:
+    regions, images, frames = json.loads(regions_json), {}, {}
+    for field, region in regions.items():
+        images[field], frames[field] = as_image(crop(photo, region), upscale_to=1200)
+    response = ask_with_images(task, json.loads(questions_json), images)
     tight = {}
-    for field, (region, (fx, fy, fw, fh)) in regions.items():
-        b = response.boxes[field].box
+    for field, region in regions.items():
+        b, (fx, fy, fw, fh) = response.boxes[field].box, frames[field]
         # canvas -> region -> page, then add the review margin
         left, right = (b.left - fx) / fw, (b.right - fx) / fw
         top, bottom = (b.top - fy) / fh, (b.bottom - fy) / fh
-        gx, gy = (right - left) * GROW[0], (bottom - top) * GROW[1]
+        gx, gy = (right - left) * grow[0], (bottom - top) * grow[1]
         rw, rh = region["right"] - region["left"], region["bottom"] - region["top"]
         tight[field] = {
             "left": max(0.0, region["left"] + (left - gx) * rw),
@@ -11485,25 +11691,29 @@ show the extracted value? Each crop goes inside its own question's instructions.
 answer's P(yes) is the crop check.
 
 ```python theme={null}
-@json_cache
-def check_crops(photo: str, values_json: str, boxes_json: str) -> dict:
-    values, boxes = json.loads(values_json), json.loads(boxes_json)
-    questions, images = {}, []
-    for field in sorted(values):
-        image, _ = as_image(crop(photo, boxes[field], pad=0.01), upscale_to=800)
-        images.append(image)
-        questions[field] = Noul(
-            instructions=f"Image: {image}\nDoes this cropped image clearly show {FIELDS[field]}"
+CROP_TASK = "Check values read from cropped parts of a supplier invoice."
+
+
+def crop_questions(values: dict) -> dict:
+    return {
+        field: Noul(
+            instructions=f"Image: {IMAGE}\nDoes this cropped image clearly show {FIELDS[field]}"
             f" as “{values[field]}”? {SAME_VALUE} Answer no if it is cut off, unreadable or"
             " different."
         )
-    with client.attach_assets(images):
-        response = client.system_one(
-            state={"task": "Check values read from cropped parts of a supplier invoice."},
-            questions=questions, model=TYPESAFE_MODEL,
-        )
+        for field in sorted(values)
+    }
+
+
+@json_cache
+def check_crops(photo: str, boxes_json: str, task: str, questions_json: str) -> dict:
+    images = {
+        field: as_image(crop(photo, box, pad=0.01), upscale_to=800)[0]
+        for field, box in json.loads(boxes_json).items()
+    }
+    response = ask_with_images(task, json.loads(questions_json), images)
     return {
-        "shows": {f: response.nouls[f].noul for f in sorted(values)},
+        "shows": {f: response.nouls[f].noul for f in sorted(images)},
     }
 ```
 
@@ -11513,10 +11723,12 @@ A field goes to review when either check scores below `BAR` (0.25).
 
 ```python theme={null}
 def check_invoice(photo: str, values: dict) -> dict:
-    values_json = json.dumps(values, sort_keys=True)
-    first = find_fields(photo, values_json)
-    tight = zoom_fields(photo, values_json, json.dumps(first["boxes"], sort_keys=True))
-    shown = check_crops(photo, values_json, json.dumps(tight["boxes"], sort_keys=True))
+    first = find_fields(photo, as_json(page_questions(values)))
+    regions = {field: region_around(box) for field, box in first["boxes"].items()}
+    tight = zoom_fields(photo, json.dumps(regions, sort_keys=True), ZOOM_TASK,
+                        as_json(zoom_questions(values)), GROW)
+    shown = check_crops(photo, json.dumps(tight["boxes"], sort_keys=True), CROP_TASK,
+                        as_json(crop_questions(values)))
     return {
         field: {
             "value": values[field],
@@ -11629,9 +11841,7 @@ The case here is a regulatory briefing. The document is the Wikipedia article on
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
-`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/parallel_questions) into the folder you run
-the script from.
+then set `TYPESAFE_API_KEY`.
 
 ```python theme={null}
 import json
@@ -11793,30 +12003,37 @@ agree?) and the std dev (does batching add noise?). Calls are cached to
 
 ```python expandable theme={null}
 @json_cache
-def ask(keys: tuple[str, ...], run: int):
+def ask(document_json: str, questions_json: str, run: int):
     """One TypeSafe call -> ({key: tracked metric}, input_tokens, output_tokens, latency_s);
     ``run`` only forces a distinct live call per repeat."""
     started = perf_counter()
+    questions = json.loads(questions_json)
     response = client.system_one(
-        state={"article": DOCUMENT},
-        questions={key: QUESTIONS[key] for key in keys},
+        state={"article": json.loads(document_json)},
+        questions=questions,
         model=TYPESAFE_MODEL,
     )
     values = {}
-    for key in keys:
+    for key, question in questions.items():
         answer = response.answers[key]
         if isinstance(answer, NoulAnswer):
             values[key] = answer.noul
         elif isinstance(answer, ChoiceAnswer):
             values[key] = max(answer.probabilities.values())
         else:
-            values[key] = answer.score / (len(QUESTIONS[key].criteria) - 1)
+            values[key] = answer.score / (len(question["criteria"]) - 1)
     return (
         values,
         response.usage.input_tokens,
         response.usage.output_tokens,
         perf_counter() - started,
     )
+
+
+def ask_keys(keys: tuple[str, ...], run: int):
+    """Ask the questions named by ``keys``, sending their full text."""
+    questions = {key: QUESTIONS[key].model_dump(mode="json", exclude_none=True) for key in keys}
+    return ask(json.dumps(DOCUMENT), json.dumps(questions), run)
 
 
 def priced(result):
@@ -11827,10 +12044,10 @@ def priced(result):
 
 # Price after cache retrieval, so a price change needs no new calls.
 batched = [
-    priced(ask(tuple(QUESTIONS), run)) for run in range(RUNS)
+    priced(ask_keys(tuple(QUESTIONS), run)) for run in range(RUNS)
 ]  # all N in one call, x RUNS
 singles = [
-    {key: priced(ask((key,), run)) for key in QUESTIONS} for run in range(RUNS)
+    {key: priced(ask_keys((key,), run)) for key in QUESTIONS} for run in range(RUNS)
 ]  # N x 1, x RUNS
 ```
 
@@ -11971,9 +12188,7 @@ it and act on it.*
 pip install ipython phonenumbers 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
-`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/pre_parsed_value_extraction_cookbook) into the folder you run
-the script from.
+then set `TYPESAFE_API_KEY`.
 
 ```python theme={null}
 import os
@@ -12314,12 +12529,7 @@ pip install ipython matplotlib 'typesafe-sdk>=0.7.5,<0.8.0' \
     'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Set `TYPESAFE_API_KEY`. Download `vaccination_record.jpg` and `json_cache.json` from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/reading_scanned_documents)
-and keep them in one folder with the script. `json_cache.json` stores the API responses
-behind the numbers on this page. While it's there, the script reuses those responses
-instead of calling the API, so you get the same numbers. Delete it to call the API
-yourself.
+Set `TYPESAFE_API_KEY`.
 
 > [!WARNING]
 >
@@ -12327,10 +12537,11 @@ yourself.
 > or a `Box` question need the `TypeSafe-Danger-Zone-Images: true` header, and the request
 > format can change between releases. See [Images](/images).
 
-```python theme={null}
+```python expandable theme={null}
 import hashlib
 import json
 import os
+import urllib.request
 from datetime import date
 from pathlib import Path
 from time import perf_counter
@@ -12355,6 +12566,21 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/reading_scanned_documents"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Send the scan to Jev
@@ -12371,18 +12597,18 @@ pixels, so scale a high-resolution scan down before sending it. The
 limits on the whole request.
 
 ```python theme={null}
-PAGE = Path("vaccination_record.jpg")
+PAGE = download("vaccination_record.jpg")
 PAGE_SHA = hashlib.sha256(PAGE.read_bytes()).hexdigest()[:16]  # cache key for the scan
 
 
 @json_cache
-def ask(model: str, page_sha: str, questions_json: str) -> dict:
+def ask(page_sha: str, questions_json: str) -> dict:
     """One request: the scan as the state, plus a set of questions about it."""
     started = perf_counter()
     response = client.system_one(
         state={"page": Image(PAGE)},
         questions=json.loads(questions_json),
-        model=model,
+        model=TYPESAFE_MODEL,
         extra_headers=IMAGES_ON,
     )
     return {
@@ -12396,7 +12622,7 @@ def ask(model: str, page_sha: str, questions_json: str) -> dict:
 def ask_page(questions: dict) -> dict:
     if not questions:  # nothing to ask, such as a page with no rows found
         return {"answers": {}}
-    return ask(TYPESAFE_MODEL, PAGE_SHA, json.dumps(questions, sort_keys=True))
+    return ask(PAGE_SHA, json.dumps(questions, sort_keys=True))
 ```
 
 ## Find which vaccines are on the record
@@ -12656,10 +12882,10 @@ This request has no image, so it doesn't need the images header.
 
 ```python theme={null}
 @json_cache
-def check(model: str, state_json: str, questions_json: str) -> dict:
+def check(state_json: str, questions_json: str) -> dict:
     started = perf_counter()
     response = client.system_one(
-        state=json.loads(state_json), questions=json.loads(questions_json), model=model
+        state=json.loads(state_json), questions=json.loads(questions_json), model=TYPESAFE_MODEL
     )
     return {
         "answers": {k: a.noul for k, a in response.answers.items()},
@@ -12670,7 +12896,7 @@ def check(model: str, state_json: str, questions_json: str) -> dict:
 
 
 readable = [r for r in rows if not unresolved(r)]
-checked = check(TYPESAFE_MODEL, json.dumps(check_state(readable)),
+checked = check(json.dumps(check_state(readable)),
                 json.dumps(check_questions(readable))) if readable else {"answers": {}}
 for row in rows:
     row["in_date"] = checked["answers"].get(row["id"])
@@ -13019,9 +13245,6 @@ This example uses 3,565 court opinion passages and 40 queries.
 pip install bm25s datasets matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-To replay the published numbers without an API key, download `json_cache.json` from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/rerank_typesafe) into the folder you run the script from.
-
 Calling TypeSafe needs a `TYPESAFE_API_KEY`.
 
 ```python theme={null}
@@ -13231,14 +13454,14 @@ is_cited_source = Noul(
 
 
 @json_cache
-def score_candidate(model: str, query: str, candidate: str, question_json: str) -> dict:
+def score_candidate(query: str, candidate: str, question_json: str) -> dict:
     """One TypeSafe call about one (query, candidate) pair: a noul, plus token usage."""
     # the SDK takes a question as its JSON dict, so the cached string decodes straight in
     question = json.loads(question_json)
     response = client.system_one(
         state={"query_excerpt": query, "candidate_passage": candidate},
         questions={"is_cited_source": question},
-        model=model,
+        model=TYPESAFE_MODEL,
     )
     return {
         "noul": response.answers["is_cited_source"].noul,
@@ -13253,9 +13476,7 @@ pair_list = [(q, c) for q in queries for c in candidates[q]]
 question_json = is_cited_source.model_dump_json(exclude_none=True)
 with ThreadPoolExecutor(max_workers=12) as pool:
     results = pool.map(
-        lambda p: score_candidate(
-            TYPESAFE_MODEL, queries[p[0]], corpus[p[1]], question_json
-        ),
+        lambda p: score_candidate(queries[p[0]], corpus[p[1]], question_json),
         pair_list,
     )
 pair_scores = {q: {} for q in queries}
@@ -13550,6 +13771,7 @@ json_cache = JsonCache(Path("json_cache.json"))
 @json_cache
 def extract(
     model: str,
+    system: str,
     prompt: str,
     schema: dict,
     content: str,
@@ -13564,7 +13786,7 @@ def extract(
     kwargs = {
         "model": model,
         "messages": [
-            {"role": "system", "content": EXTRACT_SYSTEM},
+            {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
     }
@@ -13583,7 +13805,7 @@ def extract(
         return {}
 
 
-mini_record = extract(MINI, prompt, schema, content, temperature=0)
+mini_record = extract(MINI, EXTRACT_SYSTEM, prompt, schema, content, temperature=0)
 print("mini extraction:\n", json.dumps(mini_record, indent=2))
 
 print("\nschema-valid:", jsonschema.Draft202012Validator(schema).is_valid(mini_record))
@@ -13764,17 +13986,20 @@ def build_questions(record: dict) -> dict[str, Noul]:
     return questions
 
 
-@json_cache
-def verify(record: dict) -> dict[str, float | str]:
-    """Run the whole Noul battery over a record in one TypeSafe call; return ``{field::metric: P(true)}``."""
-    state = {
+def verify_state(record: dict) -> dict:
+    return {
         "system_message": EXTRACT_SYSTEM,
         "instruction": "Extract the structured record from this document",
         "source_text": content,
         "schema": schema,
         "extraction": record,
     }
-    questions = build_questions(record)
+
+
+@json_cache
+def verify(state_json: str, questions_json: str) -> dict[str, float | str]:
+    """Run the whole Noul battery over a record in one TypeSafe call; return ``{field::metric: P(true)}``."""
+    state, questions = json.loads(state_json), json.loads(questions_json)
     answers = ts.system_one(state=state, questions=questions, model=TS_MODEL).answers
     return {qid: ans.noul for qid, ans in answers.items()} | {
         "playground_link": make_playground_link(state, questions)
@@ -13782,7 +14007,11 @@ def verify(record: dict) -> dict[str, float | str]:
 ```
 
 ```python theme={null}
-checks = verify(mini_record)
+battery = build_questions(mini_record)
+checks = verify(
+    json.dumps(verify_state(mini_record)),
+    json.dumps({qid: q.model_dump(mode="json", exclude_none=True) for qid, q in battery.items()}),
+)
 playground_link = checks.pop("playground_link")
 display(
     Markdown(
@@ -13859,7 +14088,7 @@ Since a signal fired, we pay for the strong model (`gpt-5.5`, `reasoning_effort=
 
 ```python theme={null}
 final_record = (
-    extract(REASONING, prompt, schema, content, reasoning_effort="high")
+    extract(REASONING, EXTRACT_SYSTEM, prompt, schema, content, reasoning_effort="high")
     if escalate
     else mini_record
 )
@@ -13945,11 +14174,6 @@ export TYPESAFE_API_KEY="your-key-here"
 ```bash theme={null}
 pip install 'cooksafe>=0.2.0,<0.3.0'
 ```
-
-`JsonCache` replays the API responses in `json_cache.json`, so the steps below run without
-an API key or any spend. Download it from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/semantic_find) into the folder you run the script from.
-To make the requests live instead, set `TYPESAFE_API_KEY` and leave it out.
 
 ### Create the script
 
@@ -14094,7 +14318,6 @@ flowchart LR
 ```python theme={null}
 @json_cache
 def _find(
-    model: str,
     state: str,
     where: Choice,
     exists: Noul,
@@ -14102,7 +14325,7 @@ def _find(
     response = client.system_one(
         state=state,
         questions={"where": where, "exists": exists},
-        model=model,
+        model=TYPESAFE_MODEL,
     )
     probabilities = response.answers["where"].probabilities
     return {
@@ -14113,7 +14336,6 @@ def _find(
 
 def find(query: str) -> dict:
     return _find(
-        TYPESAFE_MODEL,
         DOCUMENT,
         where_question(query),
         exists_question(query),
@@ -14309,18 +14531,14 @@ export ANTHROPIC_API_KEY=your-key-here
 
 ## Caching results
 
-`hermes_roster.json`, `requests.json` and the answer cache `json_cache.json` are in
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/skill_suggestion).
-Put them in the folder you run the script from.
-
 We cache each call's result in `json_cache.json`, keyed on its inputs, so re-running
-replays the numbers below instead of calling either API. Delete `json_cache.json` to run
-live. The published run used `jev-1.14.0` and `claude-haiku-4-5-20251001`, rendered
-2026-10-30.
+replays the numbers below instead of calling either API. The published run used
+`jev-1.14.0` and `claude-haiku-4-5-20251001`, rendered 2026-10-30.
 
 ```python expandable theme={null}
 import json
 import os
+import urllib.request
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -14369,6 +14587,21 @@ client = TypeSafeClient(
 )
 agent = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only"))
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/skill_suggestion"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Step 1: load the roster
@@ -14382,7 +14615,7 @@ it, the full description, and the opening of its `SKILL.md`. The skills' licence
 The index below, and the instructions above it in the prompt, are copied from Hermes.
 
 ```python expandable theme={null}
-ROSTER = json.loads(Path("hermes_roster.json").read_text(encoding="utf-8"))
+ROSTER = json.loads(download("hermes_roster.json").read_text(encoding="utf-8"))
 BY_NAME = {skill["name"]: skill for skill in ROSTER}
 
 # Verbatim from hermes-agent agent/prompt_builder.py:_render_skills_index.
@@ -14487,7 +14720,7 @@ better on each:
   `skill_view` at all.
 
 ```python theme={null}
-REQUESTS = json.loads(Path("requests.json").read_text(encoding="utf-8"))
+REQUESTS = json.loads(download("requests.json").read_text(encoding="utf-8"))
 POSITIVES = [p for p in REQUESTS if p["gold"]]
 NEGATIVES = [p for p in REQUESTS if not p["gold"]]
 
@@ -14562,18 +14795,16 @@ TOOLS = [
 
 
 @json_cache
-def run_turn(model: str, arm: str, request: str, suggestion: str) -> dict:
+def run_turn(arm: str, roster: str, tools_json: str, request: str, suggestion: str) -> dict:
     """One measured turn. ``arm`` is in the key so each arm samples independently."""
-    system = [
-        {"type": "text", "text": CATALOG_PROMPT, "cache_control": {"type": "ephemeral"}}
-    ]
+    system = [{"type": "text", "text": roster, "cache_control": {"type": "ephemeral"}}]
     if suggestion:
         system.append({"type": "text", "text": suggestion})  # after the breakpoint
     response = agent.messages.create(
-        model=model,
+        model=AGENT_MODEL,
         max_tokens=1024,
         system=system,
-        tools=TOOLS,
+        tools=json.loads(tools_json),
         messages=[{"role": "user", "content": request}],
     )
     return {
@@ -14601,7 +14832,10 @@ def run_arm(arm: str, suggestions: dict[str, str]) -> dict[str, dict]:
     texts = [request["text"] for request in REQUESTS]
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         turns = pool.map(
-            lambda t: run_turn(AGENT_MODEL, arm, t, suggestions.get(t, "")), texts
+            lambda t: run_turn(
+                arm, CATALOG_PROMPT, json.dumps(TOOLS), t, suggestions.get(t, "")
+            ),
+            texts,
         )
         return dict(zip(texts, turns))
 ```
@@ -14706,9 +14940,13 @@ def build_state(request: str) -> dict:
     return {"request": request, "recent_context": ""}
 
 
-@json_cache
-def rank_wide(request: str) -> dict:
-    """Request 1: rank all 194 skills, and score the request for whether a skill applies."""
+def as_json(questions: dict) -> str:
+    return json.dumps(
+        {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()}
+    )
+
+
+def wide_questions() -> dict:
     questions = {
         "which": Choice(
             instructions=CHOICE_INSTRUCTIONS,
@@ -14718,9 +14956,17 @@ def rank_wide(request: str) -> dict:
     for key, text in GATE_QUESTIONS.items():
         questions[f"gate::{key}"] = Noul(instructions=text)
     questions["named"] = Noul(instructions=NAMED_QUESTION)
+    return questions
+
+
+@json_cache
+def rank_wide(request: str, questions_json: str) -> dict:
+    """Request 1: rank all 194 skills, and score the request for whether a skill applies."""
     started = perf_counter()
     response = client.system_one(
-        state=build_state(request), questions=questions, model=TYPESAFE_MODEL
+        state=build_state(request),
+        questions=json.loads(questions_json),
+        model=TYPESAFE_MODEL,
     )
     ranked = sorted(
         response.answers["which"].probabilities.items(), key=lambda kv: -kv[1]
@@ -14730,16 +14976,21 @@ def rank_wide(request: str) -> dict:
         for key, answer in response.answers.items()
         if key.startswith("gate::")
     }
-    oriented = [(1.0 - v) if k in INVERTED else v for k, v in values.items()]
     return {
         "ranked": ranked[
             :12
         ],  # more than any shortlist needs, and keeps the cache small
-        "gate": sum(oriented) / len(oriented),
         "values": values,
         "named": response.answers["named"].noul,
         "seconds": round(perf_counter() - started, 2),
     }
+
+
+def first_pass(request: str) -> dict:
+    """Request 1, plus the three action answers averaged into ``gate``."""
+    wide = rank_wide(request, as_json(wide_questions()))
+    oriented = [(1.0 - v) if k in INVERTED else v for k, v in wide["values"].items()]
+    return {**wide, "gate": sum(oriented) / len(oriented)}
 
 
 def needs_skill(wide: dict) -> bool:
@@ -14758,7 +15009,7 @@ DEMO = [
     " ends up breaking prod?",
 ]
 for request in DEMO:
-    wide = rank_wide(request)
+    wide = first_pass(request)
     verdict = "suggest" if needs_skill(wide) else "stay quiet"
     print(f'"{request[:78]}"')
     print(
@@ -14854,12 +15105,12 @@ def rerank_questions(names: tuple[str, ...], excerpt: int) -> dict:
 
 
 @json_cache
-def rerank(request: str, names: tuple[str, ...], excerpt: int) -> dict:
+def rerank(request: str, questions_json: str) -> dict:
     """Request 2: the same Choice over a shortlist, plus one absolute noul per candidate."""
     started = perf_counter()
     response = client.system_one(
         state=build_state(request),
-        questions=rerank_questions(names, excerpt),
+        questions=json.loads(questions_json),
         model=TYPESAFE_MODEL,
     )
     return {
@@ -14874,12 +15125,12 @@ def rerank(request: str, names: tuple[str, ...], excerpt: int) -> dict:
 
 
 for request in DEMO:
-    wide = rank_wide(request)
+    wide = first_pass(request)
     if not needs_skill(wide):
         print(f'"{request[:78]}"\n  scored too low, nothing suggested\n')
         continue
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
-    result = rerank(request, shortlist, EXCERPT_CHARS)
+    result = rerank(request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)))
     best = max(result["fits"].values())
     verdict = result["winner"] if best >= FITS_THRESHOLD else "nothing fits"
     print(f'"{request[:78]}"')
@@ -14936,11 +15187,11 @@ in `suggest()` is specific to Hermes.
 ```python theme={null}
 def suggest(request: str) -> tuple[str, ...]:
     """At most one skill name for a request, or () for "nothing here applies"."""
-    wide = rank_wide(request)
+    wide = first_pass(request)
     if not needs_skill(wide):
         return ()
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
-    result = rerank(request, shortlist, EXCERPT_CHARS)
+    result = rerank(request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)))
     if max(result["fits"].values()) < FITS_THRESHOLD:
         return ()
     return (result["winner"],)
@@ -15003,7 +15254,7 @@ unopposed.
 texts = [request["text"] for request in REQUESTS]
 with ThreadPoolExecutor(max_workers=WORKERS) as pool:  # up to 452 x 2 TypeSafe requests
     suggested = dict(zip(texts, pool.map(suggest, texts)))
-WIDE = {text: rank_wide(text) for text in texts}  # all cache hits now; reused below
+WIDE = {text: first_pass(text) for text in texts}  # all cache hits now; reused below
 
 arms = {
     "baseline": {},
@@ -15049,9 +15300,9 @@ baseline -> TypeSafe:  2.0x fewer wrong loads, 2.7x fewer needless ones
 moved = [
     (
         baseline[p["text"]]["loaded"][:1] == [p["gold"]],
-        run_turn(AGENT_MODEL, "TypeSafe", p["text"], arms["TypeSafe"][p["text"]])[
-            "loaded"
-        ][:1]
+        run_turn(
+            "TypeSafe", CATALOG_PROMPT, json.dumps(TOOLS), p["text"], arms["TypeSafe"][p["text"]]
+        )["loaded"][:1]
         == [p["gold"]],
     )
     for p in POSITIVES
@@ -15153,7 +15404,7 @@ Build a playground link for the deck request from step 4, using each candidate's
 description and body excerpt as its criteria.
 
 ```python theme={null}
-demo_shortlist = tuple(name for name, _ in rank_wide(DEMO[1])["ranked"][:SHORTLIST])
+demo_shortlist = tuple(name for name, _ in first_pass(DEMO[1])["ranked"][:SHORTLIST])
 playground_link = make_playground_link(
     build_state(DEMO[1]),
     rerank_questions(demo_shortlist, EXCERPT_CHARS),
@@ -15219,14 +15470,6 @@ command from the file's directory:
 ```bash theme={null}
 python twitch_chat_filter.py
 ```
-
-Every API response is saved in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/twitch_chat_filter/json_cache.json)
-beside the script. Download it there to replay the published numbers instead of calling
-the API. In a notebook, put the cache in the notebook's working directory instead. To run
-everything live again, move the cache aside and set your key. Do the same when changing
-`TYPESAFE_MODEL`, because the cache key below includes the state and questions, not the
-model.
 
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
@@ -15370,10 +15613,7 @@ def classify(user: str, text: str, stream: dict | None = None) -> dict:
 @json_cache
 def _ask(state: dict, questions: dict) -> dict:
     if not os.environ.get("TYPESAFE_API_KEY"):
-        raise RuntimeError(
-            "Set TYPESAFE_API_KEY for a live request, or put the cookbook's "
-            "json_cache.json beside your script (in the working directory for a notebook)."
-        )
+        raise RuntimeError("Set TYPESAFE_API_KEY to send requests to TypeSafe.")
     started = perf_counter()
     response = client.system_one(state=state, questions=questions, model=TYPESAFE_MODEL)
     category = response.answers["category"]
@@ -15382,7 +15622,6 @@ def _ask(state: dict, questions: dict) -> dict:
         "probabilities": dict(category.probabilities),
         "toxic": response.answers["toxic"].noul,
         "spoiler": response.answers["spoiler"].noul,
-        "model": response.model,
         "seconds": round(perf_counter() - started, 2),
     }
 
@@ -16692,22 +16931,18 @@ These documents cover how TypeSafe handles your data when you have an account wi
 We also offer zero data retention (ZDR) for enterprise customers. To learn more, fill out the [support request form](https://support.typesafe.ai/forms/support-request).
 
 
-# Jev 1.13 jaggedness
-Source: https://docs.typesafe.ai/model-jaggedness/jev-1.13
+# Model jaggedness
+Source: https://docs.typesafe.ai/model-jaggedness
 
-Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
+Jev isn't perfect. Here are some jagged edges we are aware of. Many of these will be fixed in later versions.
 
-> [!NOTE]
->
-> **Applies to `jev-1.13`.** Last reviewed 2026-10-02.
-
-`jev-1.13` is fast, calibrated, and good at common-sense judgment but it is not perfect. `jev-1.13` does the best on [System One](/concepts/system-one) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
+Jev is fast, calibrated, and good at common-sense judgment but it is not perfect. It does the best on [System One](/concepts/system-one) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision. The [model changelog](/changelog) lists what each Jev release changes.
 
 ## The failure modes in detail
 
 | # | Failure mode | Do this instead |
 | - | - | - |
-| 1 | [Literal reading](#literal-reading) | Write the exact condition, criteria for each available options |
+| 1 | [Literal reading](#literal-reading) | Write the exact condition, criteria for each available option |
 | 2 | [Math and Numbers](#math-and-numbers) | Keep the arithmetic in code |
 | 3 | [Date and time comparison](#date-and-time-comparison) | Extract components; compare in code |
 | 4 | [Indirection](#indirection) | Reduce hops; point to the relevant state |
@@ -16719,7 +16954,7 @@ Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Man
 
 ## Literal reading
 
-`jev-1.13` answers the question you wrote, not the one you meant. Scoping words, negations, and implied conditions are read at face value. A question will be answered based on the words written in the instruction, whereas a person might have read the intent behind the instructions.
+Jev answers the question you wrote, not the one you meant. Scoping words, negations, and implied conditions are read at face value. A question will be answered based on the words written in the instruction, whereas a person might have read the intent behind the instructions.
 
 **Instead:** state the exact condition in the `instructions`. Be specific. Put boundary cases in the criteria. When you look at a wrong answer and find yourself explaining what you really meant, that explanation is the missing half of the instruction. Where interpretation is unavoidable, split it into two literal questions and combine them in code.
 
@@ -16729,7 +16964,7 @@ Jev is not a calculator. We strongly recommend implementing any mathematical log
 
 ### Counting
 
-`jev-1.13` does not count reliably. This covers characters in a word, occurrences of a term in a passage, and items in a long list. The model recognizes the shape of an answer rather than tallying, and the error grows with the size of the thing being counted.
+Jev does not count reliably. This covers characters in a word, occurrences of a term in a passage, and items in a long list. The model recognizes the shape of an answer rather than tallying, and the error grows with the size of the thing being counted.
 
 Before asking a counting question, ask why the count needs a model at all. If the unit is something a regular expression or a parser can find, the count belongs in code and the model has nothing to add.
 
@@ -16738,7 +16973,7 @@ Before asking a counting question, ask why the count needs a model at all. If th
 ```python theme={null}
 from typesafe_sdk import Noul, TypeSafeClient
 
-client = TypeSafeClient(model="jev-1.13")
+client = TypeSafeClient(model="jev-latest")
 YES = 0.5  # up to you on what you want the threshold to be, depends on your usecase.
 
 items = ["typesafe", "apple", "california", "banana", "likes", "calibration", "orange", "vertex"]
@@ -16756,7 +16991,7 @@ count = sum(result.nouls[f"item_{i}"].noul > YES for i in range(len(items)))
 
 ### Numeric representations
 
-`jev-1.13` will perform better on semantic representations than numeric. For example, questions about colors using hex values will underperform compared to those using the English names. Given RGB triples or hex values it cannot reliably judge whether two values are near each other.
+Jev will perform better on semantic representations than numeric. For example, questions about colors using hex values will underperform compared to those using the English names. Given RGB triples or hex values it cannot reliably judge whether two values are near each other.
 
 Similarly, questions about high-level programming languages will perform better than questions about low level assembly, or binary encoded instructions.
 
@@ -16764,11 +16999,11 @@ Similarly, questions about high-level programming languages will perform better 
 
 ### Math using score
 
-Please do not use score outputs (e.g., expectations and probability) to compute the exact magnitude of a number between two levels of a criterion. You can use the expectation to check if it passes a particular threshold, but `jev-1.13`'s score levels are weak in numerical calibration. It will not be able to help you reconstruct the exact number by interpolating between the nearest two levels.
+Please do not use score outputs (e.g., expectations and probability) to compute the exact magnitude of a number between two levels of a criterion. You can use the expectation to check if it passes a particular threshold, but Jev's score levels are weak in numerical calibration. It will not be able to help you reconstruct the exact number by interpolating between the nearest two levels.
 
 ## Date and time comparison
 
-`jev-1.13` reads dates as text, not as ordered quantities. Asking which of two dates comes first, how far apart they are, or whether one falls inside a window is unreliable. It gets worse with mixed formats, relative references and domain boundaries such as quarters, settlement windows, and accrual periods.
+Jev reads dates as text, not as ordered quantities. Asking which of two dates comes first, how far apart they are, or whether one falls inside a window is unreliable. It gets worse with mixed formats, relative references and domain boundaries such as quarters, settlement windows, and accrual periods.
 
 **Instead:** split the work. Extraction is a judgment, so give it to the model. Arithmetic is not, so keep it in code.
 
@@ -16790,29 +17025,29 @@ Accuracy falls as the state grows with content unrelated to the decision. Unrela
 
 > [!NOTE]
 >
-> **Context length limit.** The `state` counts once against each of `jev-1.13`'s context limits, the [per-request context and the per-question context](/models#context-length).
+> **Context length limit.** The `state` counts once against each of Jev's context limits, the [per-request context and the per-question context](/models#context-length).
 
 ## Adversarial content
 
-State is data, and `jev-1.13` does not treat it as hostile by default. Content written to adversarially steer the model, whether that is an injected instruction, a deliberately misleading framing, or text that argues for its own classification, can move the answer. We expect to improve on this in the future.
+State is data, and Jev does not treat it as hostile by default. Content written to adversarially steer the model, whether that is an injected instruction, a deliberately misleading framing, or text that argues for its own classification, can move the answer. We expect to improve on this in the future.
 
 **Instead:** be explicit in the criteria. Test your integration thoroughly before deploying it to many users.
 
 ## Contradictory instructions and criteria
 
-When the `instructions` and the `criteria` ask for different things, `jev-1.13` might get confused. The best performance comes from clear phrasing. For example, a Noul where `true` maps to no and `false` maps to yes will perform worse. Aim for instructions which are easy for the average person to read and understand.
+When the `instructions` and the `criteria` ask for different things, Jev might get confused. The best performance comes from clear phrasing. For example, a Noul where `true` maps to no and `false` maps to yes will perform worse. Aim for instructions which are easy for the average person to read and understand.
 
 **Instead:** treat the criteria as an extension of the instruction. Align the two using clear and precise language.
 
 ## Choice option order
 
-In some cases, we observed that the order of a [Choice](/primitives/choice)'s options can affect the answer, and `jev-1.13` leans toward the option that comes first.
+In some cases, we observed that the order of a [Choice](/primitives/choice)'s options can affect the answer, and Jev leans toward the option that comes first.
 
 **Instead:** reorder the options to double check that the answer stays consistent.
 
 ## Generation
 
-`jev-1.13` is not trained to generate text. While you can force it to by chaining choices, this will not work well and will be very slow. For data extraction, it is better to extract possible options using regex or a generative model and let `jev-1.13` pick the correct extraction.
+Jev is not trained to generate text. While you can force it to by chaining choices, this will not work well and will be very slow. For data extraction, it is better to extract possible options using regex or a generative model and let Jev pick the correct extraction.
 
 **Instead:** when the answer space is bounded, turn extraction into a [Choice](/primitives/choice) over the options rather than asking for the value itself. If you really need to generate text... there are other models for that.
 
@@ -16827,13 +17062,11 @@ In some cases, we observed that the order of a [Choice](/primitives/choice)'s op
 
 > [!TIP]
 >
-> Found a failure mode that belongs on this list? We want to hear about it. Reach us on [Discord](https://discord.com/invite/WUujKYBp8s).
+> Found a failure mode that belongs on this list? We want to hear about it. Reach us on [Discord](https://discord.gg/typesafe).
 
 
 # Models
 Source: https://docs.typesafe.ai/models
-
-
 
 Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). Every model on this page is served by the same endpoint, `POST /v1/systemone`. The request's `model` field selects which one handles it; see the [API reference](/api) for the full request shape.
 
@@ -16859,7 +17092,7 @@ Jev ingests the `state` once and evaluates every question against it in parallel
 * **Per-request context** (`per_request_context`): the `state` plus all questions combined.
 * **Per-question context** (`per_question_context`): the `state` plus any one question.
 
-There is no separate limit on the number of questions in a request. Any number of questions is allowed as long as the request fits both limits. See [Speculative fan-out](/patterns/fan-out) for packing many questions into one request, and [Jev 1.13 jaggedness](/model-jaggedness/jev-1.13) for how accuracy shifts as the state grows.
+There is no separate limit on the number of questions in a request. Any number of questions is allowed as long as the request fits both limits. See [Speculative fan-out](/patterns/fan-out) for packing many questions into one request, and [Model jaggedness](/model-jaggedness) for how accuracy shifts as the state grows.
 
 To raise both limits, see [Long context](#long-context).
 
@@ -18786,8 +19019,6 @@ You can also call the [HTTP API](/api) directly from any language.
 # JavaScript SDK
 Source: https://docs.typesafe.ai/sdk/javascript
 
-
-
 JavaScript and TypeScript SDK for [TypeSafe AI](https://typesafe.ai).
 
 ## Quickstart
@@ -18974,8 +19205,6 @@ See the SDK's [client](https://github.com/typesafe-ai/typesafe-sdk-js/blob/v0.7.
 # API reference
 Source: https://docs.typesafe.ai/sdk/javascript/api
 
-
-
 ## Classes
 
 * [APIConnectionError](/sdk/javascript/api/classes/APIConnectionError)
@@ -19056,8 +19285,6 @@ Source: https://docs.typesafe.ai/sdk/javascript/api
 # Class: APIConnectionError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError
 
-
-
 The request or response-body delivery failed (DNS, TLS, connection closed, etc.).
 
 ## Extends
@@ -19097,8 +19324,6 @@ new APIConnectionError(message?, options?): APIConnectionError;
 
 # Class: APIError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIError
-
-
 
 An unsuccessful HTTP response from the API.
 
@@ -19230,8 +19455,6 @@ Create the error subclass for an HTTP status code.
 
 # Class: APIPromise<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIPromise
-
-
 
 A promise for the parsed result with access to the HTTP response.
 
@@ -19448,8 +19671,6 @@ Return the parsed result, HTTP response, and request ID.
 # Class: APITimeoutError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APITimeoutError
 
-
-
 The full response did not arrive within the timeout. A kind of `APIConnectionError`.
 
 ## Extends
@@ -19496,8 +19717,6 @@ Configured timeout in milliseconds.
 # Class: APIUserAbortError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIUserAbortError
 
-
-
 The caller cancelled the request through an `AbortSignal`.
 
 ## Extends
@@ -19533,8 +19752,6 @@ new APIUserAbortError(message?, options?): APIUserAbortError;
 
 # Class: AuthenticationError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/AuthenticationError
-
-
 
 HTTP 401: authentication failed.
 
@@ -19677,8 +19894,6 @@ Create the error subclass for an HTTP status code.
 # Class: BadRequestError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/BadRequestError
 
-
-
 HTTP 400: the request is invalid.
 
 ## Extends
@@ -19820,8 +20035,6 @@ Create the error subclass for an HTTP status code.
 # Class: Image
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/Image
 
-
-
 A PNG or JPEG image asset, created by `image` or `Image.fromBase64`.
 
 ## Constructors
@@ -19927,8 +20140,6 @@ const photo = Image.fromBase64(upload.photoBase64);
 
 # Class: InternalServerError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/InternalServerError
-
-
 
 HTTP 5xx: the server failed to handle the request.
 
@@ -20071,8 +20282,6 @@ Create the error subclass for an HTTP status code.
 # Class: NotFoundError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/NotFoundError
 
-
-
 HTTP 404: the resource was not found.
 
 ## Extends
@@ -20214,8 +20423,6 @@ Create the error subclass for an HTTP status code.
 # Class: PermissionDeniedError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/PermissionDeniedError
 
-
-
 HTTP 403: access is denied.
 
 ## Extends
@@ -20356,8 +20563,6 @@ Create the error subclass for an HTTP status code.
 
 # Class: RateLimitError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/RateLimitError
-
-
 
 HTTP 429: the rate limit was exceeded.
 
@@ -20509,8 +20714,6 @@ Create the error subclass for an HTTP status code.
 
 # Class: TypeSafeClient
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeClient
-
-
 
 Client for the TypeSafe AI API.
 
@@ -20714,8 +20917,6 @@ console.log(answers.billing.noul);
 # Class: TypeSafeError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError
 
-
-
 Base class for SDK errors.
 
 ## Extends
@@ -20759,8 +20960,6 @@ Error.constructor
 
 # Class: UnprocessableEntityError
 Source: https://docs.typesafe.ai/sdk/javascript/api/classes/UnprocessableEntityError
-
-
 
 HTTP 422: request validation failed.
 
@@ -20903,8 +21102,6 @@ Create the error subclass for an HTTP status code.
 # Function: box()
 Source: https://docs.typesafe.ai/sdk/javascript/api/functions/box
 
-
-
 ```ts theme={null}
 function box(instructions?): BoxQuestion;
 ```
@@ -20939,8 +21136,6 @@ const { top, bottom, left, right } = answers.dog.box;
 # Function: choice()
 Source: https://docs.typesafe.ai/sdk/javascript/api/functions/choice
 
-
-
 ```ts theme={null}
 function choice<T>(instructions, criteria): ChoiceQuestion<T>;
 ```
@@ -20974,8 +21169,6 @@ Labels mapped to descriptions, or `null` for undescribed labels.
 
 # Function: image()
 Source: https://docs.typesafe.ai/sdk/javascript/api/functions/image
-
-
 
 ```ts theme={null}
 function image(data): Image;
@@ -21020,8 +21213,6 @@ const { answers } = await client.systemOne({
 
 # Interface: BoxCoordinates
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxCoordinates
-
-
 
 A box's edges as fractions of the image's height (`top`, `bottom`) and width (`left`, `right`).
 
@@ -21069,8 +21260,6 @@ Top edge, as a fraction of image height from the top, from zero to one.
 # Interface: BoxQuestion
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxQuestion
 
-
-
 A question that locates what its instructions describe in the request's image.
 
 ## Properties
@@ -21094,8 +21283,6 @@ type: "box";
 
 # Interface: BoxResponse
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/BoxResponse
-
-
 
 The answer to a `box` question.
 
@@ -21130,8 +21317,6 @@ readonly type: "box";
 
 # Interface: ChoiceQuestion<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceQuestion
-
-
 
 A question that selects between named alternatives.
 
@@ -21172,8 +21357,6 @@ type: "choice";
 
 # Interface: ChoiceResponse<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceResponse
-
-
 
 A selected label and its probabilities.
 
@@ -21224,8 +21407,6 @@ readonly type: "choice";
 
 # Interface: Logger
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Logger
-
-
 
 Log methods accepting a message and structured values; compatible with `console`.
 
@@ -21321,8 +21502,6 @@ warn(message, ...args): void;
 # Interface: ModelCard
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ModelCard
 
-
-
 Metadata for an available model.
 
 ## Properties
@@ -21353,8 +21532,6 @@ readonly release_date: string;
 # Interface: Models
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Models
 
-
-
 Access to the Models API resource.
 
 ## Methods
@@ -21380,8 +21557,6 @@ List the models available to the account.
 
 # Interface: NoulQuestion
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulQuestion
-
-
 
 A yes/no question with optional descriptions for either outcome.
 
@@ -21453,8 +21628,6 @@ type: "noul";
 # Interface: NoulResponse
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulResponse
 
-
-
 A yes/no answer.
 
 ## Properties
@@ -21479,8 +21652,6 @@ readonly type: "noul";
 # Interface: Questions
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions
 
-
-
 Questions keyed by the names used to identify their answers.
 
 ## Indexable
@@ -21492,8 +21663,6 @@ Questions keyed by the names used to identify their answers.
 
 # Interface: RequestOptions
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/RequestOptions
-
-
 
 Per-call options that override client settings.
 
@@ -21540,8 +21709,6 @@ Timeout per attempt in milliseconds; there is no total retry budget.
 
 # Interface: RetryPolicy
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/RetryPolicy
-
-
 
 Retry configuration. Partial overrides inherit unset fields from the client or SDK defaults.
 
@@ -21639,8 +21806,6 @@ Honor `Retry-After` and `retry-after-ms` up to `maxRetryAfterMs`. Default: true.
 # Interface: ScoreQuestion<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreQuestion
 
-
-
 A question that assigns a score using an ordered rubric.
 
 ## Type Parameters
@@ -21680,8 +21845,6 @@ type: "score";
 
 # Interface: ScoreResponse<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreResponse
-
-
 
 An expected score with its rubric and probabilities.
 
@@ -21743,8 +21906,6 @@ readonly type: "score";
 # Interface: SystemOneRequest<Q>
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequest
 
-
-
 State and named questions for `systemOne`.
 
 Additional properties on a request variable are forwarded, including `null` values.
@@ -21805,8 +21966,6 @@ Text, an asset, a JSON object, or an array to evaluate.
 # Interface: SystemOneResult<Q>
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneResult
 
-
-
 Answers keyed by question name, with model and usage metadata.
 
 ## Type Parameters
@@ -21848,8 +22007,6 @@ Token usage for the request.
 
 # Interface: TextWithAssets
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/TextWithAssets
-
-
 
 Text from a `withAssets` tagged template, with the assets interpolated into it.
 
@@ -21902,8 +22059,6 @@ toString(): string;
 
 # Interface: TypeSafeClientConfig
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/TypeSafeClientConfig
-
-
 
 Client options. Explicit values take precedence over environment variables, then SDK defaults.
 
@@ -22026,8 +22181,6 @@ Timeout per attempt in milliseconds, without a total retry budget. Default: 1000
 # Interface: Usage
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Usage
 
-
-
 Token usage for a request.
 
 ## Properties
@@ -22053,8 +22206,6 @@ Number of output tokens used, or `null` when the API did not report it.
 
 # Interface: WithResponse<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/WithResponse
-
-
 
 Parsed data with its HTTP response and request ID.
 
@@ -22098,8 +22249,6 @@ The HTTP response, with its body consumed by parsing.
 # Type Alias: Asset
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Asset
 
-
-
 ```ts theme={null}
 type Asset = Image;
 ```
@@ -22109,8 +22258,6 @@ An asset sent with a request under a reference.
 
 # Type Alias: ChoiceCriteria
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ChoiceCriteria
-
-
 
 ```ts theme={null}
 type ChoiceCriteria = object;
@@ -22128,8 +22275,6 @@ Labels mapped to descriptions, or `null` for undescribed labels.
 # Type Alias: Compression
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Compression
 
-
-
 ```ts theme={null}
 type Compression = "zstd" | false;
 ```
@@ -22139,8 +22284,6 @@ Request body compression: `"zstd"`, or `false` to send bodies uncompressed.
 
 # Type Alias: ContentValue
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ContentValue
-
-
 
 ```ts theme={null}
 type ContentValue = 
@@ -22163,8 +22306,6 @@ else as its reference.
 # Type Alias: Description
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Description
 
-
-
 ```ts theme={null}
 type Description = EntryType;
 ```
@@ -22174,8 +22315,6 @@ A criterion description; `null` leaves the label undescribed.
 
 # Type Alias: EntryType
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType
-
-
 
 ```ts theme={null}
 type EntryType = 
@@ -22198,8 +22337,6 @@ with the request.
 # Type Alias: EnvVar
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EnvVar
 
-
-
 ```ts theme={null}
 type EnvVar = typeof ENV[keyof typeof ENV];
 ```
@@ -22207,8 +22344,6 @@ type EnvVar = typeof ENV[keyof typeof ENV];
 
 # Type Alias: Fetch
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Fetch
-
-
 
 ```ts theme={null}
 type Fetch = (input, init?) => Promise<Response>;
@@ -22234,8 +22369,6 @@ HTTP fetch implementation compatible with the global `fetch`.
 # Type Alias: JsonValue
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/JsonValue
 
-
-
 ```ts theme={null}
 type JsonValue = 
   | string
@@ -22254,8 +22387,6 @@ A JSON-compatible value.
 # Type Alias: LogLevel
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/LogLevel
 
-
-
 ```ts theme={null}
 type LogLevel = "debug" | "info" | "warn" | "error" | "off";
 ```
@@ -22265,8 +22396,6 @@ Log verbosity; `off` disables logging.
 
 # Type Alias: Question
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Question
-
-
 
 ```ts theme={null}
 type Question = 
@@ -22281,8 +22410,6 @@ A question identified by its `type` field.
 
 # Type Alias: ResultFor<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ResultFor
-
-
 
 ```ts theme={null}
 type ResultFor<T> = T extends NoulQuestion ? NoulResponse : T extends ScoreQuestion<infer S> ? ScoreResponse<S> : T extends ChoiceQuestion<infer E> ? ChoiceResponse<E> : T extends BoxQuestion ? BoxResponse : never;
@@ -22300,8 +22427,6 @@ The answer type for a question, preserving its criteria keys.
 # Type Alias: ScoreCriteria
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreCriteria
 
-
-
 ```ts theme={null}
 type ScoreCriteria = readonly [EntryType, EntryType, ...EntryType[]];
 ```
@@ -22311,8 +22436,6 @@ At least two descriptions indexed by score from zero; `null` leaves a score unde
 
 # Type Alias: ScoreLegend<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreLegend
-
-
 
 ```ts theme={null}
 type ScoreLegend<T> = { readonly [score in ScoreOf<T>]: SentContent<T[score]> };
@@ -22330,8 +22453,6 @@ Rubric descriptions keyed by score.
 # Type Alias: ScoreOf<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ScoreOf
 
-
-
 ```ts theme={null}
 type ScoreOf<T> = number extends T["length"] ? number : Extract<keyof T, `${number}`>;
 ```
@@ -22348,8 +22469,6 @@ Score keys inferred from the rubric; a fixed-length tuple yields its indices, ot
 # Type Alias: SentContent<T>
 Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/SentContent
 
-
-
 ```ts theme={null}
 type SentContent<T> = T extends Asset | TextWithAssets ? string : T extends object ? { readonly [key in keyof T]: SentContent<T[key]> } : T;
 ```
@@ -22365,8 +22484,6 @@ Content as the API returns it, with assets and `withAssets` text written as stri
 
 # Variable: ENV
 Source: https://docs.typesafe.ai/sdk/javascript/api/variables/ENV
-
-
 
 ```ts theme={null}
 const ENV: object;
@@ -22412,8 +22529,6 @@ Log level; defaults to `warn`.
 # Variable: LOG_LEVELS
 Source: https://docs.typesafe.ai/sdk/javascript/api/variables/LOG_LEVELS
 
-
-
 ```ts theme={null}
 const LOG_LEVELS: readonly LogLevel[];
 ```
@@ -22424,8 +22539,6 @@ Supported log levels, from most to least verbose.
 # Variable: VERSION
 Source: https://docs.typesafe.ai/sdk/javascript/api/variables/VERSION
 
-
-
 ```ts theme={null}
 const VERSION: "0.7.0" = "0.7.0";
 ```
@@ -22433,8 +22546,6 @@ const VERSION: "0.7.0" = "0.7.0";
 
 # Variable: noul
 Source: https://docs.typesafe.ai/sdk/javascript/api/variables/noul
-
-
 
 ```ts theme={null}
 const noul: {
@@ -22536,8 +22647,6 @@ Descriptions of the yes and no outcomes.
 # Variable: score
 Source: https://docs.typesafe.ai/sdk/javascript/api/variables/score
 
-
-
 ```ts theme={null}
 const score: {
 <T>  (instructions, criteria): ScoreQuestion<T>;
@@ -22617,8 +22726,6 @@ it has fewer than two entries.
 # Variable: withAssets
 Source: https://docs.typesafe.ai/sdk/javascript/api/variables/withAssets
 
-
-
 ```ts theme={null}
 const withAssets: {
 (strings, ...values): TextWithAssets;
@@ -22694,8 +22801,6 @@ const { answers } = await client.systemOne({
 
 # Changelog
 Source: https://docs.typesafe.ai/sdk/javascript/changelog
-
-
 
 ## v0.7.0 (2026-10-14)
 

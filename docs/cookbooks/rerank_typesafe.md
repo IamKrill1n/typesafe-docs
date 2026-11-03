@@ -148,9 +148,6 @@ This example uses 3,565 court opinion passages and 40 queries.
 pip install bm25s datasets matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-To replay the published numbers without an API key, download `json_cache.json` from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/rerank_typesafe) into the folder you run the script from.
-
 Calling TypeSafe needs a `TYPESAFE_API_KEY`.
 
 ```python
@@ -352,14 +349,14 @@ is_cited_source = Noul(
 )
 
 @json_cache
-def score_candidate(model: str, query: str, candidate: str, question_json: str) -> dict:
+def score_candidate(query: str, candidate: str, question_json: str) -> dict:
     """One TypeSafe call about one (query, candidate) pair: a noul, plus token usage."""
     # the SDK takes a question as its JSON dict, so the cached string decodes straight in
     question = json.loads(question_json)
     response = client.system_one(
         state={"query_excerpt": query, "candidate_passage": candidate},
         questions={"is_cited_source": question},
-        model=model,
+        model=TYPESAFE_MODEL,
     )
     return {
         "noul": response.answers["is_cited_source"].noul,
@@ -373,9 +370,7 @@ pair_list = [(q, c) for q in queries for c in candidates[q]]
 question_json = is_cited_source.model_dump_json(exclude_none=True)
 with ThreadPoolExecutor(max_workers=12) as pool:
     results = pool.map(
-        lambda p: score_candidate(
-            TYPESAFE_MODEL, queries[p[0]], corpus[p[1]], question_json
-        ),
+        lambda p: score_candidate(queries[p[0]], corpus[p[1]], question_json),
         pair_list,
     )
 pair_scores = {q: {} for q in queries}

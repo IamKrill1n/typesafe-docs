@@ -73,14 +73,10 @@ pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 export TYPESAFE_API_KEY="<ADD_YOUR_KEY>"
 ```
 
-Every API call is cached in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/intelliprompter/json_cache.json).
-Download it into the folder you run this code from to replay the published numbers
-instead of calling the API, or leave it out to run everything live.
-
 Numbers below came from `jev-1.13.0` on 2026-09-29.
 
 ```python
+import json
 import os
 from pathlib import Path
 
@@ -202,10 +198,10 @@ def score_question(description: str) -> Score:
     )
 
 @json_cache
-def score_tick(transcript: str, pending: tuple[tuple[str, str], ...]) -> dict:
+def score_tick(transcript: str, questions_json: str) -> dict:
     response = client.system_one(
         state={"transcript": transcript},
-        questions={key: score_question(description) for key, description in pending},
+        questions=json.loads(questions_json),
     )
     return {
         "answers": {
@@ -265,7 +261,11 @@ def run_loop(chunks: list[str]) -> tuple[set[str], dict[str, dict], list[dict]]:
             break
         ticks.append({"transcript": transcript, "pending": pending})
 
-        result = score_tick(transcript, pending)
+        questions = {
+            key: score_question(description).model_dump(mode="json", exclude_none=True)
+            for key, description in pending
+        }
+        result = score_tick(transcript, json.dumps(questions))
 
         new_checks = 0
         for key, answer in result["answers"].items():

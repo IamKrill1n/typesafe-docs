@@ -32,9 +32,7 @@ it and act on it.*
 pip install ipython phonenumbers 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
-`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/pre_parsed_value_extraction_cookbook) into the folder you run
-the script from.
+then set `TYPESAFE_API_KEY`.
 
 ```python
 import os

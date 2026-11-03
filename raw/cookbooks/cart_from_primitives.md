@@ -134,10 +134,7 @@ flowchart TB
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/cart_from_primitives/json_cache.json).
-Download it into the folder you run this code from to replay the published numbers
-instead of calling the API, or leave it out to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 

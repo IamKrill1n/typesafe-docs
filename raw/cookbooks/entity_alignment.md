@@ -4,53 +4,35 @@
 
 # Knowledge graph entity alignment
 
-> Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree.
+> Route candidate record pairs from two sources to a merge recommendation, manual review, or no link, using one Score question. Three Noul questions check individual fields. The worked example uses 450 album pairs from Wikidata and MusicBrainz.
 
-*A key problem in knowledge graphs is deciding whether an incoming entity duplicates an
-existing one, especially when natural language from disparate sources is all that's
-available. Given potential duplicate pairs, a single TypeSafe `Score` decides
-whether each pair is a duplicate, or whether it deserves a closer look from a curator.*
+When data from two sources is combined, the same person, product, place, or work often
+appears on both sides, described differently on each. Entity alignment decides which
+record on one side describes the same entity as a record on the other. In a knowledge
+graph, each entity has facts and links to other entities. Comparing every record with
+every other is slow, so a cheap first step usually picks out pairs worth a closer
+look, such as records with similar names. Each of those candidate pairs then needs a
+decision, which we make here.
 
-Suppose two data sources describe overlapping sets of the same things, and you need to
-know which entry on one side is the same thing as which entry on the other. A knowledge
-graph calls those entries *entities*, and holds the facts recorded about each. Some cheap
-but rough first pass has already compared the two sources and picked out 450 pairs worth a
-closer look. What remains is to make a judgment call on each pair.
+A wrong merge combines facts and links from different entities. Undoing it means working
+out where each fact came from. A missed match leaves a duplicate. Pairs that need review
+get a third outcome: send them to a curator, a person who decides by hand.
 
-Merging two entities inappropriately is the more expensive mistake, since every fact about
-either entity now describes the merged one, and anything linked to either comes along too.
-Undoing it later means working out which fact came from where. Missing a match only leaves
-a duplicate, so the judgment call needs a third option: pairs that are neither safe to
-merge nor safe to drop.
-
-The judgment is a `Score` question with one level for each of the three outcomes:
-
-* **different product** — leave the two entities unlinked
-* **related, but possibly not the same** — hand it to a curator to decide
-* **same product** — merge them
-
-We use a Score question because we want to attach a semantic label, the score criteria,
-directly to each outcome, including the middle outcome. A Noul question could accomplish
-this indirectly through thresholding on its output instead, and a Choice question would
-lose the ordered relationship of the three outcomes.
-
-Next, for each field of the entity we want to consider, `Noul` questions about whether
-those
-fields match can ride along in the same request. These nouls provide more detailed
-information for the curator, if the score lands neither in the "same product" nor
-"different product" levels.
-
-You end up with a `route()` that takes one candidate pair and returns one of the three
-outcomes, with no threshold you had to fit to your own data.
+Jev makes this decision with a [`Score`](https://docs.typesafe.ai/primitives/score) question: you describe one
+level per outcome, and the answer is a score along those levels. Here the levels are
+leave unlinked, send for review, and recommend a merge (`assert sameAs`). On 450 album
+pairs from two public music catalogs, we got 57 merge recommendations, 79 pairs for
+review, and 314 left unlinked. The dataset records 48 of the 57 recommended merges as
+matches.
 
 ```mermaid actions={true} theme={null}
 flowchart LR
     PAIR["one candidate pair<br/><i>both entities, one state</i>"] --> CALL
 
-    subgraph CALL["one request, four questions"]
+    subgraph CALL["one Jev request, four questions"]
         direction TB
-        S["<b>Score:</b> how do the two relate?<br/>· different product<br/>· related, but possibly not the same<br/>· same product"]
-        N["<b>Nouls:</b> one per compared field<br/>· same name?<br/>· same brewery?<br/>· same style?"]
+        S["<b>Score:</b><br/>how do the two relate?"]
+        N["<b>Nouls:</b><br/>same title?<br/>same artist?<br/>same label?"]
         %% invisible link: without an edge these two share a rank, which in a TB
         %% subgraph puts them side by side instead of stacked
         S ~~~ N
@@ -71,19 +53,39 @@ flowchart LR
 
 ## Setup
 
-```bash theme={null}
-pip install matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
-```
+Requires Python 3.10 or later. Choose a package manager to install the dependencies:
 
-then set `TYPESAFE_API_KEY`. Every call is cached to `json_cache.json`, which ships with
-the cookbook, so re-rendering replays the published numbers without calling the API. Delete
-that file to re-run everything live.
+> [tab] pip
+>
+> Create a virtual environment and add the dependencies:
+>
+> ```bash wrap theme={null}
+> python3 -m venv .venv
+> .venv/bin/pip install matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> ```
 
-Numbers below came from `jev-1.12` on 2026-08-11.
+> [tab] uv
+>
+> Initialize a project and add the dependencies:
+>
+> ```bash wrap theme={null}
+> uv init --bare
+> uv add matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> ```
+
+Set `TYPESAFE_API_KEY`. Every response is saved in `json_cache.json`, so a second run
+makes no requests.
+
+[pairs]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/entity_alignment/candidate_pairs.json
+
+[license-data]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/entity_alignment/DATA_LICENSE.md
+
+Numbers below came from `jev-1.14.0` on 2026-10-16.
 
 ```python theme={null}
 import json
 import os
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -95,8 +97,8 @@ from typesafe_sdk import Noul, Score, TypeSafeClient
 
 matplotlib.use("Agg")  # headless render
 
-TYPESAFE_MODEL = "jev-1.12"
-MAX_WORKERS = 6  # small pool; the public endpoint rate-limits above roughly eight
+TYPESAFE_MODEL = "jev-1.14.0"
+MAX_WORKERS = 6  # small pool to stay under your organization's rate limits
 
 client = TypeSafeClient(
     api_key=os.environ.get(
@@ -110,99 +112,137 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 ## Load the candidate pairs
 
-The pairs come from a published benchmark set, the Beer data from the Magellan collection:
-two beer catalogues scraped from different websites, already cut down to 450 pairs by that
-first rough pass. Each entity carries four fields: name, brewery, style, and alcohol
-content. Each pair also carries `known_same_as`, the benchmark's own answer.
+The pairs in [`candidate_pairs.json`][pairs] come from two public music catalogs,
+Wikidata and MusicBrainz. Both release this data under CC0, which puts it in the public
+domain. In each pair, `entity_a` is an album record from Wikidata and `entity_b` is a
+release from MusicBrainz. Each entity has four fields: title, artist, year, and label.
+[`DATA_LICENSE.md`][license-data] credits both sources.
 
-The text is left exactly as published, without pre-processing: HTML entities that were
-never converted back to characters, apostrophes split off as separate words, a few
-characters decoded wrongly.
+Each pair also has `known_same_as`. It is true when a Wikidata editor linked the album to
+the MusicBrainz release group that the release belongs to. Wikidata is a knowledge graph,
+and that link is an entity alignment link. The 70 pairs marked true are called *known
+matches* here. In the other 380, the Wikidata album links to a different MusicBrainz entry.
+Nobody checked each pair by hand.
 
-One request goes out per pair, so what you spend follows the number of pairs you were
-handed rather than the size of either source.
+The text is left exactly as the catalogs publish it, with no cleanup: mixed casing and
+alphabet systems, straight and curly apostrophes, and placeholders such as `[no label]`.
+A missing value is `-`.
+
+We send one request per pair, so the number of requests depends on the number of
+candidate pairs, not the size of either catalog.
 
 ```python theme={null}
-PAIRS = json.loads(Path("candidate_pairs.json").read_text(encoding="utf-8"))
+DATA = Path("candidate_pairs.json")
+DATA_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/entity_alignment/candidate_pairs.json"
+)
+if not DATA.exists():
+    urllib.request.urlretrieve(DATA_URL, DATA)
+
+PAIRS = json.loads(DATA.read_text(encoding="utf-8"))
 BY_ID = {pair["id"]: pair for pair in PAIRS}
 
 print(f"{len(PAIRS)} candidate pairs. The first one, as the model will see it:")
-print(json.dumps({k: PAIRS[0][k] for k in ("entity_a", "entity_b")}, indent=2)[:420])
+print(json.dumps({k: PAIRS[0][k] for k in ("entity_a", "entity_b")}, indent=2))
 ```
 
 ```
 450 candidate pairs. The first one, as the model will see it:
 {
   "entity_a": {
-    "name": "C N Red Imperial Red Ale",
-    "brewery": "Redwood Lodge",
-    "style": "American Amber / Red Ale",
-    "abv": "8.10 %"
+    "title": "My Refuge",
+    "artist": "Alessandra Samadello",
+    "year": "2003",
+    "label": "-"
   },
   "entity_b": {
-    "name": "Kinetic Infrared Imperial Red Ale",
-    "brewery": "Kinetic Brewing Company",
-    "style": "American Strong Ale",
-    "abv": "9.30 %"
+    "title": "My Refuge",
+    "artist": "Kent Henry",
+    "year": "1989",
+    "label": "Hosanna! Music"
   }
 }
 ```
 
 ## Ask one Score question and three Noul questions per candidate pair
 
-Both entities go into one state, as `entity_a` and `entity_b`, so every question is about
-the pair. All four ride in one request.
+The decision is a `Score` question because a `Score` attaches a written description to
+each outcome in `LEVELS`, including the uncertain middle one, and keeps the three
+outcomes in order. A `Noul` question could reach the middle outcome only indirectly, by
+thresholding its output. A `Choice` question would lose the order of the three outcomes.
 
-The three level descriptions below are the entire decision: each level is one outcome.
-There is no threshold constant anywhere in this file. You can also write these descriptions
-before you have seen a single score, which is not true of a number you have to fit.
+Put both entities into one state, as `entity_a` and `entity_b`, so each question is about
+the pair. All four questions go in one request.
+Title, artist, and label each get a `Noul` question to indicate where the records
+disagree.
 
-The middle level is the one worth writing carefully. Here it covers variants, special
-editions, and names that could plausibly refer to either product, so those reach a curator
-instead of being merged or dropped.
+We round the score to the nearest level in `route()`. Write the level
+descriptions before looking at the scores; the cut points follow from rounding rather
+than being fitted to this dataset.
 
-`OUTCOME` names the three outcomes. The merge outcome is called `assert sameAs` because
-`sameAs` is the standard way to record that two entities are the same thing, and writing
-one is how the merge actually happens.
+The middle level's wording decides which pairs reach a curator instead of being merged or
+left unlinked, so it names the cases that need one: a reissue, a compilation, a special or
+live edition, or a title that could refer to either album.
 
-Three of the four fields get a `Noul` question: name, brewery, and style. Alcohol content
-gets none, because comparing two numbers is arithmetic; compute it in code if you want it.
-To use this on another kind of data you rewrite `QUESTIONS` and `LEVELS`. The only other
-code that knows about beer is the two functions that print results, which name the fields.
+The merge recommendation is called `assert sameAs`: a recommendation to record that the
+two entities are the same thing. That label is all `route()` returns; applying it to a
+graph is a separate step.
+
+There is no `Noul` question for the year, but the year is in the state.
+For a year check, compare the two years in code and allow for a missing `-`.
+
+The label question needs a rule, because catalogs disagree about which company to name.
+We count a shortened name or a regional branch as the same label (*Columbia Records* and
+*Columbia*, *EMI* and *EMI Music Brasil*). An imprint is a brand name a record company
+releases under. We count an imprint and its parent company as different labels (*RCA
+Victor* and *BMG*), because sharing a parent company does not establish that two albums
+are the same.
+
+To use this on another kind of data, swap in your own pairs and rewrite `QUESTIONS` and
+`LEVELS`. The only other code that knows about albums is `show()`, which prints a pair
+and names its fields.
 
 ```python expandable theme={null}
 LEVELS = [
-    "They describe two different products.",
-    "They describe closely related products that may or may not be the same one: "
-    "a variant, a special edition, or a name that could plausibly refer to either.",
-    "They describe one and the same product.",
+    "They describe two different albums.",
+    "They describe closely related albums that may or may not be the same one: "
+    "a reissue, a compilation, a special or live edition, or a title that could "
+    "plausibly refer to either.",
+    "They describe one and the same album.",
 ]
 OUTCOME = {0: "leave unlinked", 1: "curator queue", 2: "assert sameAs"}
 
 QUESTIONS = {
     "link_state": Score(
-        instructions="How do the two entity descriptions relate as products?",
+        instructions="How do the two entity descriptions relate as albums?",
         criteria=LEVELS,
     ),
-    "same_name": Noul(
-        instructions="Do the two entities state the same beer name?",
+    "same_title": Noul(
+        instructions="Do the two entities give the same album title? Differences in "
+        "casing, punctuation, or writing system (a title and its romanisation) do not "
+        "make two titles different.",
     ),
-    "same_brewery": Noul(
-        instructions="Are the two entities from the same brewery?",
+    "same_artist": Noul(
+        instructions="Do the two entities credit the same artist? A name written in "
+        "another script or word order, or a credit that adds collaborators to the same "
+        "lead artist, is the same artist.",
     ),
-    "same_style": Noul(
-        instructions="Do the two entities describe the same beer style?",
+    "same_label": Noul(
+        instructions="Do the two entities name the same record label? A shortened name "
+        "or a regional branch of a label is the same label; an imprint and its parent "
+        "company are different labels. A label of '-' or '[no label]' is not recorded.",
     ),
 }
 
 
 @json_cache
-def score(pair_id: str) -> dict:
+def score(state_json: str, questions_json: str) -> dict:
     """One request about one candidate pair -> the score plus the three noul answers."""
-    pair = BY_ID[pair_id]
+    questions = json.loads(questions_json)
     response = client.system_one(
-        state={"entity_a": pair["entity_a"], "entity_b": pair["entity_b"]},
-        questions=QUESTIONS,
+        state=json.loads(state_json),
+        questions=questions,
         model=TYPESAFE_MODEL,
     )
     link = response.answers["link_state"]
@@ -211,12 +251,15 @@ def score(pair_id: str) -> dict:
         "probabilities": link.probabilities,
         "confidence": link.confidence,
         "properties": {
-            k: response.answers[k].noul for k in QUESTIONS if k != "link_state"
+            k: response.answers[k].noul for k in questions if k != "link_state"
         },
-        # tokens and requests are the durable units; don't cache a derived cost
-        "input_tokens": response.usage.input_tokens or 0,
-        "output_tokens": response.usage.output_tokens or 0,
     }
+
+
+def score_pair(pair: dict) -> dict:
+    state = {"entity_a": pair["entity_a"], "entity_b": pair["entity_b"]}
+    questions = {k: q.model_dump(mode="json", exclude_none=True) for k, q in QUESTIONS.items()}
+    return score(json.dumps(state), json.dumps(questions))
 
 
 def route(score_value: float) -> str:
@@ -225,59 +268,66 @@ def route(score_value: float) -> str:
 
 
 def show(pair_id: str) -> None:
-    pair, result = BY_ID[pair_id], score(pair_id)
+    pair = BY_ID[pair_id]
+    result = score_pair(pair)
     print(
         f"{pair_id}  score {result['score']:.2f}  confidence {result['confidence']:.2f}"
         f"  ->  {route(result['score'])}"
     )
     for side in ("entity_a", "entity_b"):
         e = pair[side]
-        print(f"    {e['name'][:44]:<46}{e['brewery'][:30]:<32}{e['style'][:22]}")
+        print(
+            f"    {e['title'][:40]:<42}{e['artist'][:26]:<28}{e['year']:<6}"
+            f"{e['label'][:22]}"
+        )
     nouls = result["properties"]
     print(
-        f"    name {nouls['same_name']:.2f}   brewery {nouls['same_brewery']:.2f}   "
-        f"style {nouls['same_style']:.2f}"
+        f"    title {nouls['same_title']:.2f}   artist {nouls['same_artist']:.2f}   "
+        f"label {nouls['same_label']:.2f}"
     )
 ```
 
-Four pairs. `c446` is one product and `c427` is two. The other two land in the middle level
-for different reasons: `c100` has the same name and brewery but the sources word its style
-differently, while `c428` pairs a beer with a fruit-and-hop variant of it.
-
 ```python theme={null}
-for pair_id in ("c446", "c427", "c100", "c428"):
+for pair_id in ("c115", "c133", "c190", "c159"):
     show(pair_id)
     print()
 ```
 
 ```
-c446  score 1.94  confidence 0.92  ->  assert sameAs
-    Thomas Hooker Old Marley Barleywine           Thomas Hooker Brewing Company   American Barleywine
-    Thomas Hooker Old Marley Barleywine           Thomas Hooker Brewing Company   Barley Wine
-    name 0.97   brewery 0.99   style 0.81
+c115  score 1.76  confidence 0.64  ->  assert sameAs
+    Lions                                     The Black Crowes            2001  V2 Records
+    Lions                                     The Black Crowes            2001  V2 Records Japan
+    title 0.99   artist 0.99   label 0.94
 
-c427  score 0.03  confidence 0.95  ->  leave unlinked
-    Frost Quake Bourbon Barrel Aged Barley Wine   Wellington County Brewery       American Barleywine
-    Lompoc Bourbon Barrel Aged Proletariat Red A  Lompoc Brewing                  Amber Ale
-    name 0.02   brewery 0.09   style 0.08
+c133  score 0.14  confidence 0.80  ->  leave unlinked
+    Freak of Nature                           Anastacia                   2001  Epic Records
+    Freak of Nature                           Taylor Deupree              1996  Rancho Relaxo
+    title 0.99   artist 0.01   label 0.01
 
-c100  score 1.30  confidence 0.27  ->  curator queue
-    Belle Gueule Rousse                           Brasseurs R.J.                  American Amber / Red A
-    Belle Gueule Rousse                           Brasseurs RJ                    Amber Lager/Vienna
-    name 0.95   brewery 0.94   style 0.35
+c190  score 1.27  confidence 0.55  ->  curator queue
+    Head Hunters                              Herbie Hancock              1973  Columbia Records
+    Headhunters                               Herbie Hancock              2008  Columbia
+    title 0.71   artist 0.99   label 0.96
 
-c428  score 1.10  confidence 0.77  ->  curator queue
-    Ambleside Amber Ale                           Bridge Brewing Company          American Amber / Red A
-    Bridge Ambleside Amber Ale - Pomegranate & G  Bridge Brewing Company          Amber Ale
-    name 0.63   brewery 0.98   style 0.74
+c159  score 0.75  confidence 0.62  ->  curator queue
+    McCartney III                             Paul McCartney              2020  Capitol Records
+    McCartney III Imagined                    Paul McCartney              2021  Capitol Records
+    title 0.02   artist 0.98   label 0.99
 ```
+
+In `c115` both sides are the same album, with the same title and
+artist. The label is *V2 Records* on one side and *V2 Records Japan* on the other. In
+`c133` the two sides are different albums that share a title. The other two round to the
+middle level for different reasons. In `c190` one side is a 2008 reissue of a 1973 album,
+with the title spelled as one word. In `c159` one side is an album and the other is a
+remix album made from it.
 
 ## Route every candidate pair
 
 ```python expandable theme={null}
-# 450 candidate pairs, one request each; a small pool keeps a live run to a few minutes.
+# 450 candidate pairs, one request each; a live run takes about a minute.
 with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-    scored = list(pool.map(lambda pair: score(pair["id"]), PAIRS))
+    scored = list(pool.map(score_pair, PAIRS))
 
 scores = [result["score"] for result in scored]
 by_outcome: dict[str, list[str]] = {name: [] for name in OUTCOME.values()}
@@ -316,8 +366,10 @@ ax.set_xticks([0, 0.5, 1, 1.5, 2])
 ax.set_xticklabels(["0\ndifferent", "0.5", "1\nrelated", "1.5", "2\nsame"])
 ax.set_xlabel("score for the pair", color=INK2, fontsize=9)
 ax.set_ylabel("candidate pairs", color=INK2, fontsize=9)
+n_queued = len(by_outcome["curator queue"])
 ax.set_title(
-    f"{len(PAIRS)} candidate pairs, scored once each",
+    f"{len(PAIRS) - n_queued} of {len(PAIRS)} pairs settled automatically;"
+    f" {n_queued} go to the curator",
     loc="left",
     color=INK,
     fontsize=11,
@@ -332,38 +384,105 @@ for name in ("assert sameAs", "curator queue", "leave unlinked"):
 ```
 
 ```
-assert sameAs      40  ( 8.9%)
-curator queue      50  (11.1%)
-leave unlinked    360  (80.0%)
+assert sameAs      57  (12.7%)
+curator queue      79  (17.6%)
+leave unlinked    314  (69.8%)
 ```
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=0a5cc0e7eb280ca54d6bd823fb5d2a43)
+![output](https://mintcdn.com/ts-docs/8UawRogf0VplN_sC/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max\&auto=format\&n=8UawRogf0VplN_sC\&q=85\&s=31b73ad6d566582e04236cf3cfd8f902)
 
-The two score values where `route()` changes its answer are the cut points. Most pairs
-settle: 360 score below the lower cut point and 40 above the upper one, leaving 50 for the
-curator.
+The cut points are the two scores where `route()` changes its answer: 0.5 and 1.5. Most
+pairs were routed without the curator: 314 scored below 0.5 and 57 scored at least 1.5,
+which left 79 for the curator.
 
-On this set, most scores land near 0.25 rather than on a whole number. Two beers with
-nothing in common might still share a style name, and their brewery names might look
-alike, so the model gives the middle level some of its probability instead of none. What
-decides a pair is which side of a cut point it falls on. How near it sits to a level does
-not enter into it.
+On this set, 257 of the 450 scores are between 0.1 and 0.4. Two different albums can
+share a title, and a label name is weak evidence on its own, so the model gives the
+middle level some probability even when a pair looks different. Routing depends only on
+which side of a cut point the score falls: a pair at 0.4 is left unlinked, the same as a
+pair at 0.
 
-The two cut points are not equally crowded. Nine pairs sit within 0.1 of the upper one, at
-1.5, which is the one deciding what gets merged into the graph. Forty-seven sit that close
-to the lower one, at 0.5, which only decides whether a curator sees the pair. Neither
-number is something you tune. Both follow from how you worded the levels, and the wording
-of the middle level is what moves pairs between the curator and the pairs left unlinked.
+The three Noul answers help a curator inspect a pair, but only the Score decides its
+route. Here are two pairs from the curator queue:
+
+| Pair (Wikidata / MusicBrainz title) | Score | Same title | Same artist | Same label |
+| :- | -: | -: | -: | -: |
+| `c190` *Head Hunters* / *Headhunters* | 1.27 | 0.71 | 0.99 | 0.96 |
+| `c159` *McCartney III* / *McCartney III Imagined* | 0.75 | 0.02 | 0.98 | 0.99 |
+
+In `c190` the artist and label agree and the title nearly does, and the 35 years between
+the two releases point to a reissue. In `c159` everything agrees except the title, which
+suggests a related album rather than the same one.
+
+## Compare with the catalogs' own answer
+
+Nothing above used `known_same_as`. We count it for each outcome to compare the routing
+with what the catalogs recorded.
+
+```python theme={null}
+print(f"{'':<16}{'known match':>13}{'known non-match':>17}")
+for name in ("assert sameAs", "curator queue", "leave unlinked"):
+    known = sum(BY_ID[pair_id]["known_same_as"] for pair_id in by_outcome[name])
+    print(f"{name:<16}{known:>13}{len(by_outcome[name]) - known:>17}")
+```
+
+```
+                  known match  known non-match
+assert sameAs              48                9
+curator queue              19               60
+leave unlinked              3              311
+```
+
+The "known non-match" column counts the pairs where `known_same_as` is false. Of the 57
+merges, 48 are known matches. Of the 314 pairs left unlinked, 311 are known non-matches.
+The curator queue has 19 known matches and 60 known non-matches. The `known_same_as`
+flag is not a checked answer, so this agreement is not a verified accuracy figure.
+
+Some of the disagreements are mistakes in the catalogs. We looked up two of them in
+MusicBrainz. In `c088`, both titles read *Um Novo Coração*, but the artists are Jozyanne
+and Maíra. MusicBrainz has a separate entry for Jozyanne's album, and the Wikidata item
+links to Maíra's instead, so `known_same_as` is true for two different albums. The model
+left the pair unlinked. In `c415`, both sides are *Tonight: In Person* by The Limeliters,
+from 1961 on RCA Victor. MusicBrainz lists the album twice and Wikidata links to the other
+entry, so `known_same_as` is false. The model merged the pair. Six of the nine merged known
+non-matches have the same title, artist, and year once case, punctuation, and accents are
+ignored.
+
+The model gets some pairs wrong too. It left two other known matches unlinked,
+including `c444`, where one side credits *Justin Lo* and the other *側田*, the same singer's
+Chinese name. Its `same_artist` answer is 0.03, and the pair scored 0.44, just under the
+lower cut point.
+
+```python theme={null}
+for pair_id in ("c088", "c415"):
+    show(pair_id)
+    print()
+```
+
+```
+c088  score 0.43  confidence 0.35  ->  leave unlinked
+    Um Novo Coração                           Jozyanne                    2001  MK Music
+    Um novo coração                           Maíra                       2001  Paradoxx Music
+    title 0.97   artist 0.01   label 0.01
+
+c415  score 1.97  confidence 0.97  ->  assert sameAs
+    Tonight: In Person                        The Limeliters              1961  RCA Victor
+    Tonight, In Person                        The Limeliters              1961  RCA Victor
+    title 0.86   artist 0.99   label 0.99
+```
 
 ## Open it in the playground
 
-The playground link below opens `c428`, which scored 1.10 and went to the curator.
-It pairs *Ambleside Amber Ale* with *Bridge Ambleside Amber Ale - Pomegranate & Galena
-Hops*: same brewery, same alcohol content. All four questions come with it.
+The link below opens `c190` in the playground, with all four questions. The pair scored
+1.27 and went to the curator. It's Herbie Hancock's *Head Hunters* from 1973 and the 2008
+reissue *Headhunters*: the same artist, and the same label written two ways. The
+playground runs `jev-latest`, so its score can differ from the 1.27 here.
 
 ```python theme={null}
 playground_link = make_playground_link(
-    {"entity_a": BY_ID["c428"]["entity_a"], "entity_b": BY_ID["c428"]["entity_b"]},
+    {
+        "entity_a": BY_ID["c190"]["entity_a"],
+        "entity_b": BY_ID["c190"]["entity_b"],
+    },
     QUESTIONS,
 )
 display(
@@ -373,7 +492,7 @@ display(
 )
 ```
 
-[Open this pair + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiMigJYoCeA+gIakEkhL2JP6kCCcARgBsEAZwpgE+XnwQAnSUNIAaLiD4yEAd1nVOpAEIyxAcwkHNFJEfwBhCHAAO9JDpDLSwmgrwresilCdJfll8AHp8ACUEMHkEJRV6PgA3XRAAVgA6AGYABnwAUlIAXzcyVCo6Pk4WNg5vfUMwEyDBETEJKRDuIXwAWnwABTsEIxknehQJADJ8AHF6ITZ8AAkIe2F40jVNbVSDY1N1DQsrWwcnF1KPai8CHmC5brjXBOTUzNyC4qKXkHsZOz2FDCDDYbxEUgCCwAa1oHgmz2YpBo9kRKmEUAg6k2IAsHhkMCglAgSA29RAqw0+Eg+BQAAsJCgNBB8OQKtSRFBDECKCThPh1AIEfh6Pz-hAwITgQB+HFcqh+RjeADapDQDOoHIxhmktOZ1IoADNDbJyPhxZKicIMjj1QhNeJtRRdVABBBhAgBJrBQiYhapfz6RN8HB6JqsSGw-gkBAUPhdfSJMJ2BISQgCPR8El6IYnChlJnhKioBQFqywFReUhlBHM7VGXTg5iYAI-UKYKJBN6ECa5CgWQgqAyZDaXmqNVr5bq0yKkDFE-hk4hzQDLShRwBdErolO0evVZHUVGpGMtnF4lAEolVsl3EAAERZC6ZA-KlBEi5QwoXS4k0hC9ayiA27uLu2xaDILhIiAKJoqQp4COepKXlKN6pNw6i0gyeqvpQ778oaAJwFhSYpvGRzaEBIEgL+cKeGiLCwSeEBnmOuLIVexKkqkj4kThrJvhQH6OlODakcu-5yNcQhUT8yggPQ9gUAAarIogkuCSQAIzAUAA)
+[Open this pair + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiMigJYoCeA+gIakEkiUoA2CT+pAEgvTD5eMVAgBOAZ1IAaHiHrjKklNz4SARhQTD6SKNADWs+dQHi1IAIwBOAOwBmE6Xb0NCdpYDCEdvC30+ABKCAbiYNIgAL5ypORUdBrcLGyclvyCABaiKBKRsQpKFCrpmtq6+kbOIGaKlgBMAAyNABzVru6eePI+fnABpFFRIHIgAA7iEHBjKJIY2N1ELhRIhrQq9LnJpDRjXN2kkmH7BSsq4jBQlBBIkQR8EADu+JD4KJk6KI8Q+PE0LwgjuIKDMKDdJPhxB5Njp6BD6OwNPBJAB+apQYG5YGMboAbVIaA+1ABQIo7je3xeFAAZtSJOR8AikXBJAA6aqEhDEsCAjFknRQdgQSQeYlQ1y5IRM5FvTKbfBwejEiDiBVK-BICAofDk946ST0RD4G4IAiBKHFSQwBByQIGaYUCVgpC2-CSPZQCgI42q9gUABuOgQYCozrkKsZbyonFl8oMMHYQjGrhgkjJ7DFCDpqpQPwQVA+4nZI3knO5vOB5JNjKQQj1bsNsMR8GLAF0YvIDYhaKl9swdtQ9pZNQnqmcUBcrs67vIACI-etfPOoUOA-AAcwDnw+DaN0rgUY4CBR+FnNOzyCga5W+CgcJW67kY1EVxgmzDPvwj0xD7d1BUCAHgAFIEvY1kIVAQpMipIMU743AAlC8PyatqiqGJ8lK9hCIa0vSqDFh2hyNgwRQlN0KSDn28gjl0py3BOlzXLcljzrKmHLmw2gQhiwZUOxu6wmRKAngAghqjZfpiuRIPgN56FqhZunyMyft84Q+jy4jhqqdpQiG2rvPKggRLevgdCqmwqhCuYCV2OicIIjLCXIxR2ZJijKCghEFPZtAdB42ysFRw4QKOJakOOk7MTOpBsYulJ-NxElGvW9mQqEKpCAF7BiW6mQqjJwYpToEbmggm43N6GjiHoUCZMa1KRjlck2Tu6U5QA3DWcnTMCqDgXJsz4GMigMvao1IMSY1UnhUIDTlbL4OJLUQE1ADkAC062futuKavgOWtjtbmoRlYQ8mAhHDKM9BjBQABqeTOos-pWNEQA)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

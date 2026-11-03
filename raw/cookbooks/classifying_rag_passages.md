@@ -79,14 +79,12 @@ Set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. We use TypeSaf
 each retrieved passage, OpenAI to embed the corpus for the search step, and Claude to write
 the final answer out of whatever survives the scoring.
 
-None of the three needs a key to reproduce this page. `json_cache.json` ships with the
-cookbook and replays every recorded call, so a re-render costs nothing. Delete the file to
-run the pipeline live instead. The numbers here came out of `jev-1.12` and
-`claude-sonnet-5` on 2026-08-27.
+The numbers here came out of `jev-1.12` and `claude-sonnet-5` on 2026-08-27.
 
 ```python expandable theme={null}
 import json
 import os
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from time import perf_counter
@@ -127,6 +125,21 @@ generator = anthropic.Anthropic(
 )
 embedder = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "cache-only"))
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/classifying_rag_passages"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the docs corpus
@@ -149,7 +162,7 @@ We also wrote two of the six queries to state a premise the docs contradict, so 
 injection and conflict routes both have something to catch.
 
 ```python theme={null}
-PASSAGES = json.loads(Path("corpus.json").read_text(encoding="utf-8"))
+PASSAGES = json.loads(download("corpus.json").read_text(encoding="utf-8"))
 BY_ID = {p["id"]: p for p in PASSAGES}
 
 counts: dict[str, int] = {}
@@ -316,14 +329,15 @@ def gate_document(query: str, passage: dict) -> dict:
 
 
 @json_cache
-def gate(query: str, passage_id: str) -> dict:
+def gate(state_json: str, questions_json: str) -> dict:
     started = perf_counter()
+    questions = json.loads(questions_json)
     response = client.system_one(
-        state=gate_document(query, BY_ID[passage_id]),
-        questions=PASSAGE_QUESTIONS,
+        state=json.loads(state_json),
+        questions=questions,
         model=TYPESAFE_MODEL,
     )
-    answers = {key: response.answers[key].noul for key in PASSAGE_QUESTIONS}
+    answers = {key: response.answers[key].noul for key in questions}
     answers["seconds"] = round(perf_counter() - started, 2)
     # tokens and requests are the durable units; don't cache a derived dollar cost
     answers["input_tokens"] = response.usage.input_tokens or 0
@@ -334,8 +348,12 @@ def gate(query: str, passage_id: str) -> dict:
 def gate_all(query: str, passages: list[dict]) -> list[dict]:
     """One request per passage, four at a time. Keep the pool small: the public endpoint
     rate-limits, and JsonCache writes after every call so a retry only pays for the misses."""
+    questions = json.dumps(
+        {key: q.model_dump(mode="json", exclude_none=True) for key, q in PASSAGE_QUESTIONS.items()}
+    )
+    states = [json.dumps(gate_document(query, passage)) for passage in passages]
     with ThreadPoolExecutor(max_workers=4) as pool:
-        return list(pool.map(lambda passage: gate(query, passage["id"]), passages))
+        return list(pool.map(lambda state: gate(state, questions), states))
 ```
 
 ## Route each passage in code

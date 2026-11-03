@@ -632,11 +632,11 @@ json_cache = JsonCache(Path("json_cache.json"))
 
 
 @json_cache
-def choose(state: str, labels: tuple[str, ...]) -> dict[str, float]:
+def choose(state: str, question: Choice) -> dict[str, float]:
     """Ask one atomic direct-child question and return its distribution."""
-    if len(labels) == 1:
-        return {labels[0]: 1.0}
-    question, keys = child_question(labels)
+    keys = question.criteria
+    if len(keys) == 1:
+        return {label: 1.0 for label in keys.values()}
     response = client.system_one(
         state=state, questions={"child": question}, model=MODEL
     )
@@ -644,14 +644,13 @@ def choose(state: str, labels: tuple[str, ...]) -> dict[str, float]:
     return {label: probabilities[key] for key, label in keys.items()}
 
 
-def child_question(labels: tuple[str, ...]) -> tuple[Choice, dict[str, str]]:
-    """Build the direct-child Choice and its reversible option mapping."""
+def child_question(labels: tuple[str, ...]) -> Choice:
+    """Build the direct-child Choice; its option keys map back to the labels."""
     keys = {f"c{i}": label for i, label in enumerate(labels)}
-    question = Choice(
+    return Choice(
         instructions="Which direct child category best matches this document?",
         criteria=keys,
     )
-    return question, keys
 
 
 def extend_candidate(
@@ -700,7 +699,7 @@ def beam_search(hierarchy: Hierarchy) -> dict:
                 executor.map(
                     lambda candidate: choose(
                         hierarchy.document,
-                        tuple(subtree(hierarchy.tree, candidate["path"])),
+                        child_question(tuple(subtree(hierarchy.tree, candidate["path"]))),
                     ),
                     expandable,
                 )
@@ -739,7 +738,7 @@ def greedy_search(hierarchy: Hierarchy) -> dict:
         labels = tuple(subtree(hierarchy.tree, path))
         if not labels:
             break
-        probabilities = choose(hierarchy.document, labels)
+        probabilities = choose(hierarchy.document, child_question(labels))
         records.append(choice_record(path, probabilities))
         label = max(probabilities, key=probabilities.get)
         if len(probabilities) > 1:

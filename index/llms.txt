@@ -43,7 +43,7 @@
 - [Feeder-cam visit log](https://docs.typesafe.ai/cookbooks/feeder_watch.md): Send frames from bird feeder camera footage to Jev with five questions, one of them a Box that finds the bird, then use plain code to turn the answers into a visit log per species.
 - [Re-ranking](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md): Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.
 - [Line-by-line search](https://docs.typesafe.ai/cookbooks/semantic_find.md): Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer.
-- [Knowledge graph entity alignment](https://docs.typesafe.ai/cookbooks/entity_alignment.md): Decides which of 450 candidate pairs from two beer catalogues describe the same product using one Score question plus three companion Nouls that surface which fields disagree.
+- [Knowledge graph entity alignment](https://docs.typesafe.ai/cookbooks/entity_alignment.md): Route candidate record pairs from two sources to a merge recommendation, manual review, or no link, using one Score question. Three Noul questions check individual fields. The worked example uses 450 album pairs from Wikidata and MusicBrainz.
 - [Intelliprompter](https://docs.typesafe.ai/cookbooks/intelliprompter.md): Tick off a presenter's notes as they speak: TypeSafe scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold.
 - [Self-consistency: choices](https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md): Add an uncertain outcome to moderation decisions and compare label agreement with the share of automatic actions.
 - [Self-consistency: nouls](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md): Route uncertain probabilities to human review while keeping the underlying noul values visible.
@@ -54,7 +54,8 @@
 - [Models](https://docs.typesafe.ai/models.md)
 - [Agent skill](https://docs.typesafe.ai/agent-skill.md): Drop-in skill for Claude Code, Codex, and other agent environments.
 - [Legal](https://docs.typesafe.ai/legal.md): Legal documents and policies for TypeSafe.
-- [Jev 1.13 jaggedness](https://docs.typesafe.ai/model-jaggedness/jev-1.13.md): Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
+- [Model jaggedness](https://docs.typesafe.ai/model-jaggedness.md): Jev isn't perfect. Here are some jagged edges we are aware of. Many of these will be fixed in later versions.
+- [Model changelog](https://docs.typesafe.ai/changelog.md): The principal changes in each Jev release.
 - [System One](https://docs.typesafe.ai/api/system-one.md): Answer one or more questions about the content supplied in `state`.
 - [List models](https://docs.typesafe.ai/api/list-models.md): List the models and aliases available to the authenticated account.
 - [Request rules and errors](https://docs.typesafe.ai/api/errors.md): Request limits, compression, and HTTP status codes

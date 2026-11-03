@@ -70,14 +70,7 @@ flowchart TB
 pip install ipython pillow 'typesafe-sdk[pil]>=0.7.5' 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Then set `TYPESAFE_API_KEY`. Download the two invoice photos, `extractions.json` and
-`json_cache.json` from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/ocr_confidence_bounding_boxes),
-and put them beside the script, with the photos in an `inputs/` folder.
-
-Every API response is saved in `json_cache.json`, so running the cookbook reuses those
-saved responses and you get the published numbers without calling the API. Delete that
-file to send every request again.
+Then set `TYPESAFE_API_KEY`.
 
 > **Note** - Images and `Box` questions are dreamer-ready, which means they are not yet
 > ready for production, and their request format and answers can change between releases.
@@ -86,17 +79,18 @@ file to send every request again.
 
 The numbers below came from `jev-1.14.0` on 2026-10-15.
 
-```python
+```python expandable
 import io
 import json
 import os
+import urllib.request
 from pathlib import Path
 
 from cooksafe import JsonCache
 from IPython.display import display
 from PIL import Image as PILImage
 from PIL import ImageDraw, ImageFont
-from typesafe_sdk import Box, Image, Noul, TypeSafeClient
+from typesafe_sdk import Box, Image, Noul, SystemOneResponse, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.14.0"  # Box questions need Jev 1.14
 BAR = 0.25  # a check scoring below this flags the field
@@ -112,6 +106,19 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/ocr_confidence_bounding_boxes"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the photos and what the extractor read
@@ -126,7 +133,9 @@ values. Any extractor works here, because the check only needs the photo and the
 
 ```python
 INPUTS = Path("inputs")  # the photos, keyed in extractions.json by file name
-EXTRACTIONS = json.loads(Path("extractions.json").read_text())
+EXTRACTIONS = json.loads(download("extractions.json").read_text())
+for photo in EXTRACTIONS:
+    download(f"inputs/{photo}")
 FIELDS = {
     # field: what it is, in the words every question uses
     "supplier_name": "the supplier's (seller's) business name",
@@ -223,20 +232,26 @@ def page_questions(values: dict) -> dict:
         )
     return questions
 
+def as_json(questions: dict) -> str:
+    return json.dumps(
+        {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()}
+    )
+
 @json_cache
-def find_fields(photo: str, values_json: str) -> dict:
-    values = json.loads(values_json)
+def find_fields(photo: str, questions_json: str) -> dict:
+    questions = json.loads(questions_json)
+    fields = sorted(key.removeprefix("box_") for key in questions if key.startswith("box_"))
     with PILImage.open(INPUTS / photo) as page:
         image, _ = as_image(page)  # a whole page fills the size range, so no canvas
     response = client.system_one(
-        state={"page": image}, questions=page_questions(values), model=TYPESAFE_MODEL
+        state={"page": image}, questions=questions, model=TYPESAFE_MODEL
     )
     return {
-        "boxes": {f: response.boxes[f"box_{f}"].box.model_dump() for f in sorted(values)},
-        "fits": {f: response.nouls[f"fits_{f}"].noul for f in sorted(values)},
+        "boxes": {f: response.boxes[f"box_{f}"].box.model_dump() for f in fields},
+        "fits": {f: response.nouls[f"fits_{f}"].noul for f in fields},
     }
 
-found = {photo: find_fields(photo, json.dumps(values, sort_keys=True))
+found = {photo: find_fields(photo, as_json(page_questions(values)))
          for photo, values in sorted(EXTRACTIONS.items())}
 for photo, result in found.items():
     print(photo)
@@ -280,6 +295,9 @@ The code then pads each new box on every side, so that cropping to it can't cut 
 the value.
 
 ```python expandable
+IMAGE = "{image}"  # stands for each question's own image until the request is sent
+ZOOM_TASK = "Locate fields in zoomed-in parts of a supplier invoice."
+
 def region_around(box: dict) -> dict:
     width = min(1.0, max(ZOOM_MIN[0], (box["right"] - box["left"]) * ZOOM))
     height = min(1.0, max(ZOOM_MIN[1], (box["bottom"] - box["top"]) * ZOOM))
@@ -287,29 +305,36 @@ def region_around(box: dict) -> dict:
     top = min(max(0.0, (box["top"] + box["bottom"] - height) / 2), 1 - height)
     return {"left": left, "top": top, "right": left + width, "bottom": top + height}
 
+def zoom_questions(values: dict) -> dict:
+    return {
+        field: Box(
+            instructions=f"{FIELDS[field]}, printed as “{values[field]}” in this image: {IMAGE}"
+        )
+        for field in sorted(values)
+    }
+
+def ask_with_images(task: str, questions: dict, images: dict) -> SystemOneResponse:
+    """Put each field's image into its question, and send all the questions in one request."""
+    for field, question in questions.items():
+        question["instructions"] = question["instructions"].replace(IMAGE, str(images[field]))
+    with client.attach_assets(list(images.values())):  # resolves the references in the text
+        return client.system_one(state={"task": task}, questions=questions, model=TYPESAFE_MODEL)
+
 @json_cache
-def zoom_fields(photo: str, values_json: str, boxes_json: str) -> dict:
-    values, boxes = json.loads(values_json), json.loads(boxes_json)
-    questions, regions, images = {}, {}, []
-    for field in sorted(values):
-        region = region_around(boxes[field])
-        image, frame = as_image(crop(photo, region), upscale_to=1200)
-        regions[field], images = (region, frame), images + [image]
-        questions[field] = Box(
-            instructions=f"{FIELDS[field]}, printed as “{values[field]}” in this image: {image}"
-        )
-    with client.attach_assets(images):  # resolves the image references inside the text
-        response = client.system_one(
-            state={"task": "Locate fields in zoomed-in parts of a supplier invoice."},
-            questions=questions, model=TYPESAFE_MODEL,
-        )
+def zoom_fields(
+    photo: str, regions_json: str, task: str, questions_json: str, grow: tuple
+) -> dict:
+    regions, images, frames = json.loads(regions_json), {}, {}
+    for field, region in regions.items():
+        images[field], frames[field] = as_image(crop(photo, region), upscale_to=1200)
+    response = ask_with_images(task, json.loads(questions_json), images)
     tight = {}
-    for field, (region, (fx, fy, fw, fh)) in regions.items():
-        b = response.boxes[field].box
+    for field, region in regions.items():
+        b, (fx, fy, fw, fh) = response.boxes[field].box, frames[field]
         # canvas -> region -> page, then add the review margin
         left, right = (b.left - fx) / fw, (b.right - fx) / fw
         top, bottom = (b.top - fy) / fh, (b.bottom - fy) / fh
-        gx, gy = (right - left) * GROW[0], (bottom - top) * GROW[1]
+        gx, gy = (right - left) * grow[0], (bottom - top) * grow[1]
         rw, rh = region["right"] - region["left"], region["bottom"] - region["top"]
         tight[field] = {
             "left": max(0.0, region["left"] + (left - gx) * rw),
@@ -327,25 +352,27 @@ show the extracted value? Each crop goes inside its own question's instructions.
 answer's P(yes) is the crop check.
 
 ```python
-@json_cache
-def check_crops(photo: str, values_json: str, boxes_json: str) -> dict:
-    values, boxes = json.loads(values_json), json.loads(boxes_json)
-    questions, images = {}, []
-    for field in sorted(values):
-        image, _ = as_image(crop(photo, boxes[field], pad=0.01), upscale_to=800)
-        images.append(image)
-        questions[field] = Noul(
-            instructions=f"Image: {image}\nDoes this cropped image clearly show {FIELDS[field]}"
+CROP_TASK = "Check values read from cropped parts of a supplier invoice."
+
+def crop_questions(values: dict) -> dict:
+    return {
+        field: Noul(
+            instructions=f"Image: {IMAGE}\nDoes this cropped image clearly show {FIELDS[field]}"
             f" as “{values[field]}”? {SAME_VALUE} Answer no if it is cut off, unreadable or"
             " different."
         )
-    with client.attach_assets(images):
-        response = client.system_one(
-            state={"task": "Check values read from cropped parts of a supplier invoice."},
-            questions=questions, model=TYPESAFE_MODEL,
-        )
+        for field in sorted(values)
+    }
+
+@json_cache
+def check_crops(photo: str, boxes_json: str, task: str, questions_json: str) -> dict:
+    images = {
+        field: as_image(crop(photo, box, pad=0.01), upscale_to=800)[0]
+        for field, box in json.loads(boxes_json).items()
+    }
+    response = ask_with_images(task, json.loads(questions_json), images)
     return {
-        "shows": {f: response.nouls[f].noul for f in sorted(values)},
+        "shows": {f: response.nouls[f].noul for f in sorted(images)},
     }
 ```
 
@@ -355,10 +382,12 @@ A field goes to review when either check scores below `BAR` (0.25).
 
 ```python
 def check_invoice(photo: str, values: dict) -> dict:
-    values_json = json.dumps(values, sort_keys=True)
-    first = find_fields(photo, values_json)
-    tight = zoom_fields(photo, values_json, json.dumps(first["boxes"], sort_keys=True))
-    shown = check_crops(photo, values_json, json.dumps(tight["boxes"], sort_keys=True))
+    first = find_fields(photo, as_json(page_questions(values)))
+    regions = {field: region_around(box) for field, box in first["boxes"].items()}
+    tight = zoom_fields(photo, json.dumps(regions, sort_keys=True), ZOOM_TASK,
+                        as_json(zoom_questions(values)), GROW)
+    shown = check_crops(photo, json.dumps(tight["boxes"], sort_keys=True), CROP_TASK,
+                        as_json(crop_questions(values)))
     return {
         field: {
             "value": values[field],

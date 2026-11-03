@@ -70,10 +70,7 @@ response, you can swap one for the other without changing any other code.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Set `TYPESAFE_API_KEY`. Every API call is cached in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/basic_memory/json_cache.json).
-Download it into the folder you run this code from to replay the published numbers
-instead of calling the API, or leave it out to run everything live.
+Set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
@@ -234,18 +231,19 @@ ROUTE = {
 
 
 @json_cache
-def _system_one(model: str, state: str, questions: str) -> dict:
+def _system_one(state: str, questions: str) -> dict:
     response = client.system_one(
-        state=json.loads(state), questions=json.loads(questions), model=model
+        state=json.loads(state), questions=json.loads(questions), model=TYPESAFE_MODEL
     )
-    return response.model_dump(mode="json")
+    return response.model_dump(mode="json", exclude={"model"})
 
 
 def ask(state: dict, questions: dict) -> SystemOneResponse:
     """client.system_one, with the model pinned and the call cached."""
     as_json = {qid: q.model_dump(mode="json", exclude_none=True) for qid, q in questions.items()}
-    raw = _system_one(TYPESAFE_MODEL, json.dumps(state), json.dumps(as_json))
-    return SystemOneResponse.model_validate(raw)
+    raw = _system_one(json.dumps(state), json.dumps(as_json))
+    # The cache leaves the model out; the response type needs one, so use the requested model.
+    return SystemOneResponse.model_validate({**raw, "model": TYPESAFE_MODEL})
 
 
 def later_state(customer_id: str, message_index: int) -> dict:

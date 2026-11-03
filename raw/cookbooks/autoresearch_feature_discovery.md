@@ -301,15 +301,15 @@ def proposal_prompt(examples: str, feedback: str, accepted: list[dict]) -> str:
 
 
 @json_cache
-def propose(model: str, round_index: int, prompt: str) -> dict:
+def propose(round_index: int, prompt: str) -> dict:
     """One proposal call. Every number in `prompt` is rounded so a replay hits the cache."""
-    if model.startswith("claude"):
+    if PROPOSER.startswith("claude"):
         import anthropic
 
         response = anthropic.Anthropic(
             api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only")
         ).messages.create(
-            model=model,
+            model=PROPOSER,
             max_tokens=16000,
             output_config={
                 "effort": "medium",
@@ -325,7 +325,7 @@ def propose(model: str, round_index: int, prompt: str) -> dict:
         response = OpenAI(
             api_key=os.environ.get("OPENAI_API_KEY", "cache-only")
         ).chat.completions.create(
-            model=model,
+            model=PROPOSER,
             reasoning_effort="high",
             max_completion_tokens=16000,
             response_format={"type": "json_object"},
@@ -400,22 +400,20 @@ def feature_questions(features: list[dict]) -> dict:
 
 
 @json_cache
-def answer(model: str, note: str, features_json: str) -> dict:
+def answer(note: str, questions_json: str) -> dict:
     """One request per note; every question of the round rides it. Keeps every probability."""
-    features = json.loads(features_json)
+    questions = json.loads(questions_json)
     started = perf_counter()
-    response = client.system_one(
-        state=note, questions=feature_questions(features), model=model
-    )
+    response = client.system_one(state=note, questions=questions, model=TYPESAFE_MODEL)
     raw = {}
-    for feature in features:
-        got = response.answers[feature["name"]]
-        if feature["kind"] == "intensity":
-            raw[feature["name"]] = [
-                got.probabilities.get(i, 0.0) for i in range(len(INTENSITY_LEVELS))
+    for name, question in questions.items():
+        got = response.answers[name]
+        if question["type"] == "score":
+            raw[name] = [
+                got.probabilities.get(i, 0.0) for i in range(len(question["criteria"]))
             ]
         else:
-            raw[feature["name"]] = [got.noul]
+            raw[name] = [got.noul]
     return {
         "raw": raw,
         "seconds": round(perf_counter() - started, 2),
@@ -426,10 +424,13 @@ def answer(model: str, note: str, features_json: str) -> dict:
 
 def featurize(notes: list[str], features: list[dict]) -> dict:
     """Answer one question set for many notes: one request each, eight in flight."""
-    payload = json.dumps(features, sort_keys=True)
+    questions = feature_questions(features)
+    payload = json.dumps(
+        {name: q.model_dump(mode="json", exclude_none=True) for name, q in questions.items()}
+    )
     with ThreadPoolExecutor(max_workers=8) as pool:
         results = list(
-            pool.map(lambda note: answer(TYPESAFE_MODEL, note, payload), notes)
+            pool.map(lambda note: answer(note, payload), notes)
         )
     return {
         f["name"]: np.array([r["raw"][f["name"]] for r in results], dtype=float)
@@ -655,7 +656,6 @@ class Discovery(NamedTuple):
 
 def run_loop(
     split: Split,
-    proposer: str,
     rounds: int,
     examples: int,
     mode: str,
@@ -673,9 +673,7 @@ def run_loop(
 
     for round_index in range(1, rounds + 1):
         block = example_block(shown, split, out_of_fold, previous)
-        actions = propose(
-            proposer, round_index, proposal_prompt(block, feedback, accepted)
-        )["actions"]
+        actions = propose(round_index, proposal_prompt(block, feedback, accepted))["actions"]
         keep, drops = to_candidates(actions, accepted, round_index)
 
         if keep:  # one request per row, carrying every question this round proposed
@@ -777,23 +775,20 @@ def report(
 # ----------------------------------------------------------------- asking for the score
 
 
+QUALITY = Score(
+    instructions="Judging only by what this tasting note says, how good is the wine?",
+    criteria=SCORE_LEVELS,
+)
+
+
 @json_cache
-def ask_score(model: str, note: str) -> dict:
+def ask_score(note: str, quality: Score) -> dict:
     """One `Score` over ten quality bands, read as a level and rescaled to 80-100."""
     response = client.system_one(
-        state=note,
-        questions={
-            "quality": Score(
-                instructions=(
-                    "Judging only by what this tasting note says, how good is the wine?"
-                ),
-                criteria=SCORE_LEVELS,
-            )
-        },
-        model=model,
+        state=note, questions={"quality": quality}, model=TYPESAFE_MODEL
     )
     got = response.answers["quality"]
-    top = len(SCORE_LEVELS) - 1
+    top = len(quality.criteria) - 1
     expected = sum(k * v for k, v in got.probabilities.items())
     return {
         # level 0 is the bottom of the critic's scale, level 9 the top
@@ -1035,7 +1030,7 @@ on a first read - the recipe starts under it.
 ```python theme={null}
 N_DEV, N_TEST = 1200, 800  # the loop reads dev labels only; test is scored once
 ROUNDS = 5  # a round answers questions for all 2,000 rows: 2,000 requests
-PROPOSER = "claude-sonnet-5"  # or "gpt-5.6-luna"; the cache holds the Anthropic run
+PROPOSER = "claude-sonnet-5"  # or "gpt-5.6-luna"
 EXAMPLES = 60  # dev notes the proposer reads per round, half of them its worst misses
 MIN_SPREAD = 0.05  # a column this flat cannot separate anything, so it is not kept
 CHANGE_TOLERANCE = 0.0  # a revision or drop has to improve dev error, not just not hurt
@@ -1145,7 +1140,7 @@ error goes down. A refit costs no API calls, so trying a change and rejecting it
 
 ```python theme={null}
 run = run_loop(
-    split, PROPOSER, ROUNDS, EXAMPLES, ENCODING, MIN_SPREAD, CHANGE_TOLERANCE
+    split, ROUNDS, EXAMPLES, ENCODING, MIN_SPREAD, CHANGE_TOLERANCE
 )
 accepted, answers_for = run.accepted, run.answers_for
 snapshots, history = run.snapshots, run.history
@@ -1294,7 +1289,7 @@ text_predicted = fit_predict_text(split)
 
 # ask TypeSafe for the score itself, one request per row
 with ThreadPoolExecutor(max_workers=8) as pool:
-    direct = list(pool.map(lambda note: ask_score(TYPESAFE_MODEL, note), NOTES))
+    direct = list(pool.map(lambda note: ask_score(note, QUALITY), NOTES))
 asked = np.array([d["expected"] for d in direct])
 shift = float(SCORES[DEV].mean() - asked[DEV].mean())  # one number, from the dev labels
 

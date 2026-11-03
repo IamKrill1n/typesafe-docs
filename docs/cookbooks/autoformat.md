@@ -36,13 +36,10 @@ The whole pipeline is two API requests per document, run in sequence:
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`. Download it
-from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/autoformat)
-into the folder you run the script from to replay the published numbers without calling the
-API, or leave it out to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 ```python
+import json
 import os
 import re
 import urllib.request
@@ -159,13 +156,19 @@ def join_question(i: int) -> Noul:
         ),
     )
 
+def as_json(questions: dict) -> str:
+    return json.dumps(
+        {k: q.model_dump(mode="json", exclude_none=True) for k, q in questions.items()}
+    )
+
+def stitch_questions(make) -> dict:
+    return {line_id(i): make(i) for i in range(1, len(LINES)) if not LINES[i]["gap"]}
+
 @json_cache
-def stitch(wording: str = "mid-sentence") -> dict:
-    make = join_question if wording == "mid-sentence" else naive_join_question
-    questions = {line_id(i): make(i) for i in range(1, len(LINES)) if not LINES[i]["gap"]}
+def stitch(state: str, questions_json: str) -> dict:
     started = perf_counter()
     response = client.system_one(
-        state=tag(LINES, "L"), questions=questions, model=TYPESAFE_MODEL
+        state=state, questions=json.loads(questions_json), model=TYPESAFE_MODEL
     )
     return {
         "joins": [
@@ -176,7 +179,7 @@ def stitch(wording: str = "mid-sentence") -> dict:
         "usage": [response.usage.input_tokens, response.usage.output_tokens],
     }
 
-result = stitch()
+result = stitch(tag(LINES, "L"), as_json(stitch_questions(join_question)))
 print(f"{sum(1 for l in LINES if not l['gap']) - 1} pair questions, one request, "
       f"{result['seconds']}s")
 ```
@@ -303,9 +306,9 @@ def classify_questions(texts: list[str]) -> dict:
     return questions
 
 @json_cache
-def classify(texts: list[str], gaps: list[bool]) -> dict:
+def classify(texts: list[str], gaps: list[bool], questions_json: str) -> dict:
     tagged = tag([{"text": t, "gap": g} for t, g in zip(texts, gaps)], "B")
-    questions = classify_questions(texts)
+    questions = json.loads(questions_json)
     started = perf_counter()
     response = client.system_one(state=tagged, questions=questions, model=TYPESAFE_MODEL)
     judgments = []
@@ -330,7 +333,8 @@ def classify(texts: list[str], gaps: list[bool]) -> dict:
         "usage": [response.usage.input_tokens, response.usage.output_tokens],
     }
 
-classified = classify([b["text"] for b in blocks], [b["gap"] for b in blocks])
+texts = [b["text"] for b in blocks]
+classified = classify(texts, [b["gap"] for b in blocks], as_json(classify_questions(texts)))
 for block, judgment in zip(blocks, classified["judgments"]):
     block.update(judgment)
 print(f"{classified['n_questions']} questions about {len(blocks)} blocks, one request, "
@@ -539,7 +543,7 @@ def naive_join_question(i: int) -> Noul:
         ),
     )
 
-naive = stitch("same-paragraph")
+naive = stitch(tag(LINES, "L"), as_json(stitch_questions(naive_join_question)))
 print(f"{'':14}{'mid-sentence':>13}{'same paragraph':>16}")
 for i in (15, 16, 17, 20, 21):
     print(f"{line_id(i)}{'':2}{LINES[i]['text'][:36]:<38}"

@@ -88,18 +88,14 @@ export ANTHROPIC_API_KEY=your-key-here
 
 ## Caching results
 
-`hermes_roster.json`, `requests.json` and the answer cache `json_cache.json` are in
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/skill_suggestion).
-Put them in the folder you run the script from.
-
 We cache each call's result in `json_cache.json`, keyed on its inputs, so re-running
-replays the numbers below instead of calling either API. Delete `json_cache.json` to run
-live. The published run used `jev-1.14.0` and `claude-haiku-4-5-20251001`, rendered
-2026-10-30.
+replays the numbers below instead of calling either API. The published run used
+`jev-1.14.0` and `claude-haiku-4-5-20251001`, rendered 2026-10-30.
 
 ```python expandable
 import json
 import os
+import urllib.request
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -148,6 +144,19 @@ client = TypeSafeClient(
 )
 agent = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only"))
 json_cache = JsonCache(Path("json_cache.json"))
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/skill_suggestion"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Step 1: load the roster
@@ -161,7 +170,7 @@ it, the full description, and the opening of its `SKILL.md`. The skills' licence
 The index below, and the instructions above it in the prompt, are copied from Hermes.
 
 ```python expandable
-ROSTER = json.loads(Path("hermes_roster.json").read_text(encoding="utf-8"))
+ROSTER = json.loads(download("hermes_roster.json").read_text(encoding="utf-8"))
 BY_NAME = {skill["name"]: skill for skill in ROSTER}
 
 # Verbatim from hermes-agent agent/prompt_builder.py:_render_skills_index.
@@ -264,7 +273,7 @@ better on each:
   `skill_view` at all.
 
 ```python
-REQUESTS = json.loads(Path("requests.json").read_text(encoding="utf-8"))
+REQUESTS = json.loads(download("requests.json").read_text(encoding="utf-8"))
 POSITIVES = [p for p in REQUESTS if p["gold"]]
 NEGATIVES = [p for p in REQUESTS if not p["gold"]]
 
@@ -338,18 +347,16 @@ TOOLS = [
 ]
 
 @json_cache
-def run_turn(model: str, arm: str, request: str, suggestion: str) -> dict:
+def run_turn(arm: str, roster: str, tools_json: str, request: str, suggestion: str) -> dict:
     """One measured turn. ``arm`` is in the key so each arm samples independently."""
-    system = [
-        {"type": "text", "text": CATALOG_PROMPT, "cache_control": {"type": "ephemeral"}}
-    ]
+    system = [{"type": "text", "text": roster, "cache_control": {"type": "ephemeral"}}]
     if suggestion:
         system.append({"type": "text", "text": suggestion})  # after the breakpoint
     response = agent.messages.create(
-        model=model,
+        model=AGENT_MODEL,
         max_tokens=1024,
         system=system,
-        tools=TOOLS,
+        tools=json.loads(tools_json),
         messages=[{"role": "user", "content": request}],
     )
     return {
@@ -375,7 +382,10 @@ def run_arm(arm: str, suggestions: dict[str, str]) -> dict[str, dict]:
     texts = [request["text"] for request in REQUESTS]
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         turns = pool.map(
-            lambda t: run_turn(AGENT_MODEL, arm, t, suggestions.get(t, "")), texts
+            lambda t: run_turn(
+                arm, CATALOG_PROMPT, json.dumps(TOOLS), t, suggestions.get(t, "")
+            ),
+            texts,
         )
         return dict(zip(texts, turns))
 ```
@@ -478,9 +488,12 @@ NAMED_QUESTION = (
 def build_state(request: str) -> dict:
     return {"request": request, "recent_context": ""}
 
-@json_cache
-def rank_wide(request: str) -> dict:
-    """Request 1: rank all 194 skills, and score the request for whether a skill applies."""
+def as_json(questions: dict) -> str:
+    return json.dumps(
+        {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()}
+    )
+
+def wide_questions() -> dict:
     questions = {
         "which": Choice(
             instructions=CHOICE_INSTRUCTIONS,
@@ -490,9 +503,16 @@ def rank_wide(request: str) -> dict:
     for key, text in GATE_QUESTIONS.items():
         questions[f"gate::{key}"] = Noul(instructions=text)
     questions["named"] = Noul(instructions=NAMED_QUESTION)
+    return questions
+
+@json_cache
+def rank_wide(request: str, questions_json: str) -> dict:
+    """Request 1: rank all 194 skills, and score the request for whether a skill applies."""
     started = perf_counter()
     response = client.system_one(
-        state=build_state(request), questions=questions, model=TYPESAFE_MODEL
+        state=build_state(request),
+        questions=json.loads(questions_json),
+        model=TYPESAFE_MODEL,
     )
     ranked = sorted(
         response.answers["which"].probabilities.items(), key=lambda kv: -kv[1]
@@ -502,16 +522,20 @@ def rank_wide(request: str) -> dict:
         for key, answer in response.answers.items()
         if key.startswith("gate::")
     }
-    oriented = [(1.0 - v) if k in INVERTED else v for k, v in values.items()]
     return {
         "ranked": ranked[
             :12
         ],  # more than any shortlist needs, and keeps the cache small
-        "gate": sum(oriented) / len(oriented),
         "values": values,
         "named": response.answers["named"].noul,
         "seconds": round(perf_counter() - started, 2),
     }
+
+def first_pass(request: str) -> dict:
+    """Request 1, plus the three action answers averaged into ``gate``."""
+    wide = rank_wide(request, as_json(wide_questions()))
+    oriented = [(1.0 - v) if k in INVERTED else v for k, v in wide["values"].items()]
+    return {**wide, "gate": sum(oriented) / len(oriented)}
 
 def needs_skill(wide: dict) -> bool:
     """Either reason is enough: an action is wanted, or a named method is asked for."""
@@ -528,7 +552,7 @@ DEMO = [
     " ends up breaking prod?",
 ]
 for request in DEMO:
-    wide = rank_wide(request)
+    wide = first_pass(request)
     verdict = "suggest" if needs_skill(wide) else "stay quiet"
     print(f'"{request[:78]}"')
     print(
@@ -621,12 +645,12 @@ def rerank_questions(names: tuple[str, ...], excerpt: int) -> dict:
     return questions
 
 @json_cache
-def rerank(request: str, names: tuple[str, ...], excerpt: int) -> dict:
+def rerank(request: str, questions_json: str) -> dict:
     """Request 2: the same Choice over a shortlist, plus one absolute noul per candidate."""
     started = perf_counter()
     response = client.system_one(
         state=build_state(request),
-        questions=rerank_questions(names, excerpt),
+        questions=json.loads(questions_json),
         model=TYPESAFE_MODEL,
     )
     return {
@@ -640,12 +664,12 @@ def rerank(request: str, names: tuple[str, ...], excerpt: int) -> dict:
     }
 
 for request in DEMO:
-    wide = rank_wide(request)
+    wide = first_pass(request)
     if not needs_skill(wide):
         print(f'"{request[:78]}"\n  scored too low, nothing suggested\n')
         continue
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
-    result = rerank(request, shortlist, EXCERPT_CHARS)
+    result = rerank(request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)))
     best = max(result["fits"].values())
     verdict = result["winner"] if best >= FITS_THRESHOLD else "nothing fits"
     print(f'"{request[:78]}"')
@@ -702,11 +726,11 @@ in `suggest()` is specific to Hermes.
 ```python
 def suggest(request: str) -> tuple[str, ...]:
     """At most one skill name for a request, or () for "nothing here applies"."""
-    wide = rank_wide(request)
+    wide = first_pass(request)
     if not needs_skill(wide):
         return ()
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
-    result = rerank(request, shortlist, EXCERPT_CHARS)
+    result = rerank(request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)))
     if max(result["fits"].values()) < FITS_THRESHOLD:
         return ()
     return (result["winner"],)
@@ -765,7 +789,7 @@ unopposed.
 texts = [request["text"] for request in REQUESTS]
 with ThreadPoolExecutor(max_workers=WORKERS) as pool:  # up to 452 x 2 TypeSafe requests
     suggested = dict(zip(texts, pool.map(suggest, texts)))
-WIDE = {text: rank_wide(text) for text in texts}  # all cache hits now; reused below
+WIDE = {text: first_pass(text) for text in texts}  # all cache hits now; reused below
 
 arms = {
     "baseline": {},
@@ -809,9 +833,9 @@ baseline -> TypeSafe:  2.0x fewer wrong loads, 2.7x fewer needless ones
 moved = [
     (
         baseline[p["text"]]["loaded"][:1] == [p["gold"]],
-        run_turn(AGENT_MODEL, "TypeSafe", p["text"], arms["TypeSafe"][p["text"]])[
-            "loaded"
-        ][:1]
+        run_turn(
+            "TypeSafe", CATALOG_PROMPT, json.dumps(TOOLS), p["text"], arms["TypeSafe"][p["text"]]
+        )["loaded"][:1]
         == [p["gold"]],
     )
     for p in POSITIVES
@@ -911,7 +935,7 @@ Build a playground link for the deck request from step 4, using each candidate's
 description and body excerpt as its criteria.
 
 ```python
-demo_shortlist = tuple(name for name, _ in rank_wide(DEMO[1])["ranked"][:SHORTLIST])
+demo_shortlist = tuple(name for name, _ in first_pass(DEMO[1])["ranked"][:SHORTLIST])
 playground_link = make_playground_link(
     build_state(DEMO[1]),
     rerank_questions(demo_shortlist, EXCERPT_CHARS),

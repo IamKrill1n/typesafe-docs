@@ -45,7 +45,6 @@ import hashlib
 import json
 import os
 import textwrap
-from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from secrets import token_hex
@@ -278,10 +277,9 @@ RUBRIC_HASH = _rubric_fingerprint()
 
 @json_cache
 def _call_typesafe(sample_index: int, rubric_hash: str, model: str):
-    """Return nouls, token usage, latency, and model metadata for one call.
+    """Return nouls, token usage and latency for one call.
 
     ``rubric_hash`` and ``model`` prevent reuse across rubric or model changes.
-    Preserve the returned model because an alias can resolve to a different version later.
     """
     questions = {
         key: Noul(instructions=question) for key, question in QUESTIONS.items()
@@ -298,7 +296,6 @@ def _call_typesafe(sample_index: int, rubric_hash: str, model: str):
         response.usage.input_tokens,
         response.usage.output_tokens,
         perf_counter() - started,
-        {"requested_model": model, "response_model": response.model},
     )
 
 def _parse_answer(answer: object, mode: str) -> float:
@@ -434,25 +431,13 @@ typesafe_usage_results = [
     _call_typesafe(sample_index, RUBRIC_HASH, TYPESAFE_MODEL)
     for sample_index in range(NUM_SAMPLES)
 ]
-# Report every returned version so alias changes within a run remain visible.
-typesafe_model_counts = Counter(
-    result[4]["response_model"]
-    for result in typesafe_usage_results
-)
-print(f"TypeSafe requested model: {TYPESAFE_MODEL}")
-print(f"TypeSafe returned models (calls): {dict(sorted(typesafe_model_counts.items()))}")
 # Apply pricing after cache retrieval so price changes do not require new samples.
 typesafe_results = [
     (nouls, _cost(TYPESAFE_PRICE, input_tokens, output_tokens), latency)
-    for nouls, input_tokens, output_tokens, latency, _metadata in typesafe_usage_results
+    for nouls, input_tokens, output_tokens, latency in typesafe_usage_results
 ]
 typesafe_runs = [result[0] for result in typesafe_results]
 stats["typesafe_noul"] = [(result[1], result[2]) for result in typesafe_results]
-```
-
-```
-TypeSafe requested model: jev-latest
-TypeSafe returned models (calls): {'jev-1.13.0': 15}
 ```
 
 ### Cost + speed (per rubric query)

@@ -52,24 +52,34 @@ you add is a spec that says in plain words what each argument means. By the end 
 pip install ipython polars matplotlib numpy 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Set `TYPESAFE_API_KEY`. Two modules sit beside this file. `trader.py` holds the ten
-functions, plus a TypeSafe client that reads answers from a cache, so re-rendering replays
-the numbers below without calling the API. `dispatch.py` holds the code that reads a
-signature and a spec and makes the call. Both modules, `spec.json`, the price bars and the
-answer cache are in
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/function_calling).
+Set `TYPESAFE_API_KEY`. The code below downloads two modules, with `spec.json` and the
+price bars, from
+[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/function_calling)
+unless they are already on disk. `trader.py` holds the ten functions, plus a TypeSafe
+client that caches its answers. `dispatch.py` holds the code that reads a signature and a
+spec and makes the call.
 
 The prices are simulated from a fixed random seed, not real market data. The tickers are
 real, but every price, return and chart below is generated.
 
 ```python theme={null}
 import json
+import urllib.request
 from pathlib import Path
 
 from cooksafe import make_playground_link
-from dispatch import ROUTE, Dispatcher, closed_sets
 from IPython.display import Markdown, display
-from trader import TOOLS, client, load
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/function_calling"
+)
+for name in ["dispatch.py", "trader.py", "spec.json", "bars.parquet"]:
+    if not Path(name).exists():
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", name)
+
+from dispatch import ROUTE, Dispatcher, closed_sets  # noqa: E402  (downloaded above)
+from trader import TOOLS, client, load  # noqa: E402
 
 TYPESAFE_MODEL = "jev-1.12"
 print(f"{len(TOOLS)} functions over {load().height:,} one-minute bars")

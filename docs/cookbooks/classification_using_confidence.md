@@ -48,16 +48,13 @@ flowchart LR
 pip install ipython matplotlib 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Download `filings.jsonl`, `sic_codes.tsv` and
-`json_cache.json` from
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/classification_using_confidence) into the folder you run
-the script from. Every API call is cached in `json_cache.json`, so the published numbers
-replay without calling the API; leave that file out to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.12` on 2026-08-12.
 
-```python
+```python expandable
 import json
+import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
@@ -82,6 +79,19 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/classification_using_confidence"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Build the two levels of the taxonomy
@@ -110,7 +120,7 @@ DIVISIONS = [
 ]
 
 INDUSTRIES: dict[str, str] = {}
-for line in Path("sic_codes.tsv").read_text().splitlines()[1:]:
+for line in download("sic_codes.tsv").read_text().splitlines()[1:]:
     code, _office, title = line.split("\t")
     INDUSTRIES[code] = title.lower()
 
@@ -179,7 +189,7 @@ filtered down to filings whose own text supports the code they carry, so the num
 measure the recipe rather than the state of EDGAR's metadata.
 
 ```python
-FILINGS = [json.loads(line) for line in Path("filings.jsonl").read_text().splitlines()]
+FILINGS = [json.loads(line) for line in download("filings.jsonl").read_text().splitlines()]
 example = FILINGS[7]
 print(
     f"{len(FILINGS)} filings, {sum(f['words'] for f in FILINGS) // len(FILINGS)} words on average"
@@ -223,9 +233,9 @@ def questions() -> dict:
     }
 
 @json_cache
-def ask(filing_id: str, text: str) -> dict:
+def ask(text: str, group: Choice) -> dict:
     response = client.system_one(
-        state=text, questions=questions(), model=TYPESAFE_MODEL
+        state=text, questions={"group": group}, model=TYPESAFE_MODEL
     )
     answer = response.answers["group"]
     return {
@@ -246,7 +256,7 @@ too coarse for your application to act on, this branch is where you hand it to a
 
 ```python
 def classify(filing: dict) -> dict:
-    answer = ask(filing["id"], filing["text"])
+    answer = ask(filing["text"], questions()["group"])
     sure = answer["confidence"] >= CONFIDENT
     return {
         "level": "group" if sure else "division",
@@ -264,10 +274,10 @@ def show(filing: dict) -> None:
     )
 
 print("three filings the model was sure about:")
-for f in sorted(FILINGS, key=lambda f: -ask(f["id"], f["text"])["confidence"])[:3]:
+for f in sorted(FILINGS, key=lambda f: -classify(f)["confidence"])[:3]:
     show(f)
 print("\nthree it was not:")
-for f in sorted(FILINGS, key=lambda f: ask(f["id"], f["text"])["confidence"])[:3]:
+for f in sorted(FILINGS, key=lambda f: classify(f)["confidence"])[:3]:
     show(f)
 ```
 

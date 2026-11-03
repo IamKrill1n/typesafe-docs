@@ -26,9 +26,7 @@ The case here is a regulatory briefing. The document is the Wikipedia article on
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
-`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/parallel_questions) into the folder you run
-the script from.
+then set `TYPESAFE_API_KEY`.
 
 ```python
 import json
@@ -188,30 +186,36 @@ agree?) and the std dev (does batching add noise?). Calls are cached to
 
 ```python expandable
 @json_cache
-def ask(keys: tuple[str, ...], run: int):
+def ask(document_json: str, questions_json: str, run: int):
     """One TypeSafe call -> ({key: tracked metric}, input_tokens, output_tokens, latency_s);
     ``run`` only forces a distinct live call per repeat."""
     started = perf_counter()
+    questions = json.loads(questions_json)
     response = client.system_one(
-        state={"article": DOCUMENT},
-        questions={key: QUESTIONS[key] for key in keys},
+        state={"article": json.loads(document_json)},
+        questions=questions,
         model=TYPESAFE_MODEL,
     )
     values = {}
-    for key in keys:
+    for key, question in questions.items():
         answer = response.answers[key]
         if isinstance(answer, NoulAnswer):
             values[key] = answer.noul
         elif isinstance(answer, ChoiceAnswer):
             values[key] = max(answer.probabilities.values())
         else:
-            values[key] = answer.score / (len(QUESTIONS[key].criteria) - 1)
+            values[key] = answer.score / (len(question["criteria"]) - 1)
     return (
         values,
         response.usage.input_tokens,
         response.usage.output_tokens,
         perf_counter() - started,
     )
+
+def ask_keys(keys: tuple[str, ...], run: int):
+    """Ask the questions named by ``keys``, sending their full text."""
+    questions = {key: QUESTIONS[key].model_dump(mode="json", exclude_none=True) for key in keys}
+    return ask(json.dumps(DOCUMENT), json.dumps(questions), run)
 
 def priced(result):
     """({key: metric}, in_tokens, out_tokens, latency) -> ({key: metric}, cost_usd, latency)."""
@@ -220,10 +224,10 @@ def priced(result):
 
 # Price after cache retrieval, so a price change needs no new calls.
 batched = [
-    priced(ask(tuple(QUESTIONS), run)) for run in range(RUNS)
+    priced(ask_keys(tuple(QUESTIONS), run)) for run in range(RUNS)
 ]  # all N in one call, x RUNS
 singles = [
-    {key: priced(ask((key,), run)) for key in QUESTIONS} for run in range(RUNS)
+    {key: priced(ask_keys((key,), run)) for key in QUESTIONS} for run in range(RUNS)
 ]  # N x 1, x RUNS
 ```
 

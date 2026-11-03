@@ -60,16 +60,15 @@ and returns one of four verdicts: `verified`, `unsupported`, `contradicted`, or
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. Every API call is cached in `json_cache.json`, which ships
-with the cookbook, so re-running replays the published numbers instead of calling the
-API. Delete that file to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.12` on 2026-08-16.
 
-```python theme={null}
+```python expandable theme={null}
 import json
 import os
 import re
+import urllib.request
 from pathlib import Path
 from time import perf_counter
 
@@ -86,6 +85,21 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/citation_check"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the source and the citations
@@ -101,7 +115,7 @@ accurate; we edited the other four to fail the check.
 def load_source() -> str:
     """RFC 7519 verbatim, minus the page headers and footers that interrupt its paragraphs."""
     lines = []
-    for line in Path("rfc7519.txt").read_text().splitlines():
+    for line in download("rfc7519.txt").read_text().splitlines():
         bare = line.lstrip("\f")
         if re.match(r"Jones, et al\.\s.*\[Page \d+\]$", bare):
             continue
@@ -125,7 +139,7 @@ def split_sections(source: str) -> dict[str, str]:
 
 SOURCE = load_source()
 SECTIONS = split_sections(SOURCE)
-CITATIONS = json.loads(Path("citations.json").read_text())
+CITATIONS = json.loads(download("citations.json").read_text())
 
 print(f"{len(SOURCE):,} characters, {len(SECTIONS)} numbered sections, {len(CITATIONS)} citations")
 print("\nA citation with a quote:")
@@ -243,11 +257,11 @@ RELATION_TO_VERDICT = {
 
 
 @json_cache
-def ask(claim: str, section: str) -> dict:
+def ask(claim: str, section: str, relation: Choice) -> dict:
     started = perf_counter()
     response = client.system_one(
         state={"claim": claim, "section": section},
-        questions=QUESTIONS,
+        questions={"relation": relation},
         model=TYPESAFE_MODEL,
     )
     answer = response.answers["relation"]
@@ -275,7 +289,7 @@ def verdict(status: str, answer: dict | None) -> dict:
 
 def check_citation(sections: dict[str, str], citation: dict) -> dict:
     status, section = locate(sections, citation)
-    answer = ask(citation["claim"], section) if section is not None else None
+    answer = ask(citation["claim"], section, QUESTIONS["relation"]) if section is not None else None
     return {"id": citation["id"], "status": status, "answer": answer, **verdict(status, answer)}
 ```
 

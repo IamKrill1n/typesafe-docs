@@ -23,11 +23,10 @@ The model reads what the text says and never does the calendar math.
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. To replay the published numbers without an API key, download
-`json_cache.json` from [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/date_extraction_cookbook) into the folder you run
-the script from.
+then set `TYPESAFE_API_KEY`.
 
 ```python expandable
+import json
 import os
 from datetime import date, timedelta
 from pathlib import Path
@@ -178,10 +177,10 @@ and `current` means this week.
 
 ```python expandable
 @json_cache
-def read_parts(document: str, role: str) -> dict:
+def read_parts(document: str, questions_json: str) -> dict:
     """One TypeSafe call -> {part: {choice, confidence}} for the seven questions."""
     answers = client.system_one(
-        state=document, questions=date_questions(role), model=TYPESAFE_MODEL
+        state=document, questions=json.loads(questions_json), model=TYPESAFE_MODEL
     ).answers
     return {
         part: {"choice": ans.choice, "confidence": ans.confidence}
@@ -278,7 +277,11 @@ def assemble(parts: dict, today: date = TODAY) -> dict:
     return result(None, f"unrecognized mode: {mode}")
 
 def extract_date(document: str, role: str) -> dict:
-    return assemble(read_parts(document, role))
+    questions = {
+        part: question.model_dump(mode="json", exclude_none=True)
+        for part, question in date_questions(role).items()
+    }
+    return assemble(read_parts(document, json.dumps(questions)))
 ```
 
 ## Run it

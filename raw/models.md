@@ -28,7 +28,7 @@ Jev ingests the `state` once and evaluates every question against it in parallel
 * **Per-request context** (`per_request_context`): the `state` plus all questions combined.
 * **Per-question context** (`per_question_context`): the `state` plus any one question.
 
-There is no separate limit on the number of questions in a request. Any number of questions is allowed as long as the request fits both limits. See [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md) for packing many questions into one request, and [Jev 1.13 jaggedness](https://docs.typesafe.ai/model-jaggedness/jev-1.13.md) for how accuracy shifts as the state grows.
+There is no separate limit on the number of questions in a request. Any number of questions is allowed as long as the request fits both limits. See [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md) for packing many questions into one request, and [Model jaggedness](https://docs.typesafe.ai/model-jaggedness.md) for how accuracy shifts as the state grows.
 
 To raise both limits, see [Long context](#long-context).
 

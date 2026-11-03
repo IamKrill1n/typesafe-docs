@@ -76,11 +76,7 @@ with pip or uv:
 A full run sends about 180 requests. Pillow draws the boxes and matplotlib lays out the
 figures.
 
-Every response is saved in `json_cache.json`, so a second run makes no requests. To replay
-the published numbers without an API key, download [`json_cache.json`][cache] into the
-folder you run the script from.
-
-[cache]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/json_cache.json
+Every response is saved in `json_cache.json`, so a second run makes no requests.
 
 Numbers below came from `jev-1.14.0` on 2026-10-15.
 
@@ -244,16 +240,16 @@ header set above. The three frames below have two birds, one bird, and no bird.
 
 ```python expandable theme={null}
 @json_cache
-def ask_cached(model: str, frame: str, questions_json: str) -> dict:
+def ask_cached(frame: str, questions_json: str) -> dict:
     started = perf_counter()
     response = client.system_one(
         state={"frame": Image(FRAMES / frame)},
         questions=json.loads(questions_json),
-        model=model,
+        model=TYPESAFE_MODEL,
         extra_headers=IMAGE_HEADERS,
     )
     seconds = round(perf_counter() - started, 2)
-    return {"response": response.model_dump(mode="json"), "seconds": seconds}
+    return {"response": response.model_dump(mode="json", exclude={"model"}), "seconds": seconds}
 
 
 def ask(path: Path, questions: dict):
@@ -261,8 +257,10 @@ def ask(path: Path, questions: dict):
         {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()},
         sort_keys=True,
     )
-    cached = ask_cached(TYPESAFE_MODEL, path.name, as_json)
-    return SystemOneResponse.model_validate(cached["response"]), cached["seconds"]
+    cached = ask_cached(path.name, as_json)
+    # The cache leaves the model out; the response type needs one, so use the requested model.
+    response = SystemOneResponse.model_validate({**cached["response"], "model": TYPESAFE_MODEL})
+    return response, cached["seconds"]
 
 
 def edges(box) -> str:

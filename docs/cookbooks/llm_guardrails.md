@@ -55,17 +55,15 @@ flowchart LR
 pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-then set `TYPESAFE_API_KEY`. The sample messages and the answer cache are in
-[typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/llm_guardrails);
-put them in the folder you run the script from. Every API call is cached in
-`json_cache.json`, so re-running replays the published numbers instead of calling the
-API. Delete that file to run everything live.
+then set `TYPESAFE_API_KEY`.
 
 Numbers below came from `jev-1.14.0` on 2026-10-31.
 
-```python
+```python expandable
+import json
 import os
 import textwrap
+import urllib.request
 from pathlib import Path
 
 from cooksafe import JsonCache, make_playground_link
@@ -80,6 +78,19 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 json_cache = JsonCache(Path("json_cache.json"))
+
+EXAMPLES = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/llm_guardrails"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
+    return path
 ```
 
 ## Load the sample messages
@@ -91,7 +102,7 @@ and a made-up accessibility need used to ask for answers with no refusals, or fo
 tone with no warnings.
 
 ```python
-def load_messages(path: str) -> dict[str, str]:
+def load_messages(path: Path) -> dict[str, str]:
     """Read an `id: <name>` / body record file into an ordered `{id: text}` dict."""
     messages = {}
     for record in Path(path).read_text().split("\n=====\n"):
@@ -102,8 +113,8 @@ def load_messages(path: str) -> dict[str, str]:
         messages[header.removeprefix("id: ").strip()] = body.strip("\n")
     return messages
 
-PROMPTS = load_messages("prompts.txt")  # user messages, screened on the way in
-REPLIES = load_messages("replies.txt")  # model replies, screened on the way out
+PROMPTS = load_messages(download("prompts.txt"))  # user messages, screened on the way in
+REPLIES = load_messages(download("replies.txt"))  # model replies, screened on the way out
 
 print(f"{len(PROMPTS)} prompts, {len(REPLIES)} replies. Two examples of each:\n")
 for name in ["prescription_info", "persona_jailbreak"]:
@@ -260,16 +271,23 @@ def route(nouls: dict[str, float], severity: float, policy: dict) -> str:
     return next((action for action in PRECEDENCE if action in triggered), "pass")
 
 @json_cache
-def screen(text: str, side: str) -> dict:
+def assess(text: str, battery_json: str) -> dict:
     """Send one message and its battery in a single call; return the raw assessment."""
-    response = client.system_one(
-        state=text, questions=BATTERIES[side], model=TYPESAFE_MODEL
-    )
+    battery = json.loads(battery_json)
+    response = client.system_one(state=text, questions=battery, model=TYPESAFE_MODEL)
     answers = response.answers
     return {
-        "nouls": {qid: answers[qid].noul for qid in BATTERIES[side] if qid != "severity"},
+        "nouls": {qid: answers[qid].noul for qid in battery if qid != "severity"},
         "severity": answers["severity"].score,
     }
+
+def screen(text: str, side: str) -> dict:
+    """Screen one message with its side's battery."""
+    battery = {
+        qid: question.model_dump(mode="json", exclude_none=True)
+        for qid, question in BATTERIES[side].items()
+    }
+    return assess(text, json.dumps(battery))
 
 def guard(text: str, side: str, policy_name: str = DEFAULT_POLICY) -> str:
     """Screen a message and route it under a named application policy."""

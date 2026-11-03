@@ -46,14 +46,6 @@ command from the file's directory:
 python twitch_chat_filter.py
 ```
 
-Every API response is saved in
-[`json_cache.json`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/twitch_chat_filter/json_cache.json)
-beside the script. Download it there to replay the published numbers instead of calling
-the API. In a notebook, put the cache in the notebook's working directory instead. To run
-everything live again, move the cache aside and set your key. Do the same when changing
-`TYPESAFE_MODEL`, because the cache key below includes the state and questions, not the
-model.
-
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
 ```python theme={null}
@@ -196,10 +188,7 @@ def classify(user: str, text: str, stream: dict | None = None) -> dict:
 @json_cache
 def _ask(state: dict, questions: dict) -> dict:
     if not os.environ.get("TYPESAFE_API_KEY"):
-        raise RuntimeError(
-            "Set TYPESAFE_API_KEY for a live request, or put the cookbook's "
-            "json_cache.json beside your script (in the working directory for a notebook)."
-        )
+        raise RuntimeError("Set TYPESAFE_API_KEY to send requests to TypeSafe.")
     started = perf_counter()
     response = client.system_one(state=state, questions=questions, model=TYPESAFE_MODEL)
     category = response.answers["category"]
@@ -208,7 +197,6 @@ def _ask(state: dict, questions: dict) -> dict:
         "probabilities": dict(category.probabilities),
         "toxic": response.answers["toxic"].noul,
         "spoiler": response.answers["spoiler"].noul,
-        "model": response.model,
         "seconds": round(perf_counter() - started, 2),
     }
 

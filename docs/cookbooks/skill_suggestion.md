@@ -38,7 +38,7 @@ from the Hermes roster:
 | | loads the wrong skill | loads one when nothing fits |
 | - | - | - |
 | agent alone, with just its roster | 15.7% | 14.0% |
-| **agent with a TypeSafe suggestion** | **7.9%** | **5.2%** |
+| **agent with a Jev suggestion** | **7.9%** | **5.2%** |
 | agent handed the right answer | 3.2% | 4.1% |
 
 The third row is the floor: an agent handed the right skill still does not always load it,
@@ -120,7 +120,7 @@ SHORTLIST = 3  # candidates carried from the first request into the second
 EXCERPT_CHARS = (
     700  # SKILL.md characters each candidate brings; the roster file stores 1600
 )
-GATE_THRESHOLD = (
+ACTION_THRESHOLD = (
     0.30  # mean of the three action nouls; at or above it, a skill is wanted
 )
 NAMED_THRESHOLD = (
@@ -453,8 +453,8 @@ skill, since both are software.
 
 A turn can need a skill for either of two reasons: it wants an action taken, or it names a
 method a skill owns, such as a meme template or a Suno prompt. The three action questions
-measure the first reason, so we average them. `named` measures the second, so it opens the
-gate on its own instead of joining the average, where the three action answers would
+measure the first reason, so we average them. `named` measures the second, so it gets its
+own threshold instead of joining the average, where the three action answers would
 outvote it. We suggest nothing only when both reasons come back low.
 
 One `Choice` question holds a roster this size comfortably. A few times larger, you would
@@ -465,7 +465,7 @@ CHOICE_INSTRUCTIONS = (
     "Which of these skills, if any, is the right one to load to help with the "
     "user's latest request?"
 )
-GATE_QUESTIONS = {
+ACTION_QUESTIONS = {
     "acts_on_user_system": (
         "Is the assistant being asked to act on the user's files, accounts, devices, "
         "or online services, rather than only to explain or advise?"
@@ -500,7 +500,7 @@ def wide_questions() -> dict:
             criteria={skill["name"]: skill["description"] for skill in ROSTER},
         )
     }
-    for key, text in GATE_QUESTIONS.items():
+    for key, text in ACTION_QUESTIONS.items():
         questions[f"gate::{key}"] = Noul(instructions=text)
     questions["named"] = Noul(instructions=NAMED_QUESTION)
     return questions
@@ -532,14 +532,14 @@ def rank_wide(request: str, questions_json: str) -> dict:
     }
 
 def first_pass(request: str) -> dict:
-    """Request 1, plus the three action answers averaged into ``gate``."""
+    """Request 1, plus the three action answers averaged into ``action``."""
     wide = rank_wide(request, as_json(wide_questions()))
     oriented = [(1.0 - v) if k in INVERTED else v for k, v in wide["values"].items()]
-    return {**wide, "gate": sum(oriented) / len(oriented)}
+    return {**wide, "action": sum(oriented) / len(oriented)}
 
 def needs_skill(wide: dict) -> bool:
     """Either reason is enough: an action is wanted, or a named method is asked for."""
-    return wide["gate"] >= GATE_THRESHOLD or wide["named"] >= NAMED_THRESHOLD
+    return wide["action"] >= ACTION_THRESHOLD or wide["named"] >= NAMED_THRESHOLD
 
 DEMO = [
     "Can you save this recipe as a new note in my 'Recipes' folder in Notes.app so it syncs"
@@ -556,7 +556,7 @@ for request in DEMO:
     verdict = "suggest" if needs_skill(wide) else "stay quiet"
     print(f'"{request[:78]}"')
     print(
-        f"  action {wide['gate']:.2f}, names a method {wide['named']:.2f} -> {verdict}"
+        f"  action {wide['action']:.2f}, names a method {wide['named']:.2f} -> {verdict}"
         f"   ({wide['seconds']}s)"
     )
     for name, probability in wide["ranked"][:SHORTLIST]:
@@ -597,7 +597,7 @@ for Mastodon, the closest skill wins anyway.
 
 The meme request is the second reason at work. Making a meme acts on nothing of the
 user's, so the action questions come back low, but the request names a meme template and
-`named` opens the gate. Its top option is the meme skill.
+`named` comes back above its threshold. Its top option is the meme skill.
 
 That leaves the deck. Both leaders are `.pptx` skills, and with only 60 characters of
 description each, the `Choice` question over all 194 skills puts the deck-building skill
@@ -806,16 +806,17 @@ scores = {
     arm: summarise(run_arm(arm, suggestions)) for arm, suggestions in arms.items()
 }
 
+RUN_NAME = {"TypeSafe": "Jev"}  # display name only: the arm keys are part of each turn's cache key
 print(f"{'run':<10}{'wrong loads':>13}{'needless loads':>16}")
 for arm, row in scores.items():
-    print(f"{arm:<10}{row['wrong_load']:>13.1%}{row['needless_load']:>16.1%}")
+    print(f"{RUN_NAME.get(arm, arm):<10}{row['wrong_load']:>13.1%}{row['needless_load']:>16.1%}")
 
 def fewer(metric: str) -> str:
     """The plain ratio between the two arms' error rates."""
     return f"{scores['baseline'][metric] / scores['TypeSafe'][metric]:.1f}x fewer"
 
 print(
-    f"\nbaseline -> TypeSafe:  {fewer('wrong_load')} wrong loads, "
+    f"\nbaseline -> Jev:  {fewer('wrong_load')} wrong loads, "
     f"{fewer('needless_load')} needless ones"
 )
 ```
@@ -823,10 +824,10 @@ print(
 ```
 run         wrong loads  needless loads
 baseline          15.7%           14.0%
-TypeSafe           7.9%            5.2%
+Jev                7.9%            5.2%
 oracle             3.2%            4.1%
 
-baseline -> TypeSafe:  2.0x fewer wrong loads, 2.7x fewer needless ones
+baseline -> Jev:  2.0x fewer wrong loads, 2.7x fewer needless ones
 ```
 
 ```python
@@ -952,8 +953,11 @@ display(
 ## What's next
 
 The same shape shows up elsewhere:
-[Intent Routing](https://docs.typesafe.ai/patterns/intent-routing.md) for routing to a
-handler rather than a skill, and [Confidence](https://docs.typesafe.ai/confidence.md)
-for picking the two thresholds.
+[Routing by probability](https://docs.typesafe.ai/patterns/probability-routing.md)
+for routing to a handler rather than a skill,
+[Confidence](https://docs.typesafe.ai/confidence.md) for picking the two
+thresholds, and
+[Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md) for putting every
+question in one request.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

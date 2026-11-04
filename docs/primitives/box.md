@@ -63,7 +63,7 @@ A request can mix Box questions with the other types, and every question is eval
 
 Each Box answer has these values:
 
-* `type`: The type of TypeSafe question.
+* `type`: The type of System One question.
 * `box`: The four edges, `top`, `bottom`, `left`, and `right`, each from 0 to 1. `left` is less than `right`, and `top` is less than `bottom`.
 * `confidence`: A number from 0 to 1. Higher means the model is more sure of its answer. See [Using confidence](#using-confidence).
 

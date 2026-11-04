@@ -71,7 +71,7 @@ flowchart LR
 pip install anthropic openai matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
-Set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. We use TypeSafe to score
+Set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. We use Jev to score
 each retrieved passage, OpenAI to embed the corpus for the search step, and Claude to write
 the final answer out of whatever survives the scoring.
 
@@ -308,7 +308,7 @@ PASSAGE_QUESTIONS = {
     ),
 }
 
-def gate_document(query: str, passage: dict) -> dict:
+def passage_state(query: str, passage: dict) -> dict:
     return {
         "query": query,
         "passage": {
@@ -332,13 +332,13 @@ def gate(state_json: str, questions_json: str) -> dict:
     answers["output_tokens"] = response.usage.output_tokens or 0
     return answers
 
-def gate_all(query: str, passages: list[dict]) -> list[dict]:
+def answer_passages(query: str, passages: list[dict]) -> list[dict]:
     """One request per passage, four at a time. Keep the pool small: the public endpoint
     rate-limits, and JsonCache writes after every call so a retry only pays for the misses."""
     questions = json.dumps(
         {key: q.model_dump(mode="json", exclude_none=True) for key, q in PASSAGE_QUESTIONS.items()}
     )
-    states = [json.dumps(gate_document(query, passage)) for passage in passages]
+    states = [json.dumps(passage_state(query, passage)) for passage in passages]
     with ThreadPoolExecutor(max_workers=4) as pool:
         return list(pool.map(lambda state: gate(state, questions), states))
 ```
@@ -384,10 +384,10 @@ def route(answers: dict, thresholds: dict = THRESHOLDS) -> str:
 
 ROUTE_ORDER = ["include", "conflicting_evidence", "exclude"]
 
-def gate_query(query: str) -> list[dict]:
+def route_query(query: str) -> list[dict]:
     """Retrieve, score, route. One record per passage, in ranked order."""
     passages = retrieve(query, TOP_K)
-    answers = gate_all(query, passages)
+    answers = answer_passages(query, passages)
     return [
         {"passage": passage, "answers": answer, "route": route(answer)}
         for passage, answer in zip(passages, answers)
@@ -404,7 +404,7 @@ def show_routes(routed: list[dict]) -> None:
             f"  {record['passage']['id']}"
         )
 
-ROUTED = {query: gate_query(query) for query in QUERIES}
+ROUTED = {query: route_query(query) for query in QUERIES}
 print(f'"{HEADLINE_QUERY}"\n')
 show_routes(ROUTED[HEADLINE_QUERY])
 ```
@@ -475,7 +475,7 @@ request, because each question is about one pair.
 
 ## Build the prompt from the accepted evidence
 
-TypeSafe scores the passages and the routing labels them. An LLM still writes the answer,
+Jev scores the passages and the routing labels them. An LLM still writes the answer,
 here `claude-sonnet-5`. Keep accepted and conflicting evidence in separate blocks.
 
 Two blocks let the answer push back. Merge them into one and the generator has no way to
@@ -721,7 +721,7 @@ routed to the conflict block, plus the four questions.
 ```python
 linked = next(r for r in ROUTED[HEADLINE_QUERY] if r["route"] == "conflicting_evidence")
 deeplink = make_playground_link(
-    gate_document(HEADLINE_QUERY, linked["passage"]),
+    passage_state(HEADLINE_QUERY, linked["passage"]),
     PASSAGE_QUESTIONS,
 )
 display(Markdown(f"🔗 [Open the query + passage and its four questions]({deeplink})"))

@@ -1,6 +1,6 @@
 # Function calling
 
-> Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware TypeSafe questions.
+> Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware System One questions.
 
 When you order a "large iced oat latte, no sweetener," the barista does not write your
 sentence down. They mark four options on a cup. This cookbook does the same thing for

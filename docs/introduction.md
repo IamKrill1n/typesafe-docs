@@ -56,7 +56,7 @@ For example, instead of "rate this startup pitch," ask separately about market s
 * [Quick Start](https://docs.typesafe.ai/introduction/quickstart.md) — Everything you need to get started immediately.
 * [AI Primer](https://docs.typesafe.ai/introduction/machine-learning-primer.md) — Why TypeSafe trains models for calibrated decisions instead of generated text.
 * [Primitives (Questions)](https://docs.typesafe.ai/primitives) — How to define questions, choose a question type, and ask several at once.
-* [Confidence](https://docs.typesafe.ai/confidence.md) — How TypeSafe reports certainty, and how to use it architecturally.
+* [Confidence](https://docs.typesafe.ai/confidence.md) — How Jev reports certainty, and how to use it architecturally.
 * [Patterns](https://docs.typesafe.ai/patterns.md) — Common patterns for building systems with TypeSafe.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -4,7 +4,7 @@
 
 # SDE cascade
 
-> Extracts structured data with a cheap model, checks each field with TypeSafe, and escalates to a reasoning model only when a check fires.
+> Extracts structured data with a cheap model, checks each field with Jev, and escalates to a reasoning model only when a check fires.
 
 * Overview
   * big reasoning models extract structured data well, but are slow and expensive
@@ -16,10 +16,10 @@
       [`gpt-5.4-mini`](https://developers.openai.com/api/docs/models/gpt-5.4-mini)
     * rung 1 (reasoning):
       [`gpt-5.5`](https://developers.openai.com/api/docs/models/gpt-5.5)
-    * verifier: TypeSafe `jev-1.14.0`
+    * verifier: `jev-1.14.0`
 * Algorithm
   1. **Extract** with a cheap/small model.
-  2. **Verify** with **TypeSafe**: ask yes/no questions ("Noul questions") about each
+  2. **Verify** with **Jev**: ask yes/no questions ("Noul questions") about each
      field, such as "is this value absent from the source?" or "was it lifted from
      unrelated text?"; each returns P(something is wrong).
   3. **Escalate** to an expensive reasoning model if a verifier signal fires; otherwise
@@ -49,7 +49,7 @@ from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
 
 MINI = "gpt-5.4-mini"  # rung 0: cheap + fast
 REASONING = "gpt-5.5"  # rung 1: strong, run with reasoning_effort="high"
-TS_MODEL = "jev-1.14.0"  # the TypeSafe verifier model
+TS_MODEL = "jev-1.14.0"  # the verifier model, Jev
 FIRE_T = 0.7  # escalate if any per-field P(wrong) exceeds this; also the "<== FIRES" display marker
 
 oai = OpenAI()
@@ -221,8 +221,8 @@ def extract(
     text = oai.chat.completions.create(**kwargs).choices[0].message.content
     # The prompt asks for ONLY a JSON object, so parse the reply as-is -- no regex fishing a
     # substring out of a malformed reply. If ``json.loads`` fails, treat it as an empty extraction:
-    # every field reads as absent, which the verifier flags and the gate escalates -- the safe
-    # direction.
+    # every field reads as absent, which the verifier flags and the cascade escalates -- the
+    # safe direction.
     try:
         return json.loads(text)
     except (ValueError, json.JSONDecodeError):
@@ -253,11 +253,11 @@ schema-valid: True
     schema-satisfying fabrications of this kind, and catching them is the job of a
     semantic verifier
 
-## Step 3: verify with TypeSafe
+## Step 3: verify with Jev
 
-* the verifier is **TypeSafe**; for each field we build several `Noul` questions, each:
+* the verifier is **Jev**; for each field we build several `Noul` questions, each:
   * a narrow yes/no, framed so that `true` = something is wrong (escalate)
-* TypeSafe returns a calibrated `noul` = `P(true)` per question, in one system\_one call
+* Jev returns a calibrated `noul` = `P(true)` per question, in one system\_one call
 * the question set:
   * one holistic **`__overall__::judge`** head ("should this record be escalated?"). We
     compute and display it to contrast a whole-record judgment with the per-field heads;
@@ -474,17 +474,17 @@ description::type_mismatch                   0.04
 * The holistic judge flags the record too (0.90), but only the per-field heads say which
   field is wrong and why
 
-## Step 4: the escalation gate
+## Step 4: decide whether to escalate
 
-* now we gate on **`any_flag`**: escalate if *any* field flag exceeds `FIRE_T`
-* this is a `max`-style gate, not a mean, so one confident red flag is enough instead of
+* now we decide on **`any_flag`**: escalate if *any* field flag exceeds `FIRE_T`
+* this is a `max`-style check, not a mean, so one confident red flag is enough instead of
   being averaged into silence
 * one threshold works only if the heads separate, scoring high on wrong fields and low on
   right ones, as in Step 3
 * the verifier has to cost far less than the reasoning rung, or the cascade saves nothing
 
 ```python theme={null}
-# any_flag is a per-field gate: the holistic __overall__ head is shown above but not part of it
+# any_flag is a per-field check: the holistic __overall__ head is shown above but not in it
 fired = {
     qid: p
     for qid, p in checks.items()
@@ -493,14 +493,14 @@ fired = {
 escalate = bool(fired)
 
 print(
-    f"any_flag gate (threshold {FIRE_T}): {'ESCALATE' if escalate else 'ACCEPT cheap result'}"
+    f"any_flag check (threshold {FIRE_T}): {'ESCALATE' if escalate else 'ACCEPT cheap result'}"
 )
 for qid, p in sorted(fired.items(), key=lambda c: -c[1]):
     print(f"  fired: {qid}  (P={p:.2f})")
 ```
 
 ```
-any_flag gate (threshold 0.7): ESCALATE
+any_flag check (threshold 0.7): ESCALATE
   fired: description::hallucinated  (P=0.98)
   fired: description::off_target  (P=0.97)
   fired: description::unreasonable  (P=0.86)
@@ -543,9 +543,9 @@ field-level diff (mini -> final):
 
 * **These are internal TypeSafe results** from an earlier, separate run of the same loop:
   * `extract → verify → escalate`, `gpt-5.4-mini → gpt-5.5-reasoning`, with the
-    `any_flag` gate over the per-field heads, on 100 ScrapeGraphAI-100k prompts
-  * TypeSafe scores each item's cheap-rung extraction; we sweep the gate threshold from 0
-    to 1 and plot every resulting config in (cost, quality) space
+    `any_flag` check over the per-field heads, on 100 ScrapeGraphAI-100k prompts
+  * Jev scores each item's cheap-rung extraction; we sweep the escalation threshold
+    from 0 to 1 and plot every resulting config in (cost, quality) space
   * quality is an LLM judge's score of each extraction (`mean llm_judge` on the chart)
   * the verifier in that run was `jev-1.12`
 
@@ -554,8 +554,8 @@ field-level diff (mini -> final):
 * how to read it:
   * **black diamonds** = the four models run on their own; cost climbs with capability,
     and the strongest, `gpt-5.5-reasoning`, sits top-right
-  * **blue points** (`any_flag`) = the cascade at many gate thresholds; the dashed line is
-    the **pareto frontier**
+  * **blue points** (`any_flag`) = the cascade at many escalation thresholds; the dashed
+    line is the **pareto frontier**
   * the cascade frontier sits **up-and-left of every single model**: a cascade point at
     about \$0.02 per extraction scores about 0.79, against 0.82 for `gpt-5.5-reasoning` at
     about \$0.045

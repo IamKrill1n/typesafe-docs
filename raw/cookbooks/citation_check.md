@@ -30,7 +30,7 @@ flowchart LR
         q["Choice &mdash; how does the<br/>section relate to the claim?<br/>supports &rarr; mark <b>verified</b><br/>contradicts &rarr; mark <b>contradicted</b><br/>says nothing &rarr; mark <b>unsupported</b>"]
     end
 
-    gate{"confidence<br/>&ge; 0.8?"}
+    check{"confidence<br/>&ge; 0.8?"}
     stand["let the verdict stand"]
     review["a human confirms it"]
 
@@ -40,9 +40,9 @@ flowchart LR
     match -- "found" --> request
     match -- "no quote" --> request
     match -- "not found" --> fab
-    request --> gate
-    gate --> stand
-    gate --> review
+    request --> check
+    check --> stand
+    check --> review
 ```
 
 Below, eight citations from an LLM's answer about RFC 7519 (JSON Web Token) go through the

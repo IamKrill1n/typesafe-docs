@@ -16,9 +16,9 @@ gets three out of six correct.
 The simple memory system has two parts:
 
 * After each call, Jev sees the original request and its answer together. A
-  `Noul` question, which we call the gate, asks whether the request states an important
-  fact about the customer that should be remembered. If P(yes) is at least 0.5, the
-  ticket and Jev's answer are saved as a memory for that customer.
+  `Noul` question, which we call the remember question, asks whether the request states
+  an important fact about the customer that should be remembered. If P(yes) is at least
+  0.5, the ticket and Jev's answer are saved as a memory for that customer.
 * Before each call, we add the customer's saved tickets, with Jev's answers to them, to
   the state. We do this in a wrapper, `ask_with_memory()`, with the same arguments and
   response as `ask()`: the TypeSafe Python SDK's `client.system_one`, with the model
@@ -53,9 +53,9 @@ flowchart TB
     IN -. "added to this customer's<br/>next requests" .- MEM
 ```
 
-Each call makes two Jev requests, one after the other: the routing request, then the gate,
-which judges the ticket together with Jev's answer. You get the routing response back
-whether or not anything is saved.
+Each call makes two Jev requests, one after the other: the routing request, then the
+remember question, which judges the ticket together with Jev's answer. You get the routing
+response back whether or not anything is saved.
 
 Because `ask_with_memory()` takes the same arguments as `ask()` and returns the same
 response, you can swap one for the other without changing any other code.
@@ -265,7 +265,7 @@ memory the wrapper may save. The `request` key holds the state from before memor
 added, so old memories never end up nested inside new ones. `jev_answered` maps each
 question to its answer.
 
-A second Jev call reads that pair. The gate asks whether the request
+A second Jev call reads that pair. The remember question asks whether the request
 states an important fact about the customer, such as their edition, operating system, plan
 or contract. Jev's answer is there as context, but a fact that appears only in the
 answer does not count. Without that rule, a generic answer such as "General product
@@ -273,7 +273,7 @@ questions" can outweigh a real fact in the request, and an answer that relied on
 earlier memory can be saved again as if it were new.
 
 ```python expandable
-GATE = {
+REMEMBER = {
     "remember": Noul(
         instructions=(
             "In `request.ticket`, does the thread state a lasting fact about the customer that "
@@ -315,7 +315,7 @@ def as_memory(state: dict, questions: dict, response: SystemOneResponse) -> dict
 
 def remember_probability(memory: dict) -> float:
     """P(the request states an important fact about the customer), with the answer as context."""
-    return ask(memory, GATE).answers["remember"].noul
+    return ask(memory, REMEMBER).answers["remember"].noul
 ```
 
 ## Wrap the call so it remembers
@@ -344,10 +344,10 @@ def ask_with_memory(state: dict, questions: dict) -> SystemOneResponse:
 
 Adding memory this way has five consequences for your app:
 
-* **Every call makes two sequential requests:** the routing request, then the memory
-  gate. The gate judges the ticket together with Jev's answer, so it runs after the
-  routing request. If your gate ignores the answer, it could instead be a second question
-  in the routing request (see [fan-out](https://docs.typesafe.ai/patterns/fan-out.md) and
+* **Every call makes two sequential requests:** the routing request, then the remember
+  question. That question judges the ticket together with Jev's answer, so it runs after
+  the routing request. If your remember question ignores the answer, it could instead be a
+  second question in the routing request (see [fan-out](https://docs.typesafe.ai/patterns/fan-out.md) and
   [parallel questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md)).
 * **Memory only grows.** Every saved memory goes into every later call for that
   customer. There is no size limit, no check for relevance and no expiry date here.
@@ -356,18 +356,18 @@ Adding memory this way has five consequences for your app:
   `ROUTE` changes.
 * **The state needs `customer.id`.** Plain Jev also accepts a string as the state, but
   this wrapper needs the ID to find the customer's list.
-* **A saved answer can repeat a mistake.** The gate ignores anything that appears only in
-  Jev's answer, so an answer can't get a ticket saved by itself. A saved ticket keeps its
-  answer, though, and every later call for that customer reads it, so a wrong inference
-  can carry forward.
+* **A saved answer can repeat a mistake.** The remember question ignores anything that
+  appears only in Jev's answer, so an answer can't get a ticket saved by itself. A saved
+  ticket keeps its answer, though, and every later call for that customer reads it, so a
+  wrong inference can carry forward.
 
 ## Send the earlier tickets and watch the answers change
 
 Send the five earlier tickets through `ask_with_memory()`, in the order they arrived.
 Before the first ticket, and again after each one, that customer sends two of the later
 messages: slow dashboards and 20 more seats. This shows how each saved memory changes
-Jev's answers. The repeated messages go through the wrapper too, so the gate judges them
-as well.
+Jev's answers. The repeated messages go through the wrapper too, so the remember question
+judges them as well.
 
 ```python
 PROBES = {"Slow dashboards": 0, "More seats": 2}  # later messages to send after each ticket
@@ -437,16 +437,16 @@ C-1042, memories: T-101, T-105
 ```
 
 The three tickets that state an edition, a plan or a contract are saved at 0.96 to 0.98.
-T-102 is saved even though Jev routed it to the general team, because the gate counts
-the customer's words, not the answer. The airport and public-holiday tickets score 0.02
-and 0.03 and are not saved, so the answers after them do not change.
+T-102 is saved even though Jev routed it to the general team, because the remember
+question counts the customer's words, not the answer. The airport and public-holiday
+tickets score 0.02 and 0.03 and are not saved, so the answers after them do not change.
 
 Each saved memory changes the answers it is relevant to. For C-1042, the Windows ticket
 moves slow dashboards from the cloud team (0.55) to the Windows team (0.99), and the
 Enterprise contract raises the Enterprise desk's probability for more seats from 0.53 to
 1.00. For C-2210, the Team-plan ticket raises the cloud team's probability for slow
-dashboards from 0.68 to 0.98, and billing's for more seats from 0.58 to 0.98. The gate
-saved none of the repeated messages.
+dashboards from 0.68 to 0.98, and billing's for more seats from 0.58 to 0.98. None of the
+repeated messages was saved.
 
 ## Route the same messages for both customers
 
@@ -500,8 +500,9 @@ With memory, all six messages reach the expected team, against three without. Th
 message now goes to a different team for each customer: slow dashboards go to the
 Windows team for C-1042 and stay with the cloud team for C-2210, and 20 more seats go to
 the Enterprise desk for C-1042 and to billing for C-2210. Where plain Jev was already
-right, memory raises the probability, from 0.53 to 1.00 for C-1042's seats. The gate also
-judged the six later messages and saved none, because they state no important fact.
+right, memory raises the probability, from 0.53 to 1.00 for C-1042's seats. The wrapper
+also asked the remember question about the six later messages and saved none, because
+they state no important fact.
 
 Each row's expected team follows from the customer's setup in the earlier tickets:
 C-1042's self-hosted edition and Enterprise contract, C-2210's cloud Team plan.
@@ -522,12 +523,12 @@ display(Markdown(
 
 ## Next steps
 
-* **Choose what your app should remember.** Edit `GATE` to describe what is worth
+* **Choose what your app should remember.** Edit `REMEMBER` to describe what is worth
   remembering for your own task. To set `REMEMBER_AT`, label request-and-answer pairs from
   your traffic as worth remembering or not, pick the probability that best separates the
   two groups, and check it on pairs you didn't use to pick it. Raise it if a misleading
   memory costs more than a missing one. See [Confidence](https://docs.typesafe.ai/confidence.md) and
-  [confidence-based routing](https://docs.typesafe.ai/patterns/confidence-routing.md).
+  [routing by probability](https://docs.typesafe.ai/patterns/probability-routing.md).
 * **Choose which memories to add.** The wrapper adds every saved memory. A relevance
   question can select a smaller set once the list gets long.
 * **Replace outdated memories.** Ask whether a new memory replaces an older one, then
@@ -535,6 +536,6 @@ display(Markdown(
 * **Keep memories between runs.** Replace `MEMORIES` with a database keyed by customer
   ID. The in-memory dict disappears when the process exits.
 * **Remember what your app did.** Add your reply to the ticket thread as a support
-  message, and the gate judges it along with the customer's words.
+  message, and the remember question judges it along with the customer's words.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -3,7 +3,7 @@
 > Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers.
 
 You have one document and N questions about it. You can send one request with all N
-questions, or N requests with one question each. With TypeSafe the answers come out the
+questions, or N requests with one question each. With Jev the answers come out the
 same either way: each question is scored on its own against the document, so its answer
 doesn't depend on what else is in the request.
 

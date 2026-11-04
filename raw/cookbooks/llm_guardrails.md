@@ -235,7 +235,7 @@ BATTERIES = {"input": INPUT_BATTERY, "output": OUTPUT_BATTERY}
 
 ## Turn the assessment into a decision
 
-TypeSafe supplies the assessment; your application owns the decision. Each `Noul`
+Jev supplies the assessment; your application owns the decision. Each `Noul`
 question is compared against two thresholds:
 
 * at or above the **action threshold**, the hazard triggers its configured action;
@@ -268,7 +268,7 @@ DEFAULT_POLICY = "strict"
 
 
 def route(nouls: dict[str, float], severity: float, policy: dict) -> str:
-    """Turn one message's TypeSafe assessment into one policy-specific action."""
+    """Turn Jev's assessment of one message into one policy-specific action."""
     triggered = []
     for hazard, probability in nouls.items():
         if probability >= policy["action_threshold"]:
@@ -386,7 +386,7 @@ probabilities do not move; each policy decides how much evidence it wants before
 example_name = "tone_jailbreak"
 result = screen(PROMPTS[example_name], "input")
 hazard, probability = top_hazard(result)
-print(f"Same TypeSafe result: {hazard}={probability:.2f}, severity={result['severity']:.2f}\n")
+print(f"Same Jev result: {hazard}={probability:.2f}, severity={result['severity']:.2f}\n")
 
 for policy_name, policy in POLICIES.items():
     decision = route(result["nouls"], result["severity"], policy)
@@ -397,7 +397,7 @@ for policy_name, policy in POLICIES.items():
 ```
 
 ```
-Same TypeSafe result: drop_safeguards=0.81, severity=0.64
+Same Jev result: drop_safeguards=0.81, severity=0.64
 
 strict       review >= 0.35  action >= 0.70  ->  block
 permissive   review >= 0.70  action >= 0.85  ->  review

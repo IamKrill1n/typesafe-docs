@@ -6,9 +6,9 @@
 
 > Send many questions in a single request, including speculative ones, and let your code decide what's relevant.
 
-Because TypeSafe supports sending many questions in a single API call, we recommend putting all of the questions your system needs in a single request, and then using code to decide what is relevant after the fact. All questions are evaluated in parallel, so adding more questions usually has little effect on response time.
+Because Jev answers many questions in a single API call, we recommend putting all of the questions your system needs in a single request, and then using code to decide what is relevant after the fact. All questions are evaluated in parallel, so adding more questions usually has little effect on response time.
 
-## Example: support ticket triage
+## Example: triaging support tickets
 
 Let's imagine you are building a support system that needs to triage support tickets. You need to classify the ticket into a category. If it's a bug report, you also need to determine the severity of the bug.
 
@@ -19,7 +19,7 @@ Instead of asking for the category first and then the severity in a follow-up ca
 flowchart LR
     t["support ticket"]
 
-    subgraph req["TypeSafe AI model<br/>evaluates each question<br/>against the ticket in parallel"]
+    subgraph req["Jev evaluates each question<br/>against the ticket in parallel"]
         direction TB
         c["<b>Choice:</b> category"]
         b["<b>Score:</b> bug severity"]
@@ -39,9 +39,15 @@ flowchart LR
     class eng neonBlue
     class bill neonOrange
     class feat neonPurple
+    %% Branch edges flow (styles.css pauses this under prefers-reduced-motion).
+    blue_bug@{ animate: true }
+    orange_bill@{ animate: true }
+    purple_feat@{ animate: true }
 ```
 
-### Step 1: speculative fan-out
+### Ask every question in one request
+
+Send the ticket with every question your code might need: the category, plus questions that only matter for some categories.
 
 Try it in the Playground →
 
@@ -49,7 +55,7 @@ Try it in the Playground →
 >
 > **Speculative questions:** `bug_severity` and `has_reproducible_steps` only matter if the ticket is a bug report. `refund_requested` only matters for billing. We include all upfront because additional questions usually have little effect on response time. If the ticket turns out to be a feature request, the bug severity result will be irrelevant, in which case your code path simply ignores it.
 
-### Step 2: route with code
+### Route in your code
 
 Your code decides what is relevant based on the classification result:
 

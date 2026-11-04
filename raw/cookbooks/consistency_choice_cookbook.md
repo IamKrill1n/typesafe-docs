@@ -4,41 +4,43 @@
 
 # Self-consistency: choices
 
-> Add an uncertain outcome to moderation decisions and compare label agreement with the share of automatic actions.
+> Ask a model the same moderation question twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline posts.
 
-This cookbook takes one borderline user post, runs a moderation rubric over it 15 times,
-and checks whether each answer holds still across the repeats. Every check is a
-`Choice`, so each answer is one label from a fixed set. In a moderation pipeline
-that label is the routing decision: remove or leave up, escalate or auto-resolve, send to
-the threat, spam, or general queue. When the label wobbles from one run to the next, the
-same post routes to different places for no good reason.
+A pipeline that hands decisions to a model needs the same post to get the same decision
+every time. We send one post again and again, unchanged, and count how often a decision
+changes: remove or leave up, escalate or auto-resolve, which queue owns it.
 
-The rubric is 8 `Choice` questions, and each run is one call that answers all 8. We do
-15
-repeats per condition, where a condition is one model plus one setting, and plot every
-label that came back.
+That says nothing about whether the decision is right; it comes before that. If the
+decision moves when the post hasn't, an appeal can't be reproduced and identical posts get
+different treatment. It needs no answer key, only repeats, so every model is measured on
+the same footing.
 
-The conditions:
+Each of the 8 `Choice` questions comes back as a probability on each of its options, 37
+options in all, such as 0.62 that the right action is Strike. A pipeline turns one of those
+into a decision with a cutoff: strike when P(Strike) is above 0.6. If the next request
+returns 0.55, the same post is no longer struck. Whether a wobble like that changes the
+decision depends on where the cutoff sits, and we don't know where yours is, so we count
+every cutoff from 0 to 1 equally. Two answers 0.10 apart disagree at 10% of cutoffs.
+Averaging that over every pair of repeats gives one number per option: the chance that
+asking again changes the decision.
 
-* Non-reasoning LLMs `claude-haiku-4-5` and `gpt-5.4-mini`, at temperature `0` and the
-  API default.
+Clear-cut posts are easy for every model, so the test uses borderline ones: 40 versions of
+a post, each a different mix of facts a moderation model has to weigh. A pipeline is only
+as dependable as its shakiest decision, so each post is scored by its least stable option.
+
+The conditions, each one model plus one setting:
+
+* Non-reasoning LLMs `claude-haiku-4-5` and `gpt-5.4-mini`, at temperature `0` and the API
+  default.
 * Reasoning LLMs `gpt-5.5` and `claude-opus-4-8`, which have no temperature dial.
-* TypeSafe: one `system_one` call over the 8 `Choice` questions, with a fresh `uid`
-  field (a
-  throwaway unique value) on each call, matching the noul cookbook setup.
+* Jev 1.14 (`jev-1.14.0`): one `system_one` call over the 8 `Choice` questions.
 
-What to look for: picked labels can flip inside a single condition, including TypeSafe,
-and conditions disagree with each other.
-
-In this run the LLM distribution settings repeat their plurality labels 87.5% to 100% of
-the time, compared with TypeSafe's 90.8%. TypeSafe has lower mean probability variation
-than five of the six LLM distribution conditions; Haiku at temperature 0 varies less.
-Close probabilities still permit routing changes: TypeSafe flips on 2 of the 8 questions.
-
-For application decisions, we also require a top probability of at least `0.60`; otherwise
-the result is `uncertain` and goes to human review. TypeSafe's agreement then rises to
-99.2%, with automatic labels on 74.2% of answers. We show the raw outputs and apply the
-same threshold to LLM probability conditions, keeping abstentions and changes visible.
+For Jev, a post's least stable decision changes 4.0% of the time on average, about 1
+time in 25, and never more than 6.7%. Every LLM condition has a post where a decision
+changes more than 15% of the time, and depending on the condition, between 10 and all 40
+posts have a decision that changes more than 1 time in 10. Temperature `0` narrows the gap
+but doesn't close it. Luck alone would produce a gap as large as Jev's lead over any
+LLM condition less than once in a thousand runs.
 
 ## Setup
 
@@ -47,19 +49,20 @@ pip install anthropic openai matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
 ```
 
 then set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY`, and `OPENAI_API_KEY`.
-This run uses `jev-latest` on the production API, sampled on 2026-09-11.
+Numbers below came from `jev-1.14.0` on 2026-11-02. The LLM answers for the example post
+were sampled on 2026-10-20, and for the 40 versions on 2026-11-02.
 
 ```python expandable theme={null}
-import hashlib
+import copy
+import itertools
 import json
 import os
+import random
 import textwrap
-from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from secrets import token_hex
 from statistics import mean
-
 from time import perf_counter
 
 import anthropic
@@ -69,6 +72,7 @@ import numpy as np
 from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from matplotlib.colors import ListedColormap
+from matplotlib.ticker import PercentFormatter
 from openai import OpenAI
 from typesafe_sdk import Choice, TypeSafeClient
 
@@ -82,17 +86,17 @@ REASONING_MODELS = [
     "gpt-5.5",
     "claude-opus-4-8",
 ]  # reasoning models: think first, no temperature
-TYPESAFE_MODEL = "jev-latest"  # the TypeSafe model
+TYPESAFE_MODEL = "jev-1.14.0"  # the Jev version under test
 NUM_SAMPLES = 15  # repeated post+rubric calls per condition
-MIN_CHOICE_PROBABILITY = 0.60  # illustrative automatic-action threshold
+NUM_POSTS = 40  # versions of the post, drawn from the combinations of the borderline facts
 
-LLM_PRICES = {  # $ per 1M tokens (input, output); prices + model ids as of 2026-07, see README
+LLM_PRICES = {  # $ per 1M tokens (input, output), list prices as of 2026-07
     "claude-haiku-4-5": (1.00, 5.00),
     "gpt-5.4-mini": (0.75, 4.50),
     "gpt-5.5": (5.00, 30.00),
     "claude-opus-4-8": (5.00, 25.00),
 }
-TYPESAFE_PRICE = (0.042, 0.00)  # Historical TypeSafe rate, as of 2026-08
+TYPESAFE_PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output), as of 2026-08
 
 anthropic_client = anthropic.Anthropic()
 openai_client = OpenAI()
@@ -106,20 +110,20 @@ typesafe_client = TypeSafeClient(
 ## The state: a borderline user post, as JSON
 
 The post below is built to sit on the fence. The language is heated and insulting, aimed
-partly at one person and partly at the argument and the community. It carries an
-off-platform invite (a link pulling people to another site), one prior strike on the
-account, and four user reports, and the threat-like wording is never cleanly phrased.
+partly at one person and partly at the argument and the community. It includes an
+off-platform invite (a link pulling people to another site) and wording that sounds like a
+threat without stating one. The account has one prior strike, and four users have reported
+the post.
 
-There is no single obvious answer here, and that is the point: small wording differences
-should not randomly move the same post between enforcement paths.
+This is the example post.
 
-The LLMs get `json.dumps(POST)` in the prompt. TypeSafe gets the Python dict directly.
+The LLMs get `json.dumps(post)` in the prompt. Jev gets the structure directly.
 
 ```python theme={null}
 POST = {
     "post_id": "P-88213",
     "author": {
-        "user_id": "u/4471",
+        "user_id": "user_4471",
         "account_age_days": 38,
         "prior_strikes": 1,
         "followers": 210,
@@ -127,7 +131,7 @@ POST = {
     "context": {
         "surface": "public reply",
         "in_reply_to": "another user defending a game patch",
-        "community": "r/gamedebates",
+        "community": "example-game-debates",
     },
     "content": {
         "text": (
@@ -137,7 +141,7 @@ POST = {
             "right here. Keep it up and I'll end your whole channel."
         ),
         "has_link": True,
-        "link_domain": "discord.gg",
+        "link_domain": "chat.example",
         "language": "en",
     },
     "reports": {"user_reports": 4, "report_reasons": ["harassment", "spam", "threat"]},
@@ -146,11 +150,11 @@ POST = {
 
 ## The rubric: 8 `Choice` questions
 
-Each question has a `key`, a line of instructions, and a fixed label set. The labels
-within a question are mutually exclusive (exactly one applies), and each carries a
-short description. TypeSafe returns a picked `choice` plus a `probabilities`
-distribution over the labels. The LLMs are asked to use the same label sets, which
-keeps every row comparable.
+Each question has a `key`, a line of instructions, and a fixed set of options. The
+options within a question are mutually exclusive (exactly one applies), and each carries
+a short description. Jev returns a picked `choice` plus a `probabilities`
+distribution over the options. The LLMs are asked to use the same options, which makes
+the LLM and Jev answers comparable.
 
 ```python expandable theme={null}
 QUESTIONS = {
@@ -232,24 +236,26 @@ QUESTIONS = {
         },
     ),
 }
+QUESTIONS_JSON = json.dumps(QUESTIONS)
 ```
 
 ## How we ask
 
-Each LLM call is one prompt holding `json.dumps(POST)`, all 8 questions, and every allowed
-label. There are two answer formats. In distribution mode the model returns one JSON object
-per question with a probability on each label. In single-pick mode it returns one bare
-label per question, and our analysis puts all the probability mass on that label.
+Each LLM call is one prompt holding `json.dumps(post)`, all 8 questions, and every allowed
+option. The model returns one JSON object per question with a probability on each option.
+Calls route to Anthropic or OpenAI by model name: non-reasoning models take a
+`temperature` (`0` or the API default), reasoning models think first and take no
+temperature.
 
 The TypeSafe call is one `system_one` request over the same post and the same 8
 `Choice` questions, returning one distribution per question.
 
 Every query also gets a fresh `uid`, a throwaway unique value that changes each run while
 leaving the post and rubric unchanged. It appears in the LLM prompt and as an extra field
-in the TypeSafe state. This setup cannot separate sensitivity to the irrelevant field
-from variation that would occur on identical requests.
+in the TypeSafe state. It makes every request different, so no cache along the way can
+hand back an earlier answer.
 
-Each helper returns the answer, an estimated cost, and the round-trip latency.
+For every call we also record its cost and round-trip time.
 
 ````python expandable theme={null}
 def argmax_label(values: list, labels: list[str]) -> str | None:
@@ -259,27 +265,6 @@ def argmax_label(values: list, labels: list[str]) -> str | None:
     if any(value is None for value in numeric):
         return None
     return labels[int(np.argmax(numeric))]
-
-
-def choice_decision_with_uncertainty(values: list, labels: list[str]) -> str | None:
-    """Abstain below the action threshold; retain invalid results as parse failures."""
-    label = argmax_label(values, labels)
-    if label is None:
-        return None
-    probabilities = [float(value) for value in values]
-    if any(value < 0 or value > 1 for value in probabilities):
-        return None
-    return label if max(probabilities) >= MIN_CHOICE_PROBABILITY else "uncertain"
-
-
-def choice_decision_annotation(values: list, labels: list[str]) -> str:
-    """Show the application decision and top probability in a heatmap cell."""
-    decision = choice_decision_with_uncertainty(values, labels)
-    if decision is None:
-        return ""
-    probability = max(float(value) for value in values)
-    probability_text = f"{probability:.2f}".removeprefix("0")
-    return f"{decision} {probability_text}"
 
 
 def _numeric_value(value: object) -> float | None:
@@ -292,17 +277,11 @@ def _numeric_value(value: object) -> float | None:
 
 
 def parse_distribution(raw: object, labels: list[str]) -> list[float]:
-    """Map a model's already-parsed per-question reply to per-label probabilities, in label order
-    (distribution-mode answers left un-normalized).
+    """Map a model's per-question reply to per-label probabilities, in label order.
 
-    A single-pick reply is a single label string -> all the mass on that exact label; a
-    distribution-mode reply is a dict read label by label. Anything that doesn't match a known label
-    or isn't a finite number is left NaN -- we report the gap rather than massaging the reply (e.g.
-    stripping an echoed description) to make it fit."""
-    if isinstance(raw, str):  # single-pick mode: a single chosen label
-        if raw in labels:
-            return [1.0 if label == raw else 0.0 for label in labels]
-        return [float("nan")] * len(labels)
+    Anything that doesn't match a known label or isn't a finite number is left NaN -- we report
+    the gap rather than massaging the reply (e.g. stripping an echoed description) to make it
+    fit."""
     if not isinstance(raw, dict):
         return [float("nan")] * len(labels)
     return [
@@ -311,41 +290,25 @@ def parse_distribution(raw: object, labels: list[str]) -> list[float]:
     ]
 
 
-def rubric_prompt(mode: str, sample_index: int, rubric_hash: str) -> str:
-    """The post + all questions (with their label sets) in one prompt; ``mode`` picks the format.
-
-    ``mode="dist"`` asks for a probability distribution over each question's labels; the single-pick
-    mode (``mode="single"``) asks for a single label per question. The uid line combines
-    ``rubric_hash`` (which rubric version) with ``sample_index`` and a random token, so every repeat
-    is a distinct, independent draw and two different rubrics never share a nonce."""
+def rubric_prompt(sample_index: int, post: dict, questions: dict) -> str:
+    """The post + all questions (with their label sets) in one prompt, asking for a
+    probability distribution per question. ``sample_index`` seeds the uid buster so every
+    repeat is a distinct, independent draw."""
     lines = []
-    for key, (instructions, choices) in QUESTIONS.items():
+    for key, (instructions, choices) in questions.items():
         labels = "\n".join(f"     {label}: {desc}" for label, desc in choices.items())
         lines.append(f"- {key}: {instructions}\n   labels:\n{labels}")
-    exclusivity = (
-        "\n\nEach question's labels are mutually exclusive: exactly one applies. If a post could "
+    return (
+        f"uid: {sample_index}:{token_hex(4)}\n\n"
+        f"Document (a reported user post):\n{json.dumps(post, indent=2)}\n\nQuestions:\n"
+        + "\n".join(lines)
+        + "\n\nEach question's labels are mutually exclusive: exactly one applies. If a post could "
         "arguably fit more than one, pick the single most severe / most specific label per the "
         "label descriptions."
-    )
-    if mode == "single":
-        answer_format = (
-            "\n\nFor each question, pick exactly ONE label.\nRespond with ONLY a JSON object "
-            "mapping each question's key to one of that question's bare labels (the label only, "
-            "not its description), with one entry per question."
-        )
-    else:
-        answer_format = (
-            "\n\nFor each question, give a probability distribution over that question's labels "
-            "(values 0.00-1.00 that sum to 1).\nRespond with ONLY a JSON object mapping each "
-            "question's key to an object mapping that question's bare labels (the label only, "
-            "not its description) to probabilities, with one entry per question."
-        )
-    return (
-        f"uid: {rubric_hash}:{sample_index}:{token_hex(4)}\n\n"
-        f"Document (a reported user post):\n{json.dumps(POST, indent=2)}\n\nQuestions:\n"
-        + "\n".join(lines)
-        + exclusivity
-        + answer_format
+        + "\n\nFor each question, give a probability distribution over that question's labels "
+        "(values 0.00-1.00 that sum to 1).\nRespond with ONLY a JSON object mapping each "
+        "question's key to an object mapping that question's bare labels (the label only, "
+        "not its description) to probabilities, with one entry per question."
     )
 
 
@@ -382,72 +345,11 @@ def _call_llm(model: str, prompt: str, temperature: float | None):
     return text, _cost(LLM_PRICES[model], *usage), perf_counter() - started
 
 
-# All samples (LLM and TypeSafe) are cached to ``json_cache.json``, which ships with the cookbook, so
-# re-rendering is instant and reproduces the published numbers with no API spend. ``sample_index``
-# seeds the uid buster and is part of the cache key, so each of the NUM_SAMPLES repeats is its own
-# entry and its own independent draw, not one draw replayed. Delete ``json_cache.json`` to re-sample
-# everything live.
-json_cache = JsonCache(Path("json_cache.json"))
-
-
-def _rubric_fingerprint() -> str:
-    """Short digest of everything that shapes the prompt/rubric: the state and every question's
-    text and label set. Passed into the cached calls below so that editing the post or any question
-    changes the cache key and forces a fresh sample, instead of silently serving a stale answer that
-    was generated for the old wording."""
-    payload = json.dumps([POST, QUESTIONS], sort_keys=True, default=str)
-    return hashlib.sha256(payload.encode()).hexdigest()[:12]
-
-
-RUBRIC_HASH = _rubric_fingerprint()
-
-
-@json_cache
-def _call_typesafe(sample_index: int, rubric_hash: str, model: str):
-    """Return distributions, token usage and latency for one call.
-
-    ``rubric_hash`` and ``model`` prevent reuse across rubric or model changes.
-    """
-    questions = {
-        key: Choice(instructions=instructions, criteria=choices)
-        for key, (instructions, choices) in QUESTIONS.items()
-    }
-    started = perf_counter()
-    response = typesafe_client.system_one(
-        model=model,
-        state={"uid": f"{rubric_hash}:{sample_index}:{token_hex(4)}", "post": POST},
-        questions=questions,
-    )
-    distributions = {}
-    for key, (_instructions, choices) in QUESTIONS.items():
-        probabilities = dict(response.answers[key].probabilities)
-        distributions[key] = [
-            probabilities.get(label, float("nan")) for label in choices
-        ]
-    return (
-        distributions,
-        response.usage.input_tokens,
-        response.usage.output_tokens,
-        perf_counter() - started,
-    )
-
-
-@json_cache
-def ask_llm_rubric(
-    model: str,
-    mode: str,
-    temperature: float | None,
-    sample_index: int,
-    rubric_hash: str,
-):
-    """One LLM rubric query -> (per-question label distributions keyed by question key, cost_usd,
-    latency_s); NaNs if the reply doesn't parse.
-
-    ``mode="dist"`` parses 8 label distributions; the single-pick mode (``mode="single"``) parses 8
-    single labels and puts all the mass on each. ``rubric_hash`` goes into the prompt's uid nonce
-    (and so the cache key), so an edited state/rubric busts the cache instead of serving a stale
-    answer."""
-    prompt = rubric_prompt(mode, sample_index, rubric_hash)
+def _query_llm(model, temperature, sample_index, post_json, questions_json):
+    """One LLM rubric query -> (label distributions keyed by question key, cost_usd,
+    latency_s); NaNs where the reply doesn't parse."""
+    questions = json.loads(questions_json)
+    prompt = rubric_prompt(sample_index, json.loads(post_json), questions)
     text, cost, latency = _call_llm(model, prompt, temperature)
     # Peel a single ```json ... ``` fence (claude-haiku-4-5 sometimes adds one despite "ONLY a JSON
     # object").
@@ -464,84 +366,126 @@ def ask_llm_rubric(
         raw = {}
     distributions = {
         key: parse_distribution(raw.get(key), list(choices))
-        for key, (_instructions, choices) in QUESTIONS.items()
+        for key, (_instructions, choices) in questions.items()
     }
     return distributions, cost, latency
+
+
+def _query_typesafe(sample_index, post_json, questions_json):
+    """One TypeSafe call -> (label distributions keyed by question key, input tokens,
+    output tokens, latency_s)."""
+    questions = json.loads(questions_json)
+    started = perf_counter()
+    response = typesafe_client.system_one(
+        model=TYPESAFE_MODEL,
+        state={"uid": f"{sample_index}:{token_hex(4)}", "post": json.loads(post_json)},
+        questions={
+            key: Choice(instructions=instructions, criteria=choices)
+            for key, (instructions, choices) in questions.items()
+        },
+    )
+    distributions = {}
+    for key, (_instructions, choices) in questions.items():
+        probabilities = dict(response.answers[key].probabilities)
+        distributions[key] = [probabilities.get(label, float("nan")) for label in choices]
+    return (
+        distributions,
+        response.usage.input_tokens,
+        response.usage.output_tokens,
+        perf_counter() - started,
+    )
+
+
+# Every sample is saved in ``json_cache.json``, so a second run makes no requests. The post
+# and the questions are part of every key, so editing either asks again; ``sample_index`` is
+# part of the key too, so each of the NUM_SAMPLES repeats is its own independent draw.
+json_cache = JsonCache(Path("json_cache.json"))
+
+
+@json_cache
+def ask_llm(model: str, temperature: float | None, sample_index: int, post_json: str,
+            questions_json: str):
+    """The example post's LLM answers, with cost and latency."""
+    return _query_llm(model, temperature, sample_index, post_json, questions_json)
+
+
+@json_cache
+def ask_typesafe(sample_index: int, post_json: str, questions_json: str):
+    """The example post's Jev answers, with token usage and latency."""
+    return _query_typesafe(sample_index, post_json, questions_json)
+
+
+@json_cache
+def sweep_llm(model: str, temperature: float | None, sample_index: int, post_json: str,
+              questions_json: str):
+    """One LLM answer set for one version of the post."""
+    return _query_llm(model, temperature, sample_index, post_json, questions_json)[0]
+
+
+@json_cache
+def sweep_typesafe(sample_index: int, post_json: str, questions_json: str):
+    """One Jev answer set for one version of the post."""
+    return _query_typesafe(sample_index, post_json, questions_json)[0]
 ````
 
-## Experimental Conditions
+## The conditions
 
-### Experiment Grid
+| Model group | Model | Distribution (t=0) | Distribution (default) |
+| - | - | :-: | :-: |
+| Non-reasoning Models | `claude-haiku-4-5` | ✓ | ✓ |
+| Non-reasoning Models | `gpt-5.4-mini` | ✓ | ✓ |
+| Reasoning Models | `gpt-5.5` | — | ✓ |
+| Reasoning Models | `claude-opus-4-8` | — | ✓ |
+| System One | `jev-1.14.0` | — | ✓ |
 
-| Model group | Model | Distribution (t=0) | Distribution (default) | Single-pick (t=0) |
-| - | - | :-: | :-: | :-: |
-| Non-reasoning Models | `claude-haiku-4-5` | ✓ | ✓ | ✓ |
-| Non-reasoning Models | `gpt-5.4-mini` | ✓ | ✓ | ✓ |
-| Reasoning Models | `gpt-5.5` | — | ✓ | — |
-| Reasoning Models | `claude-opus-4-8` | — | ✓ | — |
-| TypeSafe | `jev-latest` (`typesafe_choice`) | — | ✓ | — |
-
-* A `✓` marks a condition tested with 15 repeats; a `—` marks a combination that is not
-  tested.
-* The default column sends no temperature argument: non-reasoning models use the API
-  default, and reasoning models and TypeSafe run without a temperature setting.
-* Single-pick conditions return one label per question.
-* Temperature `0` is commonly suggested for repeatability, so it is compared with the API
+* A check mark is one condition, run 15 times per post. A dash is a combination that was
+  not tested.
+* For the default column we send no temperature argument: non-reasoning models use the
+  API default, and reasoning models and Jev run without a temperature setting.
+* Temperature `0` is commonly suggested for repeatability, so we compare it with the API
   default.
 
-We draw `NUM_SAMPLES` = 15 repeats per condition. Each repeat has its own cache key and
-counts as a distinct draw, and the cache (`json_cache.json`) ships with the cookbook, so
-re-rendering reuses it and spends no API calls. Delete the cache to sample live again.
-
 ```python expandable theme={null}
-CONDITIONS = []
-for (
-    model
-) in BASE_MODELS:  # non-reasoning models: dist at t=0 / default, then a single-pick variant
-    for temp_value, temp_label in ((0, "0"), (None, "default")):
-        CONDITIONS.append(
-            {
-                "label": f"{model} t={temp_label}",
-                "model": model,
-                "temp": temp_value,
-                "mode": "dist",
-            }
-        )
-    CONDITIONS.append(
-        {
-            "label": f"{model} single-pick t=0",
-            "model": model,
-            "temp": 0,
-            "mode": "single",
-        }
-    )
-CONDITIONS += [  # reasoning models: one distribution condition each
-    {
-        "label": f"{model}-reasoning",
-        "model": model,
-        "temp": None,
-        "mode": "dist",
-    }
+MODEL_NAMES = {  # how each model is named in tables and charts
+    "claude-haiku-4-5": "Claude Haiku 4.5",
+    "gpt-5.4-mini": "GPT-5.4 mini",
+    "gpt-5.5": "GPT-5.5",
+    "claude-opus-4-8": "Claude Opus 4.8",
+}
+CONDITIONS = [
+    {"label": f"{MODEL_NAMES[model]} ({setting})", "model": model, "temp": temp}
+    for model in BASE_MODELS
+    for temp, setting in ((0, "temperature 0"), (None, "default temperature"))
+] + [
+    {"label": f"{MODEL_NAMES[model]} (reasoning)", "model": model, "temp": None}
     for model in REASONING_MODELS
 ]
 LABELS = [condition["label"] for condition in CONDITIONS]
-TYPESAFE_LABEL = "typesafe_choice"
+TYPESAFE_LABEL = "Jev 1.14"
 ALL_LABELS = [*LABELS, TYPESAFE_LABEL]
+# Chart rows, the same on both self-consistency pages: Jev, the reasoning models, then the
+# non-reasoning models at temperature 0 and the API default. The tables keep their own order.
+PLOT_MODELS = ["claude-opus-4-8", "gpt-5.5", "claude-haiku-4-5", "gpt-5.4-mini"]
+PLOT_ORDER = [TYPESAFE_LABEL] + [
+    condition["label"]
+    for model in PLOT_MODELS
+    for condition in CONDITIONS
+    if condition["model"] == model
+]
+POST_JSON = json.dumps(POST)
 
-runs: dict[
-    str, list
-] = {}  # label -> NUM_SAMPLES samples of {question key: distribution}
+runs: dict[str, list] = {}  # label -> NUM_SAMPLES samples of {question key: distribution}
 stats: dict[str, list] = {}  # label -> NUM_SAMPLES (cost_usd, latency_s) pairs
 with ThreadPoolExecutor(max_workers=16) as pool:
     futures = {
         condition["label"]: [
             pool.submit(
-                ask_llm_rubric,
+                ask_llm,
                 condition["model"],
-                condition["mode"],
                 condition["temp"],
                 sample_index,
-                RUBRIC_HASH,
+                POST_JSON,
+                QUESTIONS_JSON,
             )
             for sample_index in range(NUM_SAMPLES)
         ]
@@ -552,39 +496,38 @@ with ThreadPoolExecutor(max_workers=16) as pool:
         runs[label] = [result[0] for result in results]
         stats[label] = [(result[1], result[2]) for result in results]
 
-# TypeSafe samples are drawn sequentially, after the LLM pool has closed, so each call's latency is a
-# clean round trip rather than one measured under the 16-way LLM thread contention.
+# Jev samples are drawn sequentially after the LLM calls, so each latency is a clean
+# round trip rather than one measured under the 16-way LLM thread contention.
 typesafe_usage_results = [
-    _call_typesafe(sample_index, RUBRIC_HASH, TYPESAFE_MODEL)
+    ask_typesafe(sample_index, POST_JSON, QUESTIONS_JSON)
     for sample_index in range(NUM_SAMPLES)
 ]
 # Apply pricing after cache retrieval so price changes do not require new samples.
-typesafe_results = [
-    (distributions, _cost(TYPESAFE_PRICE, input_tokens, output_tokens), latency)
-    for distributions, input_tokens, output_tokens, latency in typesafe_usage_results
+runs[TYPESAFE_LABEL] = [result[0] for result in typesafe_usage_results]
+stats[TYPESAFE_LABEL] = [
+    (_cost(TYPESAFE_PRICE, input_tokens, output_tokens), latency)
+    for _distributions, input_tokens, output_tokens, latency in typesafe_usage_results
 ]
-typesafe_runs = [result[0] for result in typesafe_results]
-stats[TYPESAFE_LABEL] = [(result[1], result[2]) for result in typesafe_results]
 ```
 
 ### Cost + speed (per rubric query)
 
-Costs below use the historical price assumptions in Setup, including the `speed_latest`
-rate for TypeSafe. They are not verified `jev-latest` prices or current billing amounts.
+Costs use the per-token prices in Setup: list prices as of 2026-07 for the LLMs, and
+TypeSafe's rate as of 2026-08.
 
-One row is one full 8-question rubric call. `time/call` and `cost/call` average the 15
-calls, and the `vs ts_choice` columns divide by the TypeSafe figures. The LLMs run in a
-16-way pool.
+One row is one full 8-question rubric call on the example post. `time/call` and
+`cost/call` average the 15 calls, and the `vs Jev 1.14` columns divide by the Jev 1.14
+figures.
 
 ```python theme={null}
-typesafe_cost = mean([cost for cost, _latency in stats["typesafe_choice"]])
-typesafe_latency = mean([latency for _cost, latency in stats["typesafe_choice"]])
+typesafe_cost = mean([cost for cost, _latency in stats[TYPESAFE_LABEL]])
+typesafe_latency = mean([latency for _cost, latency in stats[TYPESAFE_LABEL]])
 name_w = max(len(name) for name in ALL_LABELS) + 2  # fit the longest condition label
 # Stack comparison headers so the relative speed and cost columns can stay narrow.
 print(
     f"{'':<{name_w + 31}}{'speed vs':>11}{'cost vs':>11}\n"
     f"{'condition':<{name_w}}{'calls':>7}{'time/call':>11}{'cost/call':>13}"
-    f"{'ts_choice':>11}{'ts_choice':>11}"
+    f"{TYPESAFE_LABEL:>11}{TYPESAFE_LABEL:>11}"
 )
 for name in ALL_LABELS:
     costs, latencies = zip(*stats[name])
@@ -599,46 +542,45 @@ for name in ALL_LABELS:
 ```
 
 ```
-                                                                    speed vs    cost vs
-condition                           calls  time/call    cost/call  ts_choice  ts_choice
-claude-haiku-4-5 t=0                   15     3853ms    $0.003498      33.8x      76.1x
-claude-haiku-4-5 t=default             15     3860ms    $0.003494      33.8x      76.0x
-claude-haiku-4-5 single-pick t=0       15      992ms    $0.001527       8.7x      33.2x
-gpt-5.4-mini t=0                       15     2293ms    $0.002299      20.1x      50.0x
-gpt-5.4-mini t=default                 15     1986ms    $0.002164      17.4x      47.1x
-gpt-5.4-mini single-pick t=0           15      826ms    $0.000936       7.2x      20.3x
-gpt-5.5-reasoning                      15    12978ms    $0.041255     113.7x     897.4x
-claude-opus-4-8-reasoning              15    10376ms    $0.028375      90.9x     617.2x
-typesafe_choice                        15      114ms    $0.000046       1.0x       1.0x
+                                                                          speed vs    cost vs
+condition                                 calls  time/call    cost/call   Jev 1.14   Jev 1.14
+Claude Haiku 4.5 (temperature 0)             15     3844ms    $0.003498      37.4x      53.3x
+Claude Haiku 4.5 (default temperature)       15     3629ms    $0.003496      35.3x      53.3x
+GPT-5.4 mini (temperature 0)                 15     1874ms    $0.002302      18.2x      35.1x
+GPT-5.4 mini (default temperature)           15     2006ms    $0.002259      19.5x      34.4x
+GPT-5.5 (reasoning)                          15    13539ms    $0.038559     131.8x     587.9x
+Claude Opus 4.8 (reasoning)                  15     9059ms    $0.026686      88.2x     406.9x
+Jev 1.14                                     15      103ms    $0.000066       1.0x       1.0x
 ```
 
-In this run `typesafe_choice` has a mean round-trip latency of 114ms. The LLM conditions
-range from 826ms to 13.0 seconds per call under the concurrency settings above.
+In this run Jev has a mean round-trip latency of 103ms. The LLM conditions range
+from 1.9 to 13.5 seconds per call under the concurrency settings above.
 
-## Plot: every sample's decision as a heatmap
+## Plot: every sample's top option on the example post
 
 How to read it:
 
 * Outer row group: the question.
 * Inner row: the condition.
 * Column: one full rubric call.
-* Cell text: the application decision plus the probability on the top label.
-* Cell color: the label's position within that question, so the same color all the way
-  across a row means the same decision every time.
-* Gray `uncertain`: the top probability is below `0.60`, so the case goes to human review.
-* Hatched `n/a`: the reply did not parse into usable labels (a parse failure).
-* Blank rows are just spacers.
-
-Single-pick conditions keep their returned labels: they provide no uncertainty estimate.
+* Cell text: the top option plus its probability.
+* Cell color: the option's position within that question, so the same color all the way
+  across a row means the same top option every time.
+* Hatched `n/a`: the reply did not parse into usable options (a parse failure).
 
 ```python expandable theme={null}
 GAP = 1  # blank spacer row(s) between question blocks
-HEAT_LABELS = ALL_LABELS
-rows_per_block = len(HEAT_LABELS)  # rows per question block
-pooled_runs = {
-    **runs,
-    TYPESAFE_LABEL: typesafe_runs,
-}
+rows_per_block = len(ALL_LABELS)  # rows per question block
+
+
+def top_label_annotation(values: list, labels: list[str]) -> str:
+    """The top label and its probability, for a heatmap cell."""
+    label = argmax_label(values, labels)
+    if label is None:
+        return ""
+    probability_text = f"{max(float(value) for value in values):.2f}".removeprefix("0")
+    return f"{label} {probability_text}"
+
 
 row_index_values, row_text, row_labels, blocks = [], [], [], []
 for question_index, (question_key, (question_text, choices)) in enumerate(
@@ -650,33 +592,25 @@ for question_index, (question_key, (question_text, choices)) in enumerate(
         row_text.extend([[""] * NUM_SAMPLES for _ in range(GAP)])
         row_labels.extend([""] * GAP)
     blocks.append((len(row_index_values), question_key, question_text))
-    for label in HEAT_LABELS:
-        values_by_sample = [
-            pooled_runs[label][sample][question_key] for sample in range(NUM_SAMPLES)
-        ]
-        picks = [
-            choice_decision_with_uncertainty(values, labels) for values in values_by_sample
-        ]
+    for label in PLOT_ORDER:
+        values_by_sample = [runs[label][sample][question_key] for sample in range(NUM_SAMPLES)]
+        picks = [argmax_label(values, labels) for values in values_by_sample]
         row_index_values.append(
-            [
-                10 if pick == "uncertain" else labels.index(pick) if pick in labels else np.nan
-                for pick in picks
-            ]
+            [labels.index(pick) if pick in labels else np.nan for pick in picks]
         )
         row_text.append(
-            [choice_decision_annotation(values, labels) for values in values_by_sample]
+            [top_label_annotation(values, labels) for values in values_by_sample]
         )
         row_labels.append(label)
 
 heatmap_matrix = np.array(row_index_values, dtype=float)
-# Reserve gray for abstentions while concrete-label colors remain local to each question.
-cmap = ListedColormap([*plt.get_cmap("tab10").colors, "#dddddd"])
+cmap = ListedColormap(plt.get_cmap("tab10").colors)
 cmap.set_bad(
     "white"
 )  # NaN cells (spacer rows AND unparseable replies) render white here...
 
 fig, ax = plt.subplots(figsize=(15, 0.33 * len(row_index_values) + 1))
-ax.imshow(heatmap_matrix, cmap=cmap, vmin=0, vmax=10, aspect="auto")
+ax.imshow(heatmap_matrix, cmap=cmap, vmin=0, vmax=9, aspect="auto")
 for row in range(heatmap_matrix.shape[0]):
     is_spacer_row = row_labels[row] == ""  # blank separator between question blocks
     for col in range(heatmap_matrix.shape[1]):
@@ -754,294 +688,280 @@ for start, question_key, question_text in blocks:
     )
 
 ax.set_title(
-    f"Every sample's decision + top probability; gray = uncertain (< {MIN_CHOICE_PROBABILITY:.2f})\n"
-    f"(rows = question x condition, {NUM_SAMPLES} columns)",
+    "Every sample's top option + its probability on the example post",
     pad=12,
 )
 fig.tight_layout()
 display(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/BBcnWK7wRF0qekMh/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.1.png?fit=max\&auto=format\&n=BBcnWK7wRF0qekMh\&q=85\&s=558e5110fcd6836f92e02741374061c3)
+![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.1.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=e3484ca835c26aebc0769aaa2be1733b)
 
-The clearer questions hold steady: `target` reads Person and `severity` reads High across
-the board. The borderline ones split across conditions: `category`, `primary_risk`,
-`action`, `review_path`, and `link_handling`. Some conditions also flip within their
-own 15 repeats. Before abstention, TypeSafe changes its top label on `primary_risk`
-(Harassment 11 times, Violence 4 times) and `link_handling` (RmLink 8 times, Brigade 7
-times). Both rows now show `uncertain` throughout because their top probabilities are
-below `0.60`.
+The clear questions hold steady: `target` reads Person and `severity` reads High on every
+repeat of every condition. Jev changes its top option on one question, `primary_risk`:
+Harassment 11 times and Violence 4 times, with both near 0.5. Claude Haiku 4.5 at
+temperature 0 splits `link_handling` between Escalate and Brigade. At its default
+temperature it splits `action` and `link_handling` too, and GPT-5.5 and Claude Opus 4.8
+split `action`.
 
-## Probability std dev
+A change of top option shows only the moves that reorder two options. A probability can
+move a long way without reordering anything, and a cutoff set anywhere along that move
+changes the decision.
 
-This looks at the full probability vectors, not just the picked label. For each condition
-we collect all 15 distributions for every question, take the standard deviation of each
-label's probability across the repeats (how much it moves from run to run), then average
-those std devs over all labels and questions. We also report the single largest label std
-dev, and count parse failures separately.
+## 40 versions of the post
 
-The table compares every probability-output LLM condition against TypeSafe. The single-pick
-rows are left out, since they emit hard labels rather than probability distributions.
+A model can be steady on one post and shaky on the next, so one post isn't enough to judge
+it. Each version of the post sets six facts a moderation model has to weigh:
+
+* the closing line: "Keep it up and I'll end your whole channel." (as in the example post),
+  "Keep it up and I'll find out where you live.", "Keep it up and I'll report your whole
+  channel.", or no closing line;
+* whether the insults are aimed at the person or at the patch;
+* whether the post carries the off-platform invite link;
+* prior strikes on the account: none or three;
+* user reports: four or none;
+* account age: 38 days or 2.
+
+That gives 128 combinations. We draw 40 of them with a fixed seed and send each one 15
+times under every condition.
 
 ```python expandable theme={null}
-def probability_std_stats(samples: list) -> tuple[float, float, float]:
-    """Mean label std dev, max label std dev, parse-failure rate."""
-    label_stds = []
-    parse_failures = []
-    for question_key in QUESTIONS:
-        arr = np.array(
-            [sample[question_key] for sample in samples],
-            dtype=float,
-        )
-        parse_failures.extend(np.isnan(arr).any(axis=1).tolist())
-        label_stds.extend(np.nanstd(arr, axis=0).tolist())
-    return (
-        float(np.nanmean(label_stds)),
-        float(np.nanmax(label_stds)),
-        float(np.mean(parse_failures)),
-    )
-
-
-PROBABILITY_OUTPUT_LABELS = [
-    condition["label"] for condition in CONDITIONS if condition["mode"] == "dist"
-] + [TYPESAFE_LABEL]
-probability_std_by_label = {
-    label: probability_std_stats(pooled_runs[label])
-    for label in PROBABILITY_OUTPUT_LABELS
+PERSONAL = (
+    "Are you seriously this dense? Anyone who defends that patch is a complete clown and "
+    "should be embarrassed to even post here. People like you are what's ruining this "
+    "community and honestly you need to be dealt with."
+)
+IMPERSONAL = (
+    "Is this patch serious? Whoever signed off on it is a complete clown and should be "
+    "embarrassed. This is what's ruining this community."
+)
+INVITE = " Come say it to my face, invite's right here."
+CLOSINGS = {
+    "end-channel": " Keep it up and I'll end your whole channel.",
+    "find-you": " Keep it up and I'll find out where you live.",
+    "report": " Keep it up and I'll report your whole channel.",
+    "no-closing": "",
 }
-typesafe_mean_std = probability_std_by_label[TYPESAFE_LABEL][0]
+SWITCHES = ("personal", "invite", "strikes", "reports", "new_account")
 
-print(
-    f"{'condition':<{name_w}}{'mean prob std':>15}{'max prob std':>14}"
-    f"{'parse fail':>12}{'x TypeSafe':>12}"
-)
-for label in PROBABILITY_OUTPUT_LABELS:
-    mean_std, max_std, parse_failure_rate = probability_std_by_label[label]
-    relative_std = mean_std / typesafe_mean_std
-    print(
-        f"{label:<{name_w}}{mean_std:>15.4f}{max_std:>14.4f}"
-        f"{parse_failure_rate:>11.0%}{relative_std:>12.2f}x"
+
+def build_post(closing: str, personal: bool, invite: bool, strikes: bool, reports: bool,
+               new_account: bool) -> dict:
+    """The example post with the six borderline facts set one way."""
+    post = copy.deepcopy(POST)
+    post["content"]["text"] = (
+        (PERSONAL if personal else IMPERSONAL) + (INVITE if invite else "") + CLOSINGS[closing]
     )
+    post["content"]["has_link"] = invite
+    post["content"]["link_domain"] = "chat.example" if invite else None
+    post["author"]["prior_strikes"] = 3 if strikes else 0
+    post["author"]["account_age_days"] = 2 if new_account else 38
+    post["reports"] = (
+        {"user_reports": 4, "report_reasons": ["harassment", "spam", "threat"]}
+        if reports
+        else {"user_reports": 0, "report_reasons": []}
+    )
+    return post
+
+
+combinations = list(itertools.product(CLOSINGS, *[(False, True)] * len(SWITCHES)))
+POSTS = {
+    "-".join([combo[0], *(name for name, on in zip(SWITCHES, combo[1:]) if on)]): build_post(*combo)
+    for combo in random.Random(0).sample(combinations, NUM_POSTS)
+}
+
+# 40 posts x 7 conditions x 15 repeats; a live run takes about 20 minutes, most of it the
+# reasoning models.
+with ThreadPoolExecutor(max_workers=16) as pool:
+    sweep = {
+        post_id: {
+            **{
+                condition["label"]: [
+                    pool.submit(sweep_llm, condition["model"], condition["temp"], index,
+                                json.dumps(post), QUESTIONS_JSON)
+                    for index in range(NUM_SAMPLES)
+                ]
+                for condition in CONDITIONS
+            },
+            TYPESAFE_LABEL: [
+                pool.submit(sweep_typesafe, index, json.dumps(post), QUESTIONS_JSON)
+                for index in range(NUM_SAMPLES)
+            ],
+        }
+        for post_id, post in POSTS.items()
+    }
+    sweep = {
+        post_id: {label: [future.result() for future in futures] for label, futures in by_label.items()}
+        for post_id, by_label in sweep.items()
+    }
 ```
 
-```
-condition                           mean prob std  max prob std  parse fail  x TypeSafe
-claude-haiku-4-5 t=0                       0.0012        0.0221         0%        0.12x
-claude-haiku-4-5 t=default                 0.0516        0.3150         1%        5.29x
-gpt-5.4-mini t=0                           0.0312        0.0905         0%        3.20x
-gpt-5.4-mini t=default                     0.0543        0.2303         0%        5.56x
-gpt-5.5-reasoning                          0.0305        0.1047         0%        3.12x
-claude-opus-4-8-reasoning                  0.0245        0.0693         0%        2.52x
-typesafe_choice                            0.0098        0.0515         0%        1.00x
-```
+## How often asking again changes the decision
 
-In this run TypeSafe has a mean probability std dev of `0.0098` and a max single-label std
-dev of `0.0515`. Haiku at temperature 0 has a lower mean std dev of `0.0012`. The other
-five LLM probability conditions range from `0.0245` to `0.0543`, about `2.5x` to `5.6x`
-the TypeSafe mean. Small changes can still switch the top label when two labels are close.
-
-## Plot: decision agreement with an uncertain outcome
-
-Return `uncertain` when the top probability is below `0.60`. For each probability-output
-condition and question, count the most common application decision, including `uncertain`,
-and divide by all 15 draws. Parse failures count against agreement. Each bar averages the
-score over all 8 questions, with the highest agreement first.
-
-Single-pick LLM conditions are excluded because they provide no uncertainty estimate.
+For each option on a post we compare its 15 answers in every pair, 105 pairs, and average
+how far apart the two probabilities are. That average is the chance that asking again
+changes the decision on that option, with every cutoff counted equally. Each post then
+takes the score of its least stable option, the highest of its 37. The table gives that
+score on an average post and on the worst post, counts the posts that go above 1 in 10,
+and, as a gentler measure, gives the average over all 37 options. Answers that didn't parse
+are left out and counted in the last column.
 
 ```python expandable theme={null}
-# Compute policy decisions and agreement once for both this chart and the comparison table.
-decisions_by_condition = {}
-policy_agreement_by_condition = {}
-for label in PROBABILITY_OUTPUT_LABELS:
-    decisions = [
-        [
-            choice_decision_with_uncertainty(sample[key], list(choices))
-            for sample in pooled_runs[label]
-        ]
-        for key, (_instructions, choices) in QUESTIONS.items()
-    ]
-    decisions_by_condition[label] = decisions
-    shares = [
-        max(Counter(value for value in row if value is not None).values(), default=0)
-        / NUM_SAMPLES
-        for row in decisions
-    ]
-    policy_agreement_by_condition[label] = mean(shares)
-
-# Sort by the measured agreement, keeping TypeSafe's color independent of its rank.
-bar_labels = sorted(
-    PROBABILITY_OUTPUT_LABELS, key=policy_agreement_by_condition.__getitem__, reverse=True
-)
-rates = [policy_agreement_by_condition[label] for label in bar_labels]
-
-fig_bar, bar_ax = plt.subplots(figsize=(7, 0.45 * len(bar_labels) + 1))
-positions = range(len(bar_labels))
-bar_ax.barh(
-    list(positions),
-    rates,
-    color=["#2b8cbe" if label == TYPESAFE_LABEL else "#fe9929" for label in bar_labels],
-    alpha=0.85,
-)
-for label, position, rate in zip(bar_labels, positions, rates):
-    marker = "*" if label == "claude-haiku-4-5 t=0" else ""
-    bar_ax.text(
-        rate + 0.01, position, f"{rate:.1%}{marker}", va="center", fontsize=8, color="gray"
-    )
-bar_ax.set_yticks(list(positions))
-bar_ax.set_yticklabels(bar_labels, fontsize=8)
-bar_ax.invert_yaxis()  # first condition on top
-bar_ax.set_xlim(0, 1.08)
-bar_ax.set_xticks(np.linspace(0, 1, 6))
-bar_ax.set_xlabel("decision agreement across 15 re-runs (mean over 8 questions)")
-for edge in ("top", "right", "left"):
-    bar_ax.spines[edge].set_visible(False)
-bar_ax.tick_params(length=0)
-fig_bar.suptitle("Decision agreement including uncertain outcomes", y=1.0)
-# Keep the caveat inside the exported chart so it travels with the 100% annotation.
-fig_bar.text(
-    0.01,
-    0.01,
-    "* Haiku t=0: 100% repeatability does not imply correctness.\n"
-    "  This experiment does not measure accuracy.",
-    fontsize=8,
-)
-fig_bar.tight_layout(rect=(0, 0.11, 1, 1))
-display(fig_bar)
-```
-
-![output](https://mintcdn.com/ts-docs/BBcnWK7wRF0qekMh/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.2.png?fit=max\&auto=format\&n=BBcnWK7wRF0qekMh\&q=85\&s=3bf99796df3faa60d1db45f626a7caee)
-
-Under the same `0.60` rule, Haiku at temperature 0 scored 100%. TypeSafe scored 99.2%, and
-the other LLM conditions landed between 84.2% and 94.2%. TypeSafe returned `uncertain` on
-25.8% of answers and acted automatically on the other 74.2%; Haiku at temperature 0 never
-abstained. These percentages measure repeatability only. The table below sets raw agreement
-and abstention rates next to the policy agreement in this chart.
-
-## Let uncertain probabilities produce an uncertain decision
-
-A small probability change can swap two close labels. The application does not have to
-act on the winner: return `uncertain` when the top probability is below `0.60`, and send
-that case to a human. At exactly `0.60`, select the top label. This uses the returned
-probabilities, not the API's separate `confidence` field, and adds no model calls.
-
-The threshold is an illustrative application policy, not a calibrated guarantee or a
-threshold chosen to maximize this run's agreement. Choose production thresholds using
-labeled examples and the cost of incorrect actions and human review.
-
-We apply the same rule to every probability-output condition. Single-pick LLM responses
-have no probability estimate; their synthetic one-hot vectors cannot measure uncertainty,
-so they are excluded from the agreement chart and table.
-
-```python expandable theme={null}
-def agreement_rate(samples: list) -> float:
-    """Mean over questions of the raw plurality label's share across all NUM_SAMPLES draws.
-
-    Parse failures count against agreement because a failed route is not a repeated decision.
-    """
-    shares = []
+def change_chances(samples: list) -> tuple[dict, int]:
+    """Per option: the mean distance between the probabilities of every pair of repeats,
+    which is the chance that asking again changes the decision; plus the number of
+    question answers that didn't parse (left out)."""
+    chances, unparsed = {}, 0
     for question_key, (_instructions, choices) in QUESTIONS.items():
-        labels = list(choices)
-        picks = [
-            argmax_label(samples[sample][question_key], labels)
-            for sample in range(NUM_SAMPLES)
-        ]
-        picks = [pick for pick in picks if pick is not None]
-        if not picks:
-            shares.append(0.0)
+        values = np.array([sample[question_key] for sample in samples], dtype=float)
+        parsed = ~np.isnan(values).any(axis=1)
+        unparsed += int((~parsed).sum())
+        values = values[parsed]
+        if len(values) < 2:  # no pair of usable answers to compare
             continue
-        top = Counter(picks).most_common(1)[0][1]
-        shares.append(top / NUM_SAMPLES)
-    return mean(shares) if shares else float("nan")
+        first, second = np.triu_indices(len(values), k=1)
+        gaps = np.abs(values[first] - values[second]).mean(axis=0)
+        for label, gap in zip(choices, gaps):
+            chances[f"{question_key}={label}"] = float(gap)
+    return chances, unparsed
 
 
-# Keep failures separate from abstentions and count conflicting concrete actions per question.
+average_change = {label: [] for label in ALL_LABELS}  # label -> per-post average over labels
+least_stable = {label: [] for label in ALL_LABELS}  # label -> per-post least stable label
+unparsed = {label: 0 for label in ALL_LABELS}  # label -> question answers that didn't parse
+for by_label in sweep.values():
+    for label in ALL_LABELS:
+        chances, failures = change_chances(by_label[label])
+        average_change[label].append(mean(chances.values()))
+        least_stable[label].append(max(chances.values()))
+        unparsed[label] += failures
+ranked = sorted(ALL_LABELS, key=lambda label: mean(least_stable[label]))
+
 print(
-    f"{'condition':<{name_w}}{'raw agree':>12}{'policy agree':>14}"
-    f"{'uncertain':>12}{'automatic':>12}{'conflicts':>11}"
+    f"{'':<{name_w}}{'average over':>14}{'least stable option':>24}{'posts above':>13}"
+    f"{'unparsed':>10}\n"
+    f"{'condition':<{name_w}}{'all options':>14}{'average post':>14}{'worst post':>12}"
+    f"{'1 in 10':>12}{'answers':>12}"
 )
-for label in PROBABILITY_OUTPUT_LABELS:
-    decisions = decisions_by_condition[label]
-    flat = [value for row in decisions for value in row]
-    uncertain_rate = mean(value == "uncertain" for value in flat)
-    automatic_rate = mean(value not in (None, "uncertain") for value in flat)
-    conflicts = sum(
-        len({value for value in row if value not in (None, "uncertain")}) > 1
-        for row in decisions
-    )
+for label in ranked:
     print(
-        f"{label:<{name_w}}{agreement_rate(pooled_runs[label]):>11.1%}"
-        f"{policy_agreement_by_condition[label]:>13.1%}{uncertain_rate:>11.1%}"
-        f"{automatic_rate:>11.1%}{conflicts:>11}"
+        f"{label:<{name_w}}{mean(average_change[label]):>14.1%}"
+        f"{mean(least_stable[label]):>14.1%}{max(least_stable[label]):>12.1%}"
+        f"{sum(value > 0.10 for value in least_stable[label]):>9}/{NUM_POSTS}"
+        f"{unparsed[label]:>12}"
     )
 ```
 
 ```
-condition                            raw agree  policy agree   uncertain   automatic  conflicts
-claude-haiku-4-5 t=0                   100.0%       100.0%       0.0%     100.0%          0
-claude-haiku-4-5 t=default              87.5%        86.7%       0.8%      98.3%          2
-gpt-5.4-mini t=0                        99.2%        87.5%      12.5%      87.5%          0
-gpt-5.4-mini t=default                  90.8%        84.2%      22.5%      77.5%          2
-gpt-5.5-reasoning                       90.0%        93.3%      30.8%      69.2%          1
-claude-opus-4-8-reasoning               92.5%        94.2%      33.3%      66.7%          0
-typesafe_choice                         90.8%        99.2%      25.8%      74.2%          0
+                                          average over     least stable option  posts above  unparsed
+condition                                  all options  average post  worst post     1 in 10     answers
+Jev 1.14                                          1.0%          4.0%        6.7%        0/40           0
+Claude Opus 4.8 (reasoning)                       2.7%          8.6%       15.8%       10/40           1
+Claude Haiku 4.5 (temperature 0)                  1.6%         10.9%       40.0%       15/40          33
+GPT-5.5 (reasoning)                               3.3%         12.3%       18.5%       27/40           0
+GPT-5.4 mini (temperature 0)                      3.7%         16.3%       29.8%       35/40           0
+Claude Haiku 4.5 (default temperature)            3.5%         19.5%       38.1%       29/40          17
+GPT-5.4 mini (default temperature)                5.1%         19.9%       33.4%       40/40           0
 ```
 
-`policy agree` counts `uncertain` as a decision; parse failures count against agreement.
-`automatic` is the share of all answers that select a label. `conflicts` counts questions
-with more than one concrete label across the repeats, ignoring abstentions. These measures
-describe repeatability and how often the application acts, not whether its actions are
-right.
+For Jev, the least stable decision changes 4.0% of the time on an average post and
+6.7% on its worst, and no post goes above 1 time in 10. For the LLM conditions it changes
+8.6% to 19.9% of the time on an average post, and between 10 and all 40 posts go above 1
+time in 10. The unparsed answers are Claude Haiku 4.5's, plus one of Claude Opus 4.8's.
 
-TypeSafe's agreement rose from 90.8% to 99.2%. Of the answers, 25.8% were uncertain and
-74.2% automatic. `primary_risk` and `link_handling` came back uncertain on every repeat;
-`category` alternated between Violence and `uncertain`, crossing the action threshold on
-some repeats and not others. No question produced two different concrete TypeSafe labels.
-None of this shows accuracy or superiority: Haiku at temperature 0 had 100% agreement
-here, with no abstentions.
+Could luck alone produce a gap like this? For each LLM condition we line up its 40 post
+scores against Jev's, randomly swap the two scores within each pair 100,000 times, and
+count how often the swapped gap is as large as the real one.
 
 ```python theme={null}
-# Show every TypeSafe decision while retaining the top probability behind it.
-policy_decisions = decisions_by_condition[TYPESAFE_LABEL]
-policy_values = []
-for row, (_key, (_instructions, choices)) in zip(policy_decisions, QUESTIONS.items()):
-    labels = list(choices)
-    policy_values.append([
-        10 if value == "uncertain" else labels.index(value) if value is not None else np.nan
-        for value in row
-    ])
-policy_cmap = ListedColormap([*plt.get_cmap("tab10").colors, "#dddddd"])
-policy_cmap.set_bad("white")
-fig_policy, ax_policy = plt.subplots(figsize=(13, 4))
-ax_policy.imshow(policy_values, cmap=policy_cmap, vmin=0, vmax=10, aspect="auto")
-for row_index, key in enumerate(QUESTIONS):
-    for sample_index in range(NUM_SAMPLES):
-        decision = policy_decisions[row_index][sample_index]
-        probability = max(typesafe_runs[sample_index][key])
-        ax_policy.text(sample_index, row_index, f"{decision or 'n/a'}\n{probability:.2f}",
-                       ha="center", va="center", fontsize=6)
-ax_policy.set_yticks(range(len(QUESTIONS)), list(QUESTIONS))
-ax_policy.set_xticks(range(NUM_SAMPLES), range(1, NUM_SAMPLES + 1))
-ax_policy.set_xlabel("rubric query")
-ax_policy.set_title(
-    "TypeSafe application decisions: gray means uncertain "
-    f"(top probability < {MIN_CHOICE_PROBABILITY:.2f})"
-)
-fig_policy.tight_layout()
-display(fig_policy)
+signs = np.random.default_rng(0).choice([-1.0, 1.0], size=(100_000, NUM_POSTS))
+
+
+def permutation_p_value(typesafe_values: list, other_values: list) -> float:
+    """One-sided paired sign-flip permutation test: the share of random swaps at least as
+    favourable to Jev as the measured gap."""
+    gaps = np.array(other_values) - np.array(typesafe_values)
+    null = (signs * gaps).mean(axis=1)
+    return float(((null >= gaps.mean()).sum() + 1) / (len(null) + 1))
+
+
+def p_text(p: float) -> str:
+    return "p < 0.001" if p < 0.001 else f"p = {p:.3f}"
+
+
+print(f"{'condition':<{name_w}}{'least stable option':>21}{'average':>12}")
+for label in LABELS:
+    # multiply by the number of comparisons (Bonferroni) so six tests don't add up to luck
+    worst_p = min(1.0, permutation_p_value(least_stable[TYPESAFE_LABEL], least_stable[label]) * len(LABELS))
+    average_p = min(1.0, permutation_p_value(average_change[TYPESAFE_LABEL], average_change[label]) * len(LABELS))
+    print(f"{label:<{name_w}}{p_text(worst_p):>21}{p_text(average_p):>12}")
 ```
 
-![output](https://mintcdn.com/ts-docs/BBcnWK7wRF0qekMh/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.3.png?fit=max\&auto=format\&n=BBcnWK7wRF0qekMh\&q=85\&s=257663537c99b735f9f07609732d1a69)
+```
+condition                                 least stable option     average
+Claude Haiku 4.5 (temperature 0)                    p < 0.001   p = 0.009
+Claude Haiku 4.5 (default temperature)              p < 0.001   p < 0.001
+GPT-5.4 mini (temperature 0)                        p < 0.001   p < 0.001
+GPT-5.4 mini (default temperature)                  p < 0.001   p < 0.001
+GPT-5.5 (reasoning)                                 p < 0.001   p < 0.001
+Claude Opus 4.8 (reasoning)                         p < 0.001   p < 0.001
+```
 
-This policy does not make the model deterministic. Abstaining can replace competing
-labels with the same human-review outcome, but a probability near `0.60` can still move
-between a concrete label and `uncertain`. The probability statistics and the table's `raw
-agree` column still report the original model outputs.
+On the least stable option every p-value is below 0.001, after multiplying by six for the
+six comparisons: luck would produce gaps this large less than once in a thousand runs. On
+the average over all options the same holds for every condition but Claude Haiku 4.5 at
+temperature `0`, where the p-value is 0.009. Temperature `0` lowers the LLMs' numbers, but
+Claude Haiku 4.5 at temperature `0` still has a decision that changes more than 1 time in
+10 on 15 of the 40 posts.
+
+Each row of the plot is one condition and each dot is one of the 40 posts. A dot sits at
+the chance that asking again changes that post's least stable decision, so further left is
+more consistent. Within a row the dots are spread up and down only so they don't overlap;
+their height means nothing. The dashed line is 1 in 10.
+
+```python expandable theme={null}
+fig_strip, strip_ax = plt.subplots(figsize=(8, 0.5 * len(PLOT_ORDER) + 1))
+for position, label in enumerate(PLOT_ORDER):
+    values = least_stable[label]
+    # spread the posts vertically so dots with close values stay countable
+    strip_ax.scatter(
+        values,
+        position + np.linspace(-0.2, 0.2, len(values)),
+        s=30,
+        alpha=0.55,
+        color="#2b8cbe" if label == TYPESAFE_LABEL else "#fe9929",
+        edgecolors="none",
+    )
+strip_ax.axvline(0.10, color="gray", linewidth=0.8, linestyle="--")
+strip_ax.text(0.105, len(PLOT_ORDER) - 0.55, "1 in 10", fontsize=7, color="gray", va="bottom")
+strip_ax.set_yticks(range(len(PLOT_ORDER)), PLOT_ORDER, fontsize=8)
+strip_ax.invert_yaxis()  # first row on top
+strip_ax.set_xlim(0, 0.6)
+strip_ax.xaxis.set_major_formatter(PercentFormatter(1.0))
+strip_ax.set_xlabel("chance that asking again changes the decision", fontsize=9, labelpad=16)
+for x, text, align in ((0, "← more consistent", "left"), (1, "less consistent →", "right")):
+    strip_ax.text(x, -0.075, text, transform=strip_ax.transAxes, ha=align, va="top",
+                  fontsize=8, color="gray")
+for edge in ("top", "right", "left"):
+    strip_ax.spines[edge].set_visible(False)
+strip_ax.tick_params(length=0)
+strip_ax.set_title(
+    "Ask the same thing twice: how often does a decision change?\n"
+    f"One dot per post ({NUM_POSTS} per row), at its least stable option out of "
+    f"{sum(len(choices) for _instructions, choices in QUESTIONS.values())}",
+    loc="left",
+    fontsize=10,
+)
+fig_strip.tight_layout()
+display(fig_strip)
+```
+
+![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.2.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=5b98c1900deb6b49c0d032d14865b25d)
 
 ## Open it in the TypeSafe playground
 
-The link below opens the same post and rubric in the playground: one post, the same 8
-`Choice`s, and TypeSafe `jev-latest`.
+The link below opens the example post and rubric in the playground: one post, the same 8
+`Choice` questions, and `jev-latest`.
 
 ```python theme={null}
 playground_link = make_playground_link(
@@ -1058,7 +978,7 @@ display(
 )
 ```
 
-[Open this post + rubric in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAA4QDOKpBJ5VKA+gJZi36kAKAtABx8ATAEYAzKQA0nEAEMYKABYQATh3oxKCZa3Z5pMAPQAWIwHZhk6TKhQIMVExkBzBEzAyAnpQ6i+U0mTKLCpM1EEA1gjeesL+IABmEAA2SRAA7lrRBCIADAC+cbaoWDR69JQwyvHWCBwBMABGSSxQ+MoIZEkelqQsSEztnR5MKBB1skgQilr4GjNgCPHIYH1O+DL4TjKI+GQyKFAKPSC2cHD2LCjdeqTKBluICw37UaQF0kUoyKV0pF-Y4wAgu18B47PhNEE7JQuvhFCxKPgFkhNAB+fCApBgpAIfBpJRIxbLRGKfa7faHfAI9b4U6dBBfWmpNJIdZIMAQpQwJIchq4hBwZ7KZQySiaDmjfAIABuyF2jHwCi0CAAdPguAgIPT8M1IqDwTIQfj9gByRHKGB9VZwhTU07nJCXDxsjlKHHUWFgmD4HEICUQfB8wkyJIoPGXBRqgDCEB2lE8VLDkrgzuqUAQUj60suCDNbRYTgUYaV7TVAGkEB1E7MyC78ABJE0pKXs-WVPFKJK4w4yJA4pIq44KUVMZpIcIcFAWjPSMfhNyxmR9cYrSi2ZRgFVOJzHJK9pwwZy1G4gZBvOKDFQoLL4dSQgYdK83owXx-KZjtUUQFEcADapGHEUxUQVBjkoPY4GORRP1KABdPIEJAKRyGUWMyGvDBsD0IhSCgF4nBUa5fhAK4yGPAhcKUFpjziPowhgKAUGCH8TwAdWHMNqWmCFVi7fA4AVGQyE6FoZCabtvy+VAeAoZooGdPCvgI5RUxUG1qQoahUWOKAgi+IIZDUUgADlv3I6RTPlOTnWzZJ9mY-AIHiNlnXCPpN2OAAJQ1RRvUh6xRblr0c5RCUQXtEQ2MjlEob8pDSCMfQDaCEDJJzFUNOA60mXZUK+Ri-R4KA9zFdYUBQaxwkHJDpG8r4gXKyrIt2TJvxCzZUJgWsIFlUKoryhACo5HsRQKoJqBafAAApRpndpmicZipBcdktCkFUNoASmquIADVgi7JB03GABZGRIma3S-RYcSbRgxznMArK1L6KAc0RWzDvTdYtjosNYsQMydukABlCDxgAVRRZIWhzDlAljKYHLUucIQg+LEpy6LYqQEMyoqqAquOEGsEPJJxhJzAyfamQwCC2lJO+aqELiQIWDgQ1hnGicyj+DwyPGQ4IGo44-otRjmL8kB2LJLilVy9nOf4iAFhFJi2u5m0yUoLkeSRIJZThAyXHwRJQvhRFNJQbSatwvStBYQzeZAbygMoECfmkDUYu-PH9gJ8J2oq5QXC+DkxLmKkSXljm+nzSgidtkB9uSZBjpPQE7tSsN0qe9q+iYuA2Hstq5dxWPWW54HSAAGT6cJAQaOZxgAUWwLRcaSHhUbUpz4hkvcUDNrLbBUFZcfVyuEUDsv+KXKeE+rkBARsOxUE8hFRhU8YuChPrV-sYtN8I9rBmzwMEGHWzQtniv48TuIa-SAAlafxks8LHSQJx4m5ZXVZLgvGelt2iaFQMzd4fxDShyMiRfm5lKLC3TrRFEU4GKTyluxAMaljScWjhJYoqAFYcyCLCFY7QhplRtoUe2BlYGmRxO-KYSIWAULDmVFyZkqSsj2O+Fo3JDRL29jjcYAARVhg12FpRxGjQaLB4iTXciwbMdMQxLwAOKdTIGIiRlCyT9SmJIv0HU7DdVCsVXyQjB7Dx0Ww4xZJuL2guFcdqnR9jD0TJoJI8QpCTDDFFVqSAIFxGsJPWBpEEEnCosg6QYt0GS3GDLMMyAzbpg9usCWbUdZ2D1kGCqkRWRtQtvKLSOlaGO1gYCFI6Rxg11SobbiVsazhkUElDJk8l6sUNEgWp9TcSNIVF1QM8h8bWAUDSNI3TrR7j5AOY4z8BQ9UiQsgSDT5ZWykE3MMkAkphjIp3FgAAvfp8trC2EPkvEGU4WCRHGCspZNpcRNN7OHMA4cITXL1JKbiZy14oCXi3NcIYXjjDQOdXEOU5CjA5lIzJSAADcipkgcjNjSBQ8BeyEjepQZiwTpAAEcYAICJeE+Bgtok0Viag8WGDEm2kpDi7+fEBIAMnvgQlxLcTZO5BydIrJilW2oR8cpTtiKAnkGMDOEqeCgOSLKRFOV0Uc1ZByolPpKwLA8kndRyAtAhnGDqnEIokj-z1Wy1VqpjhoAUDBUFNrz4GHwJ9NOuJQEUBRLiC1lzwYnjBtsOsbih4qDgDwCOmh2VEqJUvNAIM6m01BRaagob2Q8HjEsFxXZab4EdWA4IoUvVvEgSAOcTBhzsjHDuZ2ETyVIMpb0al8TvxS08ukTkOTw5YilO3ZQncdT13an3Ae7jg3cOzIyOOAzqAXwyuWv0Qq7Y5joc7KpzJekyDWbiVGcc3HpiXs-OAddxwU2uWYlh8ZbrcVRls-AkQqyTv+ccAAQkELYCwE3n0vf20UDMx59BeLyF9tNrQvPaQ5S46xIpN00ACoFg9Ikk1bJ+8ccIAwbHAnIkMm8UMQc0KVPkZtcShNWHi24MoWAIDSEwPYihSUCxPELEWSc4lwswQSblesOZfPlgo3teFmxFNtJbRg86TgisqRKoEEqYX2LhQqgMSrMXtGzBRpenkMU9IzqbVCqAxy4gU6yFlZq1KcaiI82kIY5lJwQ3moEEJkB5vauht6mGp1KfIxkG+5oECEokVqx+CAtjkxPM-OwjJJRdkC+1PcaQeApJUGk74UpYOAJIyATQvUnS0ciQxmJ9b6IsbpbLfBjleoWbsxllx6UBXCbKYuipzsGGRMsp9FLxwn5pDuTABY7VVxFzFMomc16ohgKYhZ50T0uxiiXida68Ad6BLxoBXy6SEqtJysVVKyhYRXRWBe+1+xVMFiOCeV2y3EujFDiWFp4yNgpQcRxBmPLp2fnDoiHbN0uwQLyDVWQZAWC7UyMxbC0phAgDyEAA)
+[Open this post + rubric in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAA4QDOKpBJ5VKA+gJZi36kAKAtABx8ATAEYAzKQA0nEAEMYKABYQATh3oxKCZa3Z5pGrUwAsRgOzDJ0mVCgQYqJjIDmCJmBkBPSh1F8ppMmUWFSZqIIBrBG89YX8QADMIABskiAB3LWiCEQAGAF8421QsGj16ShhleOsEDgCYACMklih8ZQQyJI9LUhYkJnbOjyYUCDrZJAhFLXwDZXwwBHjkMD6nfBl8JxlEfDIZFCgFHpBbODh7FhRuvVIsHc6EHm3EHkWGg6jSAukilGRSnRSP9sOMAILtfAeOz4TRBOyULr4RQsSgLZCaAD8+DBSGhSAQ+DSSnRyyQYDRigOewOR3wqI2+DOj3+TNSaSQG3JsKUMCSYHwDUJCDgH2UyhklE0AtG+AQADdkHtGPgFFoEAA6fBcBAQR74ZqRKEwmSQ4kHADkaOUMD6a2RCgZZwuSCuHi5AqUBOoSOhMHwBIQMoggsJixkSRQRKuCi1AGEILtKJ56VHZXB3dUoAgpH15VcEFa2iwnAoo2r2lqANIIDqp2ZkD34ACSFpScu5fvmxOShKOMiQBKSGpOCklTGaSHCHBQNpz0kn4TciZkfXG-ZQGvucEeJySA6cMGctVuIGQ3zigxUKCy+HUcIGHWvt6Ml6fymY7UlECQt4A2qQY4SlKiCoCclD7HAJyKF+pQALp5IhIBSOQyiJmQN4YNgehEKQUCfE4Kg3ECIDXGQJ4EHhSgtCecR9GEMBQCgwS-uMADqY5Rgy0ywmsSSEnAKoyGQnQtDITR9j+-yoDwFDNFA7r4f8hHKJmKgOgyFDUJiJxQEE-xBDIaikAAcj+FHSGZyrye6+bJAcLH4BA8Rcu64R9GAI7IdIAASpqSrepDNr+fI3k58yLIgA5ops5HKJQP5SGkMYBiGMEINSzmqqacBNpMexof8TFBjwUD7lKGwoCg1jhF5cR+f84JVTVMV7JkP7hVsaEwI2ECKvMsWFQgxUCv2ErFUE1AtPgAAU43zu0zROCxUguOSWhSBqW0AJR1dIABqwT8Ug2bjAAsjIkStXpQYsBJDqwU5LlAbl6l9FABZonZx3Zhs2z0VGCWIOZe2kAAypB4wAKq-skLQFgKgSJlMjnqYusKQUlKX5XFCVIBGlXVVAtUnGDWBHkk4xk5gFOdTIYChUyUkAl5iFxIELBwKawyTdOZTAh45HrtRp3eb0v6zoxzE-oFIAcdS3FqgVnPc-ggmLBK0ucrzDrUpQvL8gsQSKsihkuPgiTzCiaJaSgOli6c+laCwRn8yAfnAZQoGAtIOrxT+BMHET4SddVyguP8AriQY9KUkrXN9MWlAkw7h29idFmkGCD0ZVGWUvZ1fTMXAbAOR1isCau2uoincQADJ9OEYINAY4wAKLYFo+NJDw6Pqc58SyfuKCW7ltgqKs+Na0nIcV2rVcz6DIBgjYdioD5qKjKp4xcPCA2r-Y5ab0RnWDLnoZjnZ8xzwn1fJ0vdfpAASjX4xWVFrpIE48R8mrEAa2XO+s8bbtE0KgVmPxgSmgjsZUigtM6nBFrRaQAMbRMRYrLDiIZ1Lmi4nHSSxRUDKy5kEJEqx2gjUqvbQoTtDKwLMgSN+UwFgsAoZHSqrlzL0k5PsD8LQ+SmiXn7PG4wAAirDhrsMygSDGw0WDxGmh5Fg+YGYRiXgAcW6mQMREjKHUkGlMSRQYup2F6vMMqAUhHD1HjothxjqQ8WdJca4nVOgHFHqmTQSR4hSEmFGWK7UkAQLiNYLWsCyIIKOBAGiJxUFSwwexTiHZLbZm9hsdBHV9Z2ENkKZEl0lQdWtsqbSulaEu1gWCFI6Rxh1wyibHitsGzRkUKldJWsl5sVNEgGpdTCQNJVD1QU8hCbWAUIyNIXT7T7iFMOE4T8RR9QQfMwS9Sla2ykC3KMkBUpRnIt3FgAAvPpStrC2EPkvMGs4WCRHGMsxZDpCSNIHFHMAUdYRXKNLKHipy16bhOG3Sg+Fh4ILQPk1pchRhcykRkpAABuVUyQBSW0ZAoeAA50QfUoCxYJ0gACOMAEAEvCfA4W0TRZ0QlmgrWmDHR0ixV-fif8AHT3xYSwkWS+QCnSJyIpttqG-DKa7EiYJ5BjFPCK0YPBQHJEVPC-KqKuaclZQSgMtZFieROOo5AWgIzjC1QSCUSQmU6pZQSglS80AKFguMS1j0AD0+BvrIF+qAigv5CTKs1KTSGp4IY7CbG4keKg4A8GjpofAnqLVg1qfTG1NpqChvJDwZMywXH8XpvgB1YDgjzEjd8SBIBFxMDHOSScThiVC1PFEmJDs4kwtlj5dIPJslRzxHKTuyhu4Gkbp1AeQ93HBu4fmVkid+nUFDNlUtQZ+V4UFRUqpaQekyFWYSdGic3HZiXk-OADcpxUyuWYlhyZ7o8XRps-AkQ6xjr+Q7AAQkEbYiw43n1PT2yUTMJ59E+AKBoD76b2meW0xyVwNgxRbpoJeAKgWfCpisB53apzIhDJsCCciIybyQ6BzQFUhSW0JKEtYOLSDtHzAgNITB9iKArZEpBsTKXxJlokkMHLDZc0+UrBRXagVGsKY6G2jAZ2OwLHQt2EqxWUWXqKqF9iYVypDAq9FJGWBkaXj5NF3TxUWzQqgSchIFOcnVia9SbGojwe4xc5AObwSwks-3eYqGProfHUpsjMwGTtHxRIjVDtanbEpqeJ+dhWSyn4n5zq+40g8GQCkkUAI5SAojIAojIBND9TdNR0lNaKUMXrYkhW+CnL9QjEa1LzsXFZV5QJ0pwnyluwYQgqy30ksnEfougLMBFidVWF7VEWLFQbOGVEMBzFivuhevxKUS8zq3XgDvQJBMgIBTSclFp+UyoZWUEiG6qwT1WtzqpksxxTweyW3F0YEcKzNLGZsdKDiklnJyYSL8Uc0TbbuvxCBeRvKyDICwfamQWI4XlMIEAeQgA)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

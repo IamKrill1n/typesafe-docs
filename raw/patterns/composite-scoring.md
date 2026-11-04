@@ -8,7 +8,7 @@
 
 Oftentimes we want to rank a set of items based on several criteria at once. Composite scoring is an easy way to think about this: break the judgment into independent dimensions, score each one separately, and combine them with weights you control in code.
 
-## Example: resume screening
+## Example: screening resumes
 
 Let's imagine you are processing resumes for engineering roles. You want to rank the candidates based on several criteria, and ultimately select the top X candidates for further review.
 
@@ -17,7 +17,7 @@ Let's imagine you are processing resumes for engineering roles. You want to rank
 flowchart LR
     resume["candidate resume"]
 
-    subgraph req["TypeSafe evaluates questions<br/>in parallel"]
+    subgraph req["Jev evaluates questions<br/>in parallel"]
         direction TB
         py["<b>Score:</b> Python depth"]
         lead["<b>Score:</b> team leadership"]
@@ -29,17 +29,22 @@ flowchart LR
 
     resume -- "one request<br/>resume + 4 questions" --> req
     req -- "one response<br/>4 score answers" --> normalize["<b>normalize scores to 0–1</b><br/>divide each by 4 in your code"]
-    normalize --> ic["<b>senior IC weights</b><br/>40% Python + 10% leadership<br/>40% design + 10% generalist"]
-    normalize --> em["<b>engineering manager weights</b><br/>15% Python + 40% leadership<br/>20% design + 25% generalist"]
+    normalize ic_weights@--> ic["<b>senior IC weights</b><br/>40% Python + 10% leadership<br/>40% design + 10% generalist"]
+    normalize em_weights@--> em["<b>engineering manager weights</b><br/>15% Python + 40% leadership<br/>20% design + 25% generalist"]
     ic --> rank["rank candidates<br/>for each role"]
     em --> rank
+    %% The two weighting paths flow (styles.css pauses this under prefers-reduced-motion).
+    ic_weights@{ animate: true }
+    em_weights@{ animate: true }
 ```
 
-### Step 1: score each dimension independently
+### Score each dimension separately
+
+Send the resume with one Score question per dimension. Each question asks for a single judgment, so each score can be weighted on its own later.
 
 Try it in the Playground →
 
-### Step 2: combine with weights
+### Combine the scores with weights
 
 Each dimension is normalized to 0–1 and weighted. The weights give you an easy way to adjust the relative importance of each dimension, without losing any of the nuance of the individual scores.
 

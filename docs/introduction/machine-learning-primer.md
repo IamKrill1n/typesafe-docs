@@ -30,7 +30,7 @@ Pretrained language models have been adapted in two major ways. TypeSafe adds a 
 
 > [card] RLCD
 >
-> **Reinforcement learning for calibrated decisions** trains TypeSafe to return decisions and calibrated probabilities instead of generated text.
+> **Reinforcement learning for calibrated decisions** trains Jev to return decisions and calibrated probabilities instead of generated text.
 
 RLHF was used to train InstructGPT and ChatGPT and was [co-invented by Diogo Almeida](https://scholar.google.com/citations?user=0T4y07QAAAAJ\&hl=en), cofounder of TypeSafe.
 

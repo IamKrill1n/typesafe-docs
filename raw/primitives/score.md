@@ -87,7 +87,7 @@ with TypeSafeClient() as client:
     print(response.answers["bug_severity"].score)
 ```
 
-Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
+Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model such as Jev. The `model` field selects which model handles the request. [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
 
 Use one of our [client SDKs](https://docs.typesafe.ai/sdk.md) or call the [TypeSafe API](https://docs.typesafe.ai/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](https://docs.typesafe.ai/agent-skill.md#installation) first so it knows the request and response shapes.
 
@@ -128,7 +128,7 @@ The response has one entry in `answers` per question, under the ids from the req
 
 Each Score answer has five values:
 
-* `type`: The type of TypeSafe question.
+* `type`: The type of System One question.
 * `probabilities`: The probability of each level, keyed by level number as a string. The sum of all values is 1.
 * `score`: The position on the level number line, from 0 to the top level number, which is 2 here. It's each level number multiplied by its probability, added up: 0 x 0.0 + 1 x 0.57 + 2 x 0.43 = 1.43.
 * `legend`: Each level number mapped back to its description.
@@ -231,13 +231,13 @@ If there is no in-between at all, and the answer is one of a few discrete catego
 
 ## Splitting a complex judgment into several Score questions
 
-A complex judgment, one that depends on several things, is best split into one Score question per thing. You can then combine the Scores returned from TypeSafe in your code to make the judgment. Some Score questions may matter more than others, so give each Score question a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Send the Score questions in one request. They are evaluated in parallel. Adding questions barely changes the response time and costs a few extra question tokens; see [Ask multiple questions together](https://docs.typesafe.ai/primitives#ask-multiple-questions-together).
+A complex judgment, one that depends on several things, is best split into one Score question per thing. You can then combine the Scores returned from Jev in your code to make the judgment. Some Score questions may matter more than others, so give each Score question a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Send the Score questions in one request. They are evaluated in parallel. Adding questions barely changes the response time and costs a few extra question tokens; see [Ask multiple questions together](https://docs.typesafe.ai/primitives#ask-multiple-questions-together).
 
 The request below is the spinner ticket from the table above with some more context. It asks three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with.
 
 Try it in the Playground →
 
-TypeSafe's response:
+Jev's response:
 
 ```json theme={null}
 {

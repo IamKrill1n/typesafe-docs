@@ -56,7 +56,7 @@ with TypeSafeClient() as client:
     print(response.answers["department"].choice)
 ```
 
-Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
+Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model such as Jev. The `model` field selects which model handles the request. [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) covers where in your code to call it.
 
 Use one of our [client SDKs](https://docs.typesafe.ai/sdk.md) or call the [HTTP API](https://docs.typesafe.ai/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](https://docs.typesafe.ai/agent-skill.md#installation) first so it knows the request and response shapes.
 
@@ -120,7 +120,7 @@ Try it in the Playground →
 
 Two of these Choice questions are speculative: `return_reason` only matters if the `department` is `returns`, and `shipping_issue` only matters if it's `shipping`. The `tone` question uses `null` descriptions because the option names are clear on their own.
 
-The TypeSafe response:
+Jev's response:
 
 ```json
 {

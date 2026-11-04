@@ -1,8 +1,8 @@
 # Date extraction
 
-> Extracts absolute and relative dates by asking TypeSafe for the parts named in a document, then resolving and validating them in code with confidence-based review.
+> Extracts absolute and relative dates by asking Jev for the parts named in a document, then resolving and validating them in code with confidence-based review.
 
-*Read a date's parts off the text with TypeSafe, then resolve them to a `date` in code.*
+*Read a date's parts off the text with Jev, then resolve them to a `date` in code.*
 
 The function you build here, `extract_date(document, role)`, takes a document and a
 phrase naming the date you want, such as "the deadline to return the form", and hands
@@ -10,12 +10,28 @@ back a `date` with a confidence. It flags a low-confidence read, a read whose pa
 make a date, and a date the document never states. The date can be spelled out ("August
 14, 2027") or written relative to today ("tomorrow", "next Thursday").
 
-TypeSafe answers `Choice` questions about the date in one call: what kind of date it is,
-and
+Jev answers `Choice` questions about the date in one call: what kind of date it is, and
 which month, day, year, or weekday the text names. Code turns those answers into a `date`.
 The model reads what the text says and never does the calendar math.
 
-![Overview diagram](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/date_extraction_cookbook/overview.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=4d1d1d4d446eefafb556505d9834e7a0)
+```mermaid actions={true}
+  %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300}}}%%
+flowchart LR
+    doc["document +<br/>which date<br/><i>#quot;the deadline#quot;</i>"] --> req
+
+    subgraph req["Jev"]
+        read["<b>Choice</b> questions: what kind<br/>of date, and which parts<br/>does the text name?<br/><i>month, day, year, or today,<br/>tomorrow, next Thursday</i>"]
+    end
+
+    req -- "the parts, as<br/>the text states them" --> math["your code does<br/>the calendar math<br/>from today's date"]
+    math --> check{"a valid date, and<br/>confident in every<br/>part it used?"}
+    check green_ok@-- "yes" --> use["use the date"]
+    check blue_review@-- "no" --> review["send to a person"]
+
+    %% Branch colours (styles.css): node classes and green_/blue_ edge ids.
+    class use neonGreen
+    class review neonBlue
+```
 
 ## Setup
 
@@ -39,7 +55,7 @@ TYPESAFE_MODEL = "jev-1.12"
 TODAY = date(
     2026, 7, 30
 )  # fixed reference "today" so relative dates resolve reproducibly
-REVIEW_BELOW = 0.60  # gate: a date below this confidence is flagged for a human
+REVIEW_BELOW = 0.60  # threshold: a date below this confidence is flagged for a human
 
 MONTHS = {
     "January": 1,
@@ -199,7 +215,7 @@ def resolve_weekday(today: date, weekday: str, week_offset: str) -> date:
     return today + timedelta(days=(w - today.weekday()) % 7)
 
 def assemble(parts: dict, today: date = TODAY) -> dict:
-    """Resolve the parts TypeSafe read into a concrete date, in code. Confidence is the weakest of
+    """Resolve the parts Jev read into a concrete date, in code. Confidence is the weakest of
     the parts the shape actually used."""
     mode = parts["mode"]["choice"]
     confs = [parts["mode"]["confidence"]]

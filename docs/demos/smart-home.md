@@ -1,6 +1,6 @@
 # Smart home assistant demo
 
-> Demo code: a smart home assistant that uses TypeSafe to evaluate user requests.
+> Demo code: a smart home assistant that uses Jev to evaluate user requests.
 
 ## Check it out in action
 
@@ -42,13 +42,13 @@ Then, only once you know it's targeting lights:
 
 This approach optimizes for a minimum number of questions, but it ends up being much slower and more expensive than batching all of the questions in to one upfront API call.
 
-### TypeSafe and LLM pairing
+### Jev and LLM pairing
 
-This demo also shows how TypeSafe can be paired with LLMs to handle a system that sometimes requires a string-generation step:
+This demo also shows how Jev can be paired with LLMs to handle a system that sometimes requires a string-generation step:
 
-**Splitting a compound user request:** One of the questions in this demo is a Noul question identifying if the user request is asking for more than one distinct action. If this is true, the system uses an LLM to split the request into a list of atomic commands. The split requests are then evaluated by TypeSafe individually.
+**Splitting a compound user request:** One of the questions in this demo is a Noul question identifying if the user request is asking for more than one distinct action. If this is true, the system uses an LLM to split the request into a list of atomic commands. The split requests are then evaluated by Jev individually.
 
-**Falling back to a conversational LLM:** When TypeSafe determines that the user query is a request for general information or conversation, the system calls an LLM to generate a freeform response. This allows an interactive system to handle requests with known deterministic behavior in a fast and cost efficient way, while still allowing for the flexibility provided by a generative LLM when needed. The initial TypeSafe response is so fast compared to the LLM response that it adds negligible latency to the overall system.
+**Falling back to a conversational LLM:** When Jev determines that the user query is a request for general information or conversation, the system calls an LLM to generate a freeform response. This allows an interactive system to handle requests with known deterministic behavior in a fast and cost efficient way, while still allowing for the flexibility provided by a generative LLM when needed. Jev's initial response is so fast compared to the LLM response that it adds negligible latency to the overall system.
 
 ## Run it yourself
 

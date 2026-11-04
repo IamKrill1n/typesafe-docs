@@ -16,7 +16,7 @@ line](https://mintcdn.com/ts-docs/oDyLjm6qxw13db62/cookbooks/semantic_find/seman
 
 The search has three parts:
 
-1. Tag each line with an ID so TypeSafe can point to it.
+1. Tag each line with an ID so Jev can point to it.
 2. Use a `Choice` question to rank those line IDs by how well they answer the query.
 3. In the same request, use a `Noul` question to check whether the document contains an
    answer at all.

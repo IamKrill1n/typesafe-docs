@@ -4,7 +4,7 @@
 
 # Intelliprompter
 
-> Tick off a presenter's notes as they speak: TypeSafe scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold.
+> Tick off a presenter's notes as they speak: Jev scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold.
 
 *Intelliprompter checks off each talking point as you cover it, with one `Score` question
 per point.*
@@ -25,12 +25,12 @@ The animation below shows how new chunks of the transcript get processed. Each a
 can check off zero or more criteria. Once something is marked as complete, it can't later
 be unmarked.
 
-![Longer speech sections join a growing transcript and check off requirements](https://mintcdn.com/ts-docs/g9ro16xgurNlpGbu/cookbooks/intelliprompter/score-ratchet-loop.svg?fit=max\&auto=format\&n=g9ro16xgurNlpGbu\&q=85\&s=cb82c63a6019dee698d06cf86d0eb5be)
+![Longer speech sections join a growing transcript and check off requirements](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/intelliprompter/score-ratchet-loop.svg?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=0b4aea32d8948cb32b43d674c1446dbf)
 
 ## How Intelliprompter works
 
 The demo video at the top of the page shows a working system, integrating your
-microphone with ElevenLabs and a local app that uses TypeSafe to score the transcript and
+microphone with ElevenLabs and a local app that uses Jev to score the transcript and
 keep track of which items are completed.
 
 This cookbook skips the integration code to focus on the TypeSafe parts. It hard-codes six
@@ -42,7 +42,7 @@ chunks from the transcript and feeds them incrementally to Jev:
 * One `system_one` request sends the state and all the questions together.
 * Jev returns one score for each criterion. The SDK numbers the five levels 0–4, so
   the cookbook adds one to match the live app's 1–5 display.
-* A score of 2.5 out of 5 is the demo's local coverage threshold, not a TypeSafe
+* A score of 2.5 out of 5 is the demo's local coverage threshold, not a Jev
   confidence value. The app marks that criterion covered and omits it from later
   requests.
 
@@ -58,9 +58,9 @@ flowchart LR
 
     transcript --> jev
     questions --> jev
-    jev -- "one coverage score<br/>per criterion, 1–5" --> gate{"score ≥ 2.5?<br/>in your code"}
-    gate green_covered@-->|"yes"| covered["mark it covered and<br/>drop its question"]
-    gate -->|"no"| pending["keep its question"]
+    jev -- "one coverage score<br/>per criterion, 1–5" --> check{"score ≥ 2.5?<br/>in your code"}
+    check green_covered@-->|"yes"| covered["mark it covered and<br/>drop its question"]
+    check -->|"no"| pending["keep its question"]
     covered --> checklist["teleprompter shows<br/>the point as checked"]
     pending -. "next tick: longer transcript,<br/>remaining questions" .-> questions
     %% Branch colours (styles.css): node classes and green_/blue_/purple_/orange_ edge ids.

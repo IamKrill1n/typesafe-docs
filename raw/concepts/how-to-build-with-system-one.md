@@ -4,13 +4,13 @@
 
 # How to build with TypeSafe
 
-> Design AI-powered software by keeping code in control and giving System One narrow, structured decisions.
+> Design AI-powered software by keeping code in control and giving Jev narrow, structured decisions.
 
-System One is TypeSafe's model for building AI-powered software, not agents. It does not generate code or choose its own next action. It provides AI primitives that embed into software, so code remains in control while the model handles common-sense judgments over unstructured data.
+Jev is TypeSafe's model for building AI-powered software, not agents. It does not generate code or choose its own next action. It provides AI primitives that embed into software, so code remains in control while the model handles common-sense judgments over unstructured data.
 
 > [!NOTE]
 >
-> **Summary:** build a normal software workflow and insert System One only where AI is needed.
+> **Summary:** build a normal software workflow and insert Jev only where AI is needed.
 >
 > * Keep control flow, deterministic rules, and side effects in code.
 > * Break broad judgments into narrow, typed questions with explicit instructions and criteria.
@@ -36,11 +36,11 @@ TypeSafe is designed for building **AI-powered software**, where code owns the w
 
 ![Traditional software, agents, and AI-powered software shown as three different system architectures.](https://mintcdn.com/ts-docs/aFVnpmCIX68NpsV1/images/how-to-build-with-typesafe/software-architectures-light.webp?fit=max\&auto=format\&n=aFVnpmCIX68NpsV1\&q=85\&s=35c7622176190d1b1f19dc712f2fbf11)
 
-## What makes System One composable
+## What makes Jev composable
 
 > [card] Structured
 >
-> System One is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
+> Jev is type-safe by construction. Decisions and probabilities conform to the structured software types and JSON schema your code expects, so it never has to recover a value from generated prose.
 
 > [card] Parallel
 >
@@ -52,7 +52,7 @@ TypeSafe is designed for building **AI-powered software**, where code owns the w
 
 > [card] Fast
 >
-> Most calls complete in about 100 ms. System One is fast enough for real-time request paths and user interfaces.
+> Most calls complete in about 100 ms. Jev is fast enough for real-time request paths and user interfaces.
 
 > [card] Calibrated confidence
 >
@@ -60,7 +60,7 @@ TypeSafe is designed for building **AI-powered software**, where code owns the w
 
 > [card] Self-consistent
 >
-> System One is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md).
+> Jev is designed to return stable answers across repeated evaluations. See the [self-consistency cookbook](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md).
 
 Because every output is constrained to the supplied options, the model returns a full probability distribution over those options rather than inventing a value outside the schema. TypeSafe's target is a greater than 100× intelligence-to-speed-and-cost ratio; the underlying bet is that cheaper intelligence will create much more demand.
 
@@ -157,7 +157,7 @@ A short, unambiguous question or criterion can remain a string. Add structure wh
 
 Ask many narrow, independent questions about the same state in one request. This is how you maximize effectiveness and intelligence per dollar with the API: questions run in parallel, and code can combine their signals without adding serial model round trips.
 
-See the [Speculative Fan-Out pattern](https://docs.typesafe.ai/patterns/fan-out.md) and [Parallel questions cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md).
+See the [Speculative fan-out pattern](https://docs.typesafe.ai/patterns/fan-out.md) and [Parallel questions cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md).
 
 ### 7. Combine question outputs in code (or feed into a classical ML model)
 
@@ -176,7 +176,7 @@ Combine independent answers with deterministic rules or weighted sums. For learn
 > )
 > ```
 
-[Composite Scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) shows how to preserve individual judgments while combining them. If you do not have labels for a downstream model, use an ensemble of expensive reasoning models to generate them; the [AutoResearch cookbook](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md) shows how to train a classical model on System One outputs.
+[Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) shows how to preserve individual judgments while combining them. If you do not have labels for a downstream model, use an ensemble of expensive reasoning models to generate them; the [AutoResearch cookbook](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md) shows how to train a classical model on Jev outputs.
 
 ### 8. Route on uncertainty
 
@@ -193,7 +193,7 @@ Make code take different actions for confident and unconfident answers. Escalate
 >     route_to_handler(answer.choice, ticket)
 > ```
 
-See [Confidence](https://docs.typesafe.ai/confidence.md) and [Confidence-Gated Routing](https://docs.typesafe.ai/patterns/confidence-routing.md) for choosing thresholds and matching them to the risk of each action.
+See [Confidence](https://docs.typesafe.ai/confidence.md) and [Routing by probability](https://docs.typesafe.ai/patterns/probability-routing.md) for choosing thresholds and matching them to the risk of each action.
 
 > [!TIP]
 >
@@ -201,7 +201,7 @@ See [Confidence](https://docs.typesafe.ai/confidence.md) and [Confidence-Gated R
 
 ## Putting it all together
 
-This support-ticket workflow keeps deterministic work in code, sends only relevant structured context, evaluates many atomic questions in one request, and composes the answers with explicit confidence gates.
+This support-ticket workflow keeps deterministic work in code, sends only relevant structured context, evaluates many atomic questions in one request, and composes the answers with explicit confidence thresholds.
 
 ```python title="triage_ticket.py" theme={null}
 from typesafe_sdk import Choice, Noul, NoulCriteria, Score, TypeSafeClient

@@ -1,10 +1,10 @@
 # Confidence
 
-> How TypeSafe reports certainty, how it differs from probability, and how to use it to control system behavior.
+> How Jev reports certainty, how it differs from probability, and how to use it to control system behavior.
 
-All Score and Choice answers from TypeSafe include a `probabilities` property representing the probability distribution across the options (for Choice) or levels (for Score). The *shape* of that distribution is what tells you how certain the model is: concentrated on one outcome means a confident answer, spread out means an uncertain one.
+All Score and Choice answers from Jev include a `probabilities` property representing the probability distribution across the options (for Choice) or levels (for Score). The *shape* of that distribution is what tells you how certain the model is: concentrated on one outcome means a confident answer, spread out means an uncertain one.
 
-The answer's `confidence` property collapses that shape into a single number from 0 to 1, so you can threshold on it without doing the math yourself. It is 1 when all the probability is on one outcome and 0 when the probability is spread evenly. (Noul answers don't carry one; see [Noul](#noul) below.)
+The answer's `confidence` property collapses that shape into a single number from 0 to 1. It is 1 when all the probability is on one outcome and 0 when the probability is spread evenly. (Noul answers don't carry one; see [Noul](#noul) below.) It describes how certain the answer is, but it isn't always the right number for your code to act on.
 
 ## Confidence is derived from the probabilities
 
@@ -54,7 +54,7 @@ Where you draw those boundaries depends on the stakes.
 
 ## Thresholds scale with risk
 
-A confidence threshold is not one number. Different actions within the same system should be gated at different levels depending on the consequences of getting it wrong.
+A confidence threshold is not one number. Different actions within the same system should use different thresholds depending on the consequences of getting it wrong.
 
 ```python
 response = client.system_one(
@@ -97,17 +97,39 @@ The 0.5 confidence floor catches anything the model reports as genuinely uncerta
 >
 > The correct threshold values depend on your domain and the performance of the model for your use case. Start with conservative thresholds, test with your own data, and adjust as you observe results.
 
+## When to act on confidence
+
+Confidence measures how concentrated the answer's probabilities are, which is different from the probability that the selected answer is correct. Before putting a threshold on it, decide what your code needs to know. For a Choice, a confidence of 0.5 corresponds to different top probabilities with two options vs. ten:
+
+| Options | Top probability | `confidence` |
+| - | - | - |
+| 2 | 0.75 | 0.5 |
+| 3 | 0.67 | 0.5 |
+| 10 | 0.55 | 0.5 |
+
+For a Choice question with a fixed number of options, confidence is a transformation of the top probability, so checking both adds no independent evidence. To distinguish a close runner-up from probability spread across many alternatives, inspect the other probabilities or the [top-to-second ratio](#choice).
+
+What to put the threshold on instead:
+
+* **For a Noul, the value itself.** It's already the probability that the statement is true. Good starting thresholds are 0.7 and 0.3: above 0.7 reads as yes, below 0.3 as no. Give the band between 0.3 and 0.7 its own outcome in code rather than rounding it to one side.
+* **For a Choice, the probability of the option your code will act on.** It's the probability that the chosen option is correct, so a threshold on it is a statement about risk that anyone can read. In an answer with probabilities `{"check_balance": 0.05, "approve_transfer": 0.92, "support": 0.03}`, 0.92 is the probability that the user meant `approve_transfer`, and a rule that acts only above 0.9 says "act when the chance of the wrong option is under 10%". [Routing by probability](https://docs.typesafe.ai/patterns/probability-routing.md) sets a different threshold per action this way.
+* **For a Score whose decision depends on one level, that level's probability.** The position can be between two levels and hide a split answer, where the probability is high on two separate levels. Probability on a neighboring level barely lowers confidence, so confidence doesn't show the split either ([When two levels split the answer](https://docs.typesafe.ai/patterns/confidence-routing.md#when-two-levels-split-the-answer)).
+
+Check confidence first when your code needs to know whether a Score answer is settled at all. A Score's confidence measures how far the probability is from the most likely level, so it catches an answer spread across distant levels that the position alone doesn't. [Routing by confidence](https://docs.typesafe.ai/patterns/confidence-routing.md) checks confidence first and then routes on the score.
+
+Confidence is also useful for comparing uncertainty across questions, because it's on the same 0-to-1 scale whatever the number of options or levels.
+
 ## How confidence is calculated
 
 Each question type summarizes its distribution a little differently. A Noul has two outcomes, a Choice has any number of options in no particular order, and a Score's levels are ordered, so each formula below builds on the one before it.
 
-TypeSafe's `confidence` is one reasonable way to summarize a distribution, not the only one. We return a fixed measure so that every answer comes with a sensible default: you can gate on `confidence` from your first call, on the same 0 to 1 scale for every question, without first choosing and validating a statistic of your own. Because the formulas below are exact and every answer includes its full `probabilities`, you can compute whichever measure matters most to your application instead.
+TypeSafe's `confidence` is one reasonable way to summarize a distribution, not the only one. We return a fixed measure so that every answer comes with a sensible default: you can put a threshold on `confidence` from your first call, on the same 0 to 1 scale for every question, without first choosing and validating a statistic of your own. Because the formulas below are exact and every answer includes its full `probabilities`, you can compute whichever measure matters most to your application instead.
 
 ### Noul
 
 A Noul answer is a single probability $p$ that the answer is yes, and TypeSafe returns no separate `confidence` for it. The probability already carries the uncertainty: a value near 0.5 is the model saying it is unsure. A good starting point is 0.7 for yes and 0.3 for no, and the [Noul](https://docs.typesafe.ai/primitives/noul.md#reading-a-noul) page covers when to move them.
 
-If you want a confidence-style number anyway, for example to gate Nouls and Choices with the same code, use the distance from 0.5:
+If you want a confidence-style number anyway, for example to threshold Nouls and Choices with the same code, use the distance from 0.5:
 
 $$
 \text{confidence} = |2p - 1|

@@ -1,13 +1,13 @@
 # Autoresearch feature discovery
 
-> Runs an autoresearch loop that proposes TypeSafe questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor.
+> Runs an autoresearch loop that proposes System One questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor.
 
-*TypeSafe questions turn free text into numeric features for a supervised CatBoost model;
+*System One questions turn free text into numeric features for a supervised CatBoost model;
 use an autoresearch loop to discover them.*
 
 CatBoost needs a table of numbers, and a tasting note is not one. This cookbook builds the
 table out of questions about the note, and none of them are written by hand. An LLM
-proposes the questions, TypeSafe answers them for every row, and CatBoost trains on the
+proposes the questions, Jev answers them for every row, and CatBoost trains on the
 answers. The autoresearch part is what comes next: CatBoost reports which questions it used
 and which rows it still gets wrong, the following proposal call reads that report, and the
 loop runs again.
@@ -19,7 +19,7 @@ error per round, and a table of which questions the final model used most.
 tasting note
     |
     v
-38 TypeSafe answers
+38 Jev answers
     |-- 29 score questions x 2 columns = 58
     |     expected rubric level + answer uncertainty
     `--  9 noul questions  x 1 column  =  9
@@ -42,7 +42,7 @@ neither the model nor the loop ever saw.
 | - | - |
 | predict the average score of the training rows | 3.09 |
 | the same CatBoost, reading the note as word counts | 2.47 |
-| ask TypeSafe for the score itself, rescaled and shifted | 2.15 |
+| ask Jev for the score itself, rescaled and shifted | 2.15 |
 | 18 questions from one proposal call, no loop | 1.87 |
 | **38 questions after five rounds of the loop** | **1.77** |
 
@@ -970,9 +970,9 @@ pip install anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.2.0,
 
 then set `TYPESAFE_API_KEY` and `ANTHROPIC_API_KEY`. Every API call is cached to
 `json_cache.json`, which ships with the cookbook, so a re-render replays these numbers
-without calling anything. Delete it to re-run live. The numbers came from TypeSafe
-`jev-1.12` and `claude-sonnet-5` on 2026-08-03. `propose()` has a second branch for
-`gpt-5.6-luna`, which was not run.
+without calling anything. Delete it to re-run live. The numbers came from `jev-1.12` and
+`claude-sonnet-5` on 2026-08-03. `propose()` has a second branch for `gpt-5.6-luna`,
+which was not run.
 
 The first code cell is the whole implementation: API calls, encodings, metrics, chart
 style. It is there so this file runs on its own, and the docs site folds it away. Skip it
@@ -1028,7 +1028,7 @@ repeat for each round:
                       : the 30 worst-predicted dev notes + the 30 best,
                         each with its score, this prediction and the last
     actions <- LLM(brief, questions, notes, importance and error so far)
-    answers[q] <- TypeSafe(note, all new questions of this round) for every row
+    answers[q] <- Jev(note, all new questions of this round) for every row
     for each added q:      keep it unless its column is flat
     for each revised q:    refit; keep the change only if dev error drops
     for each dropped q:    refit; drop it only if dev error drops
@@ -1213,12 +1213,12 @@ the five held-out heatmap columns:
   5. 97 points: A thoroughly elegant, serious and yet immensely enjoyable wine that stays lively many days after ope...
 ```
 
-![output](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.1.png?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=7f69da1be7be2080165147f122d19b0f)
+![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.1.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=3775885aed82f5dc426c1964daa17868)
 
 The table from the top of the page, computed. All five arms are scored once on the same 800
 held-out rows, and the first three skip feature discovery. One predicts the mean of the dev
 scores and reads nothing from the note at all. One hands the note to the same CatBoost
-through its `text_features` handling, which turns it into word counts. One asks TypeSafe
+through its `text_features` handling, which turns it into word counts. One asks Jev
 for the score itself.
 
 That third one is a single `Score` per row over ten quality bands, from "faulty or
@@ -1238,7 +1238,7 @@ text-regression pipeline. All of this is one dataset and one run of the loop.
 predicted = fit_predict(X, split)
 text_predicted = fit_predict_text(split)
 
-# ask TypeSafe for the score itself, one request per row
+# ask Jev for the score itself, one request per row
 with ThreadPoolExecutor(max_workers=8) as pool:
     direct = list(pool.map(lambda note: ask_score(note, QUALITY), NOTES))
 asked = np.array([d["expected"] for d in direct])
@@ -1385,7 +1385,7 @@ This run keeps the loop small. Direct extensions:
   their own, then append them to the discovered columns to measure what each contributes.
 * Mix proposer families. Generate candidate batches with Anthropic, OpenAI, Google Gemini,
   and open-source models, then merge and deduplicate them before any of them reach
-  TypeSafe. Different families should widen the search more than repeated calls to one
+  Jev. Different families should widen the search more than repeated calls to one
   proposer.
 * Compare predictive models and methods. Try linear or elastic-net regression, a support
   vector regressor, random forests, and recalibration where the downstream output is

@@ -1,72 +1,85 @@
 # Hierarchical classification
 
-> Classifies documents through deep patent, retail product, biomedical, and source-code hierarchies using parallel beam search over TypeSafe Choice probabilities.
+> Uses parallel beam search over Jev's Choice probabilities to classify documents in deep patent, retail product, and biomedical hierarchies.
 
-A lot of data exists as structured hierarchies, such as a taxonomies, filesystem
-hierarchies, website structures, codebases, org charts, biological ontologies, LLM skills,
-moderation policies, etc. The goal of Hierarchical Classification is to traverse the
-hierarchy to the correct leaf node, which is the final classification. This is a perfect
-fit for typesafe's `Choice` primitive. We find the most probable leaf by classifying the
-document at each node (starting at the root), and then iteratively proceeding to the next
-most-probable node until we end at a leaf (**Greedy Search**).
+Many kinds of data are hierarchies: taxonomies, file systems, websites, codebases, org
+charts, biological ontologies, LLM skills and moderation policies. Hierarchical
+classification walks a hierarchy from the root to the correct leaf node; that leaf is the
+final classification. We start at the root, ask a System One `Choice` question over its
+children, follow the most probable child, and repeat until we reach a leaf
+(**Greedy Search**).
 
-The parallel nature of the API also lets us explore multiple paths with parallel questions
-using **Beam Search** to improve performance. The cookbook's TypeSafe API calls each
-simultaneously evaluate `K` paths of the hierarchy. Beam search keeps the best `K` paths
-by a geometric-mean edge probability: `product(edge_probabilities) ** (1 / decisions)`,
-and prunes the rest. The probability is length-normalized so that shallow and deep leaves
-are compared fairly.
+Because System One questions can run in parallel, we can also follow several paths at once
+with **Beam Search**, so one wrong early choice doesn't decide the result. At each level,
+beam search scores every path by the geometric mean of its edge probabilities,
+`product(edge_probabilities) ** (1 / decisions)`, keeps the best `K`, and prunes the rest.
+The geometric mean, unlike the raw product, doesn't penalize a deep leaf just for taking
+more decisions.
 
-Decomposing the problem into a hierarchy like this has benefits of its own:
+Asking one question per node also helps you observe and test the classifier:
 
 * Observability
   * identify which nodes your misclassifications occur most in
   * measure the number of times each node and edge is traversed
 * Testability
   * unit test and measure the impact of hierarchy updates on classification performance
-* ![this is the way](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/this_is_the_way.jpg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=15d390074a4f6a97e45f19e2cf039622)
 
 ### Hierarchies used in this cookbook
 
-* **[CPC 2026.05](https://www.cooperativepatentclassification.org/sites/default/files/cpc/bulk/CPCSchemeXML202605.zip):** patent subject matter, from broad technology sections to narrow inventions.
-* **[Shopify 2026-02](https://github.com/Shopify/product-taxonomy/blob/v2026-02/dist/en/categories.txt):** retail product categories, from store departments to specific product types.
-* **[MeSH
-  2026](https://nlmpubs.nlm.nih.gov/projects/mesh/MESH_FILES/xmlmesh/desc2026.zip):**
-  biomedical subjects from broad domains to specific conditions. MeSH is a DAG, so one
-  descriptor can appear under multiple parents; this demo expands its official tree-number
-  paths.
-* **CookSafe files:** TypeSafe's cookbook repository hierarchy, searched from folders to
-  source files.
+* **[CPC 2026.05](https://www.cooperativepatentclassification.org/):** patent subject
+  matter, from broad technology sections to narrow inventions. Published by the European
+  Patent Office and the US Patent and Trademark Office.
+* **[Shopify 2026-02](https://github.com/Shopify/product-taxonomy):** retail product
+  categories, from store departments to specific product types. From Shopify's Product
+  Taxonomy (MIT).
+* **[MeSH 2026](https://www.nlm.nih.gov/mesh/):** biomedical subjects from broad domains to
+  specific conditions. MeSH is a DAG, so one descriptor can appear under several parents;
+  we give each of its official tree numbers a separate path. Source: U.S. National Library
+  of Medicine. This is the January 2026 build of MeSH 2026 and may not be the most current
+  MeSH data.
+
+Attribution and licences for the three are in
+[`DATA_LICENSE.md`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/hierarchical_classification/DATA_LICENSE.md).
 
 ### Methods
 
 * **Greedy search:** choose the highest-probability child and discard every alternative.
   One early mistake cannot be recovered.
 * **Beam search:** retain `K` plausible paths and classify every frontier in parallel.
-  Deeper evidence can repair an ambiguous early decision.  The leaf of the path with the
-  highest geometric-mean probability is the final classification.
-* **TypeSafe Choice:** every node is a `Choice` question whose full probability
-  distribution is its
-  edges. Each path of the beam runs as parallel questions, so extra exploration adds little
-  wall-clock latency.
+  When an early choice is close, a clearer decision further down can put the right path
+  back on top. The leaf of the path with the highest geometric-mean probability is the
+  final classification.
+* **System One Choice questions:** each node asks one `Choice` question over its children,
+  and the answer's probabilities become the edge probabilities. The beam's `K` questions
+  at each level run in parallel, so beam search takes one round of calls per level, as
+  greedy search does.
 * **Formula:**
   * `path_score = product(edge_probabilities) ** (1 / decisions)`
     * used for pruning and comparing paths
+    * for hierarchies deeper than about 10 levels, compute it as `exp(mean(log(probs)))`
+      to avoid floating-point precision loss
   * `separation = top_path_score / second_path_score`
-    * useful metric, but not used for pruning
-    * the ratio compares the top path's geometric mean against its nearest rival.
-      * Near `1×` is ambiguous
-      * A large ratio means clear separation.
-* **Notes on metrics:**
-  * a different metric such as `min(top_prob/second_top_prob)` which would optimize for
-    paths that have very clear decisions at every node.
-  * use `exp(mean(log(probs)))` instead of `product(edge_probabilities) ** (1 / decisions)`
-    to avoid precision errors for hierarchies that are very deep (eg >10 layers)
+    * reported only, not used for pruning
+    * near `1×`, the top two paths are almost tied; the further above `1×`, the clearer
+      the winner
+
+## Setup
+
+Requires Python 3.13 or later.
+
+```bash
+pip install typesafe-sdk ipython 'cooksafe>=0.2.0,<0.3.0'
+```
+
+then set `TYPESAFE_API_KEY`. The first run downloads the three hierarchies (about 28 MB)
+into `datasets/`.
+
+Numbers below came from `jev-1.14.0` on 2026-11-03.
 
 ## Load and visualize the example hierarchies
 
-These helpers download pinned taxonomy sources, parse them into direct-child trees,
-and render each search traversal as a static SVG.
+We download a pinned version of each taxonomy, turn it into a tree of direct children,
+and draw each search as a static SVG.
 
 ```python expandable
 import html
@@ -87,37 +100,46 @@ from typesafe_sdk import Choice, RetryPolicy, TypeSafeClient
 
 Tree: TypeAlias = dict[str, "Tree"]
 
+class Report(Markdown):
+    """Markdown that renders in a notebook and prints as plain text from a terminal."""
+
+    def __str__(self) -> str:
+        return self.data
+
 class Hierarchy(NamedTuple):
     """One query and a complete hierarchy.
 
     :param slug: filename-safe taxonomy name.
     :param name: display name.
-    :param version: pinned dataset version.
     :param source_url: hierarchy source.
     :param node_count: number of loaded hierarchy nodes.
-    :param document: unstructured text classified by TypeSafe.
+    :param document: unstructured text classified by Jev.
     :param expected_leaf: expected final classification.
     :param tree: nested direct-child menus.
     """
 
     slug: str
     name: str
-    version: str
     source_url: str
     node_count: int
     document: str
     expected_leaf: str
     tree: Tree
 
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/"
+    "main/cookbooks/hierarchical_classification"
+)
 CPC_URL = (
     "https://www.cooperativepatentclassification.org/sites/default/files/"
-    "cpc/bulk/CPCSchemeXML202605.zip"
+    "cpc/archive/CPCSchemeXML202605.zip"
 )
 SHOPIFY_URL = (
     "https://raw.githubusercontent.com/Shopify/product-taxonomy/"
     "v2026-02/dist/en/categories.txt"
 )
-MESH_URL = "https://nlmpubs.nlm.nih.gov/projects/mesh/MESH_FILES/xmlmesh/desc2026.zip"
+# NLM updates the current MeSH file in place, so the pinned January 2026 build is hosted.
+MESH_URL = f"{EXAMPLES_URL}/datasets/mesh_descriptors_2026.zip"
 MESH_CATEGORIES = {
     "A": "Anatomy",
     "B": "Organisms",
@@ -140,7 +162,7 @@ MESH_CATEGORIES = {
 def _download(url: str, path: Path) -> Path:
     """Download a pinned dataset once.
 
-    :param url: official dataset URL.
+    :param url: pinned dataset URL.
     :param path: local cache path.
     :returns: local dataset path.
     """
@@ -267,39 +289,11 @@ def _load_mesh(path: Path) -> tuple[Tree, int]:
     position_count: int = len(names_by_tree_number) + len(tree)
     return tree, position_count
 
-CODEBASE_SNAPSHOT = Path("codebase_files.txt")
-
-def _load_codebase(path: Path) -> tuple[Tree, int]:
-    """Load the frozen CookSafe source-file hierarchy.
-
-    The listing is a snapshot of the repository's source files in the order a walk found them,
-    taken when this cookbook was rendered, rather than a walk of whatever tree the cookbook
-    happens to sit in. A live walk makes the taxonomy -- and every number derived from it --
-    depend on the reader's checkout, including untracked scratch files, so the shipped cache
-    stops describing the same tree. Line order is significant: sibling options are asked in the
-    order they appear here, so it is part of the question, not presentation.
-
-    :param path: file holding one repository-relative source path per line.
-    :returns: nested file tree and node count.
-    """
-
-    tree: Tree = {}
-    node_paths: set[tuple[str, ...]] = set()
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        hierarchy_path: tuple[str, ...] = ("CookSafe", *line.split("/"))
-        _insert(tree, hierarchy_path)
-        node_paths.update(
-            hierarchy_path[:index] for index in range(1, len(hierarchy_path) + 1)
-        )
-    return tree, len(node_paths)
-
 def load_hierarchies(data_directory: Path = Path("datasets")) -> tuple[Hierarchy, ...]:
-    """Load three public taxonomies and one frozen code hierarchy.
+    """Load the three public taxonomies.
 
-    :param data_directory: cache directory for official raw files.
-    :returns: CPC, Shopify, MeSH, and CookSafe examples.
+    :param data_directory: cache directory for the pinned raw files.
+    :returns: CPC, Shopify, and MeSH examples.
     """
 
     cpc_tree, cpc_nodes = _load_cpc(
@@ -311,12 +305,10 @@ def load_hierarchies(data_directory: Path = Path("datasets")) -> tuple[Hierarchy
     mesh_tree, mesh_nodes = _load_mesh(
         _download(MESH_URL, data_directory / "mesh_descriptors_2026.zip")
     )
-    codebase_tree, codebase_nodes = _load_codebase(CODEBASE_SNAPSHOT)
     return (
         Hierarchy(
             slug="cpc",
             name="CPC patents",
-            version="2026.05",
             source_url=CPC_URL,
             node_count=cpc_nodes,
             document=(
@@ -330,7 +322,6 @@ def load_hierarchies(data_directory: Path = Path("datasets")) -> tuple[Hierarchy
         Hierarchy(
             slug="shopify",
             name="Shopify products",
-            version="2026-02",
             source_url=SHOPIFY_URL,
             node_count=shopify_nodes,
             document=(
@@ -343,7 +334,6 @@ def load_hierarchies(data_directory: Path = Path("datasets")) -> tuple[Hierarchy
         Hierarchy(
             slug="mesh",
             name="MeSH biomedical subjects",
-            version="2026",
             source_url=MESH_URL,
             node_count=mesh_nodes,
             document=(
@@ -354,19 +344,6 @@ def load_hierarchies(data_directory: Path = Path("datasets")) -> tuple[Hierarchy
             ),
             expected_leaf="C06.405.469.432.500 Crohn Disease",
             tree=mesh_tree,
-        ),
-        Hierarchy(
-            slug="codebase",
-            name="CookSafe files",
-            version="snapshot 2026-08-06",
-            source_url=str(CODEBASE_SNAPSHOT),
-            node_count=codebase_nodes,
-            document=(
-                "Developer search: find the experimental Python module under x/eugene that "
-                "implements BM25, dense, and fused retrievers for legal RAG."
-            ),
-            expected_leaf="retrievers.py",
-            tree=codebase_tree,
         ),
     )
 
@@ -411,7 +388,9 @@ def _build_nodes(hierarchy: Hierarchy, result: dict) -> dict:
         ranked: list[tuple[str, float]] = sorted(
             probabilities.items(), key=lambda item: item[1], reverse=True
         )
-        shown_labels: set[str] = {label for label, _ in ranked[:EDGE_TOP_K]}
+        shown_labels: set[str] = {
+            label for label, p in ranked[:EDGE_TOP_K] if round(p, 2) > 0
+        }
         shown_labels.update(
             label
             for label, _ in ranked
@@ -438,6 +417,7 @@ def _build_nodes(hierarchy: Hierarchy, result: dict) -> dict:
                 {
                     "label": label,
                     "probability": probability,
+                    "decision": len(probabilities) > 1,
                     "kind": kind,
                     "children": grow(child_path),
                 }
@@ -470,7 +450,7 @@ def _layout(root: dict) -> tuple[int, int]:
     return maximum_depth[0], rows[0]
 
 def render_svg(hierarchy: Hierarchy, result: dict, path: Path) -> None:
-    """Write a standalone traversal SVG matching the Customer_ProdX visual language.
+    """Write a standalone SVG of the beam-search traversal, drawn left to right.
 
     :param hierarchy: taxonomy demonstration.
     :param result: beam-search result from the notebook.
@@ -514,14 +494,15 @@ def render_svg(hierarchy: Hierarchy, result: dict, path: Path) -> None:
                 f'd="M{x1:.0f},{y1:.0f} C{x1 + bend:.0f},{y1:.0f} '
                 f'{x2 - bend:.0f},{y2:.0f} {x2:.0f},{y2:.0f}"/>'
             )
-            edges.append(
-                f'<text class="prob" x="{x2 - 7:.0f}" y="{y2 - 5:.0f}" '
-                f'text-anchor="end">{child["probability"]:.2f}</text>'
-            )
+            if child["decision"]:
+                edges.append(
+                    f'<text class="prob" x="{x2 - 7:.0f}" y="{y2 - 5:.0f}" '
+                    f'text-anchor="end">{child["probability"]:.2f}</text>'
+                )
             walk(child)
 
         kind: str = node["kind"]
-        label: str = _truncate(node["label"], 40)
+        label: str = _truncate(node["label"], 36)
         nodes.append(
             f'<g class="node {kind}"><title>{_escape(node["label"])}</title>'
             f'<rect x="{x_value:.0f}" y="{y_value:.0f}" width="{NODE_W}" '
@@ -543,6 +524,11 @@ def render_svg(hierarchy: Hierarchy, result: dict, path: Path) -> None:
         f"{_escape(line)}</text>"
         for index, line in enumerate(document_lines)
     )
+    legend_text: str = (
+        "green = greedy and beam (same route)"
+        if greedy_path == best_path
+        else "orange = greedy · green = beam winner"
+    ) + " · purple = retained beam · dashed = pruned"
     separation_text: str = (
         ">999×" if separation_ratio > 999 else f"{separation_ratio:.2f}×"
     )
@@ -580,14 +566,14 @@ def render_svg(hierarchy: Hierarchy, result: dict, path: Path) -> None:
   .node.alt text {{ fill:#5c6178 }}
 </style>
 <rect class="bg" width="{width}" height="{height}" rx="14"/>
-<text class="eyebrow" x="24" y="32">TYPESAFE · {hierarchy.name.upper()} · {hierarchy.version.upper()} · {hierarchy.node_count:,} NODES</text>
+<text class="eyebrow" x="24" y="32">{hierarchy.node_count:,} NODES</text>
 <text class="title" x="24" y="69">Greedy vs parallel beam search</text>
 <text class="document-label" x="24" y="99">DOCUMENT</text>
 {document_text}
 <text class="result greedy-result" x="24" y="{greedy_y}">GREEDY TOP-1 → {_escape(_truncate(greedy_leaf, 105))}</text>
 <text class="result beam-result" x="24" y="{beam_y}">BEAM K={beam_width} → {_escape(_truncate(beam_leaf, 105))}</text>
-<text class="copy" x="24" y="{method_y}">parallel sibling Choices → keep {beam_width} by geometric mean p → top/second = {separation_text}</text>
-<text class="copy" x="24" y="{legend_y}">orange = greedy   green = beam winner   purple = retained beam   dashed = pruned</text>
+<text class="copy" x="24" y="{method_y}">separation (top ÷ second path score) = {separation_text}</text>
+<text class="copy" x="24" y="{legend_y}">{legend_text}</text>
 {"".join(edges)}{"".join(nodes)}
 </svg>'''
     path.write_text(svg)
@@ -595,13 +581,12 @@ def render_svg(hierarchy: Hierarchy, result: dict, path: Path) -> None:
 
 ## Implement greedy and beam search
 
-Each sibling set becomes one `Choice` question in the next section, which also
-implements
-both traversal strategies and keeps the probabilities the static diagrams need.
+Each node's children become one `Choice` question. Both strategies record every
+distribution they receive, so the diagrams can label each edge with its probability.
 
 ```python expandable
 HIERARCHIES = load_hierarchies()
-MODEL, BEAM_WIDTH, MAX_DEPTH, EPSILON = "jev-1.12", 3, 12, 1e-9
+MODEL, BEAM_WIDTH, MAX_DEPTH, EPSILON = "jev-1.14.0", 3, 12, 1e-9
 client = TypeSafeClient(
     api_key=os.environ["TYPESAFE_API_KEY"],
     retry=RetryPolicy(max_retries=5, backoff_initial=1.0, backoff_max=20.0),
@@ -742,7 +727,7 @@ def compare_searches(hierarchy: Hierarchy) -> dict:
 
 ## Compare the methods
 
-Run both strategies on four labeled examples, compare their leaves against the
+Run both strategies on three labeled examples, compare their leaves against the
 expected classifications, and visualize the routes they explored.
 
 ```python expandable
@@ -798,16 +783,13 @@ table_lines.extend(
     for row in rows
 )
 display(
-    Markdown(
+    Report(
         "## Results\n\n"
-        "Each example has a known expected leaf. "
         f"Beam search matched {beam_correct_count} of {len(rows)} expected leaves; "
         f"greedy search matched {greedy_correct_count} of {len(rows)}. "
         f"Keeping three paths recovered the expected classification for {recovered_names}.\n\n"
         + "\n".join(table_lines)
-        + "\n\nThe diagrams show why the methods differ. Orange marks the greedy route, "
-        "green marks the winning beam route, purple marks other retained paths, and "
-        "dashed edges were pruned.\n\n"
+        + "\n\nThe diagrams show why the methods differ.\n\n"
         + "\n\n".join(
             f"### {hierarchy.name}\n\n![]({hierarchy.slug}_tree.svg)"
             for hierarchy in HIERARCHIES
@@ -818,31 +800,26 @@ display(
 
 ## Results
 
-Each example has a known expected leaf. Beam search matched 4 of 4 expected leaves; greedy search matched 2 of 4. Keeping three paths recovered the expected classification for CPC patents, Shopify products.
+Beam search matched 3 of 3 expected leaves; greedy search matched 2 of 3. Keeping three paths recovered the expected classification for Shopify products.
 
 | Hierarchy | Expected leaf | Greedy leaf | Beam K=3 leaf | Greedy correct | Beam correct |
 | - | - | - | - | - | - |
-| CPC patents | A01K31/12 Perches for poultry or birds, e.g. roosts | E99Z99/00 Subject matter not otherwise provided for in this section | A01K31/12 Perches for poultry or birds, e.g. roosts | no | yes |
+| CPC patents | A01K31/12 Perches for poultry or birds, e.g. roosts | A01K31/12 Perches for poultry or birds, e.g. roosts | A01K31/12 Perches for poultry or birds, e.g. roosts | yes | yes |
 | Shopify products | Cat Window Beds & Perches | Pet Chairs | Cat Window Beds & Perches | no | yes |
 | MeSH biomedical subjects | C06.405.469.432.500 Crohn Disease | C06.405.469.432.500 Crohn Disease | C06.405.469.432.500 Crohn Disease | yes | yes |
-| CookSafe files | retrievers.py | retrievers.py | retrievers.py | yes | yes |
 
-The diagrams show why the methods differ. Orange marks the greedy route, green marks the winning beam route, purple marks other retained paths, and dashed edges were pruned.
+The diagrams show why the methods differ.
 
 ### CPC patents
 
-![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/cpc_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=e2e78c257ef946e0e40f49ed0aadddf4)
+![](https://mintcdn.com/ts-docs/SMRVJ3B8F9ZiCWm4/cookbooks/hierarchical_classification/cpc_tree.svg?fit=max\&auto=format\&n=SMRVJ3B8F9ZiCWm4\&q=85\&s=fc414461a508f682a2466c1fc1def0a5)
 
 ### Shopify products
 
-![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/shopify_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=eaeffcf7e76e389ffbe3397a1b6c5d8e)
+![](https://mintcdn.com/ts-docs/SMRVJ3B8F9ZiCWm4/cookbooks/hierarchical_classification/shopify_tree.svg?fit=max\&auto=format\&n=SMRVJ3B8F9ZiCWm4\&q=85\&s=f0d83cdd85ec85d1645b96885b38a310)
 
 ### MeSH biomedical subjects
 
-![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/mesh_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=a71b2ce23a81fd3165a67abd09d5e26f)
-
-### CookSafe files
-
-![](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/hierarchical_classification/codebase_tree.svg?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=052f2001a9e5f53a2647eb179ebdafd9)
+![](https://mintcdn.com/ts-docs/SMRVJ3B8F9ZiCWm4/cookbooks/hierarchical_classification/mesh_tree.svg?fit=max\&auto=format\&n=SMRVJ3B8F9ZiCWm4\&q=85\&s=1df35485dd5a41a8541d016417a66e57)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

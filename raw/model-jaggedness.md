@@ -79,7 +79,7 @@ Jev reads dates as text, not as ordered quantities. Asking which of two dates co
 
 Every part of a date is a small closed set: twelve months, thirty-one possible days, a bounded range of years. That turns extraction into a [Choice](https://docs.typesafe.ai/primitives/choice.md) over enumerated options rather than free-form parsing, and it gives you somewhere to put an explicit "not stated" option so a missing part is reported rather than guessed. Code assembles the parts into a real date and owns everything after that, including ordering, duration, offset, and weekday.
 
-The [date extraction cookbook](https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md) has the worked version, including relative dates and confidence gating.
+The [date extraction cookbook](https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md) has the worked version, including relative dates and sending low-confidence dates to a person.
 
 ## Indirection
 

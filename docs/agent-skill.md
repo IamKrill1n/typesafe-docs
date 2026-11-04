@@ -31,7 +31,7 @@ The TypeSafe agent skill gives your AI coding agent full context on the TypeSafe
 > Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
 > ```
 
-Read [SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md) or fetch the [raw Markdown](https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md) directly. For manual installation, copy the entire [skills/typesafe-ai directory](https://github.com/typesafe-ai/skills/tree/main/skills/typesafe-ai), including its reference files, into your agent's skills directory.
+Read [SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md) or fetch the [raw Markdown](https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md) directly. To install manually, copy the [skills/typesafe-ai directory](https://github.com/typesafe-ai/skills/tree/main/skills/typesafe-ai) into your agent's skills directory.
 
 Choose one installation method to avoid duplicate copies.
 
@@ -93,7 +93,7 @@ Check the questions and thresholds. It's possible that your thresholds are eithe
 
 ### You're using confidence thresholds everywhere
 
-If all you care about is choosing the best option, you just need to choose the option with the highest confidence (rather than setting a confidence threshold). If you have a specific statistical algorithm in mind, you should probably be using probabilities instead of confidence.
+If all you care about is choosing the best option, take the answer's top option, `choice`, and don't threshold at all. If your code has to decide whether to act, start with the probability: the Noul value itself, or `probabilities[choice]` for a Choice. Read a Score's level probabilities when its position could hide a split answer. The `confidence` field summarizes uncertainty, so it's often not the number to act on. For a Choice, it's calculated from the top probability, so it adds no second check. See [When to act on confidence](https://docs.typesafe.ai/confidence.md#when-to-act-on-confidence).
 
 ### It's difficult to review TypeSafe code
 

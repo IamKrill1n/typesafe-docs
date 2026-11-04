@@ -4,7 +4,7 @@
 
 # Re-ranking
 
-> Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one TypeSafe question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.
+> Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one System One question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.
 
 You have thousands of documents, and you need to find the one that answers a specific
 question.
@@ -17,7 +17,7 @@ correct. That's where re-ranking comes in. It scores every candidate on the shor
 against the query directly, and puts the best one first.
 
 Both steps run below on 3,565 court opinion passages from the CLERC dataset: BM25 builds a
-fast search shortlist of 30 candidates for each of 40 queries, then TypeSafe re-ranks each
+fast search shortlist of 30 candidates for each of 40 queries, then Jev re-ranks each
 shortlist. With re-ranking, the correct passage lands in first place for 18% of queries, up
 from 5% with fast search alone.
 
@@ -63,11 +63,11 @@ The score can come from a language model. Give it the query and one candidate to
 and ask how well the candidate answers the query. Re-ranking then finds the best match
 on the shortlist even when its wording differs from the query's.
 
-## Re-ranking with TypeSafe
+## Re-ranking with Jev
 
 A re-ranker needs a comparable score for every query-candidate pair.
 
-### What TypeSafe returns
+### What Jev returns
 
 With TypeSafe, the scoring request is a yes/no question:
 
@@ -77,10 +77,10 @@ Could this candidate passage be from the cited precedent?
 
 A plain yes or no would not be enough to rank 30 candidates. A `Noul` instead
 returns a number between 0 and 1, called a
-[noul](https://docs.typesafe.ai/primitives/noul.md). The noul is TypeSafe's estimate
+[noul](https://docs.typesafe.ai/primitives/noul.md). The noul is Jev's estimate
 of how likely the answer is to be yes.
 
-The question's criteria define what counts as true and false. TypeSafe applies them to
+The question's criteria define what counts as true and false. Jev applies them to
 every query-candidate pair and returns the noul directly. That noul is the score the
 application sorts on.
 
@@ -195,7 +195,7 @@ row breaks down like this:
 Of the 170 rows, 40 are picked to evaluate as queries. The other 130 only ever appear as
 candidates.
 
-Fast search loads the corpus and ranks it against every query with BM25. TypeSafe isn't
+Fast search loads the corpus and ranks it against every query with BM25. Jev isn't
 involved yet.
 
 ```python expandable theme={null}
@@ -327,15 +327,15 @@ only 5% of the time.
 Re-ranking only reorders the top 30 candidates already on the shortlist. It cannot add a
 passage that fast search did not select.
 
-### Re-ranking the shortlist with TypeSafe
+### Re-ranking the shortlist with Jev
 
-The question TypeSafe asks about each pair is whether the candidate could be the passage
+The question Jev answers about each pair is whether the candidate could be the passage
 the query's removed citation points to. Re-ranking takes three steps:
 
 1. Define that question.
 2. Ask it once per candidate on every shortlist: 40 queries times 30 candidates, or 1,200
    calls, run concurrently.
-3. Sort each shortlist by the noul TypeSafe returns.
+3. Sort each shortlist by the noul Jev returns.
 
 ```python expandable theme={null}
 is_cited_source = Noul(
@@ -452,11 +452,11 @@ def chart_before_after(
 
 
 chart_before_after(
-    {"Fast search": candidates, "+ TypeSafe re-rank": reranked}, [1, 5, 10]
+    {"Fast search": candidates, "+ Jev 1.12 re-rank": reranked}, [1, 5, 10]
 )
 ```
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=46bea6ecf0dbb89f8df634eb6cda16b7)
+![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=dc5e7a3c04ab4c8b40e4675d1c6dc9b1)
 
 ### Re-ranking moves the right answer toward the top
 
@@ -470,15 +470,15 @@ Re-ranking moves the correct passage closer to the top at every one of them:
 This walkthrough asked one question per pair for clarity. A real application would
 ask several questions about the same pair in one call. See the [parallel questions
 cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md) and the
-[Speculative Fan-Out pattern](https://docs.typesafe.ai/patterns/fan-out.md) for how.
+[Speculative fan-out pattern](https://docs.typesafe.ai/patterns/fan-out.md) for how.
 
 ***
 
 ## What's next
 
-* [Noul](https://docs.typesafe.ai/primitives/noul.md), for how TypeSafe turns a yes/no
+* [Noul](https://docs.typesafe.ai/primitives/noul.md), for how Jev turns a yes/no
   question into a score.
-* [Speculative Fan-Out](https://docs.typesafe.ai/patterns/fan-out.md), for asking
+* [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md), for asking
   several questions about one document in a single call.
 * [Line-by-line Search](https://docs.typesafe.ai/cookbooks/semantic_find.md),
   for another way to search a corpus by meaning rather than keywords.

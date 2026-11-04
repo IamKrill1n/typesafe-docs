@@ -8,7 +8,7 @@ Use this map to brainstorm where TypeSafe could fit in your industry. Open the c
 
 > [card] AI Automation Software
 >
-> Interleave AI with reliable software in a way where you can run it a million times in the background without a human co-pilot. Code owns control flow (not markdown files) while TypeSafe handles the semantic decisions and language understanding.
+> Interleave AI with reliable software in a way where you can run it a million times in the background without a human co-pilot. Code owns control flow (not markdown files) while Jev handles the semantic decisions and language understanding.
 
 > [card] Real-time applications
 >

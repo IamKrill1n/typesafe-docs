@@ -1,30 +1,38 @@
 # Pre-parsed value extraction
 
-> Finds candidate emails, phone numbers, and amounts with a regex, has TypeSafe pick the one you ask for, and normalizes that exact span in code.
+> Finds candidate emails, phone numbers, and amounts with a regex, has Jev pick the one you ask for, and normalizes that exact span in code.
 
-*A regex finds the candidate values, TypeSafe picks the one the question asks for,
+*A regex finds the candidate values, Jev picks the one the question asks for,
 and we copy it verbatim.*
 
 We pull three values out of text: the address a sender wants their receipt sent to, a
 phone number as `+14155550177`, and an invoice total as `1315.50 USD` flagged as a charge.
-Each starts as a span copied unchanged from the document. TypeSafe only chooses among
+Each starts as a span copied unchanged from the document. Jev only chooses among
 spans a regex already found, so it cannot invent a value or transpose a digit. You can
 point the same `find` and `pick` pair at your own documents. There are three steps:
 
 1. A regex finds the candidate values in the text. Tune it to catch every real value,
    even if it also catches some wrong ones.
-2. TypeSafe picks which candidate the question is asking for, and reads off any
+2. Jev picks which candidate the question is asking for, and reads off any
    attribute we need downstream (currency, country, whether an amount is a credit or a
    charge).
 3. We copy the picked value and normalize it.
 
 [Date extraction](https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md) splits the work the same way:
-TypeSafe reads a date's parts off the text, and we do the calendar math in code.
+Jev reads a date's parts off the text, and we do the calendar math in code.
 
-![A regex finds candidate values, TypeSafe picks one, and code normalizes it](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/pre_parsed_value_extraction_cookbook/overview.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=4df592e42d251f25fe30c2269f2d182a)
+```mermaid actions={true}
+  %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300}}}%%
+flowchart LR
+    doc["document"] --> regex["<b>regex</b> finds every span<br/>that could be the value"]
+    regex -- "the spans become<br/>the options" --> req
 
-*The regex finds candidate values in the document, TypeSafe picks one, and we normalize
-it and act on it.*
+    subgraph req["Jev"]
+        pick["<b>Choice:</b> which span does<br/>the question ask for?<br/><i>or none of these</i>"]
+    end
+
+    req -- "one of the spans" --> code["your code copies it<br/>exactly and normalizes it"]
+```
 
 ## Setup
 
@@ -87,7 +95,7 @@ def find(pattern: re.Pattern, text: str) -> list[str]:
 
 @json_cache
 def pick(document: str, candidates: list[str], question: str) -> dict:
-    """TypeSafe selects which found span plays the role. Returns {choice, confidence}.
+    """Jev selects which found span plays the role. Returns {choice, confidence}.
 
     The options ARE the candidate spans, so ``choice`` is a verbatim copy of one of them (or the
     ``none`` hatch). The model chooses; code owns the string."""
@@ -170,7 +178,7 @@ lowercase.
 
 ## Phone: pick the mobile, normalize to E.164
 
-The text has three numbers, and none of them carries a country code. TypeSafe picks the
+The text has three numbers, and none of them carries a country code. Jev picks the
 mobile and reads the country from the text; `phonenumbers` combines those two answers
 into E.164, the international format that starts with a `+` and the country code.
 
@@ -204,12 +212,12 @@ E.164   -> : +14155550177
 ```
 
 Nothing in the digits says which number is the mobile or what country it is in; the
-words around them do. TypeSafe reads those words, and `phonenumbers` formats the picked
+words around them do. Jev reads those words, and `phonenumbers` formats the picked
 number as `+14155550177`.
 
 ## Money: pick the amount, classify the currency, flag credit vs charge
 
-The invoice has four amounts on it. TypeSafe picks the total due and the credit, reads
+The invoice has four amounts on it. Jev picks the total due and the credit, reads
 the currency, and flags each picked amount as a charge or a credit. We copy each picked
 string and parse it into a `Decimal`.
 
@@ -300,6 +308,6 @@ display(
 * Finding the candidates is the part that takes work. Emails, phone numbers and amounts
   have regexes that cover them; a name does not, so its candidates have to come from a
   roster you already have, or from a named-entity recognizer or an LLM that proposes
-  them. TypeSafe then picks the one the question asks for.
+  them. Jev then picks the one the question asks for.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

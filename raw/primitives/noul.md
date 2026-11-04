@@ -4,7 +4,7 @@
 
 # Noul
 
-> A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.
+> A Noul question asks Jev to evaluate a yes/no question and return the probability that the answer is yes.
 
 Use a Noul when the answer is yes or no. For example, does this message ask for a refund, does this resume mention distributed systems, does this comment contain personal data. If the answer is one of several options, use a [Choice](https://docs.typesafe.ai/primitives/choice.md). If it's a position on a spectrum, use a [Score](https://docs.typesafe.ai/primitives/score.md). [Choose a question type](https://docs.typesafe.ai/primitives#choose-a-question-type) compares all three.
 
@@ -51,7 +51,7 @@ with TypeSafeClient() as client:
     print(response.answers["is_repeat_contact"].noul)
 ```
 
-The `system_one` method and the `https://api.typesafe.ai/v1/systemone` endpoint are both named after [System One](https://docs.typesafe.ai/concepts/system-one.md), TypeSafe's AI model. [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) covers where to use it in your code.
+The `system_one` method and the `https://api.typesafe.ai/v1/systemone` endpoint are both named after [System One](https://docs.typesafe.ai/concepts/system-one.md), the class of model Jev belongs to. [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) covers where to use it in your code.
 
 If you're using a coding agent, install the [TypeSafe agent skill](https://docs.typesafe.ai/agent-skill.md#installation) first so it knows the request and response shapes.
 
@@ -274,7 +274,7 @@ The [structured-data-extraction cascade cookbook](https://docs.typesafe.ai/cookb
 Take a look at our cookbooks to see apps using Noul questions:
 
 * [Parallel questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md) runs a 13-question regulatory checklist over one article in a single request.
-* [Self-consistency: nouls](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md) scores an insurance claim against a 15-question rubric and measures how stable the values are across runs.
+* [Self-consistency: nouls](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md) asks 14 Noul questions about 40 versions of an insurance claim and measures how often asking again changes a decision.
 * [Re-ranking](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md) uses the probability itself, not a threshold: one Noul per query-candidate pair, then sorts candidates by the value.
 * [Line-by-line search](https://docs.typesafe.ai/cookbooks/semantic_find.md) pairs a Choice that finds the matching line with a Noul that checks whether the document contains an answer at all.
 * [Structure recovery](https://docs.typesafe.ai/cookbooks/autoformat.md) asks one Noul per pair of lines, whether a line break split a sentence, to rebuild paragraphs from plain text.

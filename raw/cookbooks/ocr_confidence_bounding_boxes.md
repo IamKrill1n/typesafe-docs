@@ -53,15 +53,15 @@ flowchart TB
         r1 --> r2 --> r3
     end
 
-    gate{"<b>check_invoice()</b><br/>either check low?"}
+    check{"<b>check_invoice()</b><br/>either check low?"}
     ok["<b>passes</b>"]
     rv["<b>review</b><br/>boxed on the photo"]
 
     photo --> EX --> values --> JEV
     photo --> JEV
-    JEV --> gate
-    gate green_ok@--> ok
-    gate orange_review@--> rv
+    JEV --> check
+    check green_ok@--> ok
+    check orange_review@--> rv
     style EX fill:none,stroke:#71717a,stroke-width:1.5px,stroke-dasharray: 6 4
     %% Branch colours (styles.css): node classes and green_/orange_ edge ids.
     class ok neonGreen

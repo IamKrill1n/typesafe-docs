@@ -6,9 +6,9 @@
 
 > What state is, how to structure it, and how to give a System One model the context it needs.
 
-**State** is the content you ask a System One model to evaluate. It could be a support message, a passage of text, or the current state of your application. You pass it in the `state` field of an API request, alongside the questions you want answered.
+**State** is the content you ask a System One model to evaluate. It could be a support message, a passage of text, a photo, or the current state of your application. You pass it in the `state` field of an API request, alongside the questions you want answered.
 
-Each request evaluates one state against one or more questions. All questions see the same state and are evaluated independently. You can mix [Choice](https://docs.typesafe.ai/primitives/choice.md), [Score](https://docs.typesafe.ai/primitives/score.md), and [Noul](https://docs.typesafe.ai/primitives/noul.md) questions in one request.
+Each request evaluates one state against one or more questions. All questions see the same state and are evaluated independently. You can mix [Choice](https://docs.typesafe.ai/primitives/choice.md), [Score](https://docs.typesafe.ai/primitives/score.md), [Noul](https://docs.typesafe.ai/primitives/noul.md), and [Box](https://docs.typesafe.ai/primitives/box.md) questions in one request.
 
 ## State can be a simple string or a structured JSON value
 
@@ -30,7 +30,7 @@ Use an object for most requests so each part of the state has a descriptive name
 
 > [!NOTE]
 >
-> State is a string, JSON object, or array. Audio and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](https://docs.typesafe.ai/models.md#language-support).
+> State is a string, JSON object, or array, and can include [images](https://docs.typesafe.ai/images.md). Audio and video are not natively supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](https://docs.typesafe.ai/models.md#language-support).
 
 ```json title="A support conversation as state" theme={null}
 {

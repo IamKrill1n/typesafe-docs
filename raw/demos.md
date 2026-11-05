@@ -2,17 +2,25 @@
 > Fetch the complete documentation index at: https://docs.typesafe.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-# Demos
+# Made with Jev
 
-> Interactive examples showing what's possible with TypeSafe.
+> Working projects built on Jev, and how each one works.
 
-## Available demos
+Each page shows a project running, then explains how it works: the questions it asks Jev, how it groups them into requests, and what its code does with the answers.
 
-* [Smart Home Assistant Demo](https://docs.typesafe.ai/demos/smart-home.md) - Evaluate user smart home requests with speculative questions and LLM fallback.
+> [card] [Airbnb listing search](https://docs.typesafe.ai/demos/airbnb-listing-search.md)
+>
+> Describe a stay in plain English and get the 10 best of 1,000 Cape Town listings in about a second, from a formula in Google Sheets. Choice questions shortlist 50 listings and Score questions rank them, in 11 requests instead of 1,000.
+
+> [card] [Smart home assistant](https://docs.typesafe.ai/demos/smart-home.md)
+>
+> An assistant for requests like "Turn off all of the lights in the house". It asks Jev every question it might need in one call, and code ignores the answers that don't apply. It calls an LLM to split a request that asks for several actions, and to reply to general questions or chat.
+
+To build your own project step by step, with code you can run, see the [cookbooks](https://docs.typesafe.ai/cookbooks.md).
 
 > [!TIP]
 >
-> We're always keen to learn how people are making use of our primitives. If you've found a killer use case you think should be mentioned here, feel free to drop us a note!
+> If you've built a project with Jev that belongs on this page, tell us on [Discord](https://discord.gg/typesafe).
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

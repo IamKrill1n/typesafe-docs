@@ -51,7 +51,8 @@
 - [Self-consistency: nouls](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md): Ask a model about the same insurance claim twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline claims.
 - [Parallel questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md): Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers.
 - [Autoresearch feature discovery](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md): Runs an autoresearch loop that proposes System One questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor.
-- [Demos](https://docs.typesafe.ai/demos.md): Interactive examples showing what's possible with TypeSafe.
+- [Made with Jev](https://docs.typesafe.ai/demos.md): Working projects built on Jev, and how each one works.
+- [Airbnb listing search in Google Sheets](https://docs.typesafe.ai/demos/airbnb-listing-search.md): Describe a stay in plain English and get the 10 best of 1,000 Cape Town Airbnb listings, scored out of 10, in about a second, from a formula in Google Sheets.
 - [Smart home assistant demo](https://docs.typesafe.ai/demos/smart-home.md): Demo code: a smart home assistant that uses Jev to evaluate user requests.
 - [Models](https://docs.typesafe.ai/models.md)
 - [Agent skill](https://docs.typesafe.ai/agent-skill.md): Drop-in skill for Claude Code, Codex, and other agent environments.
@@ -144,6 +145,10 @@
 ## OpenAPI Specs
 
 - [openapi](https://api.typesafe.ai/openapi.json)
+
+## Optional
+
+- [Technical Blog](https://typesafe.ai/blog)
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

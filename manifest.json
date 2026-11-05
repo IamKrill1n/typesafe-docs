@@ -1,6 +1,6 @@
 {
   "source": "https://docs.typesafe.ai",
-  "page_count": 145,
+  "page_count": 146,
   "pages": {
     "agent-skill.md": {
       "url": "https://docs.typesafe.ai/agent-skill.md",
@@ -69,19 +69,19 @@
       "url": "https://docs.typesafe.ai/concepts/state.md",
       "title": "State",
       "description": "What state is, how to structure it, and how to give a System One model the context it needs.",
-      "raw_sha256": "1a4a8acf96bfff5dbba8c90fcc641e6102e769844982af85d04b6fd76d4a81b9",
-      "clean_sha256": "00ad6bb3451fcbf0f1e1d43fa7f35c083d22453a1bc172706cc1f14d9d0297b1",
-      "bytes": 3821,
-      "changed_at": "2026-10-24T11:09:30.091Z"
+      "raw_sha256": "fd7467d316709557c570aaa8c6e2201217e067ec6a3641f88127c672a9f79501",
+      "clean_sha256": "a9e7ba78f33de97dc881575029e04180234bd5539f5f6f9ee391e6be6bac1486",
+      "bytes": 3952,
+      "changed_at": "2026-11-05T14:44:01.297Z"
     },
     "concepts/system-one.md": {
       "url": "https://docs.typesafe.ai/concepts/system-one.md",
       "title": "System One",
       "description": "System One models make fast, structured decisions for software. Jev is TypeSafe's flagship model and the first System One model.",
-      "raw_sha256": "55dda6c80c2d04b0e6d897a9f9fb2752e1b6b0cb138bf724cd99eaf02146e133",
-      "clean_sha256": "25bc022ef48fd25779a4759a13dceab95438c856645f754de3ecc463cef819e5",
-      "bytes": 4269,
-      "changed_at": "2026-10-24T11:09:30.090Z"
+      "raw_sha256": "cae38c81a084ac697c07e07f420585de312b3c8b6408cdcac9648ffa56f50681",
+      "clean_sha256": "fd6a02cc1b1972e9edee3aac67e4ab72eba12c6628f2b66b2b2e18126677019e",
+      "bytes": 4399,
+      "changed_at": "2026-11-05T14:44:01.296Z"
     },
     "concepts/use-case-map.md": {
       "url": "https://docs.typesafe.ai/concepts/use-case-map.md",
@@ -337,39 +337,48 @@
     },
     "demos.md": {
       "url": "https://docs.typesafe.ai/demos.md",
-      "title": "Demos",
-      "description": "Interactive examples showing what's possible with TypeSafe.",
-      "raw_sha256": "695cb61a2464f6168ec91862e2b244b8c2336efc275e77d338a42001803b934a",
-      "clean_sha256": "19592d845a9b95c1a4d3be51bb47f0dedb4099ce29fdaf073311867bc271e780",
-      "bytes": 726,
-      "changed_at": "2026-10-24T11:09:30.140Z"
+      "title": "Made with Jev",
+      "description": "Working projects built on Jev, and how each one works.",
+      "raw_sha256": "c89b79bad49e9fc0fee76a708e3efb078e816900632294e7f7384f0d4e7e88fc",
+      "clean_sha256": "aba02e1410b3954bb17f16c84c4cf868215c669f58eabd1147acb2173e78a661",
+      "bytes": 1481,
+      "changed_at": "2026-11-05T14:44:01.332Z"
+    },
+    "demos/airbnb-listing-search.md": {
+      "url": "https://docs.typesafe.ai/demos/airbnb-listing-search.md",
+      "title": "Airbnb listing search in Google Sheets",
+      "description": "Describe a stay in plain English and get the 10 best of 1,000 Cape Town Airbnb listings, scored out of 10, in about a second, from a formula in Google Sheets.",
+      "raw_sha256": "e6ab5b3fe1b3af5e0f1ff0736e589b2d656cf3c4ed7bc2674d6c7896e782efc5",
+      "clean_sha256": "f8898a62455d6747e74c91a789c428abf70a0b280a1ec38d6f2bdd27179c5e24",
+      "bytes": 8966,
+      "changed_at": "2026-11-05T14:44:01.333Z"
     },
     "demos/smart-home.md": {
       "url": "https://docs.typesafe.ai/demos/smart-home.md",
       "title": "Smart home assistant demo",
       "description": "Demo code: a smart home assistant that uses Jev to evaluate user requests.",
-      "raw_sha256": "05e139e00b5b0c76d8a1bad843242852bfc54147ac12ec2c641c8ee5ebfdc9a0",
-      "clean_sha256": "769155314f9484b06019e9868eee8feede995bde0722a94ceb9fbcfcb76dd887",
-      "bytes": 3770,
-      "changed_at": "2026-11-04T14:39:00.977Z"
+      "raw_sha256": "7a9765549150eb7c82634585790f66974149df606691de8ed66a909860cb5b2b",
+      "clean_sha256": "cf81d9771ab2a7b5843e2c04b5eed14932f761ab7aeb049f49f440848b32cf34",
+      "bytes": 3388,
+      "changed_at": "2026-11-05T14:44:01.334Z"
     },
     "images.md": {
       "url": "https://docs.typesafe.ai/images.md",
       "title": "Images",
       "description": "Send images in a System One request: in the state, inside a question's instructions, and as the criteria a question is judged against.",
-      "raw_sha256": "cacc916cf2f5cc79a4be9094bf9ec339649a1a77123e101bfee1085d3da260bc",
-      "clean_sha256": "538b02b769500379b885a3e7b6e629288aa186cda05d4cf511568e1a392074f4",
-      "bytes": 21136,
-      "changed_at": "2026-10-31T12:40:52.844Z"
+      "raw_sha256": "bfd4f8aa9f7af7548fffc1b8868b8ee54eb3ed23c9711e02595df624d663b6c1",
+      "clean_sha256": "40c206c81a978a59893e50f1760932236522f6444e6f66928c06a042a00bfcd0",
+      "bytes": 21186,
+      "changed_at": "2026-11-05T14:44:01.305Z"
     },
     "introduction.md": {
       "url": "https://docs.typesafe.ai/introduction.md",
       "title": "Introduction",
       "description": "Jev is TypeSafe's flagship model and the first System One model. Send state and typed questions; get structured answers your code can use directly.",
-      "raw_sha256": "0afe5fdd93fe0514dc1cf4f1ef969d925285410e5742c49a8add31ac8a6b641b",
-      "clean_sha256": "a78c112a6192603fa417c34584031f43378bdf19476c25c3450f6d9761b06dff",
-      "bytes": 4952,
-      "changed_at": "2026-11-04T14:39:00.916Z"
+      "raw_sha256": "0dd45fba7d7f4f4baa2ec61b7b4a63ca78ad185f0de6b0937174f64e3682f215",
+      "clean_sha256": "8fc2f398cddeeee2c449349a69bfeb5a57a54faf12ee491d5e5c87fa9a32c5bf",
+      "bytes": 5101,
+      "changed_at": "2026-11-05T14:44:01.292Z"
     },
     "introduction/coding-agents.md": {
       "url": "https://docs.typesafe.ai/introduction/coding-agents.md",
@@ -393,10 +402,10 @@
       "url": "https://docs.typesafe.ai/introduction/quickstart.md",
       "title": "Quick start",
       "description": "Get up and running with Jev in 5 minutes.",
-      "raw_sha256": "9a51bdc66a1b898e467a7ef006357d7537335ae7409311e5f4271c01a13e4bc1",
-      "clean_sha256": "b0f094955683804b30d984523cd62c796b5f431565894ff951aebd65fad79fc1",
-      "bytes": 14948,
-      "changed_at": "2026-10-31T12:40:52.831Z"
+      "raw_sha256": "7fad38ac7a456fc0d1dc8b43a783ce73e5077f163a5872e65c74eba363c8148a",
+      "clean_sha256": "6b92df7e307d98bc416a69413f6c2db91cc51e8bdce8696ee8d2b7f9492b190e",
+      "bytes": 15195,
+      "changed_at": "2026-11-05T14:44:01.294Z"
     },
     "legal.md": {
       "url": "https://docs.typesafe.ai/legal.md",
@@ -429,10 +438,10 @@
       "url": "https://docs.typesafe.ai/models.md",
       "title": "Models",
       "description": "",
-      "raw_sha256": "825b0e0d9652d0a347cc66211b44db6a4ceb4b37db4f5502a14c7cdca50efc37",
-      "clean_sha256": "94e703ba20d80bcfd4780b08fdf018e480e49ba1233a39a24649b202605428ee",
-      "bytes": 8341,
-      "changed_at": "2026-11-03T14:24:12.816Z"
+      "raw_sha256": "f38388fdcbcf7b14e7cb1ae4d0d0f7c6b833bcf4287a47097ac1426bad210b4d",
+      "clean_sha256": "efd741042590f180600dd1ecc705392795de8387a61cc0735c023ad6a4ca3692",
+      "bytes": 8556,
+      "changed_at": "2026-11-05T14:44:01.335Z"
     },
     "patterns.md": {
       "url": "https://docs.typesafe.ai/patterns.md",
@@ -510,19 +519,19 @@
       "url": "https://docs.typesafe.ai/primitives.md",
       "title": "Primitives (Questions)",
       "description": "The System One question types, the typed answers they return, how to choose between them, and how to ask several at once.",
-      "raw_sha256": "6827aeac1807e6b60575b1ad42ce3e8ad511c1fb6b05585dd6ed32b2722f2187",
-      "clean_sha256": "4227c6db19b14573422bb16ba8005f7987878ee58275deca87f55234cb421190",
-      "bytes": 16518,
-      "changed_at": "2026-11-04T14:39:00.926Z"
+      "raw_sha256": "463a475b4e499b847352917b541bf4cd2e9c59eb88f96f2bd68532ad44a0f1c4",
+      "clean_sha256": "0529c27ef70568500c137d220b2ca2a1084c09f9dc73cf188eb0b92853a0b31b",
+      "bytes": 16367,
+      "changed_at": "2026-11-05T14:44:01.298Z"
     },
     "primitives/advanced.md": {
       "url": "https://docs.typesafe.ai/primitives/advanced.md",
       "title": "Advanced: structure",
       "description": "Instructions, Choice options, Score levels, and Noul criteria all accept JSON structure.",
-      "raw_sha256": "44487b9e31d6a903c8f7664d2d458eb0b8b430bf4554768da70a15e4cc6e1e69",
-      "clean_sha256": "73d0439fec28a33e44eaa017c1290a3c3d14ec7ad004cd6bf9dbf641672d25b2",
-      "bytes": 4517,
-      "changed_at": "2026-10-28T13:03:27.190Z"
+      "raw_sha256": "cd7a2362af56a71501574cb0a1fbc56835923696ab19fe0fff581bfec4d3e9f8",
+      "clean_sha256": "cb2da5f5232bc0702c81b018d9b0a1e9ebce1cd65e31510b0c8928ee1950bd1a",
+      "bytes": 4522,
+      "changed_at": "2026-11-05T14:44:01.304Z"
     },
     "primitives/box.md": {
       "url": "https://docs.typesafe.ai/primitives/box.md",

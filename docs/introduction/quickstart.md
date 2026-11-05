@@ -8,12 +8,12 @@ Get an API key from the [TypeSafe console](https://console.typesafe.ai/keys).
 
 ## The minimum you should know to use Jev effectively
 
-Each call to Jev sends a request, made of a [state](https://docs.typesafe.ai/concepts/state.md) (as a simple string or structured object) and a set of [questions](https://docs.typesafe.ai/primitives), and returns one answer per question:
+Each call to Jev sends a request, made of a [state](https://docs.typesafe.ai/concepts/state.md) (a simple string or structured object; either can include [images](https://docs.typesafe.ai/images.md)) and a set of [questions](https://docs.typesafe.ai/primitives), and returns one answer per question:
 
 ```mermaid actions={true}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
 flowchart LR
-    doc["state<br/><i>input text or object<br/>to evaluate</i>"]
+    doc["state<br/><i>input text, object,<br/>or images to evaluate</i>"]
     quest["questions<br/><i>what you want to know<br/>about the state</i>"]
 
     subgraph call["one call to Jev"]
@@ -25,13 +25,14 @@ flowchart LR
     api --> ans["answers<br/><i>one result per question</i>"]
 ```
 
-Jev answers three types of question, called primitives:
+Jev answers these question types, called primitives:
 
 | Question type | Goal | Returns |
 | - | - | - |
 | [Choice](https://docs.typesafe.ai/primitives/choice.md) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
 | [Score](https://docs.typesafe.ai/primitives/score.md) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
 | [Noul](https://docs.typesafe.ai/primitives/noul.md) | Is this statement true? | `noul` (0–1) |
+| [Box](https://docs.typesafe.ai/primitives/box.md) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
 
 ## Vibe it: the Agent Skill
 

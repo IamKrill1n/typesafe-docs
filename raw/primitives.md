@@ -13,7 +13,7 @@ TypeSafe's primitives are the small, typed building blocks you compose in code. 
 | [Choice](https://docs.typesafe.ai/primitives/choice.md) | Which of these options? | `choice`, `probabilities`, `confidence` |
 | [Score](https://docs.typesafe.ai/primitives/score.md) | Which level? | `score`, `legend`, `probabilities`, `confidence` |
 | [Noul](https://docs.typesafe.ai/primitives/noul.md) | Is this true? | `noul` (0 to 1) |
-| [Box](https://docs.typesafe.ai/primitives/box.md) (Dreamer-ready) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
+| [Box](https://docs.typesafe.ai/primitives/box.md) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
 
 You can ask one question or send several together. Every question in a request sees the same state, is evaluated independently, and returns a typed answer under the ID you chose.
 
@@ -28,7 +28,7 @@ If the judgment you want depends on several independent factors, ask about each 
 Every question has an ID, a `type`, and `instructions`. Choice and Score questions also take `criteria`, which define the options for a Choice question or the levels for a Score. Noul questions accept `criteria` as an optional clarification of what yes and no mean.
 
 * ID. The key you pick, such as `refund_requested`. It identifies the answer in the response.
-* `type`. One of `choice`, `score`, `noul`, or `box` (Box is [Dreamer-ready](https://docs.typesafe.ai/primitives/box.md): a preview for prototypes, not yet for production).
+* `type`. One of `choice`, `score`, `noul`, or `box`.
 * `instructions`. The question you are asking about the state. This is where your evaluation logic goes. Write it as a clear, specific question, or as a statement for the model to judge. A string is enough for most questions. It can also be an object or an array, which puts the question in one field and the data it refers to in others; see [Use structure in the questions](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md#use-structure-in-the-questions).
 * `criteria`. The possible answers: a map of options for a Choice question, an ordered list of levels for a Score, and an optional description of yes and no for a Noul. Each question type's page covers its shape.
 
@@ -75,7 +75,7 @@ Answers are primitives too. Each question type returns a typed value that your c
 | Choice | `choice`, `probabilities`, `confidence` | `choice` is the selected option. `probabilities` is the distribution across every option. `confidence` summarizes how peaked that distribution is. |
 | Score | `score`, `legend`, `probabilities`, `confidence` | `score` is a position along your levels, and can fall between two of them. `legend` repeats the levels by number. `probabilities` is the distribution across levels. |
 | Noul | `noul` | The probability that the answer is yes. Near 1 is a strong yes, near 0 a strong no, near 0.5 uncertain. Noul has no separate `confidence`. |
-| Box (Dreamer-ready) | `box`, `confidence` | `box` holds the four edges, `top`, `bottom`, `left`, and `right`, each a fraction of the image's width or height from 0 to 1. A Box always returns a location, so pair it with a Noul question that asks whether the target is in the image at all. |
+| Box | `box`, `confidence` | `box` holds the four edges, `top`, `bottom`, `left`, and `right`, each a fraction of the image's width or height from 0 to 1. A Box always returns a location, so pair it with a Noul question that asks whether the target is in the image at all. |
 
 Two properties of these answers make them composable:
 

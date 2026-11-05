@@ -14,7 +14,7 @@ Every one of these fields is an [`EntryType`](https://docs.typesafe.ai/sdk/javas
 
 | Field | Applies to | Accepted shape |
 | - | - | - |
-| `instructions` | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
+| `instructions` | Choice, Score, Noul, Box | `string`, `object`, `array`, or `null` |
 | `criteria` values (option descriptions) | Choice | `string`, `object`, `array`, or `null` |
 | `criteria` entries (level descriptions) | Score | `string`, `object`, `array`, or `null` |
 | `criteria.true` and `criteria.false` | Noul | `string`, `object`, `array`, or `null` |

@@ -10,11 +10,7 @@ System One models are a class of AI models built to make fast, structured decisi
 
 Jev is TypeSafe's flagship model and the first System One model.
 
-Like an LLM, a System One model understands natural-language input. It returns typed decisions and probabilities rather than generated text.
-
-> [!NOTE]
->
-> Jev currently accepts text input only. It evaluates strings, JSON objects, and arrays of text. Images, audio, and video are not supported (yet).
+Like an LLM, a System One model understands natural-language input. It returns typed decisions and probabilities rather than generated text. Jev also understands [images](https://docs.typesafe.ai/images.md).
 
 ## How it differs from an LLM
 
@@ -27,6 +23,7 @@ System One models do not write replies, produce code, or generate explanations o
 | [Choice](https://docs.typesafe.ai/primitives/choice.md) | Which team should handle this ticket? | `billing`, `technical`, or `account` | `choice: "billing"` |
 | [Score](https://docs.typesafe.ai/primitives/score.md) | How frustrated is this customer? | 0 = calm, 1 = frustrated, 2 = very frustrated | `score: 1.4` |
 | [Noul](https://docs.typesafe.ai/primitives/noul.md) | Does this message request a refund? | True or false | `noul: 0.95` |
+| [Box](https://docs.typesafe.ai/primitives/box.md) | Where is the damage on this car? | Four edges, each a fraction of the image's width or height, from 0 to 1 | `box: {top: 0.41, bottom: 0.68, left: 0.22, right: 0.57}` |
 
 These are illustrative configurations and values. The primitive pages describe the available configuration options and full response fields.
 

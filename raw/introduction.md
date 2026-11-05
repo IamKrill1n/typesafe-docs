@@ -13,7 +13,7 @@ Jev is TypeSafe's flagship model and the first [System One model](https://docs.t
 ```mermaid actions={true} theme={null}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
 flowchart LR
-    state["your data<br/>(the state)<br/>text or JSON"]
+    state["your data<br/>(the state)<br/>text, JSON, or images"]
     questions["your questions<br/>about the data<br/>(several types)"]
 
     %% not a node - the point where the two lines join into one request
@@ -44,6 +44,7 @@ TypeSafe exposes *AI primitives*. Similar to software primitives, our AI primiti
 | [Choice](https://docs.typesafe.ai/primitives/choice.md) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
 | [Score](https://docs.typesafe.ai/primitives/score.md) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
 | [Noul](https://docs.typesafe.ai/primitives/noul.md) | Is this statement true? | `noul` (0–1) |
+| [Box](https://docs.typesafe.ai/primitives/box.md) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
 
 Any mix of *question* types can go in a single request. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 

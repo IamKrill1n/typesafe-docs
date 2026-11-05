@@ -9,13 +9,15 @@ Jev is TypeSafe's flagship model and the first [System One model](https://docs.t
 | Model ID | `jev-1.14.0` | `jev-1.13.0` |
 | Price (per Btok / per Mtok) | \$42 / \$0.042 | \$42 / \$0.042 |
 | Context length | 64k per-request / 32k per-question | 64k per-request / 32k per-question |
-| Input | Text | Text |
+| Input | Text, images | Text, images |
+| Question types | Choice, Score, Noul, Box | Choice, Score, Noul |
 
 Jev 1.14 is the newest Jev release, available from October 14, 2026.
 
 * **Price:** You pay per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
 * **Context length:** Two limits, the per-request context and the per-question context. See [Context length](#context-length). To raise both, see [Long context](#long-context).
-* **Input:** Jev reads natural-language text, sent as a string, a JSON object, or an array of text values. It does not accept audio or video. Convert those into text or structured fields before you send them as `state`. See [State](https://docs.typesafe.ai/concepts/state.md) for the shapes `state` accepts.
+* **Input:** Jev reads natural-language text, sent as a string, a JSON object, or an array of text values. It also reads PNG and JPEG [images](https://docs.typesafe.ai/images.md) anywhere in the request. It does not natively accept audio or video (yet). See [State](https://docs.typesafe.ai/concepts/state.md) for the shapes `state` accepts.
+* **Question types:** [Box](https://docs.typesafe.ai/primitives/box.md) questions need Jev 1.14.
 
 ## Context length
 

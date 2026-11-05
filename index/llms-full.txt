@@ -610,9 +610,9 @@ Source: https://docs.typesafe.ai/concepts/state
 
 What state is, how to structure it, and how to give a System One model the context it needs.
 
-**State** is the content you ask a System One model to evaluate. It could be a support message, a passage of text, or the current state of your application. You pass it in the `state` field of an API request, alongside the questions you want answered.
+**State** is the content you ask a System One model to evaluate. It could be a support message, a passage of text, a photo, or the current state of your application. You pass it in the `state` field of an API request, alongside the questions you want answered.
 
-Each request evaluates one state against one or more questions. All questions see the same state and are evaluated independently. You can mix [Choice](/primitives/choice), [Score](/primitives/score), and [Noul](/primitives/noul) questions in one request.
+Each request evaluates one state against one or more questions. All questions see the same state and are evaluated independently. You can mix [Choice](/primitives/choice), [Score](/primitives/score), [Noul](/primitives/noul), and [Box](/primitives/box) questions in one request.
 
 ## State can be a simple string or a structured JSON value
 
@@ -634,7 +634,7 @@ Use an object for most requests so each part of the state has a descriptive name
 
 > [!NOTE]
 >
-> State is a string, JSON object, or array. Audio and video are not supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
+> State is a string, JSON object, or array, and can include [images](/images). Audio and video are not natively supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
 
 ```json title="A support conversation as state" theme={null}
 {
@@ -676,11 +676,7 @@ System One models are a class of AI models built to make fast, structured decisi
 
 Jev is TypeSafe's flagship model and the first System One model.
 
-Like an LLM, a System One model understands natural-language input. It returns typed decisions and probabilities rather than generated text.
-
-> [!NOTE]
->
-> Jev currently accepts text input only. It evaluates strings, JSON objects, and arrays of text. Images, audio, and video are not supported (yet).
+Like an LLM, a System One model understands natural-language input. It returns typed decisions and probabilities rather than generated text. Jev also understands [images](/images).
 
 ## How it differs from an LLM
 
@@ -693,6 +689,7 @@ System One models do not write replies, produce code, or generate explanations o
 | [Choice](/primitives/choice) | Which team should handle this ticket? | `billing`, `technical`, or `account` | `choice: "billing"` |
 | [Score](/primitives/score) | How frustrated is this customer? | 0 = calm, 1 = frustrated, 2 = very frustrated | `score: 1.4` |
 | [Noul](/primitives/noul) | Does this message request a refund? | True or false | `noul: 0.95` |
+| [Box](/primitives/box) | Where is the damage on this car? | Four edges, each a fraction of the image's width or height, from 0 to 1 | `box: {top: 0.41, bottom: 0.68, left: 0.22, right: 0.57}` |
 
 These are illustrative configurations and values. The primitive pages describe the available configuration options and full response fields.
 
@@ -15947,18 +15944,200 @@ else:
 [Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAWgSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkTJbXjR1nEFeiID-XJTDohjg2teyHQeZ0nxfMg5JVOUBI3L8hxHbymxjfA4xVc9rRaS9rxdBiUgCQIXBQCBMGoilmG9Z5lRvSchJuESHlQnCAEkmg0Fgmh-CItTIG9WAkZx7x+NLrXvXpQiDDi-w3MAmn0xAO0JNCpzBHcWHJUp9huH1aseDqj1MPi5BqTQsKaPkjjkfyXQyFAMMO0UmKoaV3L5D8VShWUqIQNy4lmqRnXsZ4ADEwWQMB2BUJUEBgKhnTfQLdB5JJUHcv82E+ZURg3CISkmQozAsKxCoOI4Su0dhyu1Sq9WeAARSCGsGZraUxDkEDnAKWiUULzDEHk+UB4bOjgkiAQQYaNRUY0ZsmaYQBofcADV50dVYZwARhAfwgA)
 
 
-# Demos
+# Made with Jev
 Source: https://docs.typesafe.ai/demos
 
-Interactive examples showing what's possible with TypeSafe.
+Working projects built on Jev, and how each one works.
 
-## Available demos
+Each page shows a project running, then explains how it works: the questions it asks Jev, how it groups them into requests, and what its code does with the answers.
 
-* [Smart Home Assistant Demo](/demos/smart-home) - Evaluate user smart home requests with speculative questions and LLM fallback.
+> [card] [Airbnb listing search](/demos/airbnb-listing-search)
+>
+> Describe a stay in plain English and get the 10 best of 1,000 Cape Town listings in about a second, from a formula in Google Sheets. Choice questions shortlist 50 listings and Score questions rank them, in 11 requests instead of 1,000.
+
+> [card] [Smart home assistant](/demos/smart-home)
+>
+> An assistant for requests like "Turn off all of the lights in the house". It asks Jev every question it might need in one call, and code ignores the answers that don't apply. It calls an LLM to split a request that asks for several actions, and to reply to general questions or chat.
+
+To build your own project step by step, with code you can run, see the [cookbooks](/cookbooks).
 
 > [!TIP]
 >
-> We're always keen to learn how people are making use of our primitives. If you've found a killer use case you think should be mentioned here, feel free to drop us a note!
+> If you've built a project with Jev that belongs on this page, tell us on [Discord](https://discord.gg/typesafe).
+
+
+# Airbnb listing search in Google Sheets
+Source: https://docs.typesafe.ai/demos/airbnb-listing-search
+
+Describe a stay in plain English and get the 10 best of 1,000 Cape Town Airbnb listings, scored out of 10, in about a second, from a formula in Google Sheets.
+
+## The problem
+
+Finding the right place to stay means reading listings. Filters cover price, bedrooms, and guests, but not "allows dogs", "walk to the beach", or "has backup power for load-shedding". Those details sit in the description, written differently by every host, so the only way to check them is to read each one. With 1,000 listings in a spreadsheet, that's an afternoon of scrolling.
+
+## Why Jev fits
+
+Whether a listing matches a request is a quick reading judgment. Jev makes it in a fraction of a second and returns a probability or a score rather than free text, so a spreadsheet formula can sort on it.
+
+## One request per listing is too slow
+
+The obvious approach is one request per listing, with a Score question: "How well does this listing match the request?" Each request is fast, but 1,000 of them one after another take more than 30 seconds, and Google Sheets stops a custom formula at 30 seconds.
+
+## Shortlist, then score
+
+One request can hold many listings. A Choice question can have 100 listing IDs as its options, and its answer gives a probability for each, so a whole group is ranked at once. We split the search into two steps:
+
+| Step | Requests | Question | What happens with the answer |
+| - | - | - | - |
+| Shortlist | 10, in parallel | Which listing best matches the request? A Choice question over 100 listing IDs, each with the start of its description. | The 5 listings with the highest probability in each group go through, 50 in all. |
+| Score | 1 | How well does this listing match the request? One Score question per shortlisted listing, with the full description. | Each score becomes a mark out of 10, and the 10 best are returned. |
+
+The Score question has five levels, from "Not a match at all" to "Matches everything asked for", so each mark says how much of the request a listing covers. For "6 people and a dog on the beach", the top result scores 8.8: its description says it sleeps 10, is minutes from the beach, and is pet-friendly.
+
+## 1,000 requests become 11
+
+The two steps take 11 requests instead of 1,000, and the search finishes in about a second instead of running past the 30-second limit.
+
+## Any request, same sheet
+
+The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is a new search. The sheet caches each request's results, so editing other cells doesn't run the search again.
+
+## Build it
+
+> [card] [Copy the Google Sheet](https://docs.google.com/spreadsheets/d/1E1UOTwk2QIA9ZxIieXPvvQaGPOCZn7991bT49S07bRA/copy)
+>
+> The 1,000 listings and the `JEV_TOP10` formula. Add your TypeSafe API key under Extensions > Apps Script > Project Settings > Script properties, as `TYPESAFE_API_KEY`.
+
+> [card] [Get an API key](https://console.typesafe.ai/keys)
+>
+> Create a key in the TypeSafe console.
+
+> [accordion] The Apps Script behind JEV\_TOP10
+>
+> ```javascript Code.gs theme={null}
+> /**
+>  * JEV_TOP10: find the 10 listings that best match a plain-language request, using TypeSafe Jev.
+>  *
+>  * Setup: Extensions > Apps Script, paste this file, save. Then Project Settings >
+>  * Script properties: add TYPESAFE_API_KEY with your TypeSafe key. No permission prompt.
+>  *
+>  * Usage: =JEV_TOP10(B1, Listings!A2:H1001)
+>  *   The listing columns must be: Name, Type, Price per night (R), Bedrooms, Guests, Rating,
+>  *   Description, Link.
+>  *
+>  * How it works, in 11 requests instead of one per listing:
+>  *   1. Shortlist: the listings are split into groups of 100. One request per group, all in
+>  *      parallel, asks a Choice question over the group's listing IDs. Jev returns a
+>  *      probability for every listing, and the 5 most likely go through.
+>  *   2. Score: one request holds the shortlisted listings in full, with one Score question
+>  *      per listing. The 10 best scores are returned, from 0 to 10.
+>  * Results are cached for six hours per request.
+>  */
+>
+> const GROUP_SIZE = 100;
+> const SHORTLIST_PER_GROUP = 5;
+> const TOP = 10;
+> const SHORT_DESCRIPTION = 300;
+> const FULL_DESCRIPTION = 1500;
+> const LEVELS = [
+>   'Not a match at all',
+>   'Matches little of what was asked for',
+>   'Matches some of what was asked for',
+>   'Matches most of what was asked for',
+>   'Matches everything asked for',
+> ];
+>
+> /**
+>  * Returns the 10 listings that best match a request, with a 0-10 match score.
+>  *
+>  * @param {string} request What you're looking for, in plain language.
+>  * @param {Listings!A2:H1001} listings Name, Type, Price, Bedrooms, Guests, Rating, Description, Link.
+>  * @return Match, Name, Type, Price, Bedrooms, Guests, Rating, Link for the top 10.
+>  * @customfunction
+>  */
+> function JEV_TOP10(request, listings) {
+>   const key = PropertiesService.getScriptProperties().getProperty('TYPESAFE_API_KEY');
+>   if (!key) throw new Error('Add TYPESAFE_API_KEY under Project Settings > Script properties.');
+>   request = String(request || '').trim();
+>   if (!request) return [['Type what you are looking for in B1.']];
+>
+>   const rows = listings.filter((r) => r[0] !== '');
+>   const cache = CacheService.getScriptCache();
+>   const cacheKey = digest(`${request}\n${rows.length}\n${rows.map((r) => r[7]).join('|')}`);
+>   const hit = cache.get(cacheKey);
+>   if (hit) return JSON.parse(hit);
+>
+>   // Stage 1: one Choice over each group of 100 listing IDs, all groups in parallel.
+>   const groups = [];
+>   for (let start = 0; start < rows.length; start += GROUP_SIZE) {
+>     groups.push(rows.slice(start, start + GROUP_SIZE).map((_, j) => start + j));
+>   }
+>   const shortlistResponses = UrlFetchApp.fetchAll(groups.map((ids) => jevRequest(key, {
+>     state: ids.map((i) => line(i, rows[i], SHORT_DESCRIPTION)).join('\n'),
+>     questions: {
+>       best: {
+>         type: 'choice',
+>         instructions: `Which listing best matches what the guest is looking for: ${request}`,
+>         criteria: Object.fromEntries(ids.map((i) => [`L${i}`, null])),
+>       },
+>     },
+>   })));
+>   const shortlist = shortlistResponses.flatMap((res) => {
+>     const p = parse(res).answers.best.probabilities;
+>     return Object.keys(p).sort((a, b) => p[b] - p[a]).slice(0, SHORTLIST_PER_GROUP).map((id) => Number(id.slice(1)));
+>   });
+>
+>   // Stage 2: score every shortlisted listing in one request.
+>   const scored = parse(UrlFetchApp.fetchAll([jevRequest(key, {
+>     state: shortlist.map((i) => line(i, rows[i], FULL_DESCRIPTION)).join('\n\n'),
+>     questions: Object.fromEntries(shortlist.map((i) => [`L${i}`, {
+>       type: 'score',
+>       instructions: `How well does listing [L${i}] match what the guest is looking for: ${request}`,
+>       criteria: LEVELS,
+>     }])),
+>   })])[0]).answers;
+>
+>   const top = shortlist
+>     .map((i) => ({i, score: Math.round((scored[`L${i}`].score / (LEVELS.length - 1)) * 100) / 10}))
+>     .sort((a, b) => b.score - a.score)
+>     .slice(0, TOP)
+>     .map(({i, score}) => {
+>       const [name, type, price, beds, guests, rating, , link] = rows[i];
+>       return [score, name, type, price, beds, guests, rating, link];
+>     });
+>   cache.put(cacheKey, JSON.stringify(top), 6 * 60 * 60);
+>   return top;
+> }
+>
+> function line(i, r, descriptionChars) {
+>   const [name, type, price, beds, guests, , description] = r;
+>   return `[L${i}] ${name} | ${type} | R${price}/night | ${beds || '?'} bedrooms | sleeps ${guests} | ${String(description).slice(0, descriptionChars)}`;
+> }
+>
+> function jevRequest(key, body) {
+>   return {
+>     url: 'https://api.typesafe.ai/v1/systemone',
+>     method: 'post',
+>     contentType: 'application/json',
+>     headers: {Authorization: `Bearer ${key}`},
+>     muteHttpExceptions: true,
+>     payload: JSON.stringify(Object.assign({model: 'jev-latest'}, body)),
+>   };
+> }
+>
+> function parse(res) {
+>   if (res.getResponseCode() !== 200) {
+>     throw new Error(`Jev returned HTTP ${res.getResponseCode()}: ${res.getContentText().slice(0, 200)}`);
+>   }
+>   return JSON.parse(res.getContentText());
+> }
+>
+> function digest(text) {
+>   return Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text));
+> }
+> ```
+
+The listings come from [Inside Airbnb](https://insideairbnb.com/get-the-data/)'s 23 September 2026 scrape of Cape Town, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). We took a random sample of 1,000 listings with a price and a description of at least 200 characters, removed HTML line breaks and repeated whitespace, and flattened the amenities to a comma-separated list.
 
 
 # Smart home assistant demo
@@ -15976,22 +16155,18 @@ Demo code: a smart home assistant that uses Jev to evaluate user requests.
 
 The chief pattern demonstrated here is [speculative fan-out](/patterns/fan-out). Each user request is evaluated against a long list of questions, including many that will end up irrelevant for most requests.
 
-Let's consider the following user request:
-
-> "Turn off all of the lights in the house"
-
-This is a very simple request, and our code will only need to consider the answers to the following questions:
+To carry out "Turn off all of the lights in the house", the code needs only four answers:
 
 * "What category of request is this?" (smarthome command)
 * "What domain is this request targeting?" (whole house)
 * "What type of device is this request targeting?" (lights)
 * "What action should be taken on the lights?" (turn off)
 
-Notice that the last question is written with the assumption that the user is issuing a command to lights, and we ask it before we know what the user is actually requesting. This is what we call a "speculative question" - we ask it before we even know if it's relevant, allowing us to evaluate all questions in parallel and rely on code to filter out the irrelevant results after the fact. This is a key pattern for building systems that can handle a wide variety of user requests with a single set of questions.
+The last question assumes the request is a command to the lights, and Jev is asked it before anything confirms that. This is a speculative question: asking it early lets all the questions go to Jev in parallel, and code ignores the answers that don't apply. One set of questions then covers many kinds of request.
 
 #### The wrong way: sequential API calls
 
-The wrong way to do this would be to separate the questions in to multiple API calls, waiting to ask questions only once you are certain you need the answer:
+The slower way is to split the questions across several API calls, and ask each one only once an earlier answer shows it's needed:
 
 * "What category of request is this?" (smarthome command)
 
@@ -16004,11 +16179,11 @@ Then, only once you know it's targeting lights:
 
 * "What action should be taken on the lights?" (turn off)
 
-This approach optimizes for a minimum number of questions, but it ends up being much slower and more expensive than batching all of the questions in to one upfront API call.
+This approach optimizes for a minimum number of questions, but it ends up being much slower and more expensive than batching all of the questions into one upfront API call.
 
 ### Jev and LLM pairing
 
-This demo also shows how Jev can be paired with LLMs to handle a system that sometimes requires a string-generation step:
+The assistant calls an LLM in two cases, both where it needs generated text:
 
 **Splitting a compound user request:** One of the questions in this demo is a Noul question identifying if the user request is asking for more than one distinct action. If this is true, the system uses an LLM to split the request into a list of atomic commands. The split requests are then evaluated by Jev individually.
 
@@ -16279,6 +16454,7 @@ An image in a question's `instructions` is part of that question and is sent onl
 
 ```json theme={null}
 {
+  "model": "jev-latest",
   "state": {"door": "e48a6f30-door"},
   "questions": {
     "is_badge_holder": {
@@ -16297,6 +16473,7 @@ Choice options, Score levels, and Noul `true` and `false` definitions can each i
 
 ```json theme={null}
 {
+  "model": "jev-latest",
   "state": {"camera": "e48a6f30-cam"},
   "questions": {
     "gesture": {
@@ -16408,7 +16585,7 @@ Jev is TypeSafe's flagship model and the first [System One model](/concepts/syst
 ```mermaid actions={true} theme={null}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
 flowchart LR
-    state["your data<br/>(the state)<br/>text or JSON"]
+    state["your data<br/>(the state)<br/>text, JSON, or images"]
     questions["your questions<br/>about the data<br/>(several types)"]
 
     %% not a node - the point where the two lines join into one request
@@ -16439,6 +16616,7 @@ TypeSafe exposes *AI primitives*. Similar to software primitives, our AI primiti
 | [Choice](/primitives/choice) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
 | [Score](/primitives/score) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
 | [Noul](/primitives/noul) | Is this statement true? | `noul` (0–1) |
+| [Box](/primitives/box) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
 
 Any mix of *question* types can go in a single request. Every *question* is evaluated in parallel and in isolation against the same *state* in one go. Adding questions barely changes the response time. Each question is evaluated independently, so adding more questions does not create context-rot.
 
@@ -16593,12 +16771,12 @@ Get an API key from the [TypeSafe console](https://console.typesafe.ai/keys).
 
 ## The minimum you should know to use Jev effectively
 
-Each call to Jev sends a request, made of a [state](/concepts/state) (as a simple string or structured object) and a set of [questions](/primitives), and returns one answer per question:
+Each call to Jev sends a request, made of a [state](/concepts/state) (a simple string or structured object; either can include [images](/images)) and a set of [questions](/primitives), and returns one answer per question:
 
 ```mermaid actions={true} theme={null}
 %%{init: {"fontFamily": "Inter, sans-serif", "flowchart": {"rankSpacing": 35, "wrappingWidth": 300, "subGraphTitleMargin": {"top": 12, "bottom": 12}}}}%%
 flowchart LR
-    doc["state<br/><i>input text or object<br/>to evaluate</i>"]
+    doc["state<br/><i>input text, object,<br/>or images to evaluate</i>"]
     quest["questions<br/><i>what you want to know<br/>about the state</i>"]
 
     subgraph call["one call to Jev"]
@@ -16610,13 +16788,14 @@ flowchart LR
     api --> ans["answers<br/><i>one result per question</i>"]
 ```
 
-Jev answers three types of question, called primitives:
+Jev answers these question types, called primitives:
 
 | Question type | Goal | Returns |
 | - | - | - |
 | [Choice](/primitives/choice) | Choose an option from a list | `choice`, `probabilities`, `confidence` |
 | [Score](/primitives/score) | Score the state on a rubric | `score`, `probabilities`, `confidence` |
 | [Noul](/primitives/noul) | Is this statement true? | `noul` (0–1) |
+| [Box](/primitives/box) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
 
 ## Vibe it: the Agent Skill
 
@@ -16628,14 +16807,14 @@ The fastest way to add Jev to your project is to have your coding agent write th
 >
 > Run these two commands in your terminal:
 >
-> ```bash theme={null}
+> ```bash theme={null} theme={null}
 > claude plugin marketplace add typesafe-ai/skills
 > claude plugin install typesafe@typesafe-ai
 > ```
 
 > [tab] Other agents
 >
-> ```bash theme={null}
+> ```bash theme={null} theme={null}
 > npx skills add typesafe-ai/skills --skill typesafe-ai
 > ```
 >
@@ -16645,7 +16824,7 @@ The fastest way to add Jev to your project is to have your coding agent write th
 >
 > Paste this prompt into your coding agent:
 >
-> ```text wrap theme={null}
+> ```text wrap theme={null} theme={null}
 > Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
 > ```
 
@@ -17151,13 +17330,15 @@ Jev is TypeSafe's flagship model and the first [System One model](/concepts/syst
 | Model ID | `jev-1.14.0` | `jev-1.13.0` |
 | Price (per Btok / per Mtok) | \$42 / \$0.042 | \$42 / \$0.042 |
 | Context length | 64k per-request / 32k per-question | 64k per-request / 32k per-question |
-| Input | Text | Text |
+| Input | Text, images | Text, images |
+| Question types | Choice, Score, Noul, Box | Choice, Score, Noul |
 
 Jev 1.14 is the newest Jev release, available from October 14, 2026.
 
 * **Price:** You pay per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
 * **Context length:** Two limits, the per-request context and the per-question context. See [Context length](#context-length). To raise both, see [Long context](#long-context).
-* **Input:** Jev reads natural-language text, sent as a string, a JSON object, or an array of text values. It does not accept audio or video. Convert those into text or structured fields before you send them as `state`. See [State](/concepts/state) for the shapes `state` accepts.
+* **Input:** Jev reads natural-language text, sent as a string, a JSON object, or an array of text values. It also reads PNG and JPEG [images](/images) anywhere in the request. It does not natively accept audio or video (yet). See [State](/concepts/state) for the shapes `state` accepts.
+* **Question types:** [Box](/primitives/box) questions need Jev 1.14.
 
 ## Context length
 
@@ -17978,7 +18159,7 @@ TypeSafe's primitives are the small, typed building blocks you compose in code. 
 | [Choice](/primitives/choice) | Which of these options? | `choice`, `probabilities`, `confidence` |
 | [Score](/primitives/score) | Which level? | `score`, `legend`, `probabilities`, `confidence` |
 | [Noul](/primitives/noul) | Is this true? | `noul` (0 to 1) |
-| [Box](/primitives/box) (Dreamer-ready) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
+| [Box](/primitives/box) | Where is it in this image? | `box` (`top`, `bottom`, `left`, `right`), `confidence` |
 
 You can ask one question or send several together. Every question in a request sees the same state, is evaluated independently, and returns a typed answer under the ID you chose.
 
@@ -17993,7 +18174,7 @@ If the judgment you want depends on several independent factors, ask about each 
 Every question has an ID, a `type`, and `instructions`. Choice and Score questions also take `criteria`, which define the options for a Choice question or the levels for a Score. Noul questions accept `criteria` as an optional clarification of what yes and no mean.
 
 * ID. The key you pick, such as `refund_requested`. It identifies the answer in the response.
-* `type`. One of `choice`, `score`, `noul`, or `box` (Box is [Dreamer-ready](/primitives/box): a preview for prototypes, not yet for production).
+* `type`. One of `choice`, `score`, `noul`, or `box`.
 * `instructions`. The question you are asking about the state. This is where your evaluation logic goes. Write it as a clear, specific question, or as a statement for the model to judge. A string is enough for most questions. It can also be an object or an array, which puts the question in one field and the data it refers to in others; see [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions).
 * `criteria`. The possible answers: a map of options for a Choice question, an ordered list of levels for a Score, and an optional description of yes and no for a Noul. Each question type's page covers its shape.
 
@@ -18040,7 +18221,7 @@ Answers are primitives too. Each question type returns a typed value that your c
 | Choice | `choice`, `probabilities`, `confidence` | `choice` is the selected option. `probabilities` is the distribution across every option. `confidence` summarizes how peaked that distribution is. |
 | Score | `score`, `legend`, `probabilities`, `confidence` | `score` is a position along your levels, and can fall between two of them. `legend` repeats the levels by number. `probabilities` is the distribution across levels. |
 | Noul | `noul` | The probability that the answer is yes. Near 1 is a strong yes, near 0 a strong no, near 0.5 uncertain. Noul has no separate `confidence`. |
-| Box (Dreamer-ready) | `box`, `confidence` | `box` holds the four edges, `top`, `bottom`, `left`, and `right`, each a fraction of the image's width or height from 0 to 1. A Box always returns a location, so pair it with a Noul question that asks whether the target is in the image at all. |
+| Box | `box`, `confidence` | `box` holds the four edges, `top`, `bottom`, `left`, and `right`, each a fraction of the image's width or height from 0 to 1. A Box always returns a location, so pair it with a Noul question that asks whether the target is in the image at all. |
 
 Two properties of these answers make them composable:
 
@@ -18204,7 +18385,7 @@ Every one of these fields is an [`EntryType`](/sdk/javascript/api/type-aliases/E
 
 | Field | Applies to | Accepted shape |
 | - | - | - |
-| `instructions` | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
+| `instructions` | Choice, Score, Noul, Box | `string`, `object`, `array`, or `null` |
 | `criteria` values (option descriptions) | Choice | `string`, `object`, `array`, or `null` |
 | `criteria` entries (level descriptions) | Score | `string`, `object`, `array`, or `null` |
 | `criteria.true` and `criteria.false` | Noul | `string`, `object`, `array`, or `null` |

@@ -257,6 +257,7 @@ An image in a question's `instructions` is part of that question and is sent onl
 
 ```json
 {
+  "model": "jev-latest",
   "state": {"door": "e48a6f30-door"},
   "questions": {
     "is_badge_holder": {
@@ -275,6 +276,7 @@ Choice options, Score levels, and Noul `true` and `false` definitions can each i
 
 ```json
 {
+  "model": "jev-latest",
   "state": {"camera": "e48a6f30-cam"},
   "questions": {
     "gesture": {

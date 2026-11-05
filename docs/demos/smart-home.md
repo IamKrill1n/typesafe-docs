@@ -12,22 +12,18 @@
 
 The chief pattern demonstrated here is [speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md). Each user request is evaluated against a long list of questions, including many that will end up irrelevant for most requests.
 
-Let's consider the following user request:
-
-> "Turn off all of the lights in the house"
-
-This is a very simple request, and our code will only need to consider the answers to the following questions:
+To carry out "Turn off all of the lights in the house", the code needs only four answers:
 
 * "What category of request is this?" (smarthome command)
 * "What domain is this request targeting?" (whole house)
 * "What type of device is this request targeting?" (lights)
 * "What action should be taken on the lights?" (turn off)
 
-Notice that the last question is written with the assumption that the user is issuing a command to lights, and we ask it before we know what the user is actually requesting. This is what we call a "speculative question" - we ask it before we even know if it's relevant, allowing us to evaluate all questions in parallel and rely on code to filter out the irrelevant results after the fact. This is a key pattern for building systems that can handle a wide variety of user requests with a single set of questions.
+The last question assumes the request is a command to the lights, and Jev is asked it before anything confirms that. This is a speculative question: asking it early lets all the questions go to Jev in parallel, and code ignores the answers that don't apply. One set of questions then covers many kinds of request.
 
 #### The wrong way: sequential API calls
 
-The wrong way to do this would be to separate the questions in to multiple API calls, waiting to ask questions only once you are certain you need the answer:
+The slower way is to split the questions across several API calls, and ask each one only once an earlier answer shows it's needed:
 
 * "What category of request is this?" (smarthome command)
 
@@ -40,11 +36,11 @@ Then, only once you know it's targeting lights:
 
 * "What action should be taken on the lights?" (turn off)
 
-This approach optimizes for a minimum number of questions, but it ends up being much slower and more expensive than batching all of the questions in to one upfront API call.
+This approach optimizes for a minimum number of questions, but it ends up being much slower and more expensive than batching all of the questions into one upfront API call.
 
 ### Jev and LLM pairing
 
-This demo also shows how Jev can be paired with LLMs to handle a system that sometimes requires a string-generation step:
+The assistant calls an LLM in two cases, both where it needs generated text:
 
 **Splitting a compound user request:** One of the questions in this demo is a Noul question identifying if the user request is asking for more than one distinct action. If this is true, the system uses an LLM to split the request into a list of atomic commands. The split requests are then evaluated by Jev individually.
 

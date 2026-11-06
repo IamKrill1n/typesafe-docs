@@ -634,7 +634,7 @@ Use an object for most requests so each part of the state has a descriptive name
 
 > [!NOTE]
 >
-> State is a string, JSON object, or array, and can include [images](/images). Audio and video are not natively supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](/models#language-support).
+> State is a string, JSON object, or array, and can include [images](/images). Audio and video are not natively supported (yet).
 
 ```json title="A support conversation as state" theme={null}
 {
@@ -15910,9 +15910,6 @@ night-owl-22: this boss took me 40 tries lol                    show       -> di
   for that long.
 * **One request at a time can't keep up with a busy chat.** Run several requests at once,
   as in *Filter the whole chat*.
-* **At the time this cookbook was published, Jev was trained mainly on English.** It
-  accepted other languages but answered them less accurately, so expect more misses on a
-  non-English channel.
 * **A winning category can still be uncertain.** Here we always apply the winning label's
   rule. Before using it live, choose how to handle messages whose top two category
   probabilities are close to each other, and Noul values near 0.5. You could flag those
@@ -17404,10 +17401,6 @@ Jev is not fine-tuned or LoRA-adapted with customer data. It is trained with [RL
 * Put your proprietary content, records, and reference material in the `state` field. See [State](/concepts/state).
 * Encode your domain rules and boundary cases in the `instructions` and `criteria` of each question. See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) and [Advanced: structure](/primitives/advanced).
 * Decompose broad judgments into atomic questions and combine the outputs in code. See [Composite scoring](/patterns/composite-scoring) and the [AutoResearch cookbook](/cookbooks/autoresearch_feature_discovery) for training a downstream classical model on Jev's probabilities.
-
-## Language support
-
-Jev accepts natural-language text. English is the primary training language and where accuracy is currently best. Other languages, including CJK scripts, are handled but not equally well; test on your own content before relying on Jev for a non-English workload, and pay close attention to [Confidence](/confidence) when routing.
 
 ## Data handling
 

@@ -30,7 +30,7 @@ Use an object for most requests so each part of the state has a descriptive name
 
 > [!NOTE]
 >
-> State is a string, JSON object, or array, and can include [images](https://docs.typesafe.ai/images.md). Audio and video are not natively supported (yet). Jev's primary training language is English; other languages, including CJK scripts, are accepted but currently have lower accuracy — see [Models](https://docs.typesafe.ai/models.md#language-support).
+> State is a string, JSON object, or array, and can include [images](https://docs.typesafe.ai/images.md). Audio and video are not natively supported (yet).
 
 ```json title="A support conversation as state" theme={null}
 {

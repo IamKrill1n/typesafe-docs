@@ -406,9 +406,6 @@ night-owl-22: this boss took me 40 tries lol                    show       -> di
   for that long.
 * **One request at a time can't keep up with a busy chat.** Run several requests at once,
   as in *Filter the whole chat*.
-* **At the time this cookbook was published, Jev was trained mainly on English.** It
-  accepted other languages but answered them less accurately, so expect more misses on a
-  non-English channel.
 * **A winning category can still be uncertain.** Here we always apply the winning label's
   rule. Before using it live, choose how to handle messages whose top two category
   probabilities are close to each other, and Noul values near 0.5. You could flag those

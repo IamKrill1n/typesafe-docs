@@ -84,10 +84,6 @@ Jev is not fine-tuned or LoRA-adapted with customer data. It is trained with [RL
 * Encode your domain rules and boundary cases in the `instructions` and `criteria` of each question. See [How to build with TypeSafe](https://docs.typesafe.ai/concepts/how-to-build-with-system-one.md) and [Advanced: structure](https://docs.typesafe.ai/primitives/advanced.md).
 * Decompose broad judgments into atomic questions and combine the outputs in code. See [Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) and the [AutoResearch cookbook](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md) for training a downstream classical model on Jev's probabilities.
 
-## Language support
-
-Jev accepts natural-language text. English is the primary training language and where accuracy is currently best. Other languages, including CJK scripts, are handled but not equally well; test on your own content before relying on Jev for a non-English workload, and pay close attention to [Confidence](https://docs.typesafe.ai/confidence.md) when routing.
-
 ## Data handling
 
 Jev is not trained on customer requests or responses. See [Legal](https://docs.typesafe.ai/legal.md) for the Data Processing Agreement, the Privacy Policy, and details on zero data retention (ZDR) for enterprise customers.

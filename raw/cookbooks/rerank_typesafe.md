@@ -4,7 +4,7 @@
 
 # Re-ranking
 
-> Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one System One question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%.
+> Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one System One question per query-candidate pair to raise top-1 accuracy from 5% to 30% and top-10 accuracy from 38% to 65%.
 
 You have thousands of documents, and you need to find the one that answers a specific
 question.
@@ -18,7 +18,7 @@ against the query directly, and puts the best one first.
 
 Both steps run below on 3,565 court opinion passages from the CLERC dataset: BM25 builds a
 fast search shortlist of 30 candidates for each of 40 queries, then Jev re-ranks each
-shortlist. With re-ranking, the correct passage lands in first place for 18% of queries, up
+shortlist. With re-ranking, the correct passage lands in first place for 30% of queries, up
 from 5% with fast search alone.
 
 ## Try it yourself
@@ -166,7 +166,7 @@ from cooksafe import JsonCache
 from IPython.display import display
 from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 N_ROWS = 170  # CLERC rows pooled into the shared corpus
 N_QUERIES = 40  # rows we evaluate
 TOP_K = 30  # candidates the shortlist hands to the re-ranker, per query
@@ -452,20 +452,20 @@ def chart_before_after(
 
 
 chart_before_after(
-    {"Fast search": candidates, "+ Jev 1.12 re-rank": reranked}, [1, 5, 10]
+    {"Fast search": candidates, "+ Jev 1.14 re-rank": reranked}, [1, 5, 10]
 )
 ```
 
-![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=dc5e7a3c04ab4c8b40e4675d1c6dc9b1)
+![output](https://mintcdn.com/ts-docs/WL9iDRLiUqmBuTMZ/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=WL9iDRLiUqmBuTMZ\&q=85\&s=cdf5336e415ba61dbecda2c24a9e0cef)
 
 ### Re-ranking moves the right answer toward the top
 
 The chart compares fast search against fast search plus re-ranking, at three thresholds.
 Re-ranking moves the correct passage closer to the top at every one of them:
 
-* **Top 1**: 5% → 18%
-* **Top 5**: 15% → 35%
-* **Top 10**: 38% → 62%
+* **Top 1**: 5% → 30%
+* **Top 5**: 15% → 57%
+* **Top 10**: 38% → 65%
 
 This walkthrough asked one question per pair for clarity. A real application would
 ask several questions about the same pair in one call. See the [parallel questions

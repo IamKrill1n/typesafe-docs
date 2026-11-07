@@ -49,7 +49,7 @@ Find the lines, passages, or records that match a query or each other.
 
 | Cookbook | What it does | Level |
 | - | - | - |
-| [Re-ranking](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md) | Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one System One question per query-candidate pair to raise top-1 accuracy from 5% to 18% and top-10 accuracy from 38% to 62%. | Beginner |
+| [Re-ranking](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md) | Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one System One question per query-candidate pair to raise top-1 accuracy from 5% to 30% and top-10 accuracy from 38% to 65%. | Beginner |
 | [Line-by-line search](https://docs.typesafe.ai/cookbooks/semantic_find.md) | Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer. | Beginner |
 | [Knowledge graph entity alignment](https://docs.typesafe.ai/cookbooks/entity_alignment.md) | Route candidate record pairs from two sources to a merge recommendation, manual review, or no link, using one Score question. Three Noul questions check individual fields. The worked example uses 450 album pairs from Wikidata and MusicBrainz. | Beginner |
 | [Intelliprompter](https://docs.typesafe.ai/cookbooks/intelliprompter.md) | Tick off a presenter's notes as they speak: Jev scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold. | Beginner |
@@ -62,8 +62,8 @@ Get more out of any question: repeat it, batch it, or turn its answers into feat
 | - | - | - |
 | [Self-consistency: choices](https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md) | Ask a model the same moderation question twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline posts. | Beginner |
 | [Self-consistency: nouls](https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md) | Ask a model about the same insurance claim twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline claims. | Beginner |
-| [Parallel questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md) | Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers. | Beginner |
-| [Autoresearch feature discovery](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md) | Runs an autoresearch loop that proposes System One questions, converts free text into numeric features, and uses model errors to improve a supervised CatBoost regressor. | Advanced |
+| [Parallel questions](https://docs.typesafe.ai/cookbooks/parallel_questions.md) | Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 11.8x faster with no change in answers. | Beginner |
+| [Autoresearch feature discovery](https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md) | Let an LLM propose questions about labelled text, have Jev answer them for every row, and train CatBoost on the answers, feeding its misses back to the next step. The worked example predicts how polite Wikipedia editors' requests read. | Advanced |
 
 ## Image processing
 

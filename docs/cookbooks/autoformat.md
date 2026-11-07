@@ -50,7 +50,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
 json_cache = JsonCache(Path("json_cache.json"))
 ```
@@ -144,12 +144,18 @@ L017| Whoever still owns the release tooling
 
 One Noul question per adjacent pair of lines, all in one request; pairs separated by a
 blank line are skipped. The question is deliberately narrow ("does this line pick up
-mid-sentence?"), which is close to an objective fact about the text.
+mid-sentence?"), which is close to an objective fact about the text. It also quotes both
+lines, so the model judges the exact text in question rather than finding it by id
+among 28 lines.
 
 ```python expandable
 def join_question(i: int) -> Noul:
     return Noul(
-        instructions=f"Does line {line_id(i)} pick up mid-sentence, continuing a sentence left unfinished at the end of line {line_id(i - 1)}?",
+        instructions=(
+            f'Line {line_id(i - 1)} is "{LINES[i - 1]["text"]}" and line {line_id(i)} is '
+            f'"{LINES[i]["text"]}". Does line {line_id(i)} pick up mid-sentence, continuing a '
+            f"sentence left unfinished at the end of line {line_id(i - 1)}?"
+        ),
         criteria=NoulCriteria(
             true="The line starts in the middle of a sentence that began on the previous line - the line break tore the sentence apart",
             false="The line begins a new sentence, item, heading, or thought of its own",
@@ -185,7 +191,7 @@ print(f"{sum(1 for l in LINES if not l['gap']) - 1} pair questions, one request,
 ```
 
 ```
-16 pair questions, one request, 0.32s
+16 pair questions, one request, 0.24s
 ```
 
 The cutoff for merging depends on how the previous line ends. After a dangling line (one
@@ -351,32 +357,32 @@ for i, b in enumerate(blocks):
 ```
 
 ```
-62 questions about 17 blocks, one request, 0.51s
+62 questions about 17 blocks, one request, 0.22s
 
 block type       conf  companion used    text
-B000  heading    0.99  level=title       Migration to the new build system
-B001  paragraph  0.98  -                 Hi everyone, quick heads up about the build sy
-B002  heading    0.75  level=section     What changes for you
-B003  paragraph  0.89  -                 The old make targets keep working until the en
+B000  heading    0.98  level=title       Migration to the new build system
+B001  paragraph  0.89  -                 Hi everyone, quick heads up about the build sy
+B002  heading    1.00  level=section     What changes for you
+B003  paragraph  1.00  -                 The old make targets keep working until the en
 B004  code       1.00  -                 bun run build
-B005  paragraph  0.90  -                 Generated artifacts no longer need to be commi
-B006  paragraph  0.43  -                 The cutover touches three teams, so check whet
-B007  list_item  0.99  step=0.15         The platform team
-B008  list_item  1.00  step=0.16         The web client team
-B009  list_item  0.99  step=0.12         Whoever still owns the release tooling
-B010  heading    0.96  level=section     Things to do before Monday
-B011  list_item  0.98  step=0.86         Update your local toolchain to version 2.4 or 
-B012  list_item  0.99  step=0.87         Delete the old build cache directory
-B013  list_item  0.92  step=0.90         Run the doctor script and fix anything it flag
-B014  callout    0.65  kind=warning      If the doctor script reports a red result on t
+B005  paragraph  0.92  -                 Generated artifacts no longer need to be commi
+B006  paragraph  0.65  -                 The cutover touches three teams, so check whet
+B007  list_item  1.00  step=0.07         The platform team
+B008  list_item  1.00  step=0.08         The web client team
+B009  list_item  1.00  step=0.08         Whoever still owns the release tooling
+B010  heading    1.00  level=section     Things to do before Monday
+B011  list_item  1.00  step=0.56         Update your local toolchain to version 2.4 or 
+B012  list_item  1.00  step=0.55         Delete the old build cache directory
+B013  list_item  1.00  step=0.68         Run the doctor script and fix anything it flag
+B014  callout    0.84  kind=warning      If the doctor script reports a red result on t
 B015  quote      0.99  -                 As Dana put it in the kickoff, "a migration no
-B016  paragraph  0.92  -                 Thanks, and shout if anything looks off.
+B016  paragraph  0.99  -                 Thanks, and shout if anything looks off.
 ```
 
 The companion column shows the up-front answers in use: the three "Things to do before
-Monday" lines carry step probabilities near 0.9 (they will render as a numbered list),
-the three team lines sit near 0.1 (bulleted), and the unmarked warning about the doctor
-script was classified as a callout of kind `warning`.
+Monday" lines carry step probabilities of 0.55 to 0.68 (they will render as a numbered
+list), the three team lines sit at 0.07 to 0.08 (bulleted), and B014, the three-line
+warning about the doctor script, was classified as a callout of kind `warning`.
 
 ## Rendering
 
@@ -483,7 +489,7 @@ The per-line join probabilities from pass 1:
 
 ```python
 print("join  line")
-for i, line in enumerate(LINES[:18]):
+for i, line in enumerate(LINES):
     join = "    " if i == 0 or line["gap"] else f"{result['joins'][i]:.2f}"
     print(f"{join}  {line_id(i)}| {line['text'][:66]}")
 ```
@@ -492,38 +498,46 @@ for i, line in enumerate(LINES[:18]):
 join  line
       L000| Migration to the new build system
       L001| Hi everyone, quick heads up about the build system migration that 
-0.77  L002| happening next week. We have been running the new pipeline in shad
-0.62  L003| mode for three weeks and the results look solid, so it is time to
-0.39  L004| make the switch for real.
+0.97  L002| happening next week. We have been running the new pipeline in shad
+0.79  L003| mode for three weeks and the results look solid, so it is time to
+0.95  L004| make the switch for real.
       L005| What changes for you
       L006| The old make targets keep working until the end of the month. The 
-0.42  L007| entrypoint is a single command that wraps everything, including th
-0.59  L008| docs build that used to be separate.
+0.61  L007| entrypoint is a single command that wraps everything, including th
+0.95  L008| docs build that used to be separate.
       L009| bun run build
       L010| Generated artifacts no longer need to be committed. The new pipeli
-0.48  L011| uploads them to the registry automatically, and checking them in
-0.40  L012| just creates merge conflicts.
+0.82  L011| uploads them to the registry automatically, and checking them in
+0.92  L012| just creates merge conflicts.
       L013| The cutover touches three teams, so check whether you are on this
-0.50  L014| list before you plan anything for Monday:
-0.22  L015| The platform team
-0.11  L016| The web client team
-0.12  L017| Whoever still owns the release tooling
+0.92  L014| list before you plan anything for Monday:
+0.16  L015| The platform team
+0.04  L016| The web client team
+0.06  L017| Whoever still owns the release tooling
+      L018| Things to do before Monday
+      L019| Update your local toolchain to version 2.4 or later
+0.02  L020| Delete the old build cache directory
+0.02  L021| Run the doctor script and fix anything it flags
+      L022| If the doctor script reports a red result on the toolchain check, 
+0.89  L023| not proceed with the migration. Ping the infra channel first and w
+0.93  L024| will sort it out together.
+      L025| As Dana put it in the kickoff, "a migration nobody notices is the
+0.94  L026| only kind worth shipping."
+      L027| Thanks, and shout if anything looks off.
 ```
 
-The probabilities land in two separate bands: line breaks that split a sentence score
-0.39 and up, breaks the author meant score close to zero. But where to put the cutoff
-between the bands depends on **how the previous line ends**, a fact code can read
-directly:
+On this memo the probabilities land in two separate bands: line breaks that split a
+sentence score 0.61 and up, and breaks the author meant score 0.16 or less, so any cutoff
+between the two would work here. The code still sets its cutoff by **how the previous
+line ends**, a fact code can read directly:
 
-* After a *dangling* line (one with no sentence-ending punctuation), anything at 0.2 or
-  above counts as a continuation. True continuations score as low as 0.39 here (`L004|
-  make the switch for real.`), so a single cautious cutoff at 0.5 would break up healthy
-  paragraphs.
+* After a *dangling* line (one with no sentence-ending punctuation), the sentence may not
+  be finished, so a probability of 0.2 or above is enough to join the lines.
 * After *terminal* punctuation (a character that ends a sentence or clause: `.` `!` `?`
-  `:` `;`), the cutoff rises to 0.5. The memo's team list shows why: `L015| The platform
-  team` follows a colon and scores 0.22, which would clear the 0.2 cutoff and merge the
-  list into the sentence introducing it. No single threshold works for both cases; once
-  code checks the punctuation first, the two bands separate.
+  `:` `;`), the cutoff rises to 0.5. `L015| The platform team` follows a colon, and a
+  colon can lead into either a list or the rest of a sentence. It scores 0.16 here; a
+  higher score would still need to clear 0.5 before the list merged into the sentence
+  introducing it.
 
 ## Why the question is "mid-sentence" and not "same paragraph"
 
@@ -536,7 +550,11 @@ whole list into one long block.
 ```python
 def naive_join_question(i: int) -> Noul:
     return Noul(
-        instructions=f"Are lines {line_id(i - 1)} and {line_id(i)} part of the same paragraph?",
+        instructions=(
+            f'Line {line_id(i - 1)} is "{LINES[i - 1]["text"]}" and line {line_id(i)} is '
+            f'"{LINES[i]["text"]}". Are lines {line_id(i - 1)} and {line_id(i)} part of the '
+            "same paragraph?"
+        ),
         criteria=NoulCriteria(
             true="The two lines belong to the same paragraph of running text",
             false="The two lines belong to different paragraphs or different pieces of content",
@@ -554,20 +572,22 @@ print(f"\nblocks after merge: {len(blocks)} (mid-sentence) vs "
 
 ```
                mid-sentence  same paragraph
-L015  The platform team                        0.22         0.77
-L016  The web client team                      0.11         0.81
-L017  Whoever still owns the release tooli     0.12         0.78
-L020  Delete the old build cache directory     0.08         0.88
-L021  Run the doctor script and fix anythi     0.05         0.91
+L015  The platform team                        0.16         0.41
+L016  The web client team                      0.04         0.61
+L017  Whoever still owns the release tooli     0.06         0.63
+L020  Delete the old build cache directory     0.02         0.62
+L021  Run the doctor script and fix anythi     0.02         0.72
 
-blocks after merge: 17 (mid-sentence) vs 12 (same paragraph)
+blocks after merge: 17 (mid-sentence) vs 13 (same paragraph)
 ```
 
-With the paragraph wording, every unmarked list item scores above 0.75 and both lists
-collapse. "Same paragraph" asks the model to judge whether the topic carries over, and
-between list items it does. "Picks up mid-sentence" asks about the text itself. When a
-judgment call feeds a threshold, the question should name the narrowest fact that
-decides it. Here the wording is the difference between 17 blocks and 12.
+With the paragraph wording, every list item after the first in its list scores 0.61 to
+0.72, far above the 0.2 cutoff after a dangling line, and each list collapses into a
+single block. "Same
+paragraph" asks the model to judge whether the topic carries over, and between list items
+it does. "Picks up mid-sentence" asks about the text itself. When a judgment call feeds a
+threshold, the question should name the narrowest fact that decides it. Here the wording
+is the difference between 17 blocks and 13.
 
 ## The lowest-confidence block
 
@@ -581,13 +601,13 @@ print(", ".join(f"{k} {v:.2f}" for k, v in
 
 ```
 "The cutover touches three teams, so check whether you are on this list before you plan anything for Monday:"
-confidence 0.43: paragraph 0.53, list_item 0.24, callout 0.19
+confidence 0.65: paragraph 0.71, callout 0.25, heading 0.03
 ```
 
-The sentence introducing the team list is ambiguous: it names what follows
-(heading-like), is a complete sentence (paragraph-like), and sits where a callout would
-go. The probabilities spread accordingly (paragraph 0.53, list_item 0.24, callout 0.19),
-and a UI can surface that, for example by underlining for review any block whose type
-confidence (the probability behind the winning choice) is under 0.55.
+This is the sentence that introduces the team list. It reads as a paragraph, but it also
+tells readers to check something before they act, which is what a callout does. The
+probabilities spread accordingly (paragraph 0.71, callout 0.25, heading 0.03). A UI can
+surface that, for example by underlining for review any block whose type confidence is
+under 0.7, which would catch this block and nothing else on the page.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -55,7 +55,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 TODAY = date(
     2026, 7, 30
 )  # fixed reference "today" so relative dates resolve reproducibly
@@ -348,12 +348,12 @@ if __name__ == "__cookbook__":
 ```
    question                              expected    got           conf  flags
 ------------------------------------------------------------------------------------
-OK the date the agreement takes effect   2025-01-01  2025-01-01    0.97
-OK the date the agreement expires        2027-12-31  2027-12-31    0.91
-OK the deadline to return the form       2026-08-14  2026-08-14    0.95
-OK the date of the kickoff call          none        none          0.46  <== review  (absolute date incomplete)
-OK the date the survey closes            2026-07-30  2026-07-30    0.94
-OK the date of the design review         2026-08-06  2026-08-06    0.92
+OK the date the agreement takes effect   2025-01-01  2025-01-01    0.87
+OK the date the agreement expires        2027-12-31  2027-12-31    0.97
+OK the deadline to return the form       2026-08-14  2026-08-14    1.00
+OK the date of the kickoff call          none        none          0.66  <== review  (no such date stated)
+OK the date the survey closes            2026-07-30  2026-07-30    0.98
+OK the date of the design review         2026-08-06  2026-08-06    0.87
 ```
 
 The contract states both of its years, so those came off the text. The form states no year,
@@ -361,9 +361,9 @@ so code filled in 2026: it takes the current year and moves to the next one only
 date is already more than a month past.
 
 The kickoff call is the one the form never mentions. There is a date in that form, just not
-this one. The note `absolute date incomplete` means `mode` came back `absolute` with no
-month to go with it. The date came back empty, the confidence reads 0.46, and the row is
-flagged for a person.
+this one. The note `no such date stated` means `mode` came back `none`. The date came back
+empty and the row is flagged for a person, even though its confidence of 0.66 clears the
+gate: a date the document never states always goes to review.
 
 ## Confidence to route on
 
@@ -402,7 +402,7 @@ auto-accept (5):
   - the date of the design review
 
 send to review (1):
-  - the date of the kickoff call  (conf 0.46 / absolute date incomplete)
+  - the date of the kickoff call  (conf 0.66 / no such date stated)
 ```
 
 ## Open it in the TypeSafe playground

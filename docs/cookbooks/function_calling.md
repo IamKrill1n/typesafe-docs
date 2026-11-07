@@ -9,13 +9,13 @@ evaluated enums, each with a confidence.
 
 ```text
 "plot rolling correlation between nvda and spy for the past month"
-    rolling_correlation(symbol='NVDA', benchmark='SPY', window='1mo')   confidence 0.91
+    rolling_correlation(symbol='NVDA', benchmark='SPY', window='1mo')   confidence 0.93
 
 "compare nvda amd and msft over the past three months"
-    compare_returns(symbols=['NVDA', 'AMD', 'MSFT'], window='3mo')      confidence 0.94
+    compare_returns(symbols=['NVDA', 'AMD', 'MSFT'], window='3mo')      confidence 0.93
 
 "show me apple daily with volume"
-    plot_price(symbol='AAPL', resolution='1d', include_volume=True)     confidence 0.75
+    plot_price(symbol='AAPL', resolution='1d', include_volume=True)     confidence 0.69
 
 "what tickers do you have"
     list_symbols()                                                     confidence 1.00
@@ -77,7 +77,7 @@ for name in ["dispatch.py", "trader.py", "spec.json", "bars.parquet"]:
 from dispatch import ROUTE, Dispatcher, closed_sets  # noqa: E402  (downloaded above)
 from trader import TOOLS, client, load  # noqa: E402
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 print(f"{len(TOOLS)} functions over {load().height:,} one-minute bars")
 ```
 
@@ -176,7 +176,7 @@ name. `"Does the user want {} in the comparison?"` becomes one question per tick
 Write each question about the idea rather than the words a user might pick, because the
 match is on meaning: "is amd tracking nvidia lately" reaches `rolling_correlation` even
 though neither *tracking* nor *lately* appears anywhere in `spec.json`. Avoid naming a
-question after its parameter - `"Which resolution?"` gives the command nothing to match
+question after its parameter: `"Which resolution?"` gives the command nothing to match
 against.
 
 ## Turn the spec into questions
@@ -240,40 +240,41 @@ for command, call in CALLS.items():
 
 ```
   "show nvda 1h"
-      plot_price(symbol='NVDA', resolution='1h')                        confidence 0.78   tool 1.00
+      plot_price(symbol='NVDA', resolution='1h')                        confidence 0.59   tool 0.99
   "plot rolling correlation between nvda and spy for the past month"
-      rolling_correlation(symbol='NVDA', benchmark='SPY', window='1mo') confidence 0.91   tool 1.00
+      rolling_correlation(symbol='NVDA', benchmark='SPY', window='1mo') confidence 0.93   tool 1.00
   "when during the day does nvda trade the most"
       intraday_pattern(symbol='NVDA')                                   confidence 0.53   tool 1.00
   "what moved today"
-      top_movers(window='1d', direction='gainers')                      confidence 0.90   tool 0.90
+      top_movers(window='1d', direction='gainers')                      confidence 0.90   tool 0.94
   "what tickers do you have"
       list_symbols()                                                    confidence 1.00   tool 1.00
   "how did the market do this week"
-      market_summary(window='1w')                                       confidence 0.96   tool 0.99
+      market_summary(window='1w')                                       confidence 0.94   tool 0.98
   "candles for tesla with a 20 period moving average"
-      plot_price(symbol='TSLA', style='candles', moving_average='20')   confidence 0.69   tool 0.97
+      plot_price(symbol='TSLA', style='candles', moving_average='20')   confidence 0.88   tool 1.00
   "compare nvda amd and msft over the past three months"
-      compare_returns(symbols=['NVDA', 'AMD', 'MSFT'], window='3mo')    confidence 0.94   tool 1.00
+      compare_returns(symbols=['NVDA', 'AMD', 'MSFT'], window='3mo')    confidence 0.93   tool 1.00
   "how volatile is tsla"
-      volatility(symbol='TSLA')                                         confidence 0.96   tool 1.00
+      volatility(symbol='TSLA')                                         confidence 0.97   tool 1.00
   "biggest losers today"
-      top_movers(window='1d', direction='losers')                       confidence 0.98   tool 0.98
+      top_movers(window='1d', direction='losers')                       confidence 0.94   tool 1.00
   "worst drawdown for nvda this quarter, and chart it please"
-      drawdown(symbol='NVDA', window='3mo', plot=True)                  confidence 0.84   tool 0.84
+      drawdown(symbol='NVDA', window='3mo', plot=True)                  confidence 0.92   tool 0.98
   "spy stats for the last month"
-      summary_stats(symbol='SPY', window='1mo')                         confidence 0.88   tool 0.88
+      summary_stats(symbol='SPY', window='1mo')                         confidence 0.97   tool 0.98
   "show me apple daily with volume"
-      plot_price(symbol='AAPL', resolution='1d', include_volume=True)   confidence 0.75   tool 0.85
+      plot_price(symbol='AAPL', resolution='1d', include_volume=True)   confidence 0.69   tool 0.98
   "is amd tracking nvidia lately"
-      rolling_correlation(symbol='AMD', benchmark='NVDA')               confidence 0.82   tool 0.82
+      rolling_correlation(symbol='AMD', benchmark='NVDA')               confidence 0.69   tool 0.85
 ```
 
 Both long commands came out as asked. "plot rolling correlation between nvda and spy for
-the past month" filled four arguments from one sentence. Two of them, `symbol` and
-`benchmark`, draw from the same six tickers, and each ticker landed in the right argument
-because the questions spell out the roles: *the one being measured, named first* against
-*the second one named, the yardstick*. "compare nvda amd and msft over the past three
+the past month" filled three of its four arguments from one sentence and left
+`resolution` at its default. Two of them, `symbol` and `benchmark`, draw from the same six
+tickers, and each ticker landed in the right argument because the questions spell out the
+roles: *the one being measured, named first* against *the second one named, the
+yardstick*. "compare nvda amd and msft over the past three
 months" put three tickers in the set and left the other three out.
 
 Running three of them:
@@ -348,18 +349,18 @@ print(f"  weakest argument: {call.weakest().name}")
 ```
 
 ```
-"is amd tracking nvidia lately"  ->  rolling_correlation(symbol='AMD', benchmark='NVDA')   confidence 0.82
-  symbol      'AMD'                     p 0.87   AMD 0.87  NVDA 0.13  AAPL 0.00
-  benchmark   'NVDA'                    p 0.78   NVDA 0.92  AMD 0.08  AAPL 0.00
-  window      omitted, default stands   p 0.96   
-  resolution  omitted, default stands   p 0.99   
+"is amd tracking nvidia lately"  ->  rolling_correlation(symbol='AMD', benchmark='NVDA')   confidence 0.69
+  symbol      'AMD'                     p 0.93   AMD 0.93  NVDA 0.07  AAPL 0.00
+  benchmark   'NVDA'                    p 0.69   NVDA 1.00  AAPL 0.00  AMD 0.00
+  window      omitted, default stands   p 0.88   
+  resolution  omitted, default stands   p 0.95   
   weakest argument: benchmark
 ```
 
 `window` and `resolution` are both omitted here, because "lately" does not say how far back
 or on what bars, so `rolling_correlation` runs on its own defaults of one month and hourly
 bars. That is what the `stated` question is for. Without it, the choice would have to name
-some window, and it would have named one confidently.
+some window even though the command names none.
 
 ## Open it in the playground
 

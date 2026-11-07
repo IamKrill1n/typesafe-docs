@@ -1,6 +1,6 @@
 # Parallel questions
 
-> Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 10.0x faster with no change in answers.
+> Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 11.8x faster with no change in answers.
 
 You have one document and N questions about it. You can send one request with all N
 questions, or N requests with one question each. With Jev the answers come out the
@@ -9,8 +9,9 @@ doesn't depend on what else is in the request.
 
 To check that, we ask each question several times both ways (all N in one request, and
 one question per request) and compare the run-to-run std dev: how far an answer moves
-from one repeat to the next. Batching adds no noise. Most answers came back identical
-across all 5 repeats either way, std dev exactly 0.0.
+from one repeat to the next. Batching adds no meaningful noise. 7 of the 13 answers came
+back identical across all 5 repeats either way, std dev exactly 0.0, and the rest moved by
+at most 0.015 under either strategy.
 
 Cost and speed do change. The document dominates every request. N single-question calls
 pay for it N times, in N round trips; the batched call pays once. The bigger the document,
@@ -40,11 +41,11 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, ChoiceAnswer, Noul, NoulAnswer, Score, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 PRICE = (
     0.042,
     0.00,
-)  # $ per 1M tokens (input, output); TypeSafe jev-1.12 as of 2026-09, see README
+)  # $ per 1M tokens (input, output); TypeSafe jev-1.14.0 as of 2026-11, see README
 RUNS = 5  # repeats per batching strategy, to estimate each answer's run-to-run std dev
 client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
 json_cache = JsonCache(Path("json_cache.json"))
@@ -253,28 +254,28 @@ for key, question in QUESTIONS.items():
 
 ```
 question              metric             batched mean single mean  batched std  single std
-breach_72h            p(yes)                    0.804       0.814       0.0055      0.0055
+breach_72h            p(yes)                    0.830       0.832       0.0141      0.0110
 applies_non_eu        p(yes)                    0.990       0.990       0.0000      0.0000
 dpo_all_orgs          p(yes)                    0.030       0.030       0.0000      0.0000
-pre_ticked_consent    p(yes)                    0.040       0.040       0.0000      0.0000
-right_erasure         p(yes)                    0.990       0.990       0.0000      0.0000
+pre_ticked_consent    p(yes)                    0.038       0.040       0.0045      0.0000
+right_erasure         p(yes)                    0.984       0.988       0.0055      0.0045
 data_portability      p(yes)                    0.990       0.990       0.0000      0.0000
 us_federal_law        p(yes)                    0.010       0.010       0.0000      0.0000
-criminal_penalties    p(yes)                    0.108       0.108       0.0045      0.0084
+criminal_penalties    p(yes)                    0.106       0.104       0.0055      0.0055
 instrument_type       max prob                  1.000       1.000       0.0000      0.0000
 max_fine              max prob                  1.000       1.000       0.0000      0.0000
-individual_rights     normalized score          1.000       1.000       0.0000      0.0000
-penalty_severity      normalized score          1.000       1.000       0.0000      0.0000
+individual_rights     normalized score          0.999       1.000       0.0018      0.0000
+penalty_severity      normalized score          0.998       0.997       0.0018      0.0015
 compliance_burden     normalized score          0.750       0.750       0.0000      0.0000
 ```
 
-* Choices, scores, and six of the eight nouls come back identical across the 5 repeats:
-  std dev exactly 0.0 under both batching strategies. One call with N questions gives the
-  same answers as N calls with one question each.
-* `breach_72h` and `criminal_penalties` carry a little run-to-run sampling noise, and it's
-  the same size under both batching strategies, with the means agreeing to within that
-  noise. The noise is a property of the question, not of how you batch: batching neither
-  shifts the answer nor adds variance.
+* Both choices, `compliance_burden`, and four of the eight nouls come back identical
+  across the 5 repeats: std dev exactly 0.0 under both batching strategies. One call with
+  N questions gives the same answers as N calls with one question each.
+* The other six carry a little run-to-run sampling noise, at most 0.015 under either
+  strategy. The batched std dev is slightly higher for five of them, by at most 0.0045,
+  the size of a single repeat moving by 0.01. The batched and single means agree to within
+  0.004, so batching doesn't shift the answers.
 
 ## The only difference: cost and speed
 
@@ -283,7 +284,7 @@ The \~54,000-character article dominates every request, so:
 * Cost: the 13 single-question calls re-send the article 13 times; the batched call sends
   it once. This saving holds however you fire the calls.
 * Speed: the table sums the 13 single-call latencies, so it assumes they run one after
-  another. Fire them concurrently and the gap shrinks, but the 13x token cost stays.
+  another. Fire them concurrently and the gap shrinks, but the 12.2x cost gap stays.
 
 Cost and time are averaged over the 5 runs.
 
@@ -310,10 +311,10 @@ print(
 
 ```
 batching                 calls        cost  total time
-one call, all 13             1   $0.000497       0.27s
-13 calls, one each          13   $0.006090       2.71s
+one call, all 13             1   $0.000497       0.24s
+13 calls, one each          13   $0.006090       2.81s
 
-batching: 12.2x cheaper, 10.0x faster
+batching: 12.2x cheaper, 11.8x faster
 ```
 
 ## Open it in the TypeSafe playground

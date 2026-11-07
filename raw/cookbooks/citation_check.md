@@ -46,9 +46,9 @@ flowchart LR
 ```
 
 Below, eight citations from an LLM's answer about RFC 7519 (JSON Web Token) go through the
-check. The four accurate ones came back `verified` at confidence 0.93 or higher. All four
+check. The four accurate ones came back `verified` at confidence 0.98 or higher. All four
 planted failures were caught: a fabricated quote, a contradicted claim, and two unsupported
-citations sent to a human.
+citations, one of them sent to a human.
 
 `check_citation()`, the function you build here, takes a source document and one citation
 and returns one of four verdicts: `verified`, `unsupported`, `contradicted`, or
@@ -62,7 +62,7 @@ pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 
 then set `TYPESAFE_API_KEY`.
 
-Numbers below came from `jev-1.12` on 2026-08-16.
+Numbers below came from `jev-1.14.0` on 2026-11-03.
 
 ```python expandable theme={null}
 import json
@@ -76,7 +76,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 AUTO_ACCEPT = 0.8  # start high for more human review as you build trust in the model
 
 client = TypeSafeClient(
@@ -313,29 +313,30 @@ for citation in CITATIONS:
 
 ```
 citation          quote         relation        conf  verdict       action
-epoch_seconds     found         supports        0.93  verified        auto
-aud_reject        found         supports        0.95  verified        auto
+epoch_seconds     found         supports        0.98  verified        auto
+aud_reject        found         supports        0.98  verified        auto
 sig_reporting     missing       -                  -  fabricated      auto
-clock_skew        found         supports        0.99  verified        auto
-exp_required      found         contradicts     0.99  contradicted    auto
-pii_encryption    found         says_nothing    0.27  unsupported   review
-iat_future        section-only  says_nothing    0.56  unsupported   review
-duplicate_names   found         supports        0.99  verified        auto
+clock_skew        found         supports        1.00  verified        auto
+exp_required      found         contradicts     1.00  contradicted    auto
+pii_encryption    found         says_nothing    0.56  unsupported   review
+iat_future        section-only  says_nothing    0.97  unsupported     auto
+duplicate_names   found         supports        1.00  verified        auto
 ```
 
 Four citations came back `verified`, one `fabricated`, one `contradicted`, and two
 `unsupported`.
 
 * `epoch_seconds`, `aud_reject`, `clock_skew`, and `duplicate_names` are the accurate four.
-  All of them came back `verified` at confidence 0.93 or higher, well above `AUTO_ACCEPT`.
+  All of them came back `verified` at confidence 0.98 or higher, well above `AUTO_ACCEPT`.
 * `sig_reporting` never reached the model. Its quote is not in the RFC, so the string
   match alone marks it `fabricated`.
 * `exp_required` quotes section 4.1.4 word for word, and the same section says "Use of
-  this claim is OPTIONAL", so it is `contradicted`, at confidence 0.99.
-* `pii_encryption` and `iat_future` came back `unsupported` at 0.27 and 0.56, both under
-  the threshold, so both went to a human. `pii_encryption` shows why the string match is
-  not enough on its own: its quote is in the source word for word, and the section it
-  came from says nothing about the claim.
+  this claim is OPTIONAL", so it is `contradicted`, at confidence 1.00.
+* `pii_encryption` and `iat_future` came back `unsupported`. `iat_future` scored 0.97,
+  above the threshold, so it was settled without a human. `pii_encryption` scored 0.56,
+  under the threshold, so it went to a human. It shows why the string match is not enough
+  on its own: its quote is in the source word for word, and the section it came from says
+  nothing about the claim.
 
 To point this at your own data, replace `rfc7519.txt` and `citations.json`.
 `load_source()` and `split_sections()` are written for an RFC's layout, so a document of

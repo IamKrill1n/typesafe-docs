@@ -6,7 +6,7 @@ Every company that files an annual report with the SEC describes its own busines
 classify those descriptions under the Standard Industrial Classification: 75 industry
 groups, one `Choice` question per document.
 
-Most filings are easy. A regional bank is a regional bank. Some are not: a company that
+Many filings are easy. A regional bank is a regional bank. Some are not: a company that
 just sold one of its two segments, or a startup describing a business it plans to enter
 rather than one it runs. The model has to pick a group regardless, and the answer for a
 hard case looks no different from the answer for an easy one. Telling hard cases from easy
@@ -21,8 +21,9 @@ industry groups roll up into broader divisions. When the model is unsure of the 
 report the division it belongs to. The division follows from the group, so there is no
 second call.
 
-Across 60 filings, a confidence cutoff of 0.9 splits them in half. The confident half is
-right 90% of the time; the other half, 40%. Reported one level up, that 40% becomes 70%.
+Across 60 filings, a confidence cutoff of 0.9 marks 28 as confident and 32 as not. The
+confident 28 are right 93% of the time; the other 32, 50%. Reported one level up, that 50%
+becomes 78%.
 
 ```mermaid actions={true}
 flowchart LR
@@ -50,7 +51,7 @@ pip install ipython matplotlib 'cooksafe>=0.2.0,<0.3.0'
 
 then set `TYPESAFE_API_KEY`.
 
-Numbers below came from `jev-1.12` on 2026-08-12.
+Numbers below came from `jev-1.14.0` on 2026-11-03.
 
 ```python expandable
 import json
@@ -68,7 +69,7 @@ matplotlib.use("Agg")  # headless render
 
 import os  # noqa: E402
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 CONFIDENT = 0.9  # above this the group is reported; below it, the division
 
 client = TypeSafeClient(
@@ -283,24 +284,24 @@ for f in sorted(FILINGS, key=lambda f: classify(f)["confidence"])[:3]:
 
 ```
 three filings the model was sure about:
-    310158_1996  conf 1.00  -> group    28             (group 28: chemicals & allied products)
-     33416_1998  conf 1.00  -> group    63             (group 63: life insurance; accident & health insurance; h)
-    352541_1996  conf 1.00  -> group    49             (group 49: electric, gas & sanitary services)
+   1346655_2021  conf 1.00  -> group    73             (group 73: services-advertising; services-advertising age)
+   1578845_2018  conf 1.00  -> group    28             (group 28: chemicals & allied products)
+     29332_2004  conf 1.00  -> group    22             (group 22: textile mill products)
 
 three it was not:
-   1372167_2013  conf 0.22  -> division manufacturing  (group 38: search, detection, navagation, guidance, aeron)
-   1398633_2009  conf 0.23  -> division wholesale trade (group 50: wholesale-durable goods)
-     46653_1999  conf 0.29  -> division services       (group 87: services-engineering, accounting, research, ma)
+   1372167_2013  conf 0.20  -> division manufacturing  (group 38: search, detection, navagation, guidance, aeron)
+     46653_1999  conf 0.21  -> division services       (group 72: services-personal services)
+   1436229_2010  conf 0.26  -> division wholesale trade (group 50: wholesale-durable goods)
 ```
 
-The confidences line up with how hard each filing is to classify. The three at 1.00 are a
-pharmaceutical maker, a life insurer and a utility; all three are holding companies on
-paper, but each has one dominant business the filing names outright. The three at the
-bottom are harder for reasons you can read in the text. Two are development-stage companies
-describing a business they intend to start (Nevaeh "intends to operate as a software
-developer", Barricode was "organized to enter into the computer security software
-industry"), and the third had two segments and sold one of them weeks before filing. Those
-three come back as a division rather than a group.
+The confidences line up with how hard each filing is to classify. The top three, all at
+1.00, are a marketing company, a pharmaceutical maker and a carpet manufacturer; all three
+have sold or left earlier businesses, but each filing names the one business it runs now
+outright. The three at the bottom are harder for reasons you can read in the text. Two are
+startups describing a business they have not begun (Nevaeh "intends to operate as a
+software developer", and Hotel Management Systems has a sole officer and writes of its
+"planned operations"), and the third had two segments and sold one of them weeks before
+filing. Those three come back as a division rather than a group.
 
 ## What the broader answer buys
 
@@ -336,16 +337,16 @@ print(
 ```
 
 ```
-forced to name a group every time      39/60 right
-  of those, the 30 it was sure about  27/30 right
-  and the 30 it was not           12/30 right
+forced to name a group every time      42/60 right
+  of those, the 28 it was sure about  26/28 right
+  and the 32 it was not           16/32 right
 
-letting it answer coarsely when unsure  48/60 useful answers
+letting it answer coarsely when unsure  51/60 useful answers
 ```
 
 Where the model was sure, the group it named is right nine times in ten. Where it was not,
-the group is right only 40% of the time. Reporting those same answers as a division takes
-them to 70%.
+the group is right only half the time. Reporting those same answers as a division takes
+them to 78%.
 
 ```python expandable
 labels = ["sure\n(group reported)", "unsure\n(division reported)"]
@@ -390,7 +391,7 @@ plt.tight_layout()
 display(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/teQYilPCKt0TpDJJ/cookbooks/classification_using_confidence/classification_using_confidence.executed.1.png?fit=max\&auto=format\&n=teQYilPCKt0TpDJJ\&q=85\&s=e75ad9c2e17cae7094f30cd0cbb36f53)
+![output](https://mintcdn.com/ts-docs/WL9iDRLiUqmBuTMZ/cookbooks/classification_using_confidence/classification_using_confidence.executed.1.png?fit=max\&auto=format\&n=WL9iDRLiUqmBuTMZ\&q=85\&s=efdb815e3c8b338d5980f6a179c8a816)
 
 ## Open it in the playground
 

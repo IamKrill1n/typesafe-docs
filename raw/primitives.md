@@ -183,7 +183,7 @@ See [client SDKs](https://docs.typesafe.ai/sdk.md) for installation and usage in
 
 ### Ask speculative questions
 
-Ask every question your code might need, including ones whose answer only matters for some inputs, and let the code decide which answers to use. If a ticket turns out not to be a bug report, ignore the severity answer. We call this the [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md) pattern. The [Parallel questions cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md) shows how batching 13 questions into one call is 11.5x cheaper and 9.6x faster than 13 separate calls, with no change in the answers.
+Ask every question your code might need, including ones whose answer only matters for some inputs, and let the code decide which answers to use. If a ticket turns out not to be a bug report, ignore the severity answer. We call this the [Speculative fan-out](https://docs.typesafe.ai/patterns/fan-out.md) pattern. The [Parallel questions cookbook](https://docs.typesafe.ai/cookbooks/parallel_questions.md) shows how batching 13 questions into one call is 12.2x cheaper and 11.8x faster than 13 separate calls, with no change in the answers.
 
 > [!TIP]
 >

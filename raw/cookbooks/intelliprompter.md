@@ -77,7 +77,7 @@ pip install ipython 'cooksafe>=0.2.0,<0.3.0'
 export TYPESAFE_API_KEY="<ADD_YOUR_KEY>"
 ```
 
-Numbers below came from `jev-1.13.0` on 2026-09-29.
+Numbers below came from `jev-1.14.0` on 2026-11-04.
 
 ```python theme={null}
 import json
@@ -88,7 +88,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Score, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.13.0"
+TYPESAFE_MODEL = "jev-1.14.0"
 COVERED_AT = 2.5  # the live app's default threshold on its 1–5 scale
 
 client = TypeSafeClient(
@@ -297,12 +297,12 @@ covered, latest, ticks = run_loop(SPEECH_CHUNKS)
 ```
 
 ```
-tick 1:  4 words | c_0_0=3.02, c_0_1=1.11, c_1_0=1.00, c_1_1=1.00, c_2_0=1.00 | +1 checks
-tick 2: 21 words | c_0_1=3.74, c_1_0=1.00, c_1_1=1.10, c_2_0=1.09 | +1 checks
-tick 3: 40 words | c_1_0=3.76, c_1_1=1.15, c_2_0=1.06 | +1 checks
-tick 4: 60 words | c_1_1=3.67, c_2_0=1.10 | +1 checks
-tick 5: 70 words | c_2_0=2.06 | +0 checks
-tick 6: 84 words | c_2_0=3.93 | +1 checks
+tick 1:  4 words | c_0_0=3.03, c_0_1=1.07, c_1_0=1.00, c_1_1=1.01, c_2_0=1.01 | +1 checks
+tick 2: 21 words | c_0_1=3.60, c_1_0=1.01, c_1_1=1.09, c_2_0=1.07 | +1 checks
+tick 3: 40 words | c_1_0=3.45, c_1_1=1.10, c_2_0=1.11 | +1 checks
+tick 4: 60 words | c_1_1=3.36, c_2_0=1.12 | +1 checks
+tick 5: 70 words | c_2_0=2.01 | +0 checks
+tick 6: 84 words | c_2_0=3.76 | +1 checks
 ```
 
 Early ticks can show progress without changing the checklist. Once a score reaches 2.5,
@@ -326,13 +326,13 @@ for point_index, point in enumerate(CHECKLIST):
 
 ```
 Introduce Intelliprompter
-  [✓] Say its name                   score 3.02
-  [✓] Explain what it does           score 3.74
+  [✓] Say its name                   score 3.03
+  [✓] Explain what it does           score 3.60
 Explain the scoring loop
-  [✓] Send the rolling transcript    score 3.76
-  [✓] Score each criterion           score 3.67
+  [✓] Send the rolling transcript    score 3.45
+  [✓] Score each criterion           score 3.36
 Name useful use cases
-  [✓] Give at least two uses         score 3.93
+  [✓] Give at least two uses         score 3.76
 ```
 
 To use this pattern with a real stream, replace `SPEECH_CHUNKS` with your transcription

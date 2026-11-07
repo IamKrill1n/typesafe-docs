@@ -49,7 +49,7 @@ from pathlib import Path
 from cooksafe import JsonCache
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"), timeout=120.0
@@ -212,7 +212,7 @@ The `exists` probability becomes one of three verdicts, the middle one for parti
 answers. The ranking prints as a bar chart.
 
 ```python theme={null}
-FOUND, ABSENT = 0.7, 0.35  # present answers typically read >=0.9, absent <=0.05
+FOUND, ABSENT = 0.7, 0.35  # `exists` cutoffs for answered and not in this document
 
 
 def verdict(exists: float) -> str:
@@ -239,8 +239,8 @@ Tune these thresholds on your own documents before using them in production.
 
 ## Step 6: run the search
 
-Ask two questions that have direct answers, one that has no answer, and one that has a
-partial answer.
+Ask two questions that have direct answers, one that has a partial answer, and one that has
+no answer.
 
 ```python theme={null}
 print(f"{len(LINES)} lines, {len(DOCUMENT):,} characters\n")
@@ -250,45 +250,47 @@ show("can GitHub kick me off the platform without warning?")
 print()
 show("do I have to take disputes to arbitration?", top=2)
 print()
-show("can minors use GitHub with parental permission?", top=2)
+show("can I join a class action lawsuit against GitHub?", top=2)
 ```
 
 ```
 218 lines, 43,980 characters
 
 "who owns the code I upload?"
-  exists 0.98 -> answered in this document
-  L052  0.95  ###########   You own Your Content. If you post Content you did not crea
-  L046  0.02  #             Short version: You own content you create, but you allow u
-  L051  0.02  #             3. Ownership and License Grants
-  L217  0.01  #             Questions about the Terms of Service? Contact us through t
+  exists 0.99 -> answered in this document
+  L052  0.77  #########     You own Your Content. If you post Content you did not crea
+  L046  0.12  #             Short version: You own content you create, but you allow u
+  L051  0.06  #             3. Ownership and License Grants
+  L053  0.05  #             You grant us and other Users the licenses in Sections D.4–
 
 "can GitHub kick me off the platform without warning?"
-  exists 0.97 -> answered in this document
-  L168  0.97  ############  GitHub has the right to suspend or terminate your access t
-  L167  0.03  #             3. GitHub May Terminate
+  exists 0.98 -> answered in this document
+  L168  0.96  ############  GitHub has the right to suspend or terminate your access t
+  L167  0.04  #             3. GitHub May Terminate
   L000  0.00  #             Effective date: April 27, 2026 · A. Definitions
   L001  0.00  #             Short version: We use these basic terms throughout the agr
 
 "do I have to take disputes to arbitration?"
-  exists 0.14 -> not in this document
-  L205  0.86  ##########    Except to the extent applicable law provides otherwise, th
-  L168  0.02  #             GitHub has the right to suspend or terminate your access t
+  exists 0.65 -> partially addressed
+  L205  0.80  ##########    Except to the extent applicable law provides otherwise, th
+  L204  0.11  #             S. Miscellaneous · 1. Governing Law
 
-"can minors use GitHub with parental permission?"
-  exists 0.46 -> partially addressed
-  L029  0.90  ###########   You must be age 13 or older. While we are thrilled to see
-  L012  0.07  #             “User,” “You,” and “Your” refer to the individual person,
+"can I join a class action lawsuit against GitHub?"
+  exists 0.05 -> not in this document
+  L205  0.23  ###           Except to the extent applicable law provides otherwise, th
+  L197  0.19  ##            If you have a dispute with one or more Users, you agree to
 ```
 
 ## What the scores mean
 
 The first two queries return direct answers and the source lines needed to verify them.
 
-* **Arbitration:** The ranking gives the closest line a score of 0.86, but `exists` is only
-  0.14. The answer is not in the document.
-* **Parental permission:** The age rule ranks first, but it doesn't answer whether parental
-  permission changes the rule. The result is **partially addressed**.
+* **Arbitration:** The Terms never mention arbitration. The top line, at 0.80, is the
+  governing-law clause, which sends disputes to the courts in San Francisco. `exists` is
+  0.65, so the result is **partially addressed**.
+* **Class action:** The Terms never mention class actions. The ranking still puts the
+  governing-law clause first, at 0.23, because a ranking always has a top line. `exists`
+  is 0.05, so the result is **not in this document**.
 
 The ranking tells you where to look; the `exists` score tells you whether the result
 answers the question.

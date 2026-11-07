@@ -75,7 +75,7 @@ Set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. We use Jev to 
 each retrieved passage, OpenAI to embed the corpus for the search step, and Claude to write
 the final answer out of whatever survives the scoring.
 
-The numbers here came out of `jev-1.12` and `claude-sonnet-5` on 2026-08-27.
+The numbers here came out of `jev-1.14.0` and `claude-sonnet-5` on 2026-11-03.
 
 ```python expandable
 import json
@@ -95,7 +95,7 @@ from typesafe_sdk import Noul, TypeSafeClient
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-TYPESAFE_MODEL = "jev-1.12"
+TYPESAFE_MODEL = "jev-1.14.0"
 GENERATOR_MODEL = "claude-sonnet-5"  # writes the answer out of what the routing keeps
 EMBED_MODEL = "text-embedding-3-small"
 EMBED_DIMS = 256  # short vectors keep the shipped cache small; plenty for 81 passages
@@ -361,7 +361,7 @@ The tests, in order:
 
 Injection comes first because it is a security decision, not an evidence one. The
 contradiction test comes before the evidence test because a passage that denies the
-query's premise usually states something usable too; tested the other way round, it would
+query's premise can state something usable too; tested the other way round, it would
 land in the accepted block instead of the conflict one.
 
 > [!NOTE]
@@ -413,26 +413,26 @@ show_routes(ROUTED[HEADLINE_QUERY])
 "Refresh tokens expire after 30 days - how do I extend that window?"
 
 route                   rel  evid contra   inj  id
-exclude                0.71  0.36   0.90  0.99  forum-injection
-exclude                0.18  0.42   0.35  0.23  sessions-05
-exclude                0.09  0.12   0.15  0.22  sessions-06-a
-exclude                0.48  0.41   0.39  0.26  sessions-04-b
-exclude                0.10  0.17   0.11  0.19  sessions-07-b
-exclude                0.19  0.31   0.20  0.25  sessions-09
-conflicting_evidence   0.49  0.51   0.92  0.15  sessions-01
-exclude                0.03  0.05   0.08  0.14  password-security-39
-exclude                0.10  0.16   0.19  0.15  signing-keys-51-c
-exclude                0.13  0.10   0.11  0.11  sessions-08-a
-exclude                0.04  0.05   0.10  0.16  signing-keys-55-b
-exclude                0.04  0.05   0.10  0.13  signing-keys-54-a
+exclude                0.60  0.70   0.78  0.98  forum-injection
+exclude                0.18  0.26   0.28  0.21  sessions-05
+exclude                0.11  0.12   0.24  0.20  sessions-06-a
+exclude                0.45  0.50   0.37  0.21  sessions-04-b
+exclude                0.09  0.12   0.20  0.18  sessions-07-b
+exclude                0.18  0.32   0.24  0.20  sessions-09
+conflicting_evidence   0.58  0.78   0.92  0.18  sessions-01
+exclude                0.04  0.05   0.12  0.15  password-security-39
+exclude                0.08  0.10   0.21  0.16  signing-keys-51-c
+exclude                0.12  0.11   0.16  0.12  sessions-08-a
+exclude                0.05  0.05   0.15  0.16  signing-keys-55-b
+exclude                0.04  0.05   0.13  0.16  signing-keys-54-a
 ```
 
 The premise-contradiction question scores `sessions-01` at 0.92 and sends it to the
-conflict block. Relevance reads 0.49 and answer evidence 0.51, so those two alone would
-have dropped it.
+conflict block. Relevance reads 0.58 and answer evidence 0.78, so without the
+contradiction test ahead of them it would have landed in the accepted block.
 
-Similarity ranked `forum-injection` first and its relevance clears the floor at 0.71. The
-injection score of 0.99 is what drops it.
+Similarity ranked `forum-injection` first and its relevance clears the floor at 0.60. The
+injection score of 0.98 is what drops it.
 
 Nothing reaches the prompt as evidence, which is right for a question built on a false
 premise. Below, the same table for a query the docs do answer.
@@ -446,25 +446,25 @@ show_routes(ROUTED[QUERIES[5]])
 "How long should an access token live?"
 
 route                   rel  evid contra   inj  id
-include                0.99  0.98   0.03  0.23  sessions-05
-exclude                0.08  0.08   0.11  0.15  signing-keys-55-b
-exclude                0.07  0.06   0.09  0.14  signing-keys-54-a
-exclude                0.07  0.08   0.10  0.20  signing-keys-57-d
-exclude                0.23  0.09   0.19  0.99  forum-injection
-exclude                0.24  0.17   0.08  0.28  sessions-06-a
-exclude                0.77  0.46   0.07  0.17  sessions-08-a
-include                0.91  0.88   0.07  0.26  signing-keys-51-c
-include                0.99  0.98   0.05  0.13  sessions-01
-exclude                0.09  0.09   0.06  0.14  jwts-19-b
-include                0.79  0.57   0.06  0.31  sessions-09
-exclude                0.12  0.11   0.07  0.20  sessions-07-b
+include                0.98  0.98   0.06  0.19  sessions-05
+exclude                0.10  0.06   0.13  0.20  signing-keys-55-b
+exclude                0.09  0.06   0.13  0.18  signing-keys-54-a
+exclude                0.10  0.07   0.11  0.17  signing-keys-57-d
+exclude                0.22  0.22   0.19  0.98  forum-injection
+exclude                0.16  0.16   0.10  0.21  sessions-06-a
+exclude                0.51  0.41   0.09  0.12  sessions-08-a
+include                0.90  0.93   0.11  0.23  signing-keys-51-c
+include                0.97  0.98   0.09  0.13  sessions-01
+exclude                0.07  0.09   0.09  0.18  jwts-19-b
+exclude                0.70  0.48   0.10  0.26  sessions-09
+exclude                0.08  0.09   0.10  0.15  sessions-07-b
 ```
 
-Four passages reach the evidence block here, and the answer below cites all four. The
+Three passages reach the evidence block here, and the answer below cites all three. The
 rows print in retrieval order, which shows the reshuffle: ranks 2, 3 and 4 all read
 *Lifetime of a signing key*, the wrong kind of lifetime in almost the query's own words,
-and all three score 0.08 or less on relevance. Three of the four that made it sat 8th,
-9th and 11th. `forum-injection` is excluded again at 0.99.
+and all three score 0.10 or less on relevance. Two of the three that made it sat 8th and
+9th. `forum-injection` is excluded again at 0.98.
 
 The injection question is a filter, and only one. A passage that scores under the
 threshold still reaches the prompt, so the generator prompt has to treat every passage as
@@ -580,7 +580,7 @@ for query in SHOWN:
     print(answer(query))
 ```
 
-```text expandable
+```
 
 ========================================================================================
 "Refresh tokens expire after 30 days - how do I extend that window?"
@@ -594,31 +594,28 @@ Since this passage is marked as conflicting/unverified evidence rather than acce
 
 ========================================================================================
 "How long should an access token live?"
-  include 4, exclude 8
+  include 3, exclude 9
 
-**Recommended access token (JWT) lifetime**
+**Recommended access token lifetime: 1 hour (default), generally within a 5-minute to 1-hour range.**
 
-- The **default and generally recommended expiration is 1 hour** [sessions-05].
-- More broadly, access tokens are designed to be short-lived, **typically ranging between 5 minutes and 1 hour** [sessions-01].
-- Setting expiration **above 1 hour is generally discouraged** for security reasons, though it "may make sense in certain situations" [sessions-05].
-- Setting expiration **below 5 minutes (and especially below 2 minutes) is discouraged** in most cases, because [sessions-05]:
-  - It increases refresh token usage and load on the Auth server.
-  - Clock skew between servers and user devices can cause hard-to-debug errors.
-  - Supabase's client libraries try to refresh sessions ahead of expiry, which isn't possible if the window is too short.
-  - Access tokens should stay valid at least as long as your longest-running request, to avoid tokens expiring mid-request.
+- The default and recommended expiration for access tokens (JWTs) is **1 hour**, configurable in Auth settings > Sessions [sessions-05].
+- Values **above 1 hour are generally discouraged** for security reasons, though there may be specific use cases where it makes sense [sessions-05].
+- Values **below 5 minutes (and especially below 2 minutes)** should generally be avoided, because:
+  - Shorter expiration increases refresh token usage and load on the Auth server [sessions-05].
+  - Clock skew between servers and user devices can cause hard-to-debug errors if the window is too short [sessions-05].
+  - Supabase client libraries try to refresh sessions ahead of expiry, which isn't possible if the lifetime is too short [sessions-05].
+  - Access tokens should last at least as long as your longest-running request, to avoid tokens expiring mid-request [sessions-05].
+- This aligns with [sessions-01], which states access tokens are "designed to be short lived, usually between 5 minutes and 1 hour."
+- If rotating JWT signing keys, [signing-keys-51-c] notes that if your access token expiry is set to 1 hour, you should wait at least 1 hour 15 minutes before revoking a legacy JWT secret, to avoid forcibly signing out active users — a practical consideration tied to whatever expiration value you choose.
 
-**Practical implication for key/secret rotation:** If your access token expiry is set to 1 hour, you should wait at least 1 hour and 15 minutes before revoking a legacy JWT secret, to avoid forcibly signing out active users (unless there's an active security incident requiring immediate revocation) [signing-keys-51-c].
-
-**Related note on sign-out enforcement:** Access tokens remain valid until they expire even after a user signs out (sessions are removed from the database, but the JWT itself isn't invalidated early) unless you add extra validation logic against `auth.sessions`. The guidance here is to "adjust the JWT expiry time to an acceptable value" rather than rely on strict revocation checks for most use cases [sessions-09].
-
-**No conflicts** were found between the passages — they consistently point to a default/recommended value of 1 hour, with an acceptable range of roughly 5 minutes to 1 hour, and caution against going much shorter or longer without specific need.
+No conflicts were found between the passages; they are consistent in recommending a default of 1 hour, with an acceptable general range of 5 minutes to 1 hour.
 ```
 
 The first answer arrived with an empty accepted block and one conflicting passage. It
 opens with "I don't have sufficient accepted evidence", names the conflict, and quotes
 `sessions-01` on refresh tokens never expiring rather than inventing a 30-day setting.
 
-The second had 4 accepted passages and no conflict, and cites all four. Nothing of the
+The second had 3 accepted passages and no conflict, and cites all three. Nothing of the
 injected instruction reaches the text.
 
 ## Compare the six queries
@@ -706,7 +703,7 @@ display(fig)
 plt.close(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/5iZnRWRIxyU5JBux/cookbooks/classifying_rag_passages/classifying_rag_passages.executed.1.png?fit=max\&auto=format\&n=5iZnRWRIxyU5JBux\&q=85\&s=9257008675e09b97950eaa31f2eec173)
+![output](https://mintcdn.com/ts-docs/WL9iDRLiUqmBuTMZ/cookbooks/classifying_rag_passages/classifying_rag_passages.executed.1.png?fit=max\&auto=format\&n=WL9iDRLiUqmBuTMZ\&q=85\&s=cb8d40f2c9ba7a89d725565648ab95f1)
 
 Each bar holds the 12 passages retrieved for one query, 72 in all. At least two thirds of
 every bar is excluded. Only the two false-premise queries route anything to conflict, and

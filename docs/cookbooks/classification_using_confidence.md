@@ -359,36 +359,51 @@ broad_split = [
     sum(correct(f, r) for f, r in unsure) / len(unsure),
 ]
 
-fig, ax = plt.subplots(figsize=(7, 3.6))
-x = range(len(labels))
-ax.bar(
-    [i - 0.19 for i in x],
-    forced_split,
-    0.38,
-    label="always name a group",
-    color="#c8ccd4",
-)
-ax.bar(
-    [i + 0.19 for i in x],
-    broad_split,
-    0.38,
-    label="answer broadly when unsure",
-    color="#3b6ea5",
-)
-for i, (a, b) in enumerate(zip(forced_split, broad_split)):
-    ax.text(i - 0.19, a + 0.02, f"{a:.0%}", ha="center", fontsize=9)
-    ax.text(i + 0.19, b + 0.02, f"{b:.0%}", ha="center", fontsize=9)
-ax.set_xticks(list(x))
-ax.set_xticklabels(
-    [f"{lab}\nn={n}" for lab, n in zip(labels, [len(sure), len(unsure)])]
-)
-ax.set_ylabel("labels that are right")
-ax.set_ylim(0, 1.12)
-ax.set_title("Where the broader answer helps: the filings it was unsure about")
-ax.legend(frameon=False, loc="upper right")
-ax.spines[["top", "right"]].set_visible(False)
-plt.tight_layout()
-display(fig)
+SPLIT_PALETTES = {
+    "light": {"surface": "#ffffff", "ink": "#000000", "forced": "#c8ccd4", "broad": "#3b6ea5"},
+    "dark": {"surface": "#0d0a0f", "ink": "#fafafa", "forced": "#5b5f66", "broad": "#7aa7e0"},
+}
+
+def draw_split(p: dict) -> plt.Figure:
+    ink = {key: p["ink"] for key in ("text.color", "axes.labelcolor", "axes.edgecolor", "xtick.color", "ytick.color")}
+    with matplotlib.rc_context(ink):
+        fig, ax = plt.subplots(figsize=(7, 3.6), facecolor=p["surface"])
+        ax.set_facecolor(p["surface"])
+        x = range(len(labels))
+        ax.bar(
+            [i - 0.19 for i in x],
+            forced_split,
+            0.38,
+            label="always name a group",
+            color=p["forced"],
+        )
+        ax.bar(
+            [i + 0.19 for i in x],
+            broad_split,
+            0.38,
+            label="answer broadly when unsure",
+            color=p["broad"],
+        )
+        for i, (a, b) in enumerate(zip(forced_split, broad_split)):
+            ax.text(i - 0.19, a + 0.02, f"{a:.0%}", ha="center", fontsize=9)
+            ax.text(i + 0.19, b + 0.02, f"{b:.0%}", ha="center", fontsize=9)
+        ax.set_xticks(list(x))
+        ax.set_xticklabels(
+            [f"{lab}\nn={n}" for lab, n in zip(labels, [len(sure), len(unsure)])]
+        )
+        ax.set_ylabel("labels that are right")
+        ax.set_ylim(0, 1.12)
+        ax.set_title("Where the broader answer helps: the filings it was unsure about")
+        ax.legend(frameon=False, loc="upper right")
+        ax.spines[["top", "right"]].set_visible(False)
+        fig.tight_layout()
+        return fig
+
+# The docs build sets COOKSAFE_RENDER and also draws a dark copy.
+for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+    fig = draw_split(SPLIT_PALETTES[theme])
+    display(fig, metadata={"theme": theme})
+    plt.close(fig)
 ```
 
 ![output](https://mintcdn.com/ts-docs/WL9iDRLiUqmBuTMZ/cookbooks/classification_using_confidence/classification_using_confidence.executed.1.png?fit=max\&auto=format\&n=WL9iDRLiUqmBuTMZ\&q=85\&s=efdb815e3c8b338d5980f6a179c8a816)

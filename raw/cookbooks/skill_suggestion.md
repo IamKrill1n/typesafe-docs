@@ -884,73 +884,89 @@ had right on its own: a confident wrong suggestion pulls the agent off its own r
 answer. That is the price of putting one in front of the turn.
 
 ```python expandable theme={null}
-SURFACE, INK, INK2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
-GRID, AXIS, BLUE, ORANGE = "#e1e0d9", "#c3c2b7", "#2a78d6", "#eb6834"
-
-ARM_COLOR = {"baseline": BLUE, "TypeSafe": ORANGE, "oracle": MUTED}
-ARM_LABEL = {  # display names only: the arm keys are part of each turn's cache key
-    "baseline": "agent alone",
-    "TypeSafe": "with suggestion",
-    "oracle": "given the answer",
+CHART_PALETTES = {
+    "light": {
+        "surface": "#ffffff", "ink": "#0b0b0b", "ink2": "#52514e", "muted": "#898781",
+        "grid": "#e1e0d9", "axis": "#c3c2b7", "blue": "#2a78d6", "orange": "#eb6834",
+    },
+    "dark": {
+        "surface": "#0d0a0f", "ink": "#fafafa", "ink2": "#d4d4d8", "muted": "#a1a1aa",
+        "grid": "#2e2e33", "axis": "#52525b", "blue": "#5b9be8", "orange": "#f08050",
+    },
 }
 
 
-def style(ax):
-    ax.set_facecolor(SURFACE)
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(AXIS)
-    ax.tick_params(colors=MUTED, labelcolor=INK2, labelsize=9)
-    ax.set_axisbelow(True)
+def draw_loads(p: dict) -> plt.Figure:
+    ARM_COLOR = {"baseline": p["blue"], "TypeSafe": p["orange"], "oracle": p["muted"]}
+    ARM_LABEL = {  # display names only: the arm keys are part of each turn's cache key
+        "baseline": "agent alone",
+        "TypeSafe": "with suggestion",
+        "oracle": "given the answer",
+    }
 
 
-panels = [
-    ("wrong_load", f"wrong loads\n{len(POSITIVES)} covered requests"),
-    ("needless_load", f"needless loads\n{len(NEGATIVES)} uncovered requests"),
-]
-names = list(scores)
-fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.6), facecolor=SURFACE)
-for ax, (metric, title) in zip(axes, panels):
-    style(ax)
-    ax.grid(axis="y", color=GRID, linewidth=0.8)
-    values = [scores[arm][metric] for arm in names]
-    bars = ax.bar(
-        [ARM_LABEL[arm] for arm in names],
-        values,
-        0.58,
-        color=[ARM_COLOR[arm] for arm in names],
-        # the oracle is a ceiling, not a competitor: gray, and hatched so it never depends
-        # on colour alone
-        hatch=["", "", "///"],
-        edgecolor=SURFACE,
-        linewidth=1.2,
+    def style(ax):
+        ax.set_facecolor(p["surface"])
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
+        for side in ("left", "bottom"):
+            ax.spines[side].set_color(p["axis"])
+        ax.tick_params(colors=p["muted"], labelcolor=p["ink2"], labelsize=9)
+        ax.set_axisbelow(True)
+
+
+    panels = [
+        ("wrong_load", f"wrong loads\n{len(POSITIVES)} covered requests"),
+        ("needless_load", f"needless loads\n{len(NEGATIVES)} uncovered requests"),
+    ]
+    names = list(scores)
+    fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.6), facecolor=p["surface"])
+    for ax, (metric, title) in zip(axes, panels):
+        style(ax)
+        ax.grid(axis="y", color=p["grid"], linewidth=0.8)
+        values = [scores[arm][metric] for arm in names]
+        bars = ax.bar(
+            [ARM_LABEL[arm] for arm in names],
+            values,
+            0.58,
+            color=[ARM_COLOR[arm] for arm in names],
+            # the oracle is a ceiling, not a competitor: gray, and hatched so it never depends
+            # on colour alone
+            hatch=["", "", "///"],
+            edgecolor=p["surface"],
+            linewidth=1.2,
+        )
+        ax.bar_label(
+            bars,
+            labels=[f"{v:.1%}" for v in values],
+            padding=3,
+            color=p["ink2"],
+            fontsize=9,
+        )
+        ax.set_title(title, loc="left", color=p["ink2"], fontsize=9.5)
+        ax.set_ylim(0, max(values) * 1.28)
+        ax.yaxis.set_major_locator(MultipleLocator(0.05))
+        ax.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
+        ax.set_ylabel("% of those requests - lower is better", color=p["ink2"], fontsize=9)
+    fig.suptitle(
+        f"Hermes' {len(ROSTER)}-skill roster, {AGENT_MODEL}",
+        x=0.02,
+        ha="left",
+        color=p["ink"],
+        fontsize=11,
     )
-    ax.bar_label(
-        bars,
-        labels=[f"{v:.1%}" for v in values],
-        padding=3,
-        color=INK2,
-        fontsize=9,
-    )
-    ax.set_title(title, loc="left", color=INK2, fontsize=9.5)
-    ax.set_ylim(0, max(values) * 1.28)
-    ax.yaxis.set_major_locator(MultipleLocator(0.05))
-    ax.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
-    ax.set_ylabel("% of those requests - lower is better", color=INK2, fontsize=9)
-fig.suptitle(
-    f"Hermes' {len(ROSTER)}-skill roster, {AGENT_MODEL}",
-    x=0.02,
-    ha="left",
-    color=INK,
-    fontsize=11,
-)
-fig.tight_layout()
-display(fig)
-plt.close(fig)
+    fig.tight_layout()
+    return fig
+
+
+# The docs build sets COOKSAFE_RENDER and also draws a dark copy.
+for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+    fig = draw_loads(CHART_PALETTES[theme])
+    display(fig, metadata={"theme": theme})
+    plt.close(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/F2Us7sR8VwvN7-49/cookbooks/skill_suggestion/skill_suggestion.executed.1.png?fit=max\&auto=format\&n=F2Us7sR8VwvN7-49\&q=85\&s=62894c38634495b522c8efaec7595102)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/skill_suggestion/skill_suggestion.executed.1.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=9690cb12c173a9a8f516e2f242601146)
 
 ## What the results show
 

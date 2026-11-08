@@ -58,11 +58,13 @@ spec and makes the call.
 The prices are simulated from a fixed random seed, not real market data. The tickers are
 real, but every price, return and chart below is generated.
 
-```python
+```python expandable
 import json
+import os
 import urllib.request
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 from cooksafe import make_playground_link
 from IPython.display import Markdown, display
 
@@ -75,7 +77,16 @@ for name in ["dispatch.py", "trader.py", "spec.json", "bars.parquet"]:
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", name)
 
 from dispatch import ROUTE, Dispatcher, closed_sets  # noqa: E402  (downloaded above)
-from trader import TOOLS, client, load  # noqa: E402
+from trader import TOOLS, chart_theme, client, load  # noqa: E402
+
+def show(draw) -> None:
+    """Display the chart ``draw()`` makes. The docs build sets COOKSAFE_RENDER and also gets
+    a dark copy."""
+    for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+        with chart_theme(theme):
+            figure = draw()
+        display(figure, metadata={"theme": theme})
+        plt.close(figure)
 
 TYPESAFE_MODEL = "jev-1.14.0"
 print(f"{len(TOOLS)} functions over {load().height:,} one-minute bars")
@@ -286,7 +297,7 @@ for command in (
     "when during the day does nvda trade the most",
 ):
     print(f'"{command}"  ->  {CALLS[command]}')
-    display(CALLS[command].run())
+    show(CALLS[command].run)
 ```
 
 ```
@@ -297,9 +308,9 @@ for command in (
 
 ![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/function_calling/function_calling.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=be89e89d17fcf30851d5bc2def0efeb1)
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/function_calling/function_calling.executed.2.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=e779dfec620e9759520fb10fc01892dc)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/function_calling/function_calling.executed.3.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=a572852c52d68583e1a349933061294a)
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/function_calling/function_calling.executed.3.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=aa525f18af5bb4b5ae4ac29335d74554)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/function_calling/function_calling.executed.5.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=9ad8aae9a8a36770e414fb3c7adc6657)
 
 And the ones that answer in text:
 

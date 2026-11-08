@@ -920,40 +920,58 @@ more consistent. Within a row the dots are spread up and down only so they don't
 their height means nothing. The dashed line is 1 in 10.
 
 ```python expandable theme={null}
-fig_strip, strip_ax = plt.subplots(figsize=(8, 0.5 * len(PLOT_ORDER) + 1))
-for position, label in enumerate(PLOT_ORDER):
-    values = least_stable[label]
-    # spread the posts vertically so dots with close values stay countable
-    strip_ax.scatter(
-        values,
-        position + np.linspace(-0.2, 0.2, len(values)),
-        s=30,
-        alpha=0.55,
-        color="#2b8cbe" if label == TYPESAFE_LABEL else "#fe9929",
-        edgecolors="none",
+STRIP_PALETTES = {
+    "light": {"surface": "#ffffff", "ink": "#000000", "muted": "#808080", "jev": "#2b8cbe", "llm": "#fe9929", "alpha": 0.55},
+    "dark": {"surface": "#0d0a0f", "ink": "#fafafa", "muted": "#a1a1aa", "jev": "#5fb0e0", "llm": "#fe9929", "alpha": 0.7},
+}
+
+
+def draw_strip(p: dict) -> plt.Figure:
+    fig_strip, strip_ax = plt.subplots(figsize=(8, 0.5 * len(PLOT_ORDER) + 1), facecolor=p["surface"])
+    strip_ax.set_facecolor(p["surface"])
+    for position, label in enumerate(PLOT_ORDER):
+        values = least_stable[label]
+        # spread the posts vertically so dots with close values stay countable
+        strip_ax.scatter(
+            values,
+            position + np.linspace(-0.2, 0.2, len(values)),
+            s=30,
+            alpha=p["alpha"],
+            color=p["jev"] if label == TYPESAFE_LABEL else p["llm"],
+            edgecolors="none",
+        )
+    strip_ax.axvline(0.10, color=p["muted"], linewidth=0.8, linestyle="--")
+    strip_ax.text(0.105, len(PLOT_ORDER) - 0.55, "1 in 10", fontsize=7, color=p["muted"], va="bottom")
+    strip_ax.set_yticks(range(len(PLOT_ORDER)), PLOT_ORDER, fontsize=8)
+    strip_ax.invert_yaxis()  # first row on top
+    strip_ax.set_xlim(0, 0.6)
+    strip_ax.xaxis.set_major_formatter(PercentFormatter(1.0))
+    strip_ax.set_xlabel("chance that asking again changes the decision", fontsize=9, labelpad=16)
+    for x, text, align in ((0, "← more consistent", "left"), (1, "less consistent →", "right")):
+        strip_ax.text(x, -0.075, text, transform=strip_ax.transAxes, ha=align, va="top",
+                      fontsize=8, color=p["muted"])
+    for edge in ("top", "right", "left"):
+        strip_ax.spines[edge].set_visible(False)
+    strip_ax.tick_params(length=0, labelcolor=p["ink"])
+    strip_ax.spines["bottom"].set_color(p["ink"])
+    strip_ax.xaxis.label.set_color(p["ink"])
+    strip_ax.set_title(
+        "Ask the same thing twice: how often does a decision change?\n"
+        f"One dot per post ({NUM_POSTS} per row), at its least stable option out of "
+        f"{sum(len(choices) for _instructions, choices in QUESTIONS.values())}",
+        loc="left",
+        fontsize=10,
+        color=p["ink"],
     )
-strip_ax.axvline(0.10, color="gray", linewidth=0.8, linestyle="--")
-strip_ax.text(0.105, len(PLOT_ORDER) - 0.55, "1 in 10", fontsize=7, color="gray", va="bottom")
-strip_ax.set_yticks(range(len(PLOT_ORDER)), PLOT_ORDER, fontsize=8)
-strip_ax.invert_yaxis()  # first row on top
-strip_ax.set_xlim(0, 0.6)
-strip_ax.xaxis.set_major_formatter(PercentFormatter(1.0))
-strip_ax.set_xlabel("chance that asking again changes the decision", fontsize=9, labelpad=16)
-for x, text, align in ((0, "← more consistent", "left"), (1, "less consistent →", "right")):
-    strip_ax.text(x, -0.075, text, transform=strip_ax.transAxes, ha=align, va="top",
-                  fontsize=8, color="gray")
-for edge in ("top", "right", "left"):
-    strip_ax.spines[edge].set_visible(False)
-strip_ax.tick_params(length=0)
-strip_ax.set_title(
-    "Ask the same thing twice: how often does a decision change?\n"
-    f"One dot per post ({NUM_POSTS} per row), at its least stable option out of "
-    f"{sum(len(choices) for _instructions, choices in QUESTIONS.values())}",
-    loc="left",
-    fontsize=10,
-)
-fig_strip.tight_layout()
-display(fig_strip)
+    fig_strip.tight_layout()
+    return fig_strip
+
+
+# The docs build sets COOKSAFE_RENDER and also draws a dark copy.
+for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+    fig_strip = draw_strip(STRIP_PALETTES[theme])
+    display(fig_strip, metadata={"theme": theme})
+    plt.close(fig_strip)
 ```
 
 ![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.2.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=5b98c1900deb6b49c0d032d14865b25d)

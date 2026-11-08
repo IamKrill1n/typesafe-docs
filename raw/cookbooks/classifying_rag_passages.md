@@ -643,91 +643,107 @@ injected instruction reaches the text.
 ## Compare the six queries
 
 ```python expandable theme={null}
-SURFACE, INK, INK2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
-GRID, AXIS, BLUE, ORANGE = "#e1e0d9", "#c3c2b7", "#2a78d6", "#eb6834"
-
-ROUTE_COLOR = {
-    "include": BLUE,
-    "conflicting_evidence": ORANGE,
-    "exclude": GRID,
-}
-ROUTE_LABEL = {
-    "include": "included as evidence",
-    "conflicting_evidence": "kept as a conflict",
-    "exclude": "excluded",
+CHART_PALETTES = {
+    "light": {
+        "surface": "#ffffff", "ink": "#0b0b0b", "ink2": "#52514e", "muted": "#898781",
+        "grid": "#e1e0d9", "axis": "#c3c2b7", "blue": "#2a78d6", "orange": "#eb6834",
+    },
+    "dark": {
+        "surface": "#0d0a0f", "ink": "#fafafa", "ink2": "#d4d4d8", "muted": "#a1a1aa",
+        "grid": "#2e2e33", "axis": "#52525b", "blue": "#5b9be8", "orange": "#f08050",
+    },
 }
 
 
-def style(ax):
-    ax.set_facecolor(SURFACE)
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(AXIS)
-    ax.tick_params(colors=MUTED, labelcolor=INK2, labelsize=9)
-    ax.set_axisbelow(True)
+def draw_routes(p: dict) -> plt.Figure:
+    ROUTE_COLOR = {
+        "include": p["blue"],
+        "conflicting_evidence": p["orange"],
+        "exclude": p["grid"],
+    }
+    ROUTE_LABEL = {
+        "include": "included as evidence",
+        "conflicting_evidence": "kept as a conflict",
+        "exclude": "excluded",
+    }
 
 
-fig, ax = plt.subplots(figsize=(9.0, 3.9), facecolor=SURFACE)
-style(ax)
-ax.grid(axis="x", color=GRID, linewidth=0.8)
+    def style(ax):
+        ax.set_facecolor(p["surface"])
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
+        for side in ("left", "bottom"):
+            ax.spines[side].set_color(p["axis"])
+        ax.tick_params(colors=p["muted"], labelcolor=p["ink2"], labelsize=9)
+        ax.set_axisbelow(True)
 
-labels = []
-for row, query in enumerate(QUERIES):
-    routed = ROUTED[query]
-    left = 0
-    for name in ROUTE_ORDER:
-        width = sum(1 for record in routed if record["route"] == name)
-        if not width:
-            continue
-        ax.barh(
-            row,
-            width,
-            left=left,
-            color=ROUTE_COLOR[name],
-            edgecolor=SURFACE,
-            linewidth=1.2,
-        )
-        ax.text(
-            left + width / 2,
-            row,
-            str(width),
-            ha="center",
-            va="center",
-            fontsize=8.5,
-            color=INK if name == "exclude" else SURFACE,
-        )
-        left += width
-    wrapped = query if len(query) <= 44 else query[:42] + "..."
-    labels.append(f"{wrapped}\n{left} passages scored")
 
-ax.set_yticks(range(len(QUERIES)), labels, fontsize=8.5)
-ax.invert_yaxis()
-ax.set_xlabel("passages, by the route they were given", color=INK2, fontsize=9)
-ax.set_title(
-    f"Where {sum(len(r) for r in ROUTED.values())} retrieved passages went, "
-    f"across {len(QUERIES)} queries",
-    color=INK,
-    fontsize=11,
-    loc="left",
-)
-handles = [plt.Rectangle((0, 0), 1, 1, color=ROUTE_COLOR[n]) for n in ROUTE_ORDER]
-ax.legend(
-    handles,
-    [ROUTE_LABEL[n] for n in ROUTE_ORDER],
-    frameon=False,
-    fontsize=8.5,
-    labelcolor=INK2,
-    ncol=3,
-    loc="lower right",
-    bbox_to_anchor=(1.0, -0.40),
-)
-fig.tight_layout()
-display(fig)
-plt.close(fig)
+    fig, ax = plt.subplots(figsize=(9.0, 3.9), facecolor=p["surface"])
+    style(ax)
+    ax.grid(axis="x", color=p["grid"], linewidth=0.8)
+
+    labels = []
+    for row, query in enumerate(QUERIES):
+        routed = ROUTED[query]
+        left = 0
+        for name in ROUTE_ORDER:
+            width = sum(1 for record in routed if record["route"] == name)
+            if not width:
+                continue
+            ax.barh(
+                row,
+                width,
+                left=left,
+                color=ROUTE_COLOR[name],
+                edgecolor=p["surface"],
+                linewidth=1.2,
+            )
+            ax.text(
+                left + width / 2,
+                row,
+                str(width),
+                ha="center",
+                va="center",
+                fontsize=8.5,
+                color=p["ink"] if name == "exclude" else p["surface"],
+            )
+            left += width
+        wrapped = query if len(query) <= 44 else query[:42] + "..."
+        labels.append(f"{wrapped}\n{left} passages scored")
+
+    ax.set_yticks(range(len(QUERIES)), labels, fontsize=8.5)
+    ax.invert_yaxis()
+    ax.set_xlabel("passages, by the route they were given", color=p["ink2"], fontsize=9)
+    ax.set_title(
+        f"Where {sum(len(r) for r in ROUTED.values())} retrieved passages went, "
+        f"across {len(QUERIES)} queries",
+        color=p["ink"],
+        fontsize=11,
+        loc="left",
+    )
+    handles = [plt.Rectangle((0, 0), 1, 1, color=ROUTE_COLOR[n]) for n in ROUTE_ORDER]
+    ax.legend(
+        handles,
+        [ROUTE_LABEL[n] for n in ROUTE_ORDER],
+        frameon=False,
+        fontsize=8.5,
+        labelcolor=p["ink2"],
+        ncol=3,
+        loc="lower right",
+        bbox_to_anchor=(1.0, -0.40),
+    )
+    fig.tight_layout()
+    return fig
+
+
+# The docs build sets COOKSAFE_RENDER and also draws a dark copy.
+for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+    fig = draw_routes(CHART_PALETTES[theme])
+    display(fig, metadata={"theme": theme})
+    plt.close(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/WL9iDRLiUqmBuTMZ/cookbooks/classifying_rag_passages/classifying_rag_passages.executed.1.png?fit=max\&auto=format\&n=WL9iDRLiUqmBuTMZ\&q=85\&s=cb8d40f2c9ba7a89d725565648ab95f1)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/classifying_rag_passages/classifying_rag_passages.executed.1.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=5efd2b070be15995b9decd5a8d13d6f5)
 
 Each bar holds the 12 passages retrieved for one query, 72 in all. At least two thirds of
 every bar is excluded. Only the two false-premise queries route anything to conflict, and

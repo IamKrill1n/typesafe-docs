@@ -253,39 +253,51 @@ def gold_rank(ranked: list[str], gold: str) -> int | None:
     """1-based rank of the gold id, or None if it isn't in the list."""
     return ranked.index(gold) + 1 if gold in ranked else None
 
-SURFACE, INK, INK2, MUTED = "#f8f8f2", "#34342f", "#34342f", "#7c7c77"
-GRID, AXIS, BLUE, GREEN = "#d8d8cf", "#d8d8cf", "#5d76a2", "#6f9b52"
+# The docs page shows each chart matching its light or dark theme; a notebook shows the light one.
+PALETTES = {
+    "light": {"surface": "#ffffff", "ink": "#34342f", "muted": "#7c7c77", "grid": "#d8d8cf", "blue": "#5d76a2", "green": "#6f9b52"},
+    "dark": {"surface": "#0d0a0f", "ink": "#fafafa", "muted": "#a1a1aa", "grid": "#3f3f46", "blue": "#8fa6d6", "green": "#93c47d"},
+}
 
-def bar_chart(labels: list[str], shares: list[float], title: str) -> None:
+def show(draw) -> None:
+    """Display ``draw(palette)`` in the light palette. The docs build sets COOKSAFE_RENDER and
+    also gets the dark copy."""
+    import matplotlib.pyplot as plt
+
+    for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+        fig = draw(PALETTES[theme])
+        display(fig, metadata={"theme": theme})
+        plt.close(fig)
+
+def bar_chart(labels: list[str], shares: list[float], title: str, p: dict):
     """A small single-series bar chart of shares (0-1, shown as percentages)."""
     import matplotlib.pyplot as plt
 
-    fig, ax = plt.subplots(figsize=(5, 3.2), facecolor=SURFACE)
-    ax.set_facecolor(SURFACE)
+    fig, ax = plt.subplots(figsize=(5, 3.2), facecolor=p["surface"])
+    ax.set_facecolor(p["surface"])
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
     for side in ("left", "bottom"):
-        ax.spines[side].set_color(AXIS)
-    ax.tick_params(colors=MUTED, labelcolor=INK2, labelsize=9)
+        ax.spines[side].set_color(p["grid"])
+    ax.tick_params(colors=p["muted"], labelcolor=p["ink"], labelsize=9)
     ax.set_axisbelow(True)
-    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    ax.grid(axis="y", color=p["grid"], linewidth=0.8)
 
-    bars = ax.bar(labels, shares, width=0.55, color=[BLUE, GREEN][: len(labels)])
+    bars = ax.bar(labels, shares, width=0.55, color=[p["blue"], p["green"]][: len(labels)])
     ax.bar_label(
         bars,
         labels=[f"{s * 100:.0f}%" for s in shares],
         padding=4,
-        color=INK,
+        color=p["ink"],
         fontsize=11,
     )
     ax.set_ylim(0, 1.1)
     ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
     ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"])
-    ax.set_ylabel(f"share of {len(queries)} queries", color=INK2, fontsize=9)
-    ax.set_title(title, loc="left", color=INK, fontsize=11)
+    ax.set_ylabel(f"share of {len(queries)} queries", color=p["ink"], fontsize=9)
+    ax.set_title(title, loc="left", color=p["ink"], fontsize=11)
     plt.tight_layout()
-    display(fig)
-    plt.close(fig)
+    return fig
 
 ds = build_slice(N_ROWS, N_QUERIES, seed=0)
 corpus: dict[str, str] = ds["corpus"]
@@ -297,14 +309,15 @@ candidates = {q: ranked[:TOP_K] for q, ranked in bm25_rankings(corpus, queries).
 in_top_k = sum(golds[q] in candidates[q] for q in queries)
 at_rank_1 = sum(candidates[q][0] == golds[q] for q in queries)
 
-bar_chart(
+show(lambda p: bar_chart(
     [f"In top {TOP_K}", "At rank 1"],
     [in_top_k / len(queries), at_rank_1 / len(queries)],
     f"Where the correct passage lands, {len(queries)} queries against {len(corpus):,} candidates",
-)
+    p,
+))
 ```
 
-![output](https://mintcdn.com/ts-docs/2NirYCl-v96cw05F/cookbooks/rerank_typesafe/rerank_typesafe.executed.1.png?fit=max\&auto=format\&n=2NirYCl-v96cw05F\&q=85\&s=db0d74ddf1659968b52bfda0cdf8b030)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/rerank_typesafe/rerank_typesafe.executed.1.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=b759df7cbe26cb29ff1524a054f694b1)
 
 ### Fast search is unlikely to rank the right passage first
 
@@ -382,29 +395,29 @@ reranked = {
 }
 
 def chart_before_after(
-    runs: dict[str, dict[str, list[str]]], thresholds: list[int]
-) -> None:
+    runs: dict[str, dict[str, list[str]]], thresholds: list[int], p: dict
+):
     """Grouped bar chart: how often the correct passage lands in the top N, for each run."""
     import numpy as np
     import matplotlib.pyplot as plt
 
     labels = list(runs)
-    colors = [BLUE, GREEN]
+    colors = [p["blue"], p["green"]]
 
     def share_in_top(rankings, k):
         return sum(
             gold_rank(rankings[q], golds[q]) in range(1, k + 1) for q in queries
         ) / len(queries)
 
-    fig, ax = plt.subplots(figsize=(6.5, 3.6), facecolor=SURFACE)
-    ax.set_facecolor(SURFACE)
+    fig, ax = plt.subplots(figsize=(6.5, 3.6), facecolor=p["surface"])
+    ax.set_facecolor(p["surface"])
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
     for side in ("left", "bottom"):
-        ax.spines[side].set_color(AXIS)
-    ax.tick_params(colors=MUTED, labelcolor=INK2, labelsize=9)
+        ax.spines[side].set_color(p["grid"])
+    ax.tick_params(colors=p["muted"], labelcolor=p["ink"], labelsize=9)
     ax.set_axisbelow(True)
-    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    ax.grid(axis="y", color=p["grid"], linewidth=0.8)
 
     x = np.arange(len(thresholds))
     width = 0.35
@@ -416,7 +429,7 @@ def chart_before_after(
             bars,
             labels=[f"{s * 100:.0f}%" for s in shares],
             padding=3,
-            color=INK2,
+            color=p["ink"],
             fontsize=8.5,
         )
 
@@ -424,24 +437,23 @@ def chart_before_after(
     ax.set_ylim(0, 1)
     ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
     ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"])
-    ax.set_ylabel(f"share of {len(queries)} queries", color=INK2, fontsize=9)
+    ax.set_ylabel(f"share of {len(queries)} queries", color=p["ink"], fontsize=9)
     ax.set_title(
         "How often the correct passage lands near the top",
         loc="left",
-        color=INK,
+        color=p["ink"],
         fontsize=11,
     )
-    ax.legend(frameon=False, labelcolor=INK2, fontsize=9, loc="upper left")
+    ax.legend(frameon=False, labelcolor=p["ink"], fontsize=9, loc="upper left")
     plt.tight_layout()
-    display(fig)
-    plt.close(fig)
+    return fig
 
-chart_before_after(
-    {"Fast search": candidates, "+ Jev 1.14 re-rank": reranked}, [1, 5, 10]
-)
+show(lambda p: chart_before_after(
+    {"Fast search": candidates, "+ Jev 1.14 re-rank": reranked}, [1, 5, 10], p
+))
 ```
 
-![output](https://mintcdn.com/ts-docs/WL9iDRLiUqmBuTMZ/cookbooks/rerank_typesafe/rerank_typesafe.executed.2.png?fit=max\&auto=format\&n=WL9iDRLiUqmBuTMZ\&q=85\&s=cdf5336e415ba61dbecda2c24a9e0cef)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/rerank_typesafe/rerank_typesafe.executed.3.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=a7d197e70410fd097c50a0e48008c9bf)
 
 ### Re-ranking moves the right answer toward the top
 

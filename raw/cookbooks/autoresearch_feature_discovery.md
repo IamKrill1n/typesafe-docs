@@ -874,17 +874,28 @@ def ask_score(message: str, politeness: Score) -> dict:
 
 # ----------------------------------------------------------------- charts
 
-SURFACE, INK, INK2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
-GRID, AXIS, BLUE, ORANGE = "#e1e0d9", "#c3c2b7", "#2a78d6", "#eb6834"
+CHART_PALETTES = {
+    "light": {
+        "surface": "#ffffff", "ink": "#0b0b0b", "ink2": "#52514e", "muted": "#898781",
+        "grid": "#e1e0d9", "axis": "#c3c2b7", "blue": "#2a78d6", "orange": "#eb6834",
+    },
+    "dark": {
+        "surface": "#0d0a0f", "ink": "#fafafa", "ink2": "#d4d4d8", "muted": "#a1a1aa",
+        "grid": "#2e2e33", "axis": "#52525b", "blue": "#5b9be8", "orange": "#f08050",
+    },
+}
+_LIGHT = CHART_PALETTES["light"]  # the heatmap draws in the light palette only
+SURFACE, INK, INK2, MUTED = _LIGHT["surface"], _LIGHT["ink"], _LIGHT["ink2"], _LIGHT["muted"]
+GRID, AXIS, BLUE, ORANGE = _LIGHT["grid"], _LIGHT["axis"], _LIGHT["blue"], _LIGHT["orange"]
 
 
-def style(ax) -> None:
-    ax.set_facecolor(SURFACE)
+def style(ax, p: dict = _LIGHT) -> None:
+    ax.set_facecolor(p["surface"])
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
     for side in ("left", "bottom"):
-        ax.spines[side].set_color(AXIS)
-    ax.tick_params(colors=MUTED, labelcolor=INK2, labelsize=9)
+        ax.spines[side].set_color(p["axis"])
+    ax.tick_params(colors=p["muted"], labelcolor=p["ink2"], labelsize=9)
     ax.set_axisbelow(True)
 
 
@@ -1016,22 +1027,27 @@ def messages_heatmap(
 
 
 def steps_chart(
-    plt, curve: list[tuple], history: list[float], n_test: int, gain: tuple
+    plt,
+    curve: list[tuple],
+    history: list[float],
+    n_test: int,
+    gain: tuple,
+    p: dict = _LIGHT,
 ):
     """Check-row error and held-out error per step. The trend is the point, not the gap."""
     steps = list(range(1, len(curve) + 1))
     values = [v for _, v in curve]
 
-    fig, ax = plt.subplots(figsize=(7, 3.9), facecolor=SURFACE)
-    style(ax)
-    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    fig, ax = plt.subplots(figsize=(7, 3.9), facecolor=p["surface"])
+    style(ax, p)
+    ax.grid(axis="y", color=p["grid"], linewidth=0.8)
     # shade the gap between what the loop optimises and what it buys
-    ax.fill_between(steps, history, values, color=GRID, alpha=0.75, linewidth=0)
+    ax.fill_between(steps, history, values, color=p["grid"], alpha=0.75, linewidth=0)
     ax.plot(
         steps,
         history,
         marker="o",
-        color=BLUE,
+        color=p["blue"],
         linewidth=2,
         linestyle="--",
         label="check rows - what the loop optimises",
@@ -1040,7 +1056,7 @@ def steps_chart(
         steps,
         values,
         marker="o",
-        color=ORANGE,
+        color=p["orange"],
         linewidth=2,
         label="held out - what that actually buys",
     )
@@ -1053,13 +1069,13 @@ def steps_chart(
                 textcoords="offset points",
                 xytext=(0, 8 if value >= other else -16),
                 ha="center",
-                color=INK2,
+                color=p["ink2"],
                 fontsize=8.5,
             )
     ax.set_xticks(
         steps, [f"step {x}\n{n} features" for x, (n, _) in zip(steps, curve)]
     )
-    ax.set_ylabel("RMSE (lower is better)", color=INK2, fontsize=9)
+    ax.set_ylabel("RMSE (lower is better)", color=p["ink2"], fontsize=9)
     # tight around the two lines: the whole finding lives in a narrow band
     low, high = min(values + history), max(values + history)
     pad = max(high - low, 0.005)
@@ -1068,7 +1084,7 @@ def steps_chart(
     ax.set_title(
         f"{len(steps)} steps of the loop, scored on {n_test} held-out messages",
         loc="left",
-        color=INK,
+        color=p["ink"],
         fontsize=11,
         pad=20,
     )
@@ -1079,10 +1095,10 @@ def steps_chart(
         f"step 1 to step {len(steps)}, held out: {difference:+.3f} RMSE, "
         f"95% CI [{low_ci:+.3f}, {high_ci:+.3f}]",
         transform=ax.transAxes,
-        color=MUTED,
+        color=p["muted"],
         fontsize=9,
     )
-    ax.legend(frameon=False, labelcolor=INK2, fontsize=9, loc="lower left")
+    ax.legend(frameon=False, labelcolor=p["ink2"], fontsize=9, loc="lower left")
     return fig
 ```
 
@@ -1412,7 +1428,7 @@ the five held-out heatmap columns:
   5. rated +2.35: I'm an admin, I'd be happy to do it. You want me to do it now?
 ```
 
-![output](https://mintcdn.com/ts-docs/nzIWI7WprLsh66bF/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.1.png?fit=max\&auto=format\&n=nzIWI7WprLsh66bF\&q=85\&s=5425ada09fc6813381924c9fa00cb9b8)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.1.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=6c5d4660a5f861c54999f61f6f0b3a5a)
 
 The two least polite requests score high on the accusation, doubt, sarcasm and insult rows
 below the divider, and #2 is also the curtest. Request #3 opens with "Hey" and lights up
@@ -1507,16 +1523,18 @@ print(
     f"95% CI [{gain[1]:+.3f}, {gain[2]:+.3f}]"
 )
 
-fig = steps_chart(plt, curve, history, len(TEST), gain)
-display(fig)
-plt.close(fig)
+# The docs build sets COOKSAFE_RENDER and also draws a dark copy.
+for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+    fig = steps_chart(plt, curve, history, len(TEST), gain, CHART_PALETTES[theme])
+    display(fig, metadata={"theme": theme})
+    plt.close(fig)
 ```
 
 ```
 step 1 -> step 5 on the held-out rows: -0.015 RMSE, 95% CI [-0.026, -0.003]
 ```
 
-![output](https://mintcdn.com/ts-docs/nzIWI7WprLsh66bF/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.2.png?fit=max\&auto=format\&n=nzIWI7WprLsh66bF\&q=85\&s=80fc959cbad7acde497646c57bf2f060)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/autoresearch_feature_discovery/autoresearch_feature_discovery.executed.2.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=8870aac15cb9c2970760c7a545068305)
 
 Both lines stay inside a band 0.05 wide, and the three approaches from the table that use
 no questions would sit above the top of this chart. Check-row error fell at every step,

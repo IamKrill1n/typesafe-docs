@@ -348,37 +348,52 @@ singles = pd.DataFrame(
     }
 ).T
 
-SURFACE, INK, MUTED, GRID, BLUE = "#f8f8f2", "#34342f", "#7c7c77", "#d8d8cf", "#5d76a2"
-fig, ax = plt.subplots(figsize=(8, 5.4), facecolor=SURFACE)
-ax.set_facecolor(SURFACE)
-for side in ("top", "right"):
-    ax.spines[side].set_visible(False)
-for side in ("left", "bottom"):
-    ax.spines[side].set_color(GRID)
-ax.tick_params(colors=MUTED, labelcolor=INK, labelsize=9)
-ax.grid(color=GRID, linewidth=0.6)
-ax.set_axisbelow(True)
-ax.scatter(cascade["cost"], cascade["works"], s=10, color=BLUE, alpha=0.25, lw=0, label="cascade, every threshold")
-ax.plot(frontier["cost"], frontier["works"], color=BLUE, lw=2, marker="o", ms=4,
-        label="cascade frontier (gpt-6-luna → gpt-6.1-sol-high)")
-first, last, luna = frontier.iloc[0], frontier.iloc[-1], singles.loc["gpt-6-luna"]
-if luna["cost"] < first["cost"]:  # luna alone sits left of the frontier: join it at luna's level
-    ax.plot([luna["cost"], first["cost"]], [luna["works"]] * 2, color=BLUE, lw=2)
-ax.plot([last["cost"], cascade["cost"].max()], [last["works"]] * 2, color=BLUE, lw=2)  # past here, more spend buys nothing
-ax.errorbar(singles["cost"], singles["works"], xerr=singles["cost_sem"], yerr=singles["works_sem"], fmt="D",
-            ms=8, color=INK, ecolor=MUTED, elinewidth=1, capsize=3, label="single model ±1 SEM")
-for name, row in singles.iterrows():
-    ax.annotate(name, (row["cost"], row["works"]), xytext=(7, -12), textcoords="offset points", fontsize=9, color=INK)
-ax.set_xlabel("mean $ per 1,000 tasks", color=INK, fontsize=9)
-ax.set_ylabel("share of answers that work", color=INK, fontsize=9)
-ax.set_title("1,000 meeting-scheduling tasks", color=INK, fontsize=10)
-ax.legend(fontsize=8, frameon=False, loc="lower right")
-plt.tight_layout()
-display(fig)
-plt.close(fig)
+# The docs page shows the chart matching its light or dark theme; a notebook shows the light one.
+PALETTES = {
+    "light": {"surface": "#ffffff", "ink": "#34342f", "muted": "#7c7c77", "grid": "#d8d8cf", "blue": "#5d76a2", "cloud": 0.25},
+    "dark": {"surface": "#0d0a0f", "ink": "#fafafa", "muted": "#a1a1aa", "grid": "#3f3f46", "blue": "#8fa6d6", "cloud": 0.35},
+}
+
+
+def draw_chart(p: dict) -> plt.Figure:
+    fig, ax = plt.subplots(figsize=(8, 5.4), facecolor=p["surface"])
+    ax.set_facecolor(p["surface"])
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_color(p["grid"])
+    ax.tick_params(colors=p["muted"], labelcolor=p["ink"], labelsize=9)
+    ax.grid(color=p["grid"], linewidth=0.6)
+    ax.set_axisbelow(True)
+    ax.scatter(cascade["cost"], cascade["works"], s=10, color=p["blue"], alpha=p["cloud"], lw=0,
+               label="cascade, every threshold")
+    ax.plot(frontier["cost"], frontier["works"], color=p["blue"], lw=2, marker="o", ms=4,
+            label="cascade frontier (gpt-6-luna → gpt-6.1-sol-high)")
+    first, last, luna = frontier.iloc[0], frontier.iloc[-1], singles.loc["gpt-6-luna"]
+    if luna["cost"] < first["cost"]:  # luna alone sits left of the frontier: join it at luna's level
+        ax.plot([luna["cost"], first["cost"]], [luna["works"]] * 2, color=p["blue"], lw=2)
+    ax.plot([last["cost"], cascade["cost"].max()], [last["works"]] * 2, color=p["blue"], lw=2)  # past here, more spend buys nothing
+    ax.errorbar(singles["cost"], singles["works"], xerr=singles["cost_sem"], yerr=singles["works_sem"], fmt="D",
+                ms=8, color=p["ink"], ecolor=p["muted"], elinewidth=1, capsize=3, label="single model ±1 SEM")
+    for name, row in singles.iterrows():
+        ax.annotate(name, (row["cost"], row["works"]), xytext=(7, -12), textcoords="offset points", fontsize=9,
+                    color=p["ink"])
+    ax.set_xlabel("mean $ per 1,000 tasks", color=p["ink"], fontsize=9)
+    ax.set_ylabel("share of answers that work", color=p["ink"], fontsize=9)
+    ax.set_title("1,000 meeting-scheduling tasks", color=p["ink"], fontsize=10)
+    ax.legend(fontsize=8, frameon=False, loc="lower right", labelcolor=p["ink"])
+    plt.tight_layout()
+    return fig
+
+
+# The docs build sets COOKSAFE_RENDER and also draws the dark copy.
+for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+    fig = draw_chart(PALETTES[theme])
+    display(fig, metadata={"theme": theme})
+    plt.close(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/xRnf1yJmv3uT6Ahy/cookbooks/sde_cascade/cascade_cookbook.executed.1.png?fit=max\&auto=format\&n=xRnf1yJmv3uT6Ahy\&q=85\&s=fb206073cddfc00fa38ad05a8bc3d87d)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/sde_cascade/cascade_cookbook.executed.1.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=cda7e0b86544a4d52fe1079ab3ba524b)
 
 ```python theme={null}
 print(singles[["cost", "works"]].round(3).to_string())

@@ -334,49 +334,65 @@ by_outcome: dict[str, list[str]] = {name: [] for name in OUTCOME.values()}
 for pair, s in zip(PAIRS, scores):
     by_outcome[route(s)].append(pair["id"])
 
-SURFACE, INK, INK2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
-GRID, AXIS, BLUE, ORANGE = "#e1e0d9", "#c3c2b7", "#2a78d6", "#eb6834"
+CHART_PALETTES = {
+    "light": {
+        "surface": "#ffffff", "ink": "#0b0b0b", "ink2": "#52514e", "muted": "#898781",
+        "grid": "#e1e0d9", "axis": "#c3c2b7", "blue": "#2a78d6", "orange": "#eb6834",
+    },
+    "dark": {
+        "surface": "#0d0a0f", "ink": "#fafafa", "ink2": "#d4d4d8", "muted": "#a1a1aa",
+        "grid": "#2e2e33", "axis": "#52525b", "blue": "#5b9be8", "orange": "#f08050",
+    },
+}
 
-BINS, TOP = 20, len(LEVELS) - 1
-counts = [0] * BINS
-for s in scores:
-    counts[min(int(s / TOP * BINS), BINS - 1)] += 1
-centers = [(i + 0.5) / BINS * TOP for i in range(BINS)]
-queued = [c if route(x) == "curator queue" else 0 for c, x in zip(counts, centers)]
-settled = [c if route(x) != "curator queue" else 0 for c, x in zip(counts, centers)]
 
-fig, ax = plt.subplots(figsize=(7.2, 3.6), facecolor=SURFACE)
-ax.set_facecolor(SURFACE)
-for side in ("top", "right"):
-    ax.spines[side].set_visible(False)
-for side in ("left", "bottom"):
-    ax.spines[side].set_color(AXIS)
-ax.tick_params(colors=MUTED, labelcolor=INK2, labelsize=9)
-ax.set_axisbelow(True)
-ax.grid(axis="y", color=GRID, linewidth=0.8)
-ax.bar(
-    centers, settled, width=TOP / BINS * 0.9, color=BLUE, label="settled automatically"
-)
-ax.bar(
-    centers, queued, width=TOP / BINS * 0.9, color=ORANGE, label="sent to the curator"
-)
-for edge in (0.5, 1.5):
-    ax.axvline(edge, color=INK2, linewidth=1, linestyle="--")
-ax.set_xticks([0, 0.5, 1, 1.5, 2])
-ax.set_xticklabels(["0\ndifferent", "0.5", "1\nrelated", "1.5", "2\nsame"])
-ax.set_xlabel("score for the pair", color=INK2, fontsize=9)
-ax.set_ylabel("candidate pairs", color=INK2, fontsize=9)
-n_queued = len(by_outcome["curator queue"])
-ax.set_title(
-    f"{len(PAIRS) - n_queued} of {len(PAIRS)} pairs settled automatically;"
-    f" {n_queued} go to the curator",
-    loc="left",
-    color=INK,
-    fontsize=11,
-)
-ax.legend(frameon=False, labelcolor=INK2, fontsize=9)
-display(fig)
-plt.close(fig)
+def draw_routing(p: dict) -> plt.Figure:
+    BINS, TOP = 20, len(LEVELS) - 1
+    counts = [0] * BINS
+    for s in scores:
+        counts[min(int(s / TOP * BINS), BINS - 1)] += 1
+    centers = [(i + 0.5) / BINS * TOP for i in range(BINS)]
+    queued = [c if route(x) == "curator queue" else 0 for c, x in zip(counts, centers)]
+    settled = [c if route(x) != "curator queue" else 0 for c, x in zip(counts, centers)]
+
+    fig, ax = plt.subplots(figsize=(7.2, 3.6), facecolor=p["surface"])
+    ax.set_facecolor(p["surface"])
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_color(p["axis"])
+    ax.tick_params(colors=p["muted"], labelcolor=p["ink2"], labelsize=9)
+    ax.set_axisbelow(True)
+    ax.grid(axis="y", color=p["grid"], linewidth=0.8)
+    ax.bar(
+        centers, settled, width=TOP / BINS * 0.9, color=p["blue"], label="settled automatically"
+    )
+    ax.bar(
+        centers, queued, width=TOP / BINS * 0.9, color=p["orange"], label="sent to the curator"
+    )
+    for edge in (0.5, 1.5):
+        ax.axvline(edge, color=p["ink2"], linewidth=1, linestyle="--")
+    ax.set_xticks([0, 0.5, 1, 1.5, 2])
+    ax.set_xticklabels(["0\ndifferent", "0.5", "1\nrelated", "1.5", "2\nsame"])
+    ax.set_xlabel("score for the pair", color=p["ink2"], fontsize=9)
+    ax.set_ylabel("candidate pairs", color=p["ink2"], fontsize=9)
+    n_queued = len(by_outcome["curator queue"])
+    ax.set_title(
+        f"{len(PAIRS) - n_queued} of {len(PAIRS)} pairs settled automatically;"
+        f" {n_queued} go to the curator",
+        loc="left",
+        color=p["ink"],
+        fontsize=11,
+    )
+    ax.legend(frameon=False, labelcolor=p["ink2"], fontsize=9)
+    return fig
+
+
+# The docs build sets COOKSAFE_RENDER and also draws a dark copy.
+for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light",):
+    fig = draw_routing(CHART_PALETTES[theme])
+    display(fig, metadata={"theme": theme})
+    plt.close(fig)
 
 for name in ("assert sameAs", "curator queue", "leave unlinked"):
     n = len(by_outcome[name])
@@ -389,7 +405,7 @@ curator queue      79  (17.6%)
 leave unlinked    314  (69.8%)
 ```
 
-![output](https://mintcdn.com/ts-docs/8UawRogf0VplN_sC/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max\&auto=format\&n=8UawRogf0VplN_sC\&q=85\&s=31b73ad6d566582e04236cf3cfd8f902)
+![output](https://mintcdn.com/ts-docs/Jekhcl_2QPf6976X/cookbooks/entity_alignment/entity_alignment.executed.1.png?fit=max\&auto=format\&n=Jekhcl_2QPf6976X\&q=85\&s=c6baeb854d0db3e0a1cc629235b2fca6)
 
 The cut points are the two scores where `route()` changes its answer: 0.5 and 1.5. Most
 pairs were routed without the curator: 314 scored below 0.5 and 57 scored at least 1.5,

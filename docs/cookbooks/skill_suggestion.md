@@ -78,7 +78,7 @@ flowchart LR
   agent being measured.
 
 ```bash
-pip install anthropic matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install anthropic matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 export TYPESAFE_API_KEY=your-key-here
 export ANTHROPIC_API_KEY=your-key-here
 ```
@@ -88,8 +88,9 @@ export ANTHROPIC_API_KEY=your-key-here
 
 ## Caching results
 
-We cache each call's result in `json_cache.json`, keyed on its inputs, so re-running
-replays the numbers below instead of calling either API. The published run used
+We cache each call's result in `skill_suggestion_cache.json`, keyed on its inputs, and the
+code downloads the published one, so a run replays the numbers below instead of calling
+either API. The published run used
 `jev-1.14.0` and `claude-haiku-4-5-20251001`, rendered 2026-10-30.
 
 ```python expandable
@@ -111,7 +112,7 @@ from typesafe_sdk import Choice, Noul, TypeSafeClient
 
 matplotlib.use("Agg")  # headless render
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 AGENT_MODEL = (
     "claude-haiku-4-5-20251001"  # the agent under test, pinned so scores are stable
 )
@@ -143,7 +144,6 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 agent = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only"))
-json_cache = JsonCache(Path("json_cache.json"))
 
 EXAMPLES = (
     "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
@@ -157,6 +157,14 @@ def download(name: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+CACHE = Path("skill_suggestion_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Step 1: load the roster
@@ -347,13 +355,15 @@ TOOLS = [
 ]
 
 @json_cache
-def run_turn(arm: str, roster: str, tools_json: str, request: str, suggestion: str) -> dict:
+def run_turn(
+    arm: str, roster: str, tools_json: str, request: str, suggestion: str, agent_model: str
+) -> dict:
     """One measured turn. ``arm`` is in the key so each arm samples independently."""
     system = [{"type": "text", "text": roster, "cache_control": {"type": "ephemeral"}}]
     if suggestion:
         system.append({"type": "text", "text": suggestion})  # after the breakpoint
     response = agent.messages.create(
-        model=AGENT_MODEL,
+        model=agent_model,
         max_tokens=1024,
         system=system,
         tools=json.loads(tools_json),
@@ -383,7 +393,12 @@ def run_arm(arm: str, suggestions: dict[str, str]) -> dict[str, dict]:
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         turns = pool.map(
             lambda t: run_turn(
-                arm, CATALOG_PROMPT, json.dumps(TOOLS), t, suggestions.get(t, "")
+                arm,
+                CATALOG_PROMPT,
+                json.dumps(TOOLS),
+                t,
+                suggestions.get(t, ""),
+                agent_model=AGENT_MODEL,
             ),
             texts,
         )
@@ -506,13 +521,13 @@ def wide_questions() -> dict:
     return questions
 
 @json_cache
-def rank_wide(request: str, questions_json: str) -> dict:
+def rank_wide(request: str, questions_json: str, model: str) -> dict:
     """Request 1: rank all 194 skills, and score the request for whether a skill applies."""
     started = perf_counter()
     response = client.system_one(
         state=build_state(request),
         questions=json.loads(questions_json),
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     ranked = sorted(
         response.answers["which"].probabilities.items(), key=lambda kv: -kv[1]
@@ -533,7 +548,7 @@ def rank_wide(request: str, questions_json: str) -> dict:
 
 def first_pass(request: str) -> dict:
     """Request 1, plus the three action answers averaged into ``action``."""
-    wide = rank_wide(request, as_json(wide_questions()))
+    wide = rank_wide(request, as_json(wide_questions()), model=TYPESAFE_MODEL)
     oriented = [(1.0 - v) if k in INVERTED else v for k, v in wide["values"].items()]
     return {**wide, "action": sum(oriented) / len(oriented)}
 
@@ -645,13 +660,13 @@ def rerank_questions(names: tuple[str, ...], excerpt: int) -> dict:
     return questions
 
 @json_cache
-def rerank(request: str, questions_json: str) -> dict:
+def rerank(request: str, questions_json: str, model: str) -> dict:
     """Request 2: the same Choice over a shortlist, plus one absolute noul per candidate."""
     started = perf_counter()
     response = client.system_one(
         state=build_state(request),
         questions=json.loads(questions_json),
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     return {
         "winner": response.answers["which"].choice,
@@ -669,7 +684,9 @@ for request in DEMO:
         print(f'"{request[:78]}"\n  scored too low, nothing suggested\n')
         continue
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
-    result = rerank(request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)))
+    result = rerank(
+        request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)), model=TYPESAFE_MODEL
+    )
     best = max(result["fits"].values())
     verdict = result["winner"] if best >= FITS_THRESHOLD else "nothing fits"
     print(f'"{request[:78]}"')
@@ -723,14 +740,16 @@ To point it at your own roster, replace `hermes_roster.json`. Every question abo
 `name`, `description`, `description_full`, and `body` out of that file, and nothing else
 in `suggest()` is specific to Hermes.
 
-```python
+```python expandable
 def suggest(request: str) -> tuple[str, ...]:
     """At most one skill name for a request, or () for "nothing here applies"."""
     wide = first_pass(request)
     if not needs_skill(wide):
         return ()
     shortlist = tuple(name for name, _ in wide["ranked"][:SHORTLIST])
-    result = rerank(request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)))
+    result = rerank(
+        request, as_json(rerank_questions(shortlist, EXCERPT_CHARS)), model=TYPESAFE_MODEL
+    )
     if max(result["fits"].values()) < FITS_THRESHOLD:
         return ()
     return (result["winner"],)
@@ -835,7 +854,12 @@ moved = [
     (
         baseline[p["text"]]["loaded"][:1] == [p["gold"]],
         run_turn(
-            "TypeSafe", CATALOG_PROMPT, json.dumps(TOOLS), p["text"], arms["TypeSafe"][p["text"]]
+            "TypeSafe",
+            CATALOG_PROMPT,
+            json.dumps(TOOLS),
+            p["text"],
+            arms["TypeSafe"][p["text"]],
+            agent_model=AGENT_MODEL,
         )["loaded"][:1]
         == [p["gold"]],
     )

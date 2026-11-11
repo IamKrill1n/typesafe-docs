@@ -46,7 +46,7 @@ flowchart LR
 ## Setup
 
 ```bash
-pip install ipython matplotlib 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython matplotlib 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`.
@@ -69,7 +69,7 @@ matplotlib.use("Agg")  # headless render
 
 import os  # noqa: E402
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 CONFIDENT = 0.9  # above this the group is reported; below it, the division
 
 client = TypeSafeClient(
@@ -79,7 +79,6 @@ client = TypeSafeClient(
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
 
 EXAMPLES = (
     "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
@@ -93,6 +92,14 @@ def download(name: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+CACHE = Path("classification_using_confidence_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Build the two levels of the taxonomy
@@ -234,9 +241,9 @@ def questions() -> dict:
     }
 
 @json_cache
-def ask(text: str, group: Choice) -> dict:
+def ask(text: str, group: Choice, model: str) -> dict:
     response = client.system_one(
-        state=text, questions={"group": group}, model=TYPESAFE_MODEL
+        state=text, questions={"group": group}, model=model
     )
     answer = response.answers["group"]
     return {
@@ -257,7 +264,7 @@ too coarse for your application to act on, this branch is where you hand it to a
 
 ```python
 def classify(filing: dict) -> dict:
-    answer = ask(filing["text"], questions()["group"])
+    answer = ask(filing["text"], questions()["group"], model=TYPESAFE_MODEL)
     sure = answer["confidence"] >= CONFIDENT
     return {
         "level": "group" if sure else "division",

@@ -57,7 +57,7 @@ returns the three probabilities, the risk, and `pass` or `review`.
 ## Setup
 
 ```bash
-pip install openai ipython matplotlib 'cooksafe>=0.2.0,<0.3.0'
+pip install openai ipython matplotlib 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY` and `OPENAI_API_KEY`. OpenAI models write the answers being
@@ -84,7 +84,7 @@ from IPython.display import Markdown, display
 from openai import OpenAI
 from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 ANSWERING_MODEL = "gpt-6-luna"  # the LLM whose answers are checked
 RECHECK_MODEL = "gpt-6.1-sol"  # settles answers that disagree with the reference, for measuring
 REVIEW_AT = 0.2  # a risk at or above this sends the answer to review
@@ -97,7 +97,6 @@ client = TypeSafeClient(
     timeout=120.0,
 )
 llm = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "cache-only"))
-json_cache = JsonCache(Path("json_cache.json"), indent=None)
 
 EXAMPLES = (
     "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
@@ -110,6 +109,14 @@ def download(name: str) -> Path:
     if not path.exists():
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+CACHE = Path("verify_llm_outputs_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE, indent=None)
 ```
 
 ## Load the questions and their paragraphs
@@ -167,9 +174,9 @@ def answer_prompt(q: dict) -> str:
     )
 
 @json_cache
-def ask_llm(prompt: str) -> dict:
+def ask_llm(prompt: str, answering_model: str) -> dict:
     response = llm.chat.completions.create(
-        model=ANSWERING_MODEL, messages=[{"role": "user", "content": prompt}]
+        model=answering_model, messages=[{"role": "user", "content": prompt}]
     )
     return {
         "answer": (response.choices[0].message.content or "").strip(),
@@ -181,7 +188,13 @@ with ThreadPoolExecutor(max_workers=LLM_WORKERS) as pool:
     LLM_ANSWERS = dict(
         zip(
             BY_ID,
-            (r["answer"] for r in pool.map(lambda q: ask_llm(answer_prompt(q)), QUESTIONS)),
+            (
+                r["answer"]
+                for r in pool.map(
+                    lambda q: ask_llm(answer_prompt(q), answering_model=ANSWERING_MODEL),
+                    QUESTIONS,
+                )
+            ),
         )
     )
 
@@ -236,9 +249,11 @@ def check_state(question: str, paragraphs: str, answer: str) -> dict:
     }
 
 @json_cache
-def ask_jev(question: str, paragraphs: str, answer: str, questions_json: str) -> dict:
+def ask_jev(
+    question: str, paragraphs: str, answer: str, questions_json: str, model: str
+) -> dict:
     response = client.system_one(
-        check_state(question, paragraphs, answer), json.loads(questions_json), model=TYPESAFE_MODEL
+        check_state(question, paragraphs, answer), json.loads(questions_json), model=model
     )
     return {
         "nouls": {k: response.answers[k].noul for k in sorted(response.answers)},
@@ -246,7 +261,9 @@ def ask_jev(question: str, paragraphs: str, answer: str, questions_json: str) ->
     }
 
 def check_answer(question: str, paragraphs: str, answer: str) -> dict:
-    nouls = ask_jev(question, paragraphs, answer, as_json(CHECK_QUESTIONS))["nouls"]
+    nouls = ask_jev(
+        question, paragraphs, answer, as_json(CHECK_QUESTIONS), model=TYPESAFE_MODEL
+    )["nouls"]
     if nouls["declines"] >= 0.5:
         risk = nouls["answerable"]  # it declined: risky if the paragraphs do answer
     else:
@@ -354,9 +371,9 @@ def reference_state(q: dict, answer: str) -> dict:
     return {"question": q["question"], **reference, "candidate_response": answer}
 
 @json_cache
-def matches_reference(question_id: str, answer: str, questions_json: str) -> float:
+def matches_reference(question_id: str, answer: str, questions_json: str, model: str) -> float:
     state = reference_state(BY_ID[question_id], answer)
-    response = client.system_one(state, json.loads(questions_json), model=TYPESAFE_MODEL)
+    response = client.system_one(state, json.loads(questions_json), model=model)
     return response.answers["matches_reference"].noul
 
 RECHECK_SCHEMA = {
@@ -370,7 +387,7 @@ RECHECK_SCHEMA = {
 }
 
 @json_cache
-def recheck(question_id: str, answer: str) -> dict:
+def recheck(question_id: str, answer: str, recheck_model: str) -> dict:
     q = BY_ID[question_id]
     references = [q["answer"], *q["answer_aliases"]] if q["answerable"] else ["(none)"]
     prompt = (
@@ -384,7 +401,7 @@ def recheck(question_id: str, answer: str) -> dict:
         f"Answer to grade:\n{answer}\n\nParagraphs:\n{paragraphs_text(q)}"
     )
     response = llm.chat.completions.create(
-        model=RECHECK_MODEL,
+        model=recheck_model,
         reasoning_effort="high",
         messages=[{"role": "user", "content": prompt}],
         response_format={
@@ -396,9 +413,11 @@ def recheck(question_id: str, answer: str) -> dict:
 
 def label(question_id: str) -> dict:
     answer = LLM_ANSWERS[question_id]
-    if matches_reference(question_id, answer, as_json(REFERENCE_QUESTIONS)) >= 0.5:
+    if matches_reference(
+        question_id, answer, as_json(REFERENCE_QUESTIONS), model=TYPESAFE_MODEL
+    ) >= 0.5:
         return {"label": "right", "by": "reference"}
-    return {**recheck(question_id, answer), "by": RECHECK_MODEL}
+    return {**recheck(question_id, answer, recheck_model=RECHECK_MODEL), "by": RECHECK_MODEL}
 
 with ThreadPoolExecutor(max_workers=TYPESAFE_WORKERS) as pool:
     LABELS = dict(zip(BY_ID, pool.map(label, BY_ID)))

@@ -26,27 +26,30 @@ as dependable as its shakiest decision, so each post is scored by its least stab
 
 The conditions, each one model plus one setting:
 
-* Non-reasoning LLMs `claude-haiku-4-5` and `gpt-5.4-mini`, at temperature `0` and the API
-  default.
-* Reasoning LLMs `gpt-5.5` and `claude-opus-4-8`, which have no temperature dial.
+* Claude models `claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5` and
+  `claude-haiku-5-5`, and GPT models `gpt-6-astra`, `gpt-6.1-sol`, `gpt-6.1-terra` and
+  `gpt-6-luna`, each reasoning at high effort.
+* `gpt-6.1-terra` and `gpt-6-luna` with reasoning off, at temperature `0` and the API
+  default. They are the only models here that take a temperature.
+* OpenAI's Decisions API on `gpt-6-luna`.
 * Jev 1.14 (`jev-1.14.0`): one `system_one` call over the 8 `Choice` questions.
 
-For Jev, a post's least stable decision changes 4.0% of the time on average, about 1
-time in 25, and never more than 6.7%. Every LLM condition has a post where a decision
-changes more than 15% of the time, and depending on the condition, between 10 and all 40
-posts have a decision that changes more than 1 time in 10. Temperature `0` narrows the gap
-but doesn't close it. Luck alone would produce a gap as large as Jev's lead over any
-LLM condition less than once in a thousand runs.
+For Jev, a post's least stable decision changes 4.0% of the time on average, about 1 time
+in 25, and never more than 6.7%. Every LLM condition has a post where a decision changes
+more than 10% of the time, and depending on the condition, between 2 and 36 of the 40 posts
+have a decision that changes more than 1 time in 10. Temperature `0` narrows the gap but
+doesn't close it. Luck alone would produce a gap as large as Jev's lead over any LLM
+condition less than once in a thousand runs.
 
 ## Setup
 
 ```bash
-pip install anthropic openai matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install anthropic openai matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-then set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY`, and `OPENAI_API_KEY`.
-Numbers below came from `jev-1.14.0` on 2026-11-02. The LLM answers for the example post
-were sampled on 2026-10-20, and for the 40 versions on 2026-11-02.
+then set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY`, and `OPENAI_API_KEY`. Numbers below came
+from `jev-1.14.0` on 2026-11-02. The LLM answers for the 40 versions were sampled from
+2026-11-07 to 2026-11-09, and for the example post on 2026-11-10.
 
 ```python expandable
 import copy
@@ -55,6 +58,7 @@ import json
 import os
 import random
 import textwrap
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from secrets import token_hex
@@ -74,24 +78,33 @@ from typesafe_sdk import Choice, TypeSafeClient
 
 matplotlib.use("Agg")  # headless render
 
-BASE_MODELS = [
-    "claude-haiku-4-5",
-    "gpt-5.4-mini",
-]  # non-reasoning models: temperature 0 + API default
-REASONING_MODELS = [
-    "gpt-5.5",
-    "claude-opus-4-8",
-]  # reasoning models: think first, no temperature
-TYPESAFE_MODEL = "jev-1.14.0"  # the Jev version under test
+LLM_MODELS = {  # every one reasons at high effort
+    "claude-fable-5-1": "Claude Fable 5.1",
+    "claude-opus-5-5": "Claude Opus 5.5",
+    "claude-sonnet-5-5": "Claude Sonnet 5.5",
+    "claude-haiku-5-5": "Claude Haiku 5.5",
+    "gpt-6-astra": "GPT-6 Astra",
+    "gpt-6.1-sol": "GPT-6.1 Sol",
+    "gpt-6.1-terra": "GPT-6.1 Terra",
+    "gpt-6-luna": "GPT-6 Luna",
+}
+TEMPERATURE_MODELS = ["gpt-6.1-terra", "gpt-6-luna"]  # also reasoning off: temperature 0 + default
+DECISIONS_MODEL = "gpt-6-luna"  # through OpenAI's Decisions API
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 NUM_SAMPLES = 15  # repeated post+rubric calls per condition
 NUM_POSTS = 40  # versions of the post, drawn from the combinations of the borderline facts
 
-LLM_PRICES = {  # $ per 1M tokens (input, output), list prices as of 2026-07
-    "claude-haiku-4-5": (1.00, 5.00),
-    "gpt-5.4-mini": (0.75, 4.50),
-    "gpt-5.5": (5.00, 30.00),
-    "claude-opus-4-8": (5.00, 25.00),
+LLM_PRICES = {  # $ per 1M tokens (input, output), list prices as of 2026-11
+    "claude-fable-5-1": (10.00, 50.00),
+    "claude-opus-5-5": (4.00, 20.00),
+    "claude-sonnet-5-5": (2.00, 10.00),
+    "claude-haiku-5-5": (0.10, 0.50),
+    "gpt-6-astra": (10.00, 50.00),
+    "gpt-6.1-sol": (2.00, 10.00),
+    "gpt-6.1-terra": (1.00, 5.00),
+    "gpt-6-luna": (0.10, 0.50),
 }
+DECISIONS_PRICE = (0.10, 0.00)  # $ per 1M tokens (input, output); output tokens are free
 TYPESAFE_PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output), as of 2026-08
 
 anthropic_client = anthropic.Anthropic()
@@ -238,22 +251,25 @@ QUESTIONS_JSON = json.dumps(QUESTIONS)
 ## How we ask
 
 Each LLM call is one prompt holding `json.dumps(post)`, all 8 questions, and every allowed
-option. The model returns one JSON object per question with a probability on each option.
-Calls route to Anthropic or OpenAI by model name: non-reasoning models take a
-`temperature` (`0` or the API default), reasoning models think first and take no
-temperature.
+option. The model answers through structured output: a JSON schema that requires, for each
+question, a probability on every one of its options. Calls route to Anthropic or OpenAI by
+model name. Reasoning runs at `high` effort; with reasoning off, `gpt-6.1-terra` and
+`gpt-6-luna` take a `temperature`, `0` or the API default.
+
+The Decisions API call sends the same post as JSON and asks each `Choice` question as a
+Decisions `choice` question, which comes back with a probability on each option.
 
 The TypeSafe call is one `system_one` request over the same post and the same 8
 `Choice` questions, returning one distribution per question.
 
 Every query also gets a fresh `uid`, a throwaway unique value that changes each run while
 leaving the post and rubric unchanged. It appears in the LLM prompt and as an extra field
-in the TypeSafe state. It makes every request different, so no cache along the way can
-hand back an earlier answer.
+in the TypeSafe and Decisions API states. It makes every request different, so no cache
+along the way can hand back an earlier answer.
 
 For every call we also record its cost and round-trip time.
 
-````python expandable
+```python expandable
 def argmax_label(values: list, labels: list[str]) -> str | None:
     """The label with the most probability mass, or ``None`` if any value is missing or
     non-numeric -- a partially parsed distribution never yields a confident-looking pick."""
@@ -307,49 +323,67 @@ def rubric_prompt(sample_index: int, post: dict, questions: dict) -> str:
 def _cost(prices: tuple[float, float], input_tokens: int, output_tokens: int) -> float:
     return input_tokens / 1e6 * prices[0] + output_tokens / 1e6 * prices[1]
 
-def _call_llm(model: str, prompt: str, temperature: float | None):
-    """One LLM call -> (text, cost_usd, latency_s), routed by model name."""
-    reasoning = model in REASONING_MODELS
+def _answer_schema(questions: dict) -> dict:
+    """Structured output: for each question, exactly one number per option."""
+    properties = {
+        key: {
+            "type": "object",
+            "properties": {label: {"type": "number"} for label in choices},
+            "required": list(choices),
+            "additionalProperties": False,
+        }
+        for key, (_instructions, choices) in questions.items()
+    }
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": list(properties),
+        "additionalProperties": False,
+    }
+
+def _call_llm(model: str, prompt: str, schema: dict, reasoning: str,
+              temperature: float | None):
+    """One LLM call -> (text, cost_usd, latency_s), routed by model name. ``reasoning`` is the
+    effort; ``"none"`` turns reasoning off, which only the GPT models allow."""
     started = perf_counter()
     if model.startswith("claude"):
-        kwargs = {
-            "model": model,
-            "max_tokens": 4096,
-            "messages": [{"role": "user", "content": prompt}],
-        }
-        if reasoning:
-            kwargs["thinking"] = {"type": "adaptive"}
-        elif temperature is not None:
-            kwargs["temperature"] = temperature
-        response = anthropic_client.messages.create(**kwargs)
+        with anthropic_client.messages.stream(
+            model=model,
+            max_tokens=32000,
+            messages=[{"role": "user", "content": prompt}],
+            thinking={"type": "adaptive"},
+            output_config={"format": {"type": "json_schema", "schema": schema},
+                           "effort": reasoning},
+        ) as stream:
+            response = stream.get_final_message()
         text = next((b.text for b in response.content if b.type == "text"), "")
         usage = (response.usage.input_tokens, response.usage.output_tokens)
     else:
-        kwargs = {"model": model, "messages": [{"role": "user", "content": prompt}]}
-        if reasoning:
-            kwargs["reasoning_effort"] = "high"
-        elif temperature is not None:
+        kwargs = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {"name": "rubric", "schema": schema, "strict": True},
+            },
+            "reasoning_effort": reasoning,
+        }
+        if temperature is not None:
             kwargs["temperature"] = temperature
         response = openai_client.chat.completions.create(**kwargs)
-        text = response.choices[0].message.content
+        text = response.choices[0].message.content or ""
         usage = (response.usage.prompt_tokens, response.usage.completion_tokens)
     return text, _cost(LLM_PRICES[model], *usage), perf_counter() - started
 
-def _query_llm(model, temperature, sample_index, post_json, questions_json):
+def _query_llm(model, reasoning, temperature, sample_index, post_json, questions_json):
     """One LLM rubric query -> (label distributions keyed by question key, cost_usd,
     latency_s); NaNs where the reply doesn't parse."""
     questions = json.loads(questions_json)
     prompt = rubric_prompt(sample_index, json.loads(post_json), questions)
-    text, cost, latency = _call_llm(model, prompt, temperature)
-    # Peel a single ```json ... ``` fence (claude-haiku-4-5 sometimes adds one despite "ONLY a JSON
-    # object").
-    stripped = text.strip()
-    if stripped.startswith("```"):
-        stripped = stripped[stripped.find("\n") + 1 :] if "\n" in stripped else ""
-        if stripped.rstrip().endswith("```"):
-            stripped = stripped.rstrip()[: -len("```")]
+    text, cost, latency = _call_llm(model, prompt, _answer_schema(questions), reasoning,
+                                    temperature)
     try:
-        raw = json.loads(stripped)
+        raw = json.loads(text)
     except (ValueError, json.JSONDecodeError):
         raw = {}
     if not isinstance(raw, dict):
@@ -360,13 +394,52 @@ def _query_llm(model, temperature, sample_index, post_json, questions_json):
     }
     return distributions, cost, latency
 
-def _query_typesafe(sample_index, post_json, questions_json):
+def _query_decisions(sample_index, post_json, questions_json, decisions_model):
+    """One Decisions API call -> (label distributions keyed by question key, cost_usd,
+    latency_s)."""
+    questions = json.loads(questions_json)
+    state = {"uid": f"{sample_index}:{token_hex(4)}", "post": json.loads(post_json)}
+    started = perf_counter()
+    response = openai_client.post(
+        "/decisions",
+        cast_to=object,
+        body={
+            "model": decisions_model,
+            "input": [{"role": "user", "content": [{"type": "input_json", "data": state}]}],
+            "questions": [
+                {
+                    "type": "choice",
+                    "name": key,
+                    "instructions": instructions,
+                    "choices": [
+                        {"value": label, "description": description}
+                        for label, description in choices.items()
+                    ],
+                }
+                for key, (instructions, choices) in questions.items()
+            ],
+        },
+    )
+    latency = perf_counter() - started
+    answers = {answer.get("name"): answer for answer in response.get("answers") or []}
+    distributions = {}
+    for key, (_instructions, choices) in questions.items():
+        probabilities = {
+            str(item.get("value")): item.get("probability")
+            for item in (answers.get(key) or {}).get("probabilities") or []
+        }
+        distributions[key] = parse_distribution(probabilities, list(choices))
+    usage = response.get("usage") or {}
+    cost = _cost(DECISIONS_PRICE, usage.get("input_tokens") or 0, usage.get("output_tokens") or 0)
+    return distributions, cost, latency
+
+def _query_typesafe(sample_index, post_json, questions_json, model):
     """One TypeSafe call -> (label distributions keyed by question key, input tokens,
     output tokens, latency_s)."""
     questions = json.loads(questions_json)
     started = perf_counter()
     response = typesafe_client.system_one(
-        model=TYPESAFE_MODEL,
+        model=model,
         state={"uid": f"{sample_index}:{token_hex(4)}", "post": json.loads(post_json)},
         questions={
             key: Choice(instructions=instructions, criteria=choices)
@@ -384,78 +457,120 @@ def _query_typesafe(sample_index, post_json, questions_json):
         perf_counter() - started,
     )
 
-# Every sample is saved in ``json_cache.json``, so a second run makes no requests. The post
+# Every sample is saved in the cache file, so a second run makes no requests. The post
 # and the questions are part of every key, so editing either asks again; ``sample_index`` is
 # part of the key too, so each of the NUM_SAMPLES repeats is its own independent draw.
-json_cache = JsonCache(Path("json_cache.json"))
+
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/consistency_choice_cookbook"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+CACHE = Path("consistency_choice_cookbook_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 
 @json_cache
-def ask_llm(model: str, temperature: float | None, sample_index: int, post_json: str,
-            questions_json: str):
+def ask_llm(model: str, reasoning: str, temperature: float | None, sample_index: int,
+            post_json: str, questions_json: str):
     """The example post's LLM answers, with cost and latency."""
-    return _query_llm(model, temperature, sample_index, post_json, questions_json)
+    return _query_llm(model, reasoning, temperature, sample_index, post_json, questions_json)
 
 @json_cache
-def ask_typesafe(sample_index: int, post_json: str, questions_json: str):
+def ask_decisions(sample_index: int, post_json: str, questions_json: str, decisions_model: str):
+    """The example post's Decisions API answers, with cost and latency."""
+    return _query_decisions(sample_index, post_json, questions_json, decisions_model)
+
+@json_cache
+def ask_typesafe(sample_index: int, post_json: str, questions_json: str, model: str):
     """The example post's Jev answers, with token usage and latency."""
-    return _query_typesafe(sample_index, post_json, questions_json)
+    return _query_typesafe(sample_index, post_json, questions_json, model)
 
 @json_cache
-def sweep_llm(model: str, temperature: float | None, sample_index: int, post_json: str,
-              questions_json: str):
+def sweep_llm(model: str, reasoning: str, temperature: float | None, sample_index: int,
+              post_json: str, questions_json: str):
     """One LLM answer set for one version of the post."""
-    return _query_llm(model, temperature, sample_index, post_json, questions_json)[0]
+    return _query_llm(model, reasoning, temperature, sample_index, post_json, questions_json)[0]
 
 @json_cache
-def sweep_typesafe(sample_index: int, post_json: str, questions_json: str):
+def sweep_decisions(sample_index: int, post_json: str, questions_json: str, decisions_model: str):
+    """One Decisions API answer set for one version of the post."""
+    return _query_decisions(sample_index, post_json, questions_json, decisions_model)[0]
+
+@json_cache
+def sweep_typesafe(sample_index: int, post_json: str, questions_json: str, model: str):
     """One Jev answer set for one version of the post."""
-    return _query_typesafe(sample_index, post_json, questions_json)[0]
-````
+    return _query_typesafe(sample_index, post_json, questions_json, model)[0]
+```
 
 ## The conditions
 
-| Model group | Model | Distribution (t=0) | Distribution (default) |
-| - | - | :-: | :-: |
-| Non-reasoning Models | `claude-haiku-4-5` | ✓ | ✓ |
-| Non-reasoning Models | `gpt-5.4-mini` | ✓ | ✓ |
-| Reasoning Models | `gpt-5.5` | — | ✓ |
-| Reasoning Models | `claude-opus-4-8` | — | ✓ |
-| System One | `jev-1.14.0` | — | ✓ |
+| Model group | Model | Reasoning (high) | Temperature 0 | Default temperature |
+| - | - | :-: | :-: | :-: |
+| Claude | `claude-fable-5-1` | ✓ | — | — |
+| Claude | `claude-opus-5-5` | ✓ | — | — |
+| Claude | `claude-sonnet-5-5` | ✓ | — | — |
+| Claude | `claude-haiku-5-5` | ✓ | — | — |
+| GPT | `gpt-6-astra` | ✓ | — | — |
+| GPT | `gpt-6.1-sol` | ✓ | — | — |
+| GPT | `gpt-6.1-terra` | ✓ | ✓ | ✓ |
+| GPT | `gpt-6-luna` | ✓ | ✓ | ✓ |
+| Decisions API | `gpt-6-luna` | — | — | ✓ |
+| System One | `jev-1.14.0` | — | — | ✓ |
 
 * A check mark is one condition, run 15 times per post. A dash is a combination that was
   not tested.
-* For the default column we send no temperature argument: non-reasoning models use the
-  API default, and reasoning models and Jev run without a temperature setting.
+* The temperature columns have reasoning off. The Claude models take no temperature, and
+  neither do GPT models while they reason.
+* For the default column we send no temperature argument.
 * Temperature `0` is commonly suggested for repeatability, so we compare it with the API
-  default.
+  default where a model takes one.
 
 ```python expandable
-MODEL_NAMES = {  # how each model is named in tables and charts
-    "claude-haiku-4-5": "Claude Haiku 4.5",
-    "gpt-5.4-mini": "GPT-5.4 mini",
-    "gpt-5.5": "GPT-5.5",
-    "claude-opus-4-8": "Claude Opus 4.8",
-}
+DECISIONS_LABEL = "OpenAI Decisions (GPT-6 Luna)"
 CONDITIONS = [
-    {"label": f"{MODEL_NAMES[model]} ({setting})", "model": model, "temp": temp}
-    for model in BASE_MODELS
-    for temp, setting in ((0, "temperature 0"), (None, "default temperature"))
+    {"label": f"{name} (reasoning)", "model": model, "reasoning": "high", "temp": None}
+    for model, name in LLM_MODELS.items()
 ] + [
-    {"label": f"{MODEL_NAMES[model]} (reasoning)", "model": model, "temp": None}
-    for model in REASONING_MODELS
-]
+    {"label": f"{LLM_MODELS[model]} ({setting})", "model": model, "reasoning": "none",
+     "temp": temp}
+    for model in TEMPERATURE_MODELS
+    for temp, setting in ((0, "temperature 0"), (None, "default temperature"))
+] + [{"label": DECISIONS_LABEL, "model": None, "reasoning": None, "temp": None}]
 LABELS = [condition["label"] for condition in CONDITIONS]
 TYPESAFE_LABEL = "Jev 1.14"
 ALL_LABELS = [*LABELS, TYPESAFE_LABEL]
-# Chart rows, the same on both self-consistency pages: Jev, the reasoning models, then the
-# non-reasoning models at temperature 0 and the API default. The tables keep their own order.
-PLOT_MODELS = ["claude-opus-4-8", "gpt-5.5", "claude-haiku-4-5", "gpt-5.4-mini"]
-PLOT_ORDER = [TYPESAFE_LABEL] + [
-    condition["label"]
-    for model in PLOT_MODELS
-    for condition in CONDITIONS
-    if condition["model"] == model
+# Rows of the example plot, the same on both self-consistency pages: Jev and a few of the
+# conditions, since every condition would make it too tall to read.
+PLOT_ORDER = [
+    TYPESAFE_LABEL,
+    "Claude Opus 5.5 (reasoning)",
+    "Claude Haiku 5.5 (reasoning)",
+    "GPT-6.1 Sol (reasoning)",
+    "GPT-6 Luna (temperature 0)",
+    "GPT-6 Luna (default temperature)",
+    DECISIONS_LABEL,
 ]
+STRIP_ORDER = [TYPESAFE_LABEL, *LABELS]  # rows of the final plot: every condition
+
+def ask(llm_fn, decisions_fn, condition: dict, sample_index: int, post_json: str):
+    """One cached call for one condition: the LLM function, or the Decisions API one."""
+    if condition["model"] is None:
+        return decisions_fn(sample_index, post_json, QUESTIONS_JSON,
+                            decisions_model=DECISIONS_MODEL)
+    return llm_fn(condition["model"], condition["reasoning"], condition["temp"], sample_index,
+                  post_json, QUESTIONS_JSON)
 POST_JSON = json.dumps(POST)
 
 runs: dict[str, list] = {}  # label -> NUM_SAMPLES samples of {question key: distribution}
@@ -463,14 +578,7 @@ stats: dict[str, list] = {}  # label -> NUM_SAMPLES (cost_usd, latency_s) pairs
 with ThreadPoolExecutor(max_workers=16) as pool:
     futures = {
         condition["label"]: [
-            pool.submit(
-                ask_llm,
-                condition["model"],
-                condition["temp"],
-                sample_index,
-                POST_JSON,
-                QUESTIONS_JSON,
-            )
+            pool.submit(ask, ask_llm, ask_decisions, condition, sample_index, POST_JSON)
             for sample_index in range(NUM_SAMPLES)
         ]
         for condition in CONDITIONS
@@ -483,7 +591,7 @@ with ThreadPoolExecutor(max_workers=16) as pool:
 # Jev samples are drawn sequentially after the LLM calls, so each latency is a clean
 # round trip rather than one measured under the 16-way LLM thread contention.
 typesafe_usage_results = [
-    ask_typesafe(sample_index, POST_JSON, QUESTIONS_JSON)
+    ask_typesafe(sample_index, POST_JSON, QUESTIONS_JSON, model=TYPESAFE_MODEL)
     for sample_index in range(NUM_SAMPLES)
 ]
 # Apply pricing after cache retrieval so price changes do not require new samples.
@@ -496,8 +604,8 @@ stats[TYPESAFE_LABEL] = [
 
 ### Cost + speed (per rubric query)
 
-Costs use the per-token prices in Setup: list prices as of 2026-07 for the LLMs, and
-TypeSafe's rate as of 2026-08.
+Costs use the per-token prices in Setup: list prices as of 2026-11 for the LLMs and the
+Decisions API, and TypeSafe's rate as of 2026-08.
 
 One row is one full 8-question rubric call on the example post. `time/call` and
 `cost/call` average the 15 calls, and the `vs Jev 1.14` columns divide by the Jev 1.14
@@ -526,19 +634,27 @@ for name in ALL_LABELS:
 ```
 
 ```
-                                                                          speed vs    cost vs
-condition                                 calls  time/call    cost/call   Jev 1.14   Jev 1.14
-Claude Haiku 4.5 (temperature 0)             15     3844ms    $0.003498      37.4x      53.3x
-Claude Haiku 4.5 (default temperature)       15     3629ms    $0.003496      35.3x      53.3x
-GPT-5.4 mini (temperature 0)                 15     1874ms    $0.002302      18.2x      35.1x
-GPT-5.4 mini (default temperature)           15     2006ms    $0.002259      19.5x      34.4x
-GPT-5.5 (reasoning)                          15    13539ms    $0.038559     131.8x     587.9x
-Claude Opus 4.8 (reasoning)                  15     9059ms    $0.026686      88.2x     406.9x
-Jev 1.14                                     15      103ms    $0.000066       1.0x       1.0x
+                                                                       speed vs    cost vs
+condition                              calls  time/call    cost/call   Jev 1.14   Jev 1.14
+Claude Fable 5.1 (reasoning)              15    12793ms    $0.077985     124.5x    1189.0x
+Claude Opus 5.5 (reasoning)               15     7841ms    $0.027427      76.3x     418.2x
+Claude Sonnet 5.5 (reasoning)             15     3627ms    $0.009907      35.3x     151.0x
+Claude Haiku 5.5 (reasoning)              15     6110ms    $0.001019      59.5x      15.5x
+GPT-6 Astra (reasoning)                   15    18171ms    $0.055399     176.9x     844.6x
+GPT-6.1 Sol (reasoning)                   15    12335ms    $0.010125     120.1x     154.4x
+GPT-6.1 Terra (reasoning)                 15    11829ms    $0.005616     115.2x      85.6x
+GPT-6 Luna (reasoning)                    15    14467ms    $0.000685     140.8x      10.4x
+GPT-6.1 Terra (temperature 0)             15     4274ms    $0.002694      41.6x      41.1x
+GPT-6.1 Terra (default temperature)       15     4344ms    $0.002745      42.3x      41.8x
+GPT-6 Luna (temperature 0)                15     2753ms    $0.000269      26.8x       4.1x
+GPT-6 Luna (default temperature)          15     2836ms    $0.000269      27.6x       4.1x
+OpenAI Decisions (GPT-6 Luna)             15      301ms    $0.000150       2.9x       2.3x
+Jev 1.14                                  15      103ms    $0.000066       1.0x       1.0x
 ```
 
-In this run Jev has a mean round-trip latency of 103ms. The LLM conditions range
-from 1.9 to 13.5 seconds per call under the concurrency settings above.
+In this run Jev has a mean round-trip latency of 103ms. The LLM conditions range from 2.8
+to 18.2 seconds per call under the concurrency settings above, and the Decisions API takes
+0.3 seconds.
 
 ## Plot: every sample's top option on the example post
 
@@ -554,7 +670,7 @@ How to read it:
 
 ```python expandable
 GAP = 1  # blank spacer row(s) between question blocks
-rows_per_block = len(ALL_LABELS)  # rows per question block
+rows_per_block = len(PLOT_ORDER)  # rows per question block
 
 def top_label_annotation(values: list, labels: list[str]) -> str:
     """The top label and its probability, for a heatmap cell."""
@@ -677,14 +793,15 @@ fig.tight_layout()
 display(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.1.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=e3484ca835c26aebc0769aaa2be1733b)
+![output](https://mintcdn.com/ts-docs/FM06dz4_TXP9gq_Z/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.1.png?fit=max\&auto=format\&n=FM06dz4_TXP9gq_Z\&q=85\&s=374039ad3114931f32b998f67cd122d7)
 
-The clear questions hold steady: `target` reads Person and `severity` reads High on every
-repeat of every condition. Jev changes its top option on one question, `primary_risk`:
-Harassment 11 times and Violence 4 times, with both near 0.5. Claude Haiku 4.5 at
-temperature 0 splits `link_handling` between Escalate and Brigade. At its default
-temperature it splits `action` and `link_handling` too, and GPT-5.5 and Claude Opus 4.8
-split `action`.
+`target` reads Person on every repeat of every condition. Jev changes its top option on one
+question, `primary_risk`: Harassment 11 times and Violence 4 times, with both near 0.5.
+Claude Haiku 5.5 changes its top option on 7 of the 8 questions, and splits `action` three
+ways between Strike, Escalate and Remove. Claude Opus 5.5 and GPT-6.1 Sol each change it on
+4 questions. GPT-6 Luna changes `action` once at temperature `0`; at its default
+temperature it splits `action` and `link_handling`. The Decisions API splits
+`link_handling` almost evenly between Brigade and RmLink.
 
 A change of top option shows only the moves that reorder two options. A probability can
 move a long way without reordering anything, and a cutoff set anywhere along that move
@@ -750,21 +867,23 @@ POSTS = {
     for combo in random.Random(0).sample(combinations, NUM_POSTS)
 }
 
-# 40 posts x 7 conditions x 15 repeats; a live run takes about 20 minutes, most of it the
-# reasoning models.
+# 40 posts x 14 conditions x 15 repeats; a live run takes hours, most of it the models
+# reasoning at high effort.
 with ThreadPoolExecutor(max_workers=16) as pool:
     sweep = {
         post_id: {
             **{
                 condition["label"]: [
-                    pool.submit(sweep_llm, condition["model"], condition["temp"], index,
-                                json.dumps(post), QUESTIONS_JSON)
+                    pool.submit(ask, sweep_llm, sweep_decisions, condition, index,
+                                json.dumps(post))
                     for index in range(NUM_SAMPLES)
                 ]
                 for condition in CONDITIONS
             },
             TYPESAFE_LABEL: [
-                pool.submit(sweep_typesafe, index, json.dumps(post), QUESTIONS_JSON)
+                pool.submit(
+                    sweep_typesafe, index, json.dumps(post), QUESTIONS_JSON, model=TYPESAFE_MODEL
+                )
                 for index in range(NUM_SAMPLES)
             ],
         }
@@ -832,21 +951,28 @@ for label in ranked:
 ```
 
 ```
-                                          average over     least stable option  posts above  unparsed
-condition                                  all options  average post  worst post     1 in 10     answers
-Jev 1.14                                          1.0%          4.0%        6.7%        0/40           0
-Claude Opus 4.8 (reasoning)                       2.7%          8.6%       15.8%       10/40           1
-Claude Haiku 4.5 (temperature 0)                  1.6%         10.9%       40.0%       15/40          33
-GPT-5.5 (reasoning)                               3.3%         12.3%       18.5%       27/40           0
-GPT-5.4 mini (temperature 0)                      3.7%         16.3%       29.8%       35/40           0
-Claude Haiku 4.5 (default temperature)            3.5%         19.5%       38.1%       29/40          17
-GPT-5.4 mini (default temperature)                5.1%         19.9%       33.4%       40/40           0
+                                       average over     least stable option  posts above  unparsed
+condition                               all options  average post  worst post     1 in 10     answers
+Jev 1.14                                       1.0%          4.0%        6.7%        0/40           0
+Claude Opus 5.5 (reasoning)                    2.4%          6.6%       10.3%        2/40           0
+Claude Fable 5.1 (reasoning)                   2.7%          7.5%       16.8%        5/40           0
+Claude Sonnet 5.5 (reasoning)                  3.2%         10.3%       25.3%       13/40           0
+GPT-6 Luna (temperature 0)                     2.2%         11.5%       28.4%       21/40           0
+OpenAI Decisions (GPT-6 Luna)                  2.8%         12.3%       22.3%       26/40           0
+Claude Haiku 5.5 (reasoning)                   4.4%         12.8%       16.8%       35/40           0
+GPT-6 Astra (reasoning)                        2.2%         12.9%       25.5%       25/40           0
+GPT-6.1 Sol (reasoning)                        2.5%         14.9%       25.8%       30/40           0
+GPT-6.1 Terra (reasoning)                      3.2%         16.0%       28.0%       32/40           0
+GPT-6 Luna (default temperature)               3.6%         16.5%       29.8%       35/40           0
+GPT-6.1 Terra (temperature 0)                  2.7%         16.7%       33.4%       30/40           0
+GPT-6 Luna (reasoning)                         4.2%         17.1%       26.7%       34/40           0
+GPT-6.1 Terra (default temperature)            3.4%         20.9%       36.6%       36/40           0
 ```
 
-For Jev, the least stable decision changes 4.0% of the time on an average post and
-6.7% on its worst, and no post goes above 1 time in 10. For the LLM conditions it changes
-8.6% to 19.9% of the time on an average post, and between 10 and all 40 posts go above 1
-time in 10. The unparsed answers are Claude Haiku 4.5's, plus one of Claude Opus 4.8's.
+For Jev, the least stable decision changes 4.0% of the time on an average post and 6.7% on
+its worst, and no post goes above 1 time in 10. For the LLM conditions it changes 6.6% to
+20.9% of the time on an average post, and between 2 and 36 of the 40 posts go above 1 time
+in 10. Every answer parsed.
 
 Could luck alone produce a gap like this? For each LLM condition we line up its 40 post
 scores against Jev's, randomly swap the two scores within each pair 100,000 times, and
@@ -867,28 +993,33 @@ def p_text(p: float) -> str:
 
 print(f"{'condition':<{name_w}}{'least stable option':>21}{'average':>12}")
 for label in LABELS:
-    # multiply by the number of comparisons (Bonferroni) so six tests don't add up to luck
+    # multiply by the number of comparisons (Bonferroni) so many tests don't add up to luck
     worst_p = min(1.0, permutation_p_value(least_stable[TYPESAFE_LABEL], least_stable[label]) * len(LABELS))
     average_p = min(1.0, permutation_p_value(average_change[TYPESAFE_LABEL], average_change[label]) * len(LABELS))
     print(f"{label:<{name_w}}{p_text(worst_p):>21}{p_text(average_p):>12}")
 ```
 
 ```
-condition                                 least stable option     average
-Claude Haiku 4.5 (temperature 0)                    p < 0.001   p = 0.009
-Claude Haiku 4.5 (default temperature)              p < 0.001   p < 0.001
-GPT-5.4 mini (temperature 0)                        p < 0.001   p < 0.001
-GPT-5.4 mini (default temperature)                  p < 0.001   p < 0.001
-GPT-5.5 (reasoning)                                 p < 0.001   p < 0.001
-Claude Opus 4.8 (reasoning)                         p < 0.001   p < 0.001
+condition                              least stable option     average
+Claude Fable 5.1 (reasoning)                     p < 0.001   p < 0.001
+Claude Opus 5.5 (reasoning)                      p < 0.001   p < 0.001
+Claude Sonnet 5.5 (reasoning)                    p < 0.001   p < 0.001
+Claude Haiku 5.5 (reasoning)                     p < 0.001   p < 0.001
+GPT-6 Astra (reasoning)                          p < 0.001   p < 0.001
+GPT-6.1 Sol (reasoning)                          p < 0.001   p < 0.001
+GPT-6.1 Terra (reasoning)                        p < 0.001   p < 0.001
+GPT-6 Luna (reasoning)                           p < 0.001   p < 0.001
+GPT-6.1 Terra (temperature 0)                    p < 0.001   p < 0.001
+GPT-6.1 Terra (default temperature)              p < 0.001   p < 0.001
+GPT-6 Luna (temperature 0)                       p < 0.001   p < 0.001
+GPT-6 Luna (default temperature)                 p < 0.001   p < 0.001
+OpenAI Decisions (GPT-6 Luna)                    p < 0.001   p < 0.001
 ```
 
-On the least stable option every p-value is below 0.001, after multiplying by six for the
-six comparisons: luck would produce gaps this large less than once in a thousand runs. On
-the average over all options the same holds for every condition but Claude Haiku 4.5 at
-temperature `0`, where the p-value is 0.009. Temperature `0` lowers the LLMs' numbers, but
-Claude Haiku 4.5 at temperature `0` still has a decision that changes more than 1 time in
-10 on 15 of the 40 posts.
+Every p-value is below 0.001, after multiplying by 13 for the 13 comparisons: luck would
+produce gaps this large less than once in a thousand runs. Temperature `0` lowers the LLMs'
+numbers, but GPT-6 Luna at temperature `0` still has a decision that changes more than 1
+time in 10 on 21 of the 40 posts.
 
 Each row of the plot is one condition and each dot is one of the 40 posts. A dot sits at
 the chance that asking again changes that post's least stable decision, so further left is
@@ -902,9 +1033,9 @@ STRIP_PALETTES = {
 }
 
 def draw_strip(p: dict) -> plt.Figure:
-    fig_strip, strip_ax = plt.subplots(figsize=(8, 0.5 * len(PLOT_ORDER) + 1), facecolor=p["surface"])
+    fig_strip, strip_ax = plt.subplots(figsize=(8, 0.5 * len(STRIP_ORDER) + 1), facecolor=p["surface"])
     strip_ax.set_facecolor(p["surface"])
-    for position, label in enumerate(PLOT_ORDER):
+    for position, label in enumerate(STRIP_ORDER):
         values = least_stable[label]
         # spread the posts vertically so dots with close values stay countable
         strip_ax.scatter(
@@ -916,15 +1047,17 @@ def draw_strip(p: dict) -> plt.Figure:
             edgecolors="none",
         )
     strip_ax.axvline(0.10, color=p["muted"], linewidth=0.8, linestyle="--")
-    strip_ax.text(0.105, len(PLOT_ORDER) - 0.55, "1 in 10", fontsize=7, color=p["muted"], va="bottom")
-    strip_ax.set_yticks(range(len(PLOT_ORDER)), PLOT_ORDER, fontsize=8)
+    strip_ax.text(0.105, len(STRIP_ORDER) - 0.55, "1 in 10", fontsize=7, color=p["muted"], va="bottom")
+    strip_ax.set_yticks(range(len(STRIP_ORDER)), STRIP_ORDER, fontsize=8)
     strip_ax.invert_yaxis()  # first row on top
     strip_ax.set_xlim(0, 0.6)
     strip_ax.xaxis.set_major_formatter(PercentFormatter(1.0))
     strip_ax.set_xlabel("chance that asking again changes the decision", fontsize=9, labelpad=16)
     for x, text, align in ((0, "← more consistent", "left"), (1, "less consistent →", "right")):
-        strip_ax.text(x, -0.075, text, transform=strip_ax.transAxes, ha=align, va="top",
-                      fontsize=8, color=p["muted"])
+        # a fixed offset below the axis, so the labels sit above the x label at any height
+        strip_ax.annotate(text, (x, 0), xycoords="axes fraction", xytext=(0, -18),
+                          textcoords="offset points", ha=align, va="top", fontsize=8,
+                          color=p["muted"])
     for edge in ("top", "right", "left"):
         strip_ax.spines[edge].set_visible(False)
     strip_ax.tick_params(length=0, labelcolor=p["ink"])
@@ -948,7 +1081,7 @@ for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light
     plt.close(fig_strip)
 ```
 
-![output](https://mintcdn.com/ts-docs/7l7vGl-4-b0pPvXY/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.2.png?fit=max\&auto=format\&n=7l7vGl-4-b0pPvXY\&q=85\&s=5b98c1900deb6b49c0d032d14865b25d)
+![output](https://mintcdn.com/ts-docs/FM06dz4_TXP9gq_Z/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.2.png?fit=max\&auto=format\&n=FM06dz4_TXP9gq_Z\&q=85\&s=0b84f9220804687896293cb6636e6c53)
 
 ## Open it in the TypeSafe playground
 

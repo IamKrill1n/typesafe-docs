@@ -49,15 +49,14 @@ you add is a spec that says in plain words what each argument means. By the end 
 ## Setup
 
 ```bash theme={null}
-pip install ipython polars matplotlib numpy 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython polars matplotlib numpy 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 Set `TYPESAFE_API_KEY`. The code below downloads two modules, with `spec.json` and the
 price bars, from
 [typesafe-public-examples](https://github.com/typesafe-ai/typesafe-public-examples/tree/main/cookbooks/function_calling)
-unless they are already on disk. `trader.py` holds the ten functions, plus a TypeSafe
-client that caches its answers. `dispatch.py` holds the code that reads a signature and a
-spec and makes the call.
+unless they are already on disk. `trader.py` holds the ten functions, and `dispatch.py`
+holds the code that reads a signature and a spec and makes the call.
 
 The prices are simulated from a fixed random seed, not real market data. The tickers are
 real, but every price, return and chart below is generated.
@@ -69,8 +68,9 @@ import urllib.request
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from cooksafe import make_playground_link
+from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
+from typesafe_sdk import SystemOneResponse, TypeSafeClient
 
 EXAMPLES = (
     "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
@@ -81,7 +81,7 @@ for name in ["dispatch.py", "trader.py", "spec.json", "bars.parquet"]:
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", name)
 
 from dispatch import ROUTE, Dispatcher, closed_sets  # noqa: E402  (downloaded above)
-from trader import TOOLS, chart_theme, client, load  # noqa: E402
+from trader import TOOLS, chart_theme, load  # noqa: E402
 
 
 def show(draw) -> None:
@@ -94,12 +94,48 @@ def show(draw) -> None:
         plt.close(figure)
 
 
-TYPESAFE_MODEL = "jev-1.14.0"
 print(f"{len(TOOLS)} functions over {load().height:,} one-minute bars")
 ```
 
 ```
 10 functions over 156,780 one-minute bars
+```
+
+```python expandable theme={null}
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
+typesafe = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless runs replay the cache
+    base_url=os.environ.get("TYPESAFE_ENDPOINT"),
+    timeout=120.0,
+)
+
+CACHE = Path("function_calling_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE and not CACHE.exists():
+    urllib.request.urlretrieve(f"{EXAMPLES}/{CACHE.name}", CACHE)
+json_cache = JsonCache(CACHE)
+
+
+@json_cache
+def _system_one(state: str, questions: str, model: str) -> dict:
+    response = typesafe.system_one(state=state, questions=json.loads(questions), model=model)
+    return {
+        "answers": {k: a.model_dump(mode="json") for k, a in response.answers.items()},
+        "usage": response.usage.model_dump(mode="json"),
+    }
+
+
+class Client:
+    """The `system_one` the dispatcher calls, with every answer cached in CACHE."""
+
+    def system_one(self, state, questions: dict, model: str) -> SystemOneResponse:
+        raw = _system_one(str(state), json.dumps(questions, sort_keys=True), model=model)
+        return SystemOneResponse.model_validate({**raw, "model": model})
+
+
+client = Client()
 ```
 
 ## Find the closed sets in the signatures
@@ -203,7 +239,7 @@ carrying the choice of function and every function's arguments, and the dispatch
 only the chosen function's answers.
 
 ```python theme={null}
-assistant = Dispatcher(SPEC, TOOLS, client)
+assistant = Dispatcher(SPEC, TOOLS, client, model=TYPESAFE_MODEL)
 print(f"{len(assistant.questions)} questions per command, among them:")
 for qid in (
     "__tool__",

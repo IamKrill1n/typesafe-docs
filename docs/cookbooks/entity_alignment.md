@@ -57,7 +57,7 @@ Requires Python 3.10 or later. Choose a package manager to install the dependenc
 >
 > ```bash wrap
 > python3 -m venv .venv
-> .venv/bin/pip install matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> .venv/bin/pip install matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 > ```
 
 > [tab] uv
@@ -66,11 +66,12 @@ Requires Python 3.10 or later. Choose a package manager to install the dependenc
 >
 > ```bash wrap
 > uv init --bare
-> uv add matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> uv add matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 > ```
 
-Set `TYPESAFE_API_KEY`. Every response is saved in `json_cache.json`, so a second run
-makes no requests.
+Set `TYPESAFE_API_KEY`. The code downloads the published answers into
+`entity_alignment_cache.json`, so the run makes no requests; to run live, set
+`DOWNLOAD_CACHE = False` and delete that file.
 
 [pairs]: https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/entity_alignment/candidate_pairs.json
 
@@ -93,7 +94,7 @@ from typesafe_sdk import Noul, Score, TypeSafeClient
 
 matplotlib.use("Agg")  # headless render
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 MAX_WORKERS = 6  # small pool to stay under your organization's rate limits
 
 client = TypeSafeClient(
@@ -103,7 +104,28 @@ client = TypeSafeClient(
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/entity_alignment"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+CACHE = Path("entity_alignment_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Load the candidate pairs
@@ -232,13 +254,13 @@ QUESTIONS = {
 }
 
 @json_cache
-def score(state_json: str, questions_json: str) -> dict:
+def score(state_json: str, questions_json: str, model: str) -> dict:
     """One request about one candidate pair -> the score plus the three noul answers."""
     questions = json.loads(questions_json)
     response = client.system_one(
         state=json.loads(state_json),
         questions=questions,
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     link = response.answers["link_state"]
     return {
@@ -253,7 +275,7 @@ def score(state_json: str, questions_json: str) -> dict:
 def score_pair(pair: dict) -> dict:
     state = {"entity_a": pair["entity_a"], "entity_b": pair["entity_b"]}
     questions = {k: q.model_dump(mode="json", exclude_none=True) for k, q in QUESTIONS.items()}
-    return score(json.dumps(state), json.dumps(questions))
+    return score(json.dumps(state), json.dumps(questions), model=TYPESAFE_MODEL)
 
 def route(score_value: float) -> str:
     """The whole decision rule: the nearest level names the outcome."""

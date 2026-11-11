@@ -127,7 +127,7 @@ flowchart TB
 ## Setup
 
 ```bash
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`.
@@ -136,13 +136,14 @@ Numbers below came from `jev-1.14.0` on 2026-10-29.
 
 ```python
 import os
+import urllib.request
 from pathlib import Path
 
 from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 NOTHING_ELSE = "nothing_else"  # the sentinel option that ends the item loop
 MAX_ITEM_REQUESTS = 6  # a hard stop, so a bad answer can never loop forever
 
@@ -151,7 +152,28 @@ client = TypeSafeClient(
     model=TYPESAFE_MODEL,
     timeout=30.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/cart_from_primitives"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+CACHE = Path("cart_from_primitives_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 
 def fmt_confidence(confidence: float | None) -> str:
     """A confidence for printing. The API can return None, so never format it blind."""
@@ -220,9 +242,11 @@ def item_question(remaining: dict[str, dict], found: list[str]) -> Choice:
     )
 
 @json_cache
-def ask_item(order: str, question: dict) -> dict:
+def ask_item(order: str, question: dict, model: str) -> dict:
     """One item request. The question arrives as its API JSON, which also keys the cache."""
-    answer = client.system_one(state=order, questions={"item": question}).choices["item"]
+    answer = client.system_one(
+        state=order, questions={"item": question}, model=model
+    ).choices["item"]
     return {"choice": answer.choice, "confidence": answer.confidence}
 
 def find_items(order: str) -> list[dict]:
@@ -236,7 +260,9 @@ def find_items(order: str) -> list[dict]:
             {name: MENU[name] for name in remaining},
             [item["name"] for item in found],
         )
-        result = ask_item(order, question.model_dump(mode="json", exclude_none=True))
+        result = ask_item(
+            order, question.model_dump(mode="json", exclude_none=True), model=TYPESAFE_MODEL
+        )
         item_requests += 1
         print(
             f"item request {item_requests}: {len(remaining)} items + sentinel "
@@ -296,9 +322,9 @@ def field_questions(item_name: str) -> dict[str, Choice]:
     return questions
 
 @json_cache
-def ask_fields(order: str, questions: dict[str, dict]) -> dict:
+def ask_fields(order: str, questions: dict[str, dict], model: str) -> dict:
     """One field request. The questions arrive as their API JSON, which also keys the cache."""
-    response = client.system_one(state=order, questions=questions)
+    response = client.system_one(state=order, questions=questions, model=model)
     return {
         field: {"choice": answer.choice, "confidence": answer.confidence}
         for field, answer in response.choices.items()
@@ -311,7 +337,7 @@ def fill_fields(order: str, item_name: str) -> dict:
         field: question.model_dump(mode="json", exclude_none=True)
         for field, question in field_questions(item_name).items()
     }
-    return ask_fields(order, questions)
+    return ask_fields(order, questions, model=TYPESAFE_MODEL)
 
 cart = []
 for item in items:

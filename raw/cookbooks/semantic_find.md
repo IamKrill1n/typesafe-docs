@@ -34,7 +34,7 @@ export TYPESAFE_API_KEY="your-key-here"
 ### Install the dependencies
 
 ```bash theme={null}
-pip install 'cooksafe>=0.2.0,<0.3.0'
+pip install 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 ### Create the script
@@ -49,12 +49,35 @@ from pathlib import Path
 from cooksafe import JsonCache
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"), timeout=120.0
 )
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python theme={null}
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/semantic_find"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+
+CACHE = Path("semantic_find_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Step 1: tag every line with an ID
@@ -183,11 +206,12 @@ def _find(
     state: str,
     where: Choice,
     exists: Noul,
+    model: str,
 ) -> dict:
     response = client.system_one(
         state=state,
         questions={"where": where, "exists": exists},
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     probabilities = response.answers["where"].probabilities
     return {
@@ -201,6 +225,7 @@ def find(query: str) -> dict:
         DOCUMENT,
         where_question(query),
         exists_question(query),
+        model=TYPESAFE_MODEL,
     )
 ```
 

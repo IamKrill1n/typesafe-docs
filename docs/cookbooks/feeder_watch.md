@@ -43,7 +43,7 @@ Requires Python 3.10 or later. Choose a package manager to install the dependenc
 >
 > ```bash wrap
 > python3 -m venv .venv
-> .venv/bin/pip install 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
+> .venv/bin/pip install 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 > ```
 
 > [tab] uv
@@ -52,7 +52,7 @@ Requires Python 3.10 or later. Choose a package manager to install the dependenc
 >
 > ```bash wrap
 > uv init --bare
-> uv add 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython
+> uv add 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 > ```
 
 Set your TypeSafe API key:
@@ -72,7 +72,8 @@ with pip or uv:
 A full run sends about 180 requests. Pillow draws the boxes and matplotlib lays out the
 figures.
 
-Every response is saved in `json_cache.json`, so a second run makes no requests.
+The code downloads the published answers into `feeder_watch_cache.json`, so the run makes
+no requests; to run live, set `DOWNLOAD_CACHE = False` and delete that file.
 
 Numbers below came from `jev-1.14.0` on 2026-10-15.
 
@@ -96,14 +97,14 @@ from PIL import ImageDraw, ImageFont
 from cooksafe import JsonCache
 from typesafe_sdk import Box, Choice, Image, Noul, SystemOneResponse, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"  # Box questions need Jev 1.14
+# Box questions need Jev 1.14 or later.
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 IMAGE_HEADERS = {"TypeSafe-Danger-Zone-Images": "true"}  # images and Box are opt-in
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless runs replay the cache
     timeout=60.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))  # every response, keyed by frame and questions
 ```
 
 ## Download the frames
@@ -143,6 +144,16 @@ def download(url: str, path: Path) -> Path:
     if not path.exists():
         urllib.request.urlretrieve(url, path)
     return path
+```
+
+```python
+CACHE = Path("feeder_watch_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(f"{EXAMPLES}/{CACHE.name}", CACHE)
+json_cache = JsonCache(CACHE)
 
 if not FRAMES.exists():
     with zipfile.ZipFile(download(f"{EXAMPLES}/usfws_frames.zip", Path("usfws_frames.zip"))) as zf:
@@ -234,12 +245,12 @@ header set above. The three frames below have two birds, one bird, and no bird.
 
 ```python expandable
 @json_cache
-def ask_cached(frame: str, questions_json: str) -> dict:
+def ask_cached(frame: str, questions_json: str, model: str) -> dict:
     started = perf_counter()
     response = client.system_one(
         state={"frame": Image(FRAMES / frame)},
         questions=json.loads(questions_json),
-        model=TYPESAFE_MODEL,
+        model=model,
         extra_headers=IMAGE_HEADERS,
     )
     seconds = round(perf_counter() - started, 2)
@@ -250,8 +261,8 @@ def ask(path: Path, questions: dict):
         {key: q.model_dump(mode="json", exclude_none=True) for key, q in questions.items()},
         sort_keys=True,
     )
-    cached = ask_cached(path.name, as_json)
-    # The cache leaves the model out; the response type needs one, so use the requested model.
+    cached = ask_cached(path.name, as_json, model=TYPESAFE_MODEL)
+    # The cached answer stores no model; the response type needs one, so use the one it is keyed on.
     response = SystemOneResponse.model_validate({**cached["response"], "model": TYPESAFE_MODEL})
     return response, cached["seconds"]
 

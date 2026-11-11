@@ -68,7 +68,7 @@ Attribution and licences for the three are in
 Requires Python 3.13 or later.
 
 ```bash
-pip install typesafe-sdk ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install typesafe-sdk ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`. The first run downloads the three hierarchies (about 28 MB)
@@ -586,21 +586,28 @@ distribution they receive, so the diagrams can label each edge with its probabil
 
 ```python expandable
 HIERARCHIES = load_hierarchies()
-MODEL, BEAM_WIDTH, MAX_DEPTH, EPSILON = "jev-1.14.0", 3, 12, 1e-9
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
+BEAM_WIDTH, MAX_DEPTH, EPSILON = 3, 12, 1e-9
 client = TypeSafeClient(
     api_key=os.environ["TYPESAFE_API_KEY"],
     retry=RetryPolicy(max_retries=5, backoff_initial=1.0, backoff_max=20.0),
 )
-json_cache = JsonCache(Path("json_cache.json"))
+CACHE = Path("hierarchical_classification_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    _download(f"{EXAMPLES_URL}/{CACHE.name}", CACHE)
+json_cache = JsonCache(CACHE)
 
 @json_cache
-def choose(state: str, question: Choice) -> dict[str, float]:
+def choose(state: str, question: Choice, model: str) -> dict[str, float]:
     """Ask one atomic direct-child question and return its distribution."""
     keys = question.criteria
     if len(keys) == 1:
         return {label: 1.0 for label in keys.values()}
     response = client.system_one(
-        state=state, questions={"child": question}, model=MODEL
+        state=state, questions={"child": question}, model=model
     )
     probabilities = response.answers["child"].probabilities
     return {label: probabilities[key] for key, label in keys.items()}
@@ -658,6 +665,7 @@ def beam_search(hierarchy: Hierarchy) -> dict:
                     lambda candidate: choose(
                         hierarchy.document,
                         child_question(tuple(subtree(hierarchy.tree, candidate["path"]))),
+                        model=TYPESAFE_MODEL,
                     ),
                     expandable,
                 )
@@ -695,7 +703,7 @@ def greedy_search(hierarchy: Hierarchy) -> dict:
         labels = tuple(subtree(hierarchy.tree, path))
         if not labels:
             break
-        probabilities = choose(hierarchy.document, child_question(labels))
+        probabilities = choose(hierarchy.document, child_question(labels), model=TYPESAFE_MODEL)
         records.append(choice_record(path, probabilities))
         label = max(probabilities, key=probabilities.get)
         if len(probabilities) > 1:

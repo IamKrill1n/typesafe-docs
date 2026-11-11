@@ -58,7 +58,7 @@ flowchart LR
 
 ```bash
 pip install ipython matplotlib 'typesafe-sdk>=0.7.5,<0.8.0' \
-    'cooksafe>=0.2.0,<0.3.0'
+    'cooksafe>=0.3.0,<0.4.0'
 ```
 
 Set `TYPESAFE_API_KEY`.
@@ -86,7 +86,7 @@ from cooksafe import JsonCache
 from IPython.display import Markdown, display
 from typesafe_sdk import Image, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 IMAGES_ON = {"TypeSafe-Danger-Zone-Images": "true"}  # opt in to the image preview
 READ_CUTOFF = 0.90  # below this, a person checks the reading against the paper
 LEGIBLE_CUTOFF = 0.50  # the legibility Noul gets its own, lower cutoff
@@ -97,7 +97,6 @@ client = TypeSafeClient(
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
 
 EXAMPLES = (
     "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
@@ -111,6 +110,14 @@ def download(name: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+CACHE = Path("reading_scanned_documents_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Send the scan to Jev
@@ -131,13 +138,13 @@ PAGE = download("vaccination_record.jpg")
 PAGE_SHA = hashlib.sha256(PAGE.read_bytes()).hexdigest()[:16]  # cache key for the scan
 
 @json_cache
-def ask(page_sha: str, questions_json: str) -> dict:
+def ask(page_sha: str, questions_json: str, model: str) -> dict:
     """One request: the scan as the state, plus a set of questions about it."""
     started = perf_counter()
     response = client.system_one(
         state={"page": Image(PAGE)},
         questions=json.loads(questions_json),
-        model=TYPESAFE_MODEL,
+        model=model,
         extra_headers=IMAGES_ON,
     )
     return {
@@ -150,7 +157,7 @@ def ask(page_sha: str, questions_json: str) -> dict:
 def ask_page(questions: dict) -> dict:
     if not questions:  # nothing to ask, such as a page with no rows found
         return {"answers": {}}
-    return ask(PAGE_SHA, json.dumps(questions, sort_keys=True))
+    return ask(PAGE_SHA, json.dumps(questions, sort_keys=True), model=TYPESAFE_MODEL)
 ```
 
 ## Find which vaccines are on the record
@@ -403,10 +410,10 @@ This request has no image, so it doesn't need the images header.
 
 ```python
 @json_cache
-def check(state_json: str, questions_json: str) -> dict:
+def check(state_json: str, questions_json: str, model: str) -> dict:
     started = perf_counter()
     response = client.system_one(
-        state=json.loads(state_json), questions=json.loads(questions_json), model=TYPESAFE_MODEL
+        state=json.loads(state_json), questions=json.loads(questions_json), model=model
     )
     return {
         "answers": {k: a.noul for k, a in response.answers.items()},
@@ -417,7 +424,8 @@ def check(state_json: str, questions_json: str) -> dict:
 
 readable = [r for r in rows if not unresolved(r)]
 checked = check(json.dumps(check_state(readable)),
-                json.dumps(check_questions(readable))) if readable else {"answers": {}}
+                json.dumps(check_questions(readable)),
+                model=TYPESAFE_MODEL) if readable else {"answers": {}}
 for row in rows:
     row["in_date"] = checked["answers"].get(row["id"])
     year = year_given(row)

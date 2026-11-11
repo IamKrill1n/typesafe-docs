@@ -67,7 +67,7 @@ response, you can swap one for the other without changing any other code.
 ## Setup
 
 ```bash theme={null}
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 Set `TYPESAFE_API_KEY`.
@@ -77,13 +77,14 @@ Numbers below came from `jev-1.14.0` on 2026-10-29.
 ```python theme={null}
 import json
 import os
+import urllib.request
 from pathlib import Path
 
 from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, SystemOneResponse, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 REMEMBER_AT = 0.5  # save when P(lasting customer fact) reaches this starting threshold
 MEMORY_KEY = "earlier_tickets_from_this_customer"  # where saved tickets go in the state
 
@@ -92,7 +93,30 @@ client = TypeSafeClient(
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python theme={null}
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/basic_memory"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+
+CACHE = Path("basic_memory_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Define the tickets
@@ -231,9 +255,9 @@ ROUTE = {
 
 
 @json_cache
-def _system_one(state: str, questions: str) -> dict:
+def _system_one(state: str, questions: str, model: str) -> dict:
     response = client.system_one(
-        state=json.loads(state), questions=json.loads(questions), model=TYPESAFE_MODEL
+        state=json.loads(state), questions=json.loads(questions), model=model
     )
     return response.model_dump(mode="json", exclude={"model"})
 
@@ -241,8 +265,8 @@ def _system_one(state: str, questions: str) -> dict:
 def ask(state: dict, questions: dict) -> SystemOneResponse:
     """client.system_one, with the model pinned and the call cached."""
     as_json = {qid: q.model_dump(mode="json", exclude_none=True) for qid, q in questions.items()}
-    raw = _system_one(json.dumps(state), json.dumps(as_json))
-    # The cache leaves the model out; the response type needs one, so use the requested model.
+    raw = _system_one(json.dumps(state), json.dumps(as_json), model=TYPESAFE_MODEL)
+    # The cached answer stores no model; the response type needs one, so use the one it is keyed on.
     return SystemOneResponse.model_validate({**raw, "model": TYPESAFE_MODEL})
 
 

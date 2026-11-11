@@ -52,7 +52,7 @@ flowchart LR
 ## Setup
 
 ```bash
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`.
@@ -70,14 +70,13 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Noul, NoulCriteria, Score, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay the cache
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
 
 EXAMPLES = (
     "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
@@ -91,6 +90,14 @@ def download(name: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+CACHE = Path("llm_guardrails_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Load the sample messages
@@ -271,10 +278,10 @@ def route(nouls: dict[str, float], severity: float, policy: dict) -> str:
     return next((action for action in PRECEDENCE if action in triggered), "pass")
 
 @json_cache
-def assess(text: str, battery_json: str) -> dict:
+def assess(text: str, battery_json: str, model: str) -> dict:
     """Send one message and its battery in a single call; return the raw assessment."""
     battery = json.loads(battery_json)
-    response = client.system_one(state=text, questions=battery, model=TYPESAFE_MODEL)
+    response = client.system_one(state=text, questions=battery, model=model)
     answers = response.answers
     return {
         "nouls": {qid: answers[qid].noul for qid in battery if qid != "severity"},
@@ -287,7 +294,7 @@ def screen(text: str, side: str) -> dict:
         qid: question.model_dump(mode="json", exclude_none=True)
         for qid, question in BATTERIES[side].items()
     }
-    return assess(text, json.dumps(battery))
+    return assess(text, json.dumps(battery), model=TYPESAFE_MODEL)
 
 def guard(text: str, side: str, policy_name: str = DEFAULT_POLICY) -> str:
     """Screen a message and route it under a named application policy."""

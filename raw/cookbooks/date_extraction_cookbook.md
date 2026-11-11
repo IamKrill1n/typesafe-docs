@@ -40,7 +40,7 @@ flowchart LR
 ## Setup
 
 ```bash theme={null}
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`.
@@ -48,6 +48,7 @@ then set `TYPESAFE_API_KEY`.
 ```python expandable theme={null}
 import json
 import os
+import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -55,7 +56,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 TODAY = date(
     2026, 7, 30
 )  # fixed reference "today" so relative dates resolve reproducibly
@@ -86,9 +87,27 @@ WEEKDAYS = [
 ]
 YEAR_WINDOW = list(range(1900, 2051))  # 1900..2050
 
-# Cached to json_cache.json (shipped with the cookbook, so re-rendering replays the published
-# results with no API spend); delete it to re-run live.
-json_cache = JsonCache(Path("json_cache.json"))
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/date_extraction_cookbook"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+
+CACHE = Path("date_extraction_cookbook_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ```python theme={null}
@@ -197,10 +216,10 @@ and `current` means this week.
 
 ```python expandable theme={null}
 @json_cache
-def read_parts(document: str, questions_json: str) -> dict:
+def read_parts(document: str, questions_json: str, model: str) -> dict:
     """One TypeSafe call -> {part: {choice, confidence}} for the seven questions."""
     answers = client.system_one(
-        state=document, questions=json.loads(questions_json), model=TYPESAFE_MODEL
+        state=document, questions=json.loads(questions_json), model=model
     ).answers
     return {
         part: {"choice": ans.choice, "confidence": ans.confidence}
@@ -304,7 +323,7 @@ def extract_date(document: str, role: str) -> dict:
         part: question.model_dump(mode="json", exclude_none=True)
         for part, question in date_questions(role).items()
     }
-    return assemble(read_parts(document, json.dumps(questions)))
+    return assemble(read_parts(document, json.dumps(questions), model=TYPESAFE_MODEL))
 ```
 
 ## Run it

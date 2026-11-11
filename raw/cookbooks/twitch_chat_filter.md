@@ -34,7 +34,7 @@ rule, such as hiding spam, you rerun only `decide()`, with no new request to Jev
 ## Setup
 
 ```bash theme={null}
-pip install 'typesafe-sdk>=0.7.1,<0.8.0' ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install 'typesafe-sdk>=0.7.1,<0.8.0' ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 Create a new file named `twitch_chat_filter.py`. As you work through this cookbook,
@@ -51,6 +51,7 @@ Numbers below came from `jev-1.14.0` on 2026-10-29.
 ```python theme={null}
 from concurrent.futures import ThreadPoolExecutor
 import os
+import urllib.request
 from pathlib import Path
 from time import perf_counter
 
@@ -58,7 +59,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # cached re-renders need no key
@@ -66,7 +67,18 @@ client = TypeSafeClient(
     timeout=60.0,
 )
 CACHE_DIR = Path(__file__).resolve().parent if "__file__" in globals() else Path.cwd()
-json_cache = JsonCache(CACHE_DIR / "json_cache.json")
+
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/twitch_chat_filter"
+)
+CACHE = CACHE_DIR / "twitch_chat_filter_cache.json"
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE and not CACHE.exists():
+    urllib.request.urlretrieve(f"{EXAMPLES_URL}/{CACHE.name}", CACHE)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Load a stretch of chat
@@ -182,15 +194,15 @@ def classify(user: str, text: str, stream: dict | None = None) -> dict:
         "message": {"user": user, "text": text},
     }
     questions = {key: q.model_dump(mode="json", exclude_none=True) for key, q in QUESTIONS.items()}
-    return _ask(state, questions)
+    return _ask(state, questions, model=TYPESAFE_MODEL)
 
 
 @json_cache
-def _ask(state: dict, questions: dict) -> dict:
+def _ask(state: dict, questions: dict, model: str) -> dict:
     if not os.environ.get("TYPESAFE_API_KEY"):
         raise RuntimeError("Set TYPESAFE_API_KEY to send requests to TypeSafe.")
     started = perf_counter()
-    response = client.system_one(state=state, questions=questions, model=TYPESAFE_MODEL)
+    response = client.system_one(state=state, questions=questions, model=model)
     category = response.answers["category"]
     return {
         "category": category.choice,

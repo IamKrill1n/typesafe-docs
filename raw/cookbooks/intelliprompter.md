@@ -73,7 +73,7 @@ To run this example locally, [create a TypeSafe API key](https://console.typesaf
 then run these commands in your terminal and replace `<ADD_YOUR_KEY>` with your key.
 
 ```bash theme={null}
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 export TYPESAFE_API_KEY="<ADD_YOUR_KEY>"
 ```
 
@@ -82,13 +82,14 @@ Numbers below came from `jev-1.14.0` on 2026-11-04.
 ```python theme={null}
 import json
 import os
+import urllib.request
 from pathlib import Path
 
 from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Score, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 COVERED_AT = 2.5  # the live app's default threshold on its 1–5 scale
 
 client = TypeSafeClient(
@@ -96,7 +97,30 @@ client = TypeSafeClient(
     model=TYPESAFE_MODEL,
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python theme={null}
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/intelliprompter"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+
+CACHE = Path("intelliprompter_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 Each criterion has short text (`display`) for the screen and a longer description
@@ -183,7 +207,7 @@ reaches 2.5.
 
 One request can score several criteria. Every criterion sees the same full transcript.
 
-```python theme={null}
+```python expandable theme={null}
 SCORE_LEVELS = [
     "Not mentioned at all",
     "Briefly or indirectly mentioned",
@@ -204,10 +228,11 @@ def score_question(description: str) -> Score:
 
 
 @json_cache
-def score_tick(transcript: str, questions_json: str) -> dict:
+def score_tick(transcript: str, questions_json: str, model: str) -> dict:
     response = client.system_one(
         state={"transcript": transcript},
         questions=json.loads(questions_json),
+        model=model,
     )
     return {
         "answers": {
@@ -273,7 +298,7 @@ def run_loop(chunks: list[str]) -> tuple[set[str], dict[str, dict], list[dict]]:
             key: score_question(description).model_dump(mode="json", exclude_none=True)
             for key, description in pending
         }
-        result = score_tick(transcript, json.dumps(questions))
+        result = score_tick(transcript, json.dumps(questions), model=TYPESAFE_MODEL)
 
         new_checks = 0
         for key, answer in result["answers"].items():

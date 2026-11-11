@@ -27,7 +27,7 @@
 * install the dependencies:
 
 ```bash
-pip install openai jsonschema ipython matplotlib pandas 'cooksafe>=0.2.0,<0.3.0'
+pip install openai jsonschema ipython matplotlib pandas 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 * then set `OPENAI_API_KEY` and `TYPESAFE_API_KEY` in your environment
@@ -54,7 +54,7 @@ CONFIGS = {
     CHEAP: {"model": "gpt-6-luna"},
     STRONG: {"model": "gpt-6.1-sol", "reasoning_effort": "high"},
 }
-TS_MODEL = "jev-1.14.0"  # the verifier model, Jev
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 FIRE_T = 0.7  # escalate if any rule's P(broken) exceeds this; also the "<== FIRES" display marker
 
 oai = OpenAI()
@@ -122,9 +122,28 @@ def prompt_for(task: str) -> str:
     """The task's prompt with the schema placed just before its closing SOLUTION:."""
     return re.sub(r"SOLUTION:\s*$", FORMAT_LINE + "\nSOLUTION: ", task.rstrip())
 
-# LLM and TypeSafe calls are cached in ``json_cache.json``, so a re-run reuses earlier answers
-# instead of calling the APIs again; delete the file to call them fresh.
-json_cache = JsonCache(Path("json_cache.json"))
+# LLM and TypeSafe calls are cached in CACHE, so a re-run reuses earlier answers instead of
+# calling the APIs again.
+
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/sde_cascade"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+CACHE = Path("sde_cascade_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 
 @json_cache
 def ask(config: str, prompt: str) -> dict:
@@ -193,16 +212,16 @@ CHECKS = {
 }
 
 @json_cache
-def verify(state_json: str) -> dict[str, float]:
+def verify(state_json: str, model: str) -> dict[str, float]:
     """Ask every rule question about one answer in one TypeSafe call; return ``{rule: P(broken)}``."""
     questions = {k: q.model_dump(mode="json", exclude_none=True) for k, q in CHECKS.items()}
-    answers = ts.system_one(state=json.loads(state_json), questions=questions, model=TS_MODEL).answers
+    answers = ts.system_one(state=json.loads(state_json), questions=questions, model=model).answers
     return {rule: ans.noul for rule, ans in answers.items()}
 ```
 
 ```python
 state = {"task": task, "answer": cheap_record}
-checks = verify(json.dumps(state))
+checks = verify(json.dumps(state), model=TYPESAFE_MODEL)
 playground_link = make_playground_link(state, {k: q.model_dump(mode="json", exclude_none=True) for k, q in CHECKS.items()})
 display(Markdown(f"🔗 [Open this verification in the TypeSafe playground]({playground_link})"))
 

@@ -95,7 +95,7 @@ from typesafe_sdk import Noul, NoulCriteria, Score, TypeSafeClient
 
 matplotlib.use("Agg")  # headless render
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 FOLDS, REPEATS = 5, 3  # repeats steady the error at this sample size
 CATBOOST = dict(
     iterations=400,
@@ -114,7 +114,26 @@ client = TypeSafeClient(
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))  # every API call; delete it to re-run live
+
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/autoresearch_feature_discovery"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+CACHE = Path("autoresearch_feature_discovery_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 
 # ----------------------------------------------------------------- the specification
 
@@ -319,15 +338,15 @@ def proposal_prompt(
     return "\n".join(parts)
 
 @json_cache
-def propose(call: int, prompt: str) -> dict:
+def propose(call: int, prompt: str, proposer: str) -> dict:
     """One proposal call. Every number in `prompt` is rounded so a replay hits the cache."""
-    if PROPOSER.startswith("claude"):
+    if proposer.startswith("claude"):
         import anthropic
 
         response = anthropic.Anthropic(
             api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only")
         ).messages.create(
-            model=PROPOSER,
+            model=proposer,
             max_tokens=16000,
             output_config={
                 "effort": "medium",
@@ -343,7 +362,7 @@ def propose(call: int, prompt: str) -> dict:
         response = OpenAI(
             api_key=os.environ.get("OPENAI_API_KEY", "cache-only")
         ).chat.completions.create(
-            model=PROPOSER,
+            model=proposer,
             reasoning_effort="high",
             max_completion_tokens=16000,
             response_format={"type": "json_object"},
@@ -413,13 +432,13 @@ def feature_questions(features: list[dict]) -> dict:
     return questions
 
 @json_cache
-def answer(message: str, questions_json: str) -> dict:
+def answer(message: str, questions_json: str, model: str) -> dict:
     """One request per message, with every new question of the try. Keeps every probability."""
     questions = json.loads(questions_json)
     started = perf_counter()
     # the text goes under a named key that matches how the questions refer to it
     response = client.system_one(
-        state={"message": message}, questions=questions, model=TYPESAFE_MODEL
+        state={"message": message}, questions=questions, model=model
     )
     raw = {}
     for name, question in questions.items():
@@ -445,7 +464,7 @@ def featurize(messages: list[str], features: list[dict]) -> dict:
     )
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(
-            pool.map(lambda message: answer(message, payload), messages)
+            pool.map(lambda message: answer(message, payload, model=TYPESAFE_MODEL), messages)
         )
     return {
         f["name"]: np.array([r["raw"][f["name"]] for r in results], dtype=float)
@@ -751,7 +770,7 @@ def run_loop(
             calls += 1
             block = example_block(shown, split, out_of_fold, previous)
             prompt = proposal_prompt(block, feedback, run.accepted, rejected)
-            actions = propose(calls, prompt)["actions"]
+            actions = propose(calls, prompt, proposer=PROPOSER)["actions"]
             args = (run, rejected, split, mode, min_spread, min_gain)
             if try_changes(step, attempt, actions, *args):
                 break
@@ -812,10 +831,10 @@ POLITENESS = Score(
 )
 
 @json_cache
-def ask_score(message: str, politeness: Score) -> dict:
+def ask_score(message: str, politeness: Score, model: str) -> dict:
     """One `Score` over ten politeness bands, read as its expected level, 0 to 9."""
     response = client.system_one(
-        state={"message": message}, questions={"politeness": politeness}, model=TYPESAFE_MODEL
+        state={"message": message}, questions={"politeness": politeness}, model=model
     )
     got = response.answers["politeness"]
     return {
@@ -1061,7 +1080,7 @@ Requires Python 3.10 or later. Choose a package manager to install the dependenc
 >
 > ```bash wrap
 > python3 -m venv .venv
-> .venv/bin/pip install anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> .venv/bin/pip install anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 > ```
 
 > [tab] uv
@@ -1070,12 +1089,13 @@ Requires Python 3.10 or later. Choose a package manager to install the dependenc
 >
 > ```bash wrap
 > uv init --bare
-> uv add anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+> uv add anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 > ```
 
-Set `TYPESAFE_API_KEY` and `ANTHROPIC_API_KEY`. Every response is saved in
-`json_cache.json`, so a second run makes no requests. The `propose()` function also has a
-branch for `gpt-5.6-luna`. It needs `OPENAI_API_KEY`, and this run did not use it.
+Set `TYPESAFE_API_KEY` and `ANTHROPIC_API_KEY`. The code downloads the published answers
+into `autoresearch_feature_discovery_cache.json`, so the run makes no requests; to run
+live, set `DOWNLOAD_CACHE = False` and delete that file. The `propose()` function also has
+a branch for `gpt-5.6-luna`. It needs `OPENAI_API_KEY`, and this run did not use it.
 
 The numbers below came from `jev-1.14.0` and `claude-sonnet-5` on 2026-11-05.
 
@@ -1413,7 +1433,9 @@ text_predicted = fit_predict_text(split)
 
 # ask Jev for the rating itself, one request per row
 with ThreadPoolExecutor(max_workers=4) as pool:
-    direct = list(pool.map(lambda message: ask_score(message, POLITENESS), MESSAGES))
+    direct = list(
+        pool.map(lambda message: ask_score(message, POLITENESS, model=TYPESAFE_MODEL), MESSAGES)
+    )
 asked = np.array([d["expected"] for d in direct])
 # two numbers, both from the dev labels: where the levels sit on the rating scale
 slope, intercept = np.polyfit(asked[DEV], SCORES[DEV], 1)

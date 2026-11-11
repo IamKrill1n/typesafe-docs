@@ -57,7 +57,7 @@ and returns one of four verdicts: `verified`, `unsupported`, `contradicted`, or
 ## Setup
 
 ```bash theme={null}
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`.
@@ -76,7 +76,7 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 AUTO_ACCEPT = 0.8  # start high for more human review as you build trust in the model
 
 client = TypeSafeClient(
@@ -84,7 +84,6 @@ client = TypeSafeClient(
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
 
 
 EXAMPLES = (
@@ -100,6 +99,15 @@ def download(name: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+
+CACHE = Path("citation_check_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Load the source and the citations
@@ -257,12 +265,12 @@ RELATION_TO_VERDICT = {
 
 
 @json_cache
-def ask(claim: str, section: str, relation: Choice) -> dict:
+def ask(claim: str, section: str, relation: Choice, model: str) -> dict:
     started = perf_counter()
     response = client.system_one(
         state={"claim": claim, "section": section},
         questions={"relation": relation},
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     answer = response.answers["relation"]
     return {
@@ -289,7 +297,11 @@ def verdict(status: str, answer: dict | None) -> dict:
 
 def check_citation(sections: dict[str, str], citation: dict) -> dict:
     status, section = locate(sections, citation)
-    answer = ask(citation["claim"], section, QUESTIONS["relation"]) if section is not None else None
+    answer = (
+        ask(citation["claim"], section, QUESTIONS["relation"], model=TYPESAFE_MODEL)
+        if section is not None
+        else None
+    )
     return {"id": citation["id"], "status": status, "answer": answer, **verdict(status, answer)}
 ```
 

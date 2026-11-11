@@ -71,7 +71,7 @@ flowchart TB
 ## Setup
 
 ```bash theme={null}
-pip install ipython pillow 'typesafe-sdk[pil]>=0.7.5' 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython pillow 'typesafe-sdk[pil]>=0.7.5' 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 Then set `TYPESAFE_API_KEY`.
@@ -96,7 +96,8 @@ from PIL import Image as PILImage
 from PIL import ImageDraw, ImageFont
 from typesafe_sdk import Box, Image, Noul, SystemOneResponse, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"  # Box questions need Jev 1.14
+# Box questions need Jev 1.14 or later.
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 BAR = 0.25  # a check scoring below this flags the field
 ZOOM = 3  # the zoomed region is three times the first box, and at least ZOOM_MIN of the page
 ZOOM_MIN = (0.30, 0.15)  # width, height as fractions of the page
@@ -109,7 +110,6 @@ client = TypeSafeClient(
     headers={"TypeSafe-Danger-Zone-Images": "true"},
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
 
 
 EXAMPLES = (
@@ -125,6 +125,15 @@ def download(name: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+
+CACHE = Path("ocr_confidence_bounding_boxes_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Load the photos and what the extractor read
@@ -247,13 +256,13 @@ def as_json(questions: dict) -> str:
 
 
 @json_cache
-def find_fields(photo: str, questions_json: str) -> dict:
+def find_fields(photo: str, questions_json: str, model: str) -> dict:
     questions = json.loads(questions_json)
     fields = sorted(key.removeprefix("box_") for key in questions if key.startswith("box_"))
     with PILImage.open(INPUTS / photo) as page:
         image, _ = as_image(page)  # a whole page fills the size range, so no canvas
     response = client.system_one(
-        state={"page": image}, questions=questions, model=TYPESAFE_MODEL
+        state={"page": image}, questions=questions, model=model
     )
     return {
         "boxes": {f: response.boxes[f"box_{f}"].box.model_dump() for f in fields},
@@ -261,7 +270,7 @@ def find_fields(photo: str, questions_json: str) -> dict:
     }
 
 
-found = {photo: find_fields(photo, as_json(page_questions(values)))
+found = {photo: find_fields(photo, as_json(page_questions(values)), model=TYPESAFE_MODEL)
          for photo, values in sorted(EXTRACTIONS.items())}
 for photo, result in found.items():
     print(photo)
@@ -326,22 +335,22 @@ def zoom_questions(values: dict) -> dict:
     }
 
 
-def ask_with_images(task: str, questions: dict, images: dict) -> SystemOneResponse:
+def ask_with_images(task: str, questions: dict, images: dict, model: str) -> SystemOneResponse:
     """Put each field's image into its question, and send all the questions in one request."""
     for field, question in questions.items():
         question["instructions"] = question["instructions"].replace(IMAGE, str(images[field]))
     with client.attach_assets(list(images.values())):  # resolves the references in the text
-        return client.system_one(state={"task": task}, questions=questions, model=TYPESAFE_MODEL)
+        return client.system_one(state={"task": task}, questions=questions, model=model)
 
 
 @json_cache
 def zoom_fields(
-    photo: str, regions_json: str, task: str, questions_json: str, grow: tuple
+    photo: str, regions_json: str, task: str, questions_json: str, grow: tuple, model: str
 ) -> dict:
     regions, images, frames = json.loads(regions_json), {}, {}
     for field, region in regions.items():
         images[field], frames[field] = as_image(crop(photo, region), upscale_to=1200)
-    response = ask_with_images(task, json.loads(questions_json), images)
+    response = ask_with_images(task, json.loads(questions_json), images, model)
     tight = {}
     for field, region in regions.items():
         b, (fx, fy, fw, fh) = response.boxes[field].box, frames[field]
@@ -381,12 +390,14 @@ def crop_questions(values: dict) -> dict:
 
 
 @json_cache
-def check_crops(photo: str, boxes_json: str, task: str, questions_json: str) -> dict:
+def check_crops(
+    photo: str, boxes_json: str, task: str, questions_json: str, model: str
+) -> dict:
     images = {
         field: as_image(crop(photo, box, pad=0.01), upscale_to=800)[0]
         for field, box in json.loads(boxes_json).items()
     }
-    response = ask_with_images(task, json.loads(questions_json), images)
+    response = ask_with_images(task, json.loads(questions_json), images, model)
     return {
         "shows": {f: response.nouls[f].noul for f in sorted(images)},
     }
@@ -398,12 +409,12 @@ A field goes to review when either check scores below `BAR` (0.25).
 
 ```python theme={null}
 def check_invoice(photo: str, values: dict) -> dict:
-    first = find_fields(photo, as_json(page_questions(values)))
+    first = find_fields(photo, as_json(page_questions(values)), model=TYPESAFE_MODEL)
     regions = {field: region_around(box) for field, box in first["boxes"].items()}
     tight = zoom_fields(photo, json.dumps(regions, sort_keys=True), ZOOM_TASK,
-                        as_json(zoom_questions(values)), GROW)
+                        as_json(zoom_questions(values)), GROW, model=TYPESAFE_MODEL)
     shown = check_crops(photo, json.dumps(tight["boxes"], sort_keys=True), CROP_TASK,
-                        as_json(crop_questions(values)))
+                        as_json(crop_questions(values)), model=TYPESAFE_MODEL)
     return {
         field: {
             "value": values[field],

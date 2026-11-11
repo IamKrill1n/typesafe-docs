@@ -149,7 +149,7 @@ This example uses 3,565 court opinion passages and 40 queries.
 * `matplotlib` draws the result charts.
 
 ```bash theme={null}
-pip install bm25s datasets matplotlib 'cooksafe>=0.2.0,<0.3.0'
+pip install bm25s datasets matplotlib 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 Calling TypeSafe needs a `TYPESAFE_API_KEY`.
@@ -159,6 +159,7 @@ import hashlib
 import json
 import os
 import random
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -166,7 +167,7 @@ from cooksafe import JsonCache
 from IPython.display import display
 from typesafe_sdk import Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 N_ROWS = 170  # CLERC rows pooled into the shared corpus
 N_QUERIES = 40  # rows we evaluate
 TOP_K = 30  # candidates the shortlist hands to the re-ranker, per query
@@ -178,7 +179,30 @@ client = TypeSafeClient(
     base_url=os.environ.get("TYPESAFE_ENDPOINT"),
     timeout=120.0,
 )
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python theme={null}
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/rerank_typesafe"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+
+CACHE = Path("rerank_typesafe_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ### Ranking the passages with fast search
@@ -375,14 +399,14 @@ is_cited_source = Noul(
 
 
 @json_cache
-def score_candidate(query: str, candidate: str, question_json: str) -> dict:
+def score_candidate(query: str, candidate: str, question_json: str, model: str) -> dict:
     """One TypeSafe call about one (query, candidate) pair: a noul, plus token usage."""
     # the SDK takes a question as its JSON dict, so the cached string decodes straight in
     question = json.loads(question_json)
     response = client.system_one(
         state={"query_excerpt": query, "candidate_passage": candidate},
         questions={"is_cited_source": question},
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     return {
         "noul": response.answers["is_cited_source"].noul,
@@ -397,7 +421,9 @@ pair_list = [(q, c) for q in queries for c in candidates[q]]
 question_json = is_cited_source.model_dump_json(exclude_none=True)
 with ThreadPoolExecutor(max_workers=12) as pool:
     results = pool.map(
-        lambda p: score_candidate(queries[p[0]], corpus[p[1]], question_json),
+        lambda p: score_candidate(
+            queries[p[0]], corpus[p[1]], question_json, model=TYPESAFE_MODEL
+        ),
         pair_list,
     )
 pair_scores = {q: {} for q in queries}

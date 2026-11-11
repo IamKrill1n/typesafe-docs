@@ -37,7 +37,7 @@ The whole pipeline is two API requests per document, run in sequence:
 ## Setup
 
 ```bash theme={null}
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`.
@@ -54,9 +54,32 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python theme={null}
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/autoformat"
+)
+
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+
+CACHE = Path("autoformat_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## The document: a team memo that lost its formatting
@@ -184,10 +207,10 @@ def stitch_questions(make) -> dict:
 
 
 @json_cache
-def stitch(state: str, questions_json: str) -> dict:
+def stitch(state: str, questions_json: str, model: str) -> dict:
     started = perf_counter()
     response = client.system_one(
-        state=state, questions=json.loads(questions_json), model=TYPESAFE_MODEL
+        state=state, questions=json.loads(questions_json), model=model
     )
     return {
         "joins": [
@@ -199,7 +222,9 @@ def stitch(state: str, questions_json: str) -> dict:
     }
 
 
-result = stitch(tag(LINES, "L"), as_json(stitch_questions(join_question)))
+result = stitch(
+    tag(LINES, "L"), as_json(stitch_questions(join_question)), model=TYPESAFE_MODEL
+)
 print(f"{sum(1 for l in LINES if not l['gap']) - 1} pair questions, one request, "
       f"{result['seconds']}s")
 ```
@@ -331,11 +356,11 @@ def classify_questions(texts: list[str]) -> dict:
 
 
 @json_cache
-def classify(texts: list[str], gaps: list[bool], questions_json: str) -> dict:
+def classify(texts: list[str], gaps: list[bool], questions_json: str, model: str) -> dict:
     tagged = tag([{"text": t, "gap": g} for t, g in zip(texts, gaps)], "B")
     questions = json.loads(questions_json)
     started = perf_counter()
-    response = client.system_one(state=tagged, questions=questions, model=TYPESAFE_MODEL)
+    response = client.system_one(state=tagged, questions=questions, model=model)
     judgments = []
     for i in range(len(texts)):
         bid = block_id(i)
@@ -360,7 +385,9 @@ def classify(texts: list[str], gaps: list[bool], questions_json: str) -> dict:
 
 
 texts = [b["text"] for b in blocks]
-classified = classify(texts, [b["gap"] for b in blocks], as_json(classify_questions(texts)))
+classified = classify(
+    texts, [b["gap"] for b in blocks], as_json(classify_questions(texts)), model=TYPESAFE_MODEL
+)
 for block, judgment in zip(blocks, classified["judgments"]):
     block.update(judgment)
 print(f"{classified['n_questions']} questions about {len(blocks)} blocks, one request, "
@@ -584,7 +611,9 @@ def naive_join_question(i: int) -> Noul:
     )
 
 
-naive = stitch(tag(LINES, "L"), as_json(stitch_questions(naive_join_question)))
+naive = stitch(
+    tag(LINES, "L"), as_json(stitch_questions(naive_join_question)), model=TYPESAFE_MODEL
+)
 print(f"{'':14}{'mid-sentence':>13}{'same paragraph':>16}")
 for i in (15, 16, 17, 20, 21):
     print(f"{line_id(i)}{'':2}{LINES[i]['text'][:36]:<38}"

@@ -68,7 +68,7 @@ flowchart LR
 ## Setup
 
 ```bash
-pip install anthropic openai matplotlib ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install anthropic openai matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 Set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. We use Jev to score
@@ -95,7 +95,7 @@ from typesafe_sdk import Noul, TypeSafeClient
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 GENERATOR_MODEL = "claude-sonnet-5"  # writes the answer out of what the routing keeps
 EMBED_MODEL = "text-embedding-3-small"
 EMBED_DIMS = 256  # short vectors keep the shipped cache small; plenty for 81 passages
@@ -120,7 +120,6 @@ generator = anthropic.Anthropic(
     api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only")
 )
 embedder = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "cache-only"))
-json_cache = JsonCache(Path("json_cache.json"))
 
 EXAMPLES = (
     "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
@@ -134,6 +133,14 @@ def download(name: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(f"{EXAMPLES}/{name}", path)
     return path
+
+CACHE = Path("classifying_rag_passages_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## Load the docs corpus
@@ -191,14 +198,14 @@ A session is represented by the Supabase Auth access token in t...
 Rank the passages by cosine similarity over embeddings, using `text-embedding-3-small` at
 256 dimensions, and keep the best `TOP_K = 12` for each query. Short vectors keep the
 shipped cache small, and the embedding calls are cached with everything else, so the
-vectors travel inside `json_cache.json`.
+vectors travel inside `classifying_rag_passages_cache.json`.
 
 ```python expandable
 @json_cache
-def embed(texts: tuple[str, ...]) -> list[list[float]]:
+def embed(texts: tuple[str, ...], embed_model: str) -> list[list[float]]:
     """One call for many texts; the tuple argument keeps the cache key small and hashable."""
     response = embedder.embeddings.create(
-        model=EMBED_MODEL, input=list(texts), dimensions=EMBED_DIMS
+        model=embed_model, input=list(texts), dimensions=EMBED_DIMS
     )
     return [item.embedding for item in response.data]
 
@@ -209,12 +216,14 @@ def cosine(a: list[float], b: list[float]) -> float:
 PASSAGE_VECTORS = dict(
     zip(
         [p["id"] for p in PASSAGES],
-        embed(tuple(f"{p['title']}\n\n{p['text']}" for p in PASSAGES)),
+        embed(
+            tuple(f"{p['title']}\n\n{p['text']}" for p in PASSAGES), embed_model=EMBED_MODEL
+        ),
     )
 )
 
 def retrieve(query: str, k: int) -> list[dict]:
-    vector = embed((query,))[0]
+    vector = embed((query,), embed_model=EMBED_MODEL)[0]
     scored = [(cosine(vector, PASSAGE_VECTORS[p["id"]]), p["id"]) for p in PASSAGES]
     scored.sort(
         key=lambda pair: (-pair[0], pair[1])
@@ -317,13 +326,13 @@ def passage_state(query: str, passage: dict) -> dict:
     }
 
 @json_cache
-def gate(state_json: str, questions_json: str) -> dict:
+def gate(state_json: str, questions_json: str, model: str) -> dict:
     started = perf_counter()
     questions = json.loads(questions_json)
     response = client.system_one(
         state=json.loads(state_json),
         questions=questions,
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     answers = {key: response.answers[key].noul for key in questions}
     answers["seconds"] = round(perf_counter() - started, 2)
@@ -340,7 +349,9 @@ def answer_passages(query: str, passages: list[dict]) -> list[dict]:
     )
     states = [json.dumps(passage_state(query, passage)) for passage in passages]
     with ThreadPoolExecutor(max_workers=4) as pool:
-        return list(pool.map(lambda state: gate(state, questions), states))
+        return list(
+            pool.map(lambda state: gate(state, questions, model=TYPESAFE_MODEL), states)
+        )
 ```
 
 ## Route each passage in code
@@ -516,9 +527,9 @@ def build_prompt(query: str, routed: list[dict]) -> str:
     )
 
 @json_cache
-def generate(query: str, prompt: str) -> dict:
+def generate(query: str, prompt: str, generator_model: str) -> dict:
     response = generator.messages.create(
-        model=GENERATOR_MODEL,
+        model=generator_model,
         max_tokens=800,
         messages=[{"role": "user", "content": prompt}],
     )
@@ -530,7 +541,9 @@ def generate(query: str, prompt: str) -> dict:
     }
 
 def answer(query: str) -> str:
-    return generate(query, build_prompt(query, ROUTED[query]))["text"]
+    return generate(
+        query, build_prompt(query, ROUTED[query]), generator_model=GENERATOR_MODEL
+    )["text"]
 
 prompt = build_prompt(HEADLINE_QUERY, ROUTED[HEADLINE_QUERY])
 print(f"The prompt for the first query, {len(prompt):,} characters:\n")

@@ -24,7 +24,7 @@ The case here is a regulatory briefing. The document is the Wikipedia article on
 ## Setup
 
 ```bash
-pip install ipython 'cooksafe>=0.2.0,<0.3.0'
+pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
 then set `TYPESAFE_API_KEY`.
@@ -41,21 +41,42 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from typesafe_sdk import Choice, ChoiceAnswer, Noul, NoulAnswer, Score, TypeSafeClient
 
-TYPESAFE_MODEL = "jev-1.14.0"
+TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 PRICE = (
     0.042,
     0.00,
 )  # $ per 1M tokens (input, output); TypeSafe jev-1.14.0 as of 2026-11, see README
 RUNS = 5  # repeats per batching strategy, to estimate each answer's run-to-run std dev
 client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
-json_cache = JsonCache(Path("json_cache.json"))
+```
+
+```python
+EXAMPLES_URL = (
+    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/"
+    "cookbooks/parallel_questions"
+)
+
+def download(name: str) -> Path:
+    """Fetch one of this cookbook's files from typesafe-public-examples unless it is on disk."""
+    path = Path(name)
+    if not path.exists():
+        urllib.request.urlretrieve(f"{EXAMPLES_URL}/{name}", path)
+    return path
+
+CACHE = Path("parallel_questions_cache.json")
+# True fills CACHE with the published answers, so the run makes no requests. To run
+# live, set it to False and delete CACHE; a CACHE already on disk is never overwritten.
+DOWNLOAD_CACHE = True
+if DOWNLOAD_CACHE:
+    download(CACHE.name)
+json_cache = JsonCache(CACHE)
 ```
 
 ## The document: the Wikipedia article on the GDPR
 
 We fetch the article as plain text from a pinned revision and cache it in
-`json_cache.json` next to the API calls, so the document and its numbers stay fixed even
-as the live article gets edited.
+`parallel_questions_cache.json` next to the API calls, so the document and its numbers stay
+fixed even as the live article gets edited.
 
 ```python
 WIKIPEDIA_REVISION = 1363040264  # "General Data Protection Regulation", as of 2026-07
@@ -183,11 +204,11 @@ one tracked number. The document is byte-identical in every call.
 
 Both batching strategies run `RUNS` = 5 times, enough to compare the mean (do the two
 agree?) and the std dev (does batching add noise?). Calls are cached to
-`json_cache.json`; delete it to re-run live.
+`parallel_questions_cache.json`; to run live, set `DOWNLOAD_CACHE = False` and delete it.
 
 ```python expandable
 @json_cache
-def ask(document_json: str, questions_json: str, run: int):
+def ask(document_json: str, questions_json: str, run: int, model: str):
     """One TypeSafe call -> ({key: tracked metric}, input_tokens, output_tokens, latency_s);
     ``run`` only forces a distinct live call per repeat."""
     started = perf_counter()
@@ -195,7 +216,7 @@ def ask(document_json: str, questions_json: str, run: int):
     response = client.system_one(
         state={"article": json.loads(document_json)},
         questions=questions,
-        model=TYPESAFE_MODEL,
+        model=model,
     )
     values = {}
     for key, question in questions.items():
@@ -216,7 +237,7 @@ def ask(document_json: str, questions_json: str, run: int):
 def ask_keys(keys: tuple[str, ...], run: int):
     """Ask the questions named by ``keys``, sending their full text."""
     questions = {key: QUESTIONS[key].model_dump(mode="json", exclude_none=True) for key in keys}
-    return ask(json.dumps(DOCUMENT), json.dumps(questions), run)
+    return ask(json.dumps(DOCUMENT), json.dumps(questions), run, model=TYPESAFE_MODEL)
 
 def priced(result):
     """({key: metric}, in_tokens, out_tokens, latency) -> ({key: metric}, cost_usd, latency)."""

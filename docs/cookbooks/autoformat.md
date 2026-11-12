@@ -51,7 +51,9 @@ from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
-client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
+client = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"), timeout=120.0
+)
 ```
 
 ```python

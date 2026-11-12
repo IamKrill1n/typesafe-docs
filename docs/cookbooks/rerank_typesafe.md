@@ -82,7 +82,7 @@ application sorts on.
 
 In simplified pseudocode, one TypeSafe scoring call looks like this:
 
-```python
+```python title="Sketch"
 question = Noul(
     instructions="Is this candidate the cited case?",
     criteria=NoulCriteria(
@@ -97,7 +97,7 @@ response.answers["is_cited_source"].noul  # -> 0.87
 To re-rank a shortlist, ask the same question about every candidate and sort by noul,
 highest first:
 
-```python
+```python title="Sketch"
 nouls = {candidate: ask_typesafe(query, candidate) for candidate in shortlist}
 reranked = sorted(shortlist, key=lambda c: nouls[c], reverse=True)  # highest noul first
 ```

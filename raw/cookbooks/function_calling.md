@@ -28,7 +28,7 @@ evaluated enums, each with a confidence.
 Those calls go to ten ordinary functions in a trading assistant. Their arguments take
 values from fixed lists, so they are `Literal`s already:
 
-```python theme={null}
+```python title="Sketch" theme={null}
 def plot_price(
     symbol: Literal["SPY", "NVDA", "AMD", "AAPL", "MSFT", "TSLA"],
     style: Literal["line", "candles"] = "line",

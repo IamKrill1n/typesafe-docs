@@ -57,9 +57,11 @@ CONFIGS = {
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 FIRE_T = 0.7  # escalate if any rule's P(broken) exceeds this; also the "<== FIRES" display marker
 
-oai = OpenAI()
+oai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "cache-only"))
 
-ts = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=30.0)
+ts = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"), timeout=30.0
+)
 ```
 
 ## Step 1: the data
@@ -146,8 +148,9 @@ if DOWNLOAD_CACHE:
 json_cache = JsonCache(CACHE)
 
 @json_cache
-def ask(config: str, prompt: str) -> dict:
-    r = oai.chat.completions.create(messages=[{"role": "user", "content": prompt}], **CONFIGS[config])
+def ask(prompt: str, **config) -> dict:
+    """One reply from a rung, keyed on the prompt and the whole config: model and effort."""
+    r = oai.chat.completions.create(messages=[{"role": "user", "content": prompt}], **config)
     return {"text": r.choices[0].message.content, "in": r.usage.prompt_tokens, "out": r.usage.completion_tokens}
 
 def parse(text: str) -> dict | None:
@@ -160,7 +163,7 @@ def parse(text: str) -> dict | None:
         return None
     return record if jsonschema.Draft202012Validator(SCHEMA).is_valid(record) else None
 
-cheap_text = ask(CHEAP, prompt_for(task))["text"]
+cheap_text = ask(prompt_for(task), **CONFIGS[CHEAP])["text"]
 cheap_record = parse(cheap_text)
 print("cheap answer:", cheap_text)
 print("\nschema-valid:", cheap_record is not None)
@@ -279,7 +282,7 @@ Since a check fired, we pay for the strong model (`gpt-6.1-sol`,
 `reasoning_effort="high"`)
 
 ```python
-final_record = parse(ask(STRONG, prompt_for(task))["text"]) if escalate else cheap_record
+final_record = parse(ask(prompt_for(task), **CONFIGS[STRONG])["text"]) if escalate else cheap_record
 
 print("cheap     :", json.dumps(cheap_record))
 print("reasoning :", json.dumps(final_record))

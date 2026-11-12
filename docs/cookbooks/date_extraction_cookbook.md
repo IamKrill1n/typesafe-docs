@@ -105,16 +105,12 @@ json_cache = JsonCache(CACHE)
 ```
 
 ```python
-# The demo cells below run when this file is executed as the cookbook; the constants and the pure
-# resolve/assemble code stay importable, so the calendar math can be unit-tested on its own.
-if __name__ == "__cookbook__":
-    client = TypeSafeClient(
-        api_key=os.environ.get(
-            "TYPESAFE_API_KEY", "cache-only"
-        ),  # cached re-renders need no key
-        base_url=os.environ.get("TYPESAFE_BASE_URL"),
-        timeout=30.0,
-    )
+client = TypeSafeClient(
+    # A run that replays the cache needs no key.
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),
+    base_url=os.environ.get("TYPESAFE_BASE_URL"),
+    timeout=30.0,
+)
 ```
 
 ## The questions
@@ -340,19 +336,18 @@ EXAMPLES = [
     (REVIEW, "the date of the design review", date(2026, 8, 6)),
 ]
 
-if __name__ == "__cookbook__":
-    print(f"{'':3}{'question':<38}{'expected':<12}{'got':<12}{'conf':>6}  flags")
-    print("-" * 84)
-    for document, role, expected in EXAMPLES:
-        r = extract_date(document, role)
-        got = r["date"].isoformat() if r["date"] else "none"
-        exp = expected.isoformat() if expected else "none"
-        mark = "OK" if r["date"] == expected else "XX"
-        conf = f"{r['confidence']:.2f}" if r["confidence"] is not None else " n/a"
-        flags = "  <== review" if r["needs_review"] else ""
-        if r["note"]:
-            flags += f"  ({r['note']})"
-        print(f"{mark:<3}{role:<38}{exp:<12}{got:<12}{conf:>6}{flags}")
+print(f"{'':3}{'question':<38}{'expected':<12}{'got':<12}{'conf':>6}  flags")
+print("-" * 84)
+for document, role, expected in EXAMPLES:
+    r = extract_date(document, role)
+    got = r["date"].isoformat() if r["date"] else "none"
+    exp = expected.isoformat() if expected else "none"
+    mark = "OK" if r["date"] == expected else "XX"
+    conf = f"{r['confidence']:.2f}" if r["confidence"] is not None else " n/a"
+    flags = "  <== review" if r["needs_review"] else ""
+    if r["note"]:
+        flags += f"  ({r['note']})"
+    print(f"{mark:<3}{role:<38}{exp:<12}{got:<12}{conf:>6}{flags}")
 ```
 
 ```
@@ -381,26 +376,21 @@ A date under `REVIEW_BELOW` = 0.60 goes to a person, and so does any date that c
 assembled. The rest go straight through.
 
 ```python
-if __name__ == "__cookbook__":
-    confident = [
-        (doc, role)
-        for doc, role, _ in EXAMPLES
-        if not extract_date(doc, role)["needs_review"]
-    ]
-    review = [
-        (doc, role)
-        for doc, role, _ in EXAMPLES
-        if extract_date(doc, role)["needs_review"]
-    ]
-    print(f"auto-accept ({len(confident)}):")
-    for _doc, role in confident:
-        print(f"  - {role}")
-    print(f"\nsend to review ({len(review)}):")
-    for _doc, role in review:
-        r = extract_date(_doc, role)
-        print(
-            f"  - {role}  (conf {r['confidence']:.2f} / {r['note'] or 'low confidence'})"
-        )
+confident = [
+    (doc, role)
+    for doc, role, _ in EXAMPLES
+    if not extract_date(doc, role)["needs_review"]
+]
+review = [
+    (doc, role) for doc, role, _ in EXAMPLES if extract_date(doc, role)["needs_review"]
+]
+print(f"auto-accept ({len(confident)}):")
+for _doc, role in confident:
+    print(f"  - {role}")
+print(f"\nsend to review ({len(review)}):")
+for _doc, role in review:
+    r = extract_date(_doc, role)
+    print(f"  - {role}  (conf {r['confidence']:.2f} / {r['note'] or 'low confidence'})")
 ```
 
 ```
@@ -422,13 +412,14 @@ Open it to see the answers and their confidences, and to change the wording with
 any code.
 
 ```python
-if __name__ == "__cookbook__":
-    playground_link = make_playground_link(REVIEW, date_questions("the date of the design review"))
-    display(
-        Markdown(
-            f"🔗 [Open this document + questions in the TypeSafe playground]({playground_link})"
-        )
+playground_link = make_playground_link(
+    REVIEW, date_questions("the date of the design review")
+)
+display(
+    Markdown(
+        f"🔗 [Open this document + questions in the TypeSafe playground]({playground_link})"
     )
+)
 ```
 
 [Open this document + questions in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAMgigOQDO+FUAFgmDADYL4r35gIUCWA5knwAnBADceCAO74AZhCH4kWFPjS0YQimACGATwB0IADSEADkIhxTKChmx5CwADog4ELi4LOQKXaYSe+C50EDxQAcZBIDxIFChCMFAoPBCxgS4AEhDSPFTsrDoorBAybBxcvALCYhLSkkI8KEVIAPz4ZNoARhQQTDBFZPgAvPja+FDaLEg6CoWsSNpwMXyj+G6otPgAFAj6fPrtAIIwfDBx+ACMACxkJmT5+ADMQmD4JfgAstpCdGQAlABudoiJjaZKiBCDEZ8HgQwQgsGw1goCBsdx6bYonS6EwotxCCySXHlDHaGRFBR4+SEkzyVYLRCvSQIBAAa2x1ESm20VDISmwqnUmmx-yBfNSkOGZQK0HgyBUkG4iggKjiYORtFynHV+hcJmCDQpPG0gW8XR6fSKgSQzCY+pACPBEQINqYdqiSAl1ttAF8ffb1uxTS5fP50iAQmEIvaYnEEkkUmkHC4AJKlB5zN7p8rcfjwmpSfBa7SCc29fqsCZTGbaoomSSauhrVLsItURpF1p6qJQQ0IBomhzeABSJZg3103rd9oAYghOgkJ1P3S4vj9aMv7YdzDwmJuol9Jw5XSuQMOYEp9y5z0wjy7bVuTmcUFeQABlBDWBBwTr918AeSSCBfyEV8ADkIAhH8-2PB8ogAEQQcJoNA2Dpw9L1kxANQZVgRBUE4CAlU9VUUHVMpclpBQOy1EiKKoVkYled45l1EA-XtbFgx8PxnR7WhQnCbsXFjeJEmSVIKHDNNpVrYpswKXMqhEcRC2LUtunLIpxkmZAazmetG02Dl3geQNNi2C4AFpHguP4WmEiM+wHbiLlfAAmV9HlfK5XwAVlfAA2V8AHZXwADlfABOV8LgABlity0NPC5POS+0Lm89KomuWKAuylwLmCgqQAuMKSouSKKpikr3IS2qkvvdCXHctKmtPdysva+13N82r8u6qJ3OKwaWvK0aQHcqqJvcmqJseer5saxQ4JcT1LywnDCLw+VCOIlVqDI7T2Eot5qJUWiDpOhimKzOS2I4qJdAQb5uNDPjggEqNHNE+MJKTAhUwUuS7ozJT81UnIqBLUZNMtStdOmb45MMsJNme742gABTCVl2nWyUeGByAdoItUiioT18AxhQtigdxWBiGR+3bFA-io9oIH6AB9EpuaEEs+EJ0oxhpttDvVV5On6ZULsEB4mFyFA2PtXtGn7Y1XKiuLFpW5rSu15aTwy7W2r1lLta682TbivqJoubWButnLtZG53Cu18b3YNuLpu9h24rm-2ovi2KQ6N1aDdSsPMpju3g4uJ3jZdoqY695OPcqmOg4zg26rD9yI-1h3WoLq3c5L+OK6i9yk8jku3er9z0-rmu-abnPW4WsPbJ7s3q8ecuu6rru6+LqLHkbruW-Hx5267zvx6uXXq6uIuLaufvW6uIel5Hpex43qel5njf56XxeLb8lfW789eTb8rfx783er-3q-D4f4+r9Ph-z6vy+JtAo33HoFe+LtApPwtoFV+QD35AM-hA7+QDf4QP-kAwBLsQogItiFcBHsQpQJNiFWBWD4FYMQQQ5BWDUEEPQVgzBHtwo4JNuFfBBtwpEJduFUhTDyFMMoRw6hTDaEcPoUwxhBttZhxDjIrhHsJ4yP4VIwRDsorCKkaItR4ipGSLqjrDyOt2H6PkZNHWvCzG20MXFQR+iNH6NEfonR+i9FxVDrVNxxi3GmLqrHDxuV-G2LcfYtxji3HOLca4-OHjC6GNLjEixdVepxKCcNOJYSppxNcd3Dxvdck+LioPQxjxlF1UeEEyexSwlz2Ka45ehi14NIKTvBppTbZBKuCEq4YSrgRKuK46+r4uYoF5jIfmgsPogEONTF61EqDkwYLIOk10QbSwulQYZvAuCyUVnERZAskBCxVhhDagMQAQRmcjLUCzXhyEpJqKgrEXCPRcNibmJYQioS8CGXi4ZIxCUiCJWIYkEySWksTcipkcyVAhrUcWjokRojRNiVGTYORakaG0e46JdC3HaFSAk2Q8VkDeWSCkgwtgZlJOSfsaJ8SEnZmddozI2Qim2GMBkiyTLAxZayP4xyDTqxckOEMOLXwEsJK+UlNKvne15VxEqBNwxbRJnKAiipKYHQWfRDmNFNUqBWYxaYd0nnsX9FEeVeg3q-Kwv86MURfriUTFJLCMkqXaShYpGF1RIaKEWEqMY3LZK8tRZsCUDlAVOSFZrEVIAPipAVRNNAMBuCJu9gAdQYEoLQVqSpqA0Dmu83sZwNDTbnN8YINBlsjm+C81b9ZKs2uUWU+EFREX1RLY6DzdXrNlvRfARrmKlFNS8kAvLRkyAoKQa1YZbVfQBTGYFf1nXgtkpmT1nBwY+rhZy6G+BLU4n3UZfdLI8YYrlli-k5AlkKD5MoQUBa2V0jIPm4UGIr0nrZGQMUsACTykGHc-FDyH1vtxWKAmAG6RjE6N8VgB792NE2FTAAjuORWMgJC0wAFbPnaK+wtgwAD0nNBD4ZFPyxyasjSDm+RGDQIhUCvivUxzCZyVUtt2hqvt2rro9vFnRQ1t0WI6meX6SIIBtCmB4AANRZomBwIBRAXHYkAA)

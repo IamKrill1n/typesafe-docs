@@ -47,7 +47,9 @@ PRICE = (
     0.00,
 )  # $ per 1M tokens (input, output); TypeSafe jev-1.14.0 as of 2026-11, see README
 RUNS = 5  # repeats per batching strategy, to estimate each answer's run-to-run std dev
-client = TypeSafeClient(api_key=os.environ["TYPESAFE_API_KEY"], timeout=120.0)
+client = TypeSafeClient(
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"), timeout=120.0
+)
 ```
 
 ```python

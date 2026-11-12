@@ -106,10 +106,12 @@ LLM_PRICES = {  # $ per 1M tokens (input, output), list prices as of 2026-11
 DECISIONS_PRICE = (0.10, 0.00)  # $ per 1M tokens (input, output); output tokens are free
 TYPESAFE_PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output), as of 2026-08
 
-anthropic_client = anthropic.Anthropic()
-openai_client = OpenAI()
+anthropic_client = anthropic.Anthropic(
+    api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only")
+)
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "cache-only"))
 typesafe_client = TypeSafeClient(
-    api_key=os.environ["TYPESAFE_API_KEY"],
+    api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),
     base_url="https://api.typesafe.ai",
     timeout=30.0,
 )

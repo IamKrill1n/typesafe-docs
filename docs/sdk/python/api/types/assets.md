@@ -201,7 +201,7 @@ Copy signature
 
   &#x20;
 
-  [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)\`
+  [Self](https://docs.python.org/3/library/typing.html#typing.Self)\`
 </pre>
 
 Create an `Image` instance from a base64-encoded image bytes.
@@ -225,7 +225,7 @@ Raises:
 Copy signature
 <pre tabIndex="0" aria-label="SDK signature">`from\_pil(
 &#x20;   image: [PIL](https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image), format: [str](https://docs.python.org/3/builtins/stdtypes.html#str) = "jpeg"
-) -> [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)`</pre>
+) -> [Self](https://docs.python.org/3/library/typing.html#typing.Self)`</pre>
 
 Create an `Image` instance from a [Pillow](https://pillow.readthedocs.io/) image.
 

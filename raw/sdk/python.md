@@ -45,7 +45,7 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
    > async def main() -> None:
    >     async with AsyncTypeSafeClient() as client:
    >         response = await client.system_one(
-   >             state={"document": "I was charged twice. Please fix this ASAP."},
+   >             state={"ticket": "I was charged twice. Please fix this ASAP."},
    >             questions={
    >                 "billing": Noul(instructions="Is this ticket about billing?"),
    >                 "tone": Choice(
@@ -73,7 +73,7 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
    >
    > with TypeSafeClient() as client:
    >     response = client.system_one(
-   >         state={"document": "I was charged twice. Please fix this ASAP."},
+   >         state={"ticket": "I was charged twice. Please fix this ASAP."},
    >         questions={
    >             "billing": Noul(instructions="Is this ticket about billing?"),
    >             "tone": Choice(

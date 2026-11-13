@@ -12,6 +12,10 @@ Each page shows a project running, then explains how it works: the questions it 
 >
 > An assistant for requests like "Turn off all of the lights in the house". It asks Jev every question it might need in one call, and code ignores the answers that don't apply. It calls an LLM to split a request that asks for several actions, and to reply to general questions or chat.
 
+> [card] [Content audit](https://docs.typesafe.ai/demos/content-audit.md)
+>
+> Score all 279 pages of the Django docs on 45 questions each in about 4 seconds, then turn the answers into a fix-first list, quick wins, and Divio types. A deep scan finds typos down to the sentence.
+
 To build your own project step by step, with code you can run, see the [cookbooks](https://docs.typesafe.ai/cookbooks.md).
 
 > [!TIP]

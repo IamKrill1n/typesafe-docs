@@ -31,13 +31,13 @@ The two steps take 11 requests instead of 1,000, and the search finishes in abou
 
 ## Any request, same sheet
 
-The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is a new search. The sheet caches each request's results, so editing other cells doesn't run the search again.
+The formula is `=JEV_TOP10(B2, Listings!A2:H1001)`, so a new request in `B2` is a new search. The sheet caches each request's results, so editing other cells doesn't run the search again.
 
 ## Build it
 
-> [card] [Copy the Google Sheet](https://docs.google.com/spreadsheets/d/1E1UOTwk2QIA9ZxIieXPvvQaGPOCZn7991bT49S07bRA/copy)
+> [card] [Copy the Google Sheet](https://docs.google.com/spreadsheets/d/1OeHSq-B354XT7ZoUIZU31kXKdgb7CHQnh43EpOSRAKo/copy)
 >
-> The 1,000 listings and the `JEV_TOP10` formula. Add your TypeSafe API key under Extensions > Apps Script > Project Settings > Script properties, as `TYPESAFE_API_KEY`.
+> The 1,000 listings and the `JEV_TOP10` formula. Add your TypeSafe API key under Extensions > Apps Script > Project Settings > Script properties, as `TYPESAFE_API_KEY`. Then type a request in `B2`. Anyone with edit access to your copy can see the key.
 
 > [card] [Get an API key](https://console.typesafe.ai/keys)
 >
@@ -52,7 +52,7 @@ The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is 
 >  * Setup: Extensions > Apps Script, paste this file, save. Then Project Settings >
 >  * Script properties: add TYPESAFE_API_KEY with your TypeSafe key. No permission prompt.
 >  *
->  * Usage: =JEV_TOP10(B1, Listings!A2:H1001)
+>  * Usage: =JEV_TOP10(B2, Listings!A2:H1001)
 >  *   The listing columns must be: Name, Type, Price per night (R), Bedrooms, Guests, Rating,
 >  *   Description, Link.
 >  *
@@ -90,7 +90,7 @@ The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is 
 >   const key = PropertiesService.getScriptProperties().getProperty('TYPESAFE_API_KEY');
 >   if (!key) throw new Error('Add TYPESAFE_API_KEY under Project Settings > Script properties.');
 >   request = String(request || '').trim();
->   if (!request) return [['Type what you are looking for in B1.']];
+>   if (!request) return [['Type what you are looking for in B2.']];
 >
 >   const rows = listings.filter((r) => r[0] !== '');
 >   const cache = CacheService.getScriptCache();

@@ -46,8 +46,8 @@ The assistant calls an LLM in two cases, both where it needs generated text:
 
 **Falling back to a conversational LLM:** When Jev determines that the user query is a request for general information or conversation, the system calls an LLM to generate a freeform response. This allows an interactive system to handle requests with known deterministic behavior in a fast and cost efficient way, while still allowing for the flexibility provided by a generative LLM when needed. Jev's initial response is so fast compared to the LLM response that it adds negligible latency to the overall system.
 
-## Run it yourself
+## The code
 
-This demo is a simple Vite/React single-page app that uses the TypeSafe API to evaluate user requests. The full source code will be available on GitHub at release. Its README includes instructions for running the demo locally and an overview of which bits of the source code are responsible for which parts of the demo.
+This demo is a simple Vite/React single-page app that uses the TypeSafe API to evaluate user requests. We plan to open-source the code, and will link it here when it's published.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

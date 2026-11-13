@@ -1,6 +1,6 @@
 {
   "source": "https://docs.typesafe.ai",
-  "page_count": 148,
+  "page_count": 149,
   "pages": {
     "agent-skill.md": {
       "url": "https://docs.typesafe.ai/agent-skill.md",
@@ -177,19 +177,19 @@
       "url": "https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md",
       "title": "Self-consistency: choices",
       "description": "Ask a model the same moderation question twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline posts.",
-      "raw_sha256": "1ce13d80d84971582caeb2bac2ae2dd4f36bf710296f215455493b86896cecf8",
-      "clean_sha256": "625d389daf7dcd58739f02d755824b1662e442bff31b5e422f576125edbad176",
-      "bytes": 53953,
-      "changed_at": "2026-11-12T15:21:07.339Z"
+      "raw_sha256": "7ca6a19b5428c2247d2859fa16adeda6dab283bc823f40688a8cf4f71b72adab",
+      "clean_sha256": "ec84b4634f92c576318a6f27e0769ae9ce9c1d56e4e9192492245afd2b585b04",
+      "bytes": 50368,
+      "changed_at": "2026-11-13T14:39:56.586Z"
     },
     "cookbooks/consistency_noul_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md",
       "title": "Self-consistency: nouls",
       "description": "Ask a model about the same insurance claim twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline claims.",
-      "raw_sha256": "5456605e07c1ced849ff40a4a30d1c6fff4716f43ff5d5eba7693ea434cd669c",
-      "clean_sha256": "984ced4ce597e1dbfd375b52748893052fbd2fc25e13c3ab650665a96b19c1ca",
-      "bytes": 45832,
-      "changed_at": "2026-11-12T15:21:07.341Z"
+      "raw_sha256": "6ce83cacfed3fc59f468df17bd2f64fc3412fabd321e0946baacc27bde241261",
+      "clean_sha256": "5ba25a1d5fcfc1b42f7a72b2f882f5f7f649f5094a94fdacdd3ecea0f8b3e0f7",
+      "bytes": 42761,
+      "changed_at": "2026-11-13T14:39:56.589Z"
     },
     "cookbooks/date_extraction_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md",
@@ -357,28 +357,37 @@
       "url": "https://docs.typesafe.ai/demos.md",
       "title": "Made with Jev",
       "description": "Working projects built on Jev, and how each one works.",
-      "raw_sha256": "c89b79bad49e9fc0fee76a708e3efb078e816900632294e7f7384f0d4e7e88fc",
-      "clean_sha256": "aba02e1410b3954bb17f16c84c4cf868215c669f58eabd1147acb2173e78a661",
-      "bytes": 1481,
-      "changed_at": "2026-11-05T14:44:01.332Z"
+      "raw_sha256": "ee8115aa11d41ae06dfd427c9e1dc0fb454edd9a4fabe75f5dbd2f7b97daf5fd",
+      "clean_sha256": "9e4cf77a297e168938762c9f40053b06144576b463693ebf6c854e8f31e2ea14",
+      "bytes": 1760,
+      "changed_at": "2026-11-13T14:39:56.593Z"
     },
     "demos/airbnb-listing-search.md": {
       "url": "https://docs.typesafe.ai/demos/airbnb-listing-search.md",
       "title": "Airbnb listing search in Google Sheets",
       "description": "Describe a stay in plain English and get the 10 best of 1,000 Cape Town Airbnb listings, scored out of 10, in about a second, from a formula in Google Sheets.",
-      "raw_sha256": "e6ab5b3fe1b3af5e0f1ff0736e589b2d656cf3c4ed7bc2674d6c7896e782efc5",
-      "clean_sha256": "f8898a62455d6747e74c91a789c428abf70a0b280a1ec38d6f2bdd27179c5e24",
-      "bytes": 8966,
-      "changed_at": "2026-11-05T14:44:01.333Z"
+      "raw_sha256": "c62b1f421906fdf11028f49f424ae14bd567dcaabe1a35cb37f0e32e15d4383c",
+      "clean_sha256": "196f7fdce85cf6869166c86c8d0460656acf05545df6a4ec603c666b80fc2456",
+      "bytes": 9049,
+      "changed_at": "2026-11-13T14:39:56.593Z"
+    },
+    "demos/content-audit.md": {
+      "url": "https://docs.typesafe.ai/demos/content-audit.md",
+      "title": "Content audits with Jev",
+      "description": "Audit all of the Django documentation in under 5 seconds for $0.10. Get an overview of what kind of content you have, what needs fixing, and where to spend effort.",
+      "raw_sha256": "38d262c55224e348d35f0be722720a04d83db9adc668d30b1a4b83490f2c2154",
+      "clean_sha256": "eb023bd5030622e0a287298d24e536a41edf027f7774ac73f5b7b49e4865358e",
+      "bytes": 10919,
+      "changed_at": "2026-11-13T14:39:56.594Z"
     },
     "demos/smart-home.md": {
       "url": "https://docs.typesafe.ai/demos/smart-home.md",
       "title": "Smart home assistant demo",
       "description": "Demo code: a smart home assistant that uses Jev to evaluate user requests.",
-      "raw_sha256": "7a9765549150eb7c82634585790f66974149df606691de8ed66a909860cb5b2b",
-      "clean_sha256": "cf81d9771ab2a7b5843e2c04b5eed14932f761ab7aeb049f49f440848b32cf34",
-      "bytes": 3388,
-      "changed_at": "2026-11-05T14:44:01.334Z"
+      "raw_sha256": "35ac22f310f3b2d917eaa330afce38818d6858557705efce530e95ebc24169c6",
+      "clean_sha256": "f10dad1dba9ff821453509f3950253e27f263fbcbb6e7e3af6307051a1d99dc6",
+      "bytes": 3240,
+      "changed_at": "2026-11-13T14:39:56.594Z"
     },
     "images.md": {
       "url": "https://docs.typesafe.ai/images.md",
@@ -600,10 +609,10 @@
       "url": "https://docs.typesafe.ai/sdk/javascript.md",
       "title": "JavaScript SDK",
       "description": "",
-      "raw_sha256": "e97bef8031ae1db7d1172c642e3d7f642323a130bde0acfcfde533bd66afff1a",
-      "clean_sha256": "a1174b021ced545e196af8159562094fdb39679036daf32209e777a3cfa019e9",
-      "bytes": 6874,
-      "changed_at": "2026-10-15T11:36:48.685Z"
+      "raw_sha256": "9d4220755e9130756fc3fde84d0464703a74418a628ab7fcf4524f7583ab469d",
+      "clean_sha256": "a01d8bfad8388814c504be5f15440d63c7ae4b56f721dfd059f9cd33ef59049d",
+      "bytes": 6872,
+      "changed_at": "2026-11-13T14:39:56.607Z"
     },
     "sdk/javascript/api.md": {
       "url": "https://docs.typesafe.ai/sdk/javascript/api.md",
@@ -1203,10 +1212,10 @@
       "url": "https://docs.typesafe.ai/sdk/python.md",
       "title": "TypeSafe Python SDK",
       "description": "Install the TypeSafe Python SDK and get started with asynchronous or synchronous API calls.",
-      "raw_sha256": "1fb138baff1df637cb37b4f44f42704f631f29b11d87bfc6ada398d36b1ea7c0",
-      "clean_sha256": "0bd1d3646a7af61bdb06a4c75123a5b411cab337b8e79456707372b3a3bc5875",
-      "bytes": 4185,
-      "changed_at": "2026-10-31T12:40:52.894Z"
+      "raw_sha256": "062643b66b1145bce944f30ba8737013950562db174b944c6ac1f51e0a762d49",
+      "clean_sha256": "b0cfe06d97d30928b9d10b3184a093b9a2fca8f5b0da0a6b863386c266c7d981",
+      "bytes": 4181,
+      "changed_at": "2026-11-13T14:39:56.596Z"
     },
     "sdk/python/api.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api.md",
@@ -1266,10 +1275,10 @@
       "url": "https://docs.typesafe.ai/sdk/python/api/types/assets.md",
       "title": "Assets",
       "description": "Attach assets to System One requests and reference them from request content.",
-      "raw_sha256": "0c8e02645d374c54c39033f2654c38f035ed35d7833d02b0600f710e1c87b129",
-      "clean_sha256": "6e7d5b114afd0e7d6f518efae1721179682b2ddf7849ce1b940f70ac24556f41",
-      "bytes": 5595,
-      "changed_at": "2026-10-24T11:09:30.160Z"
+      "raw_sha256": "7096594f14e77d4d839851c2505e0365813a5f2eaa0a5cf91fa89a81c7ee1df5",
+      "clean_sha256": "6985c9d292443472c8747aa70f0ce1fc0ea010216488caf8d603b8a1a7248c9f",
+      "bytes": 5541,
+      "changed_at": "2026-11-13T14:39:56.604Z"
     },
     "sdk/python/api/types/common.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/common.md",
@@ -1284,10 +1293,10 @@
       "url": "https://docs.typesafe.ai/sdk/python/api/types/questions.md",
       "title": "Questions",
       "description": "Provide state and ask yes/no, choice, and score questions using objects or dictionaries.",
-      "raw_sha256": "bfda82fabca4f1f151fc498615d37a48c14059d7da067458fc55ee03d1684320",
-      "clean_sha256": "f86af644e951833782847a92247d2cf971cb888fc278a11236661c34a3bd7770",
-      "bytes": 26284,
-      "changed_at": "2026-10-31T12:40:52.906Z"
+      "raw_sha256": "84b3760a3b8e88e8a250e4245546dd76db7218f50738a872cb0e9e0aecd4d145",
+      "clean_sha256": "0b88890874f2c3e51dae520229f6bbb00a577ac6a2162f37f21d1f8ec211a7b4",
+      "bytes": 26149,
+      "changed_at": "2026-11-13T14:39:56.603Z"
     },
     "sdk/python/api/types/responses.md": {
       "url": "https://docs.typesafe.ai/sdk/python/api/types/responses.md",

@@ -56,6 +56,7 @@
 - [Made with Jev](https://docs.typesafe.ai/demos.md): Working projects built on Jev, and how each one works.
 - [Airbnb listing search in Google Sheets](https://docs.typesafe.ai/demos/airbnb-listing-search.md): Describe a stay in plain English and get the 10 best of 1,000 Cape Town Airbnb listings, scored out of 10, in about a second, from a formula in Google Sheets.
 - [Smart home assistant demo](https://docs.typesafe.ai/demos/smart-home.md): Demo code: a smart home assistant that uses Jev to evaluate user requests.
+- [Content audits with Jev](https://docs.typesafe.ai/demos/content-audit.md): Audit all of the Django documentation in under 5 seconds for $0.10. Get an overview of what kind of content you have, what needs fixing, and where to spend effort.
 - [Models](https://docs.typesafe.ai/models.md)
 - [Agent skill](https://docs.typesafe.ai/agent-skill.md): Drop-in skill for Claude Code, Codex, and other agent environments.
 - [Legal](https://docs.typesafe.ai/legal.md): Legal documents and policies for TypeSafe.

@@ -1033,7 +1033,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -1065,7 +1065,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -1127,7 +1127,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -1227,7 +1227,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -1311,7 +1311,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 

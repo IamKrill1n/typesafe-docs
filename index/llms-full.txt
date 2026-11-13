@@ -316,7 +316,7 @@ Structure helps in these situations:
 >
 > Try it in the Playground →
 
-The "potential\_duplicate" data sourced from code can change over time. The "question" references it using backticks.
+The "potential_duplicate" data sourced from code can change over time. The "question" references it using backticks.
 
 The descriptions inside `criteria` can be objects too. For a Choice question, each option's description can be an object that says what the option covers, what belongs to a different option, and a few examples. Use the same field names across options so the model can compare them directly.
 
@@ -5885,7 +5885,7 @@ prompt, a conflict in the prompt, or dropped.
 The tests, in order:
 
 1. `contains_prompt_injection > 0.70` -> exclude
-2. `contradicts_query_premise > 0.70` -> conflicting\_evidence
+2. `contradicts_query_premise > 0.70` -> conflicting_evidence
 3. `is_relevant < 0.45` -> exclude
 4. `contains_answer_evidence > 0.55` -> include
 5. otherwise exclude
@@ -6321,7 +6321,6 @@ The conditions, each one model plus one setting:
   `gpt-6-luna`, each reasoning at high effort.
 * `gpt-6.1-terra` and `gpt-6-luna` with reasoning off, at temperature `0` and the API
   default. They are the only models here that take a temperature.
-* OpenAI's Decisions API on `gpt-6-luna`.
 * Jev 1.14 (`jev-1.14.0`): one `system_one` call over the 8 `Choice` questions.
 
 For Jev, a post's least stable decision changes 4.0% of the time on average, about 1 time
@@ -6379,7 +6378,6 @@ LLM_MODELS = {  # every one reasons at high effort
     "gpt-6-luna": "GPT-6 Luna",
 }
 TEMPERATURE_MODELS = ["gpt-6.1-terra", "gpt-6-luna"]  # also reasoning off: temperature 0 + default
-DECISIONS_MODEL = "gpt-6-luna"  # through OpenAI's Decisions API
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 NUM_SAMPLES = 15  # repeated post+rubric calls per condition
 NUM_POSTS = 40  # versions of the post, drawn from the combinations of the borderline facts
@@ -6394,7 +6392,6 @@ LLM_PRICES = {  # $ per 1M tokens (input, output), list prices as of 2026-11
     "gpt-6.1-terra": (1.00, 5.00),
     "gpt-6-luna": (0.10, 0.50),
 }
-DECISIONS_PRICE = (0.10, 0.00)  # $ per 1M tokens (input, output); output tokens are free
 TYPESAFE_PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output), as of 2026-08
 
 anthropic_client = anthropic.Anthropic(
@@ -6548,16 +6545,13 @@ question, a probability on every one of its options. Calls route to Anthropic or
 model name. Reasoning runs at `high` effort; with reasoning off, `gpt-6.1-terra` and
 `gpt-6-luna` take a `temperature`, `0` or the API default.
 
-The Decisions API call sends the same post as JSON and asks each `Choice` question as a
-Decisions `choice` question, which comes back with a probability on each option.
-
 The TypeSafe call is one `system_one` request over the same post and the same 8
 `Choice` questions, returning one distribution per question.
 
 Every query also gets a fresh `uid`, a throwaway unique value that changes each run while
 leaving the post and rubric unchanged. It appears in the LLM prompt and as an extra field
-in the TypeSafe and Decisions API states. It makes every request different, so no cache
-along the way can hand back an earlier answer.
+in the TypeSafe state. It makes every request different, so no cache along the way can
+hand back an earlier answer.
 
 For every call we also record its cost and round-trip time.
 
@@ -6694,46 +6688,6 @@ def _query_llm(model, reasoning, temperature, sample_index, post_json, questions
     return distributions, cost, latency
 
 
-def _query_decisions(sample_index, post_json, questions_json, decisions_model):
-    """One Decisions API call -> (label distributions keyed by question key, cost_usd,
-    latency_s)."""
-    questions = json.loads(questions_json)
-    state = {"uid": f"{sample_index}:{token_hex(4)}", "post": json.loads(post_json)}
-    started = perf_counter()
-    response = openai_client.post(
-        "/decisions",
-        cast_to=object,
-        body={
-            "model": decisions_model,
-            "input": [{"role": "user", "content": [{"type": "input_json", "data": state}]}],
-            "questions": [
-                {
-                    "type": "choice",
-                    "name": key,
-                    "instructions": instructions,
-                    "choices": [
-                        {"value": label, "description": description}
-                        for label, description in choices.items()
-                    ],
-                }
-                for key, (instructions, choices) in questions.items()
-            ],
-        },
-    )
-    latency = perf_counter() - started
-    answers = {answer.get("name"): answer for answer in response.get("answers") or []}
-    distributions = {}
-    for key, (_instructions, choices) in questions.items():
-        probabilities = {
-            str(item.get("value")): item.get("probability")
-            for item in (answers.get(key) or {}).get("probabilities") or []
-        }
-        distributions[key] = parse_distribution(probabilities, list(choices))
-    usage = response.get("usage") or {}
-    cost = _cost(DECISIONS_PRICE, usage.get("input_tokens") or 0, usage.get("output_tokens") or 0)
-    return distributions, cost, latency
-
-
 def _query_typesafe(sample_index, post_json, questions_json, model):
     """One TypeSafe call -> (label distributions keyed by question key, input tokens,
     output tokens, latency_s)."""
@@ -6794,12 +6748,6 @@ def ask_llm(model: str, reasoning: str, temperature: float | None, sample_index:
 
 
 @json_cache
-def ask_decisions(sample_index: int, post_json: str, questions_json: str, decisions_model: str):
-    """The example post's Decisions API answers, with cost and latency."""
-    return _query_decisions(sample_index, post_json, questions_json, decisions_model)
-
-
-@json_cache
 def ask_typesafe(sample_index: int, post_json: str, questions_json: str, model: str):
     """The example post's Jev answers, with token usage and latency."""
     return _query_typesafe(sample_index, post_json, questions_json, model)
@@ -6810,12 +6758,6 @@ def sweep_llm(model: str, reasoning: str, temperature: float | None, sample_inde
               post_json: str, questions_json: str):
     """One LLM answer set for one version of the post."""
     return _query_llm(model, reasoning, temperature, sample_index, post_json, questions_json)[0]
-
-
-@json_cache
-def sweep_decisions(sample_index: int, post_json: str, questions_json: str, decisions_model: str):
-    """One Decisions API answer set for one version of the post."""
-    return _query_decisions(sample_index, post_json, questions_json, decisions_model)[0]
 
 
 @json_cache
@@ -6836,7 +6778,6 @@ def sweep_typesafe(sample_index: int, post_json: str, questions_json: str, model
 | GPT | `gpt-6.1-sol` | ✓ | — | — |
 | GPT | `gpt-6.1-terra` | ✓ | ✓ | ✓ |
 | GPT | `gpt-6-luna` | ✓ | ✓ | ✓ |
-| Decisions API | `gpt-6-luna` | — | — | ✓ |
 | System One | `jev-1.14.0` | — | — | ✓ |
 
 * A check mark is one condition, run 15 times per post. A dash is a combination that was
@@ -6848,7 +6789,6 @@ def sweep_typesafe(sample_index: int, post_json: str, questions_json: str, model
   default where a model takes one.
 
 ```python expandable theme={null}
-DECISIONS_LABEL = "OpenAI Decisions (GPT-6 Luna)"
 CONDITIONS = [
     {"label": f"{name} (reasoning)", "model": model, "reasoning": "high", "temp": None}
     for model, name in LLM_MODELS.items()
@@ -6857,7 +6797,7 @@ CONDITIONS = [
      "temp": temp}
     for model in TEMPERATURE_MODELS
     for temp, setting in ((0, "temperature 0"), (None, "default temperature"))
-] + [{"label": DECISIONS_LABEL, "model": None, "reasoning": None, "temp": None}]
+]
 LABELS = [condition["label"] for condition in CONDITIONS]
 TYPESAFE_LABEL = "Jev 1.14"
 ALL_LABELS = [*LABELS, TYPESAFE_LABEL]
@@ -6870,18 +6810,10 @@ PLOT_ORDER = [
     "GPT-6.1 Sol (reasoning)",
     "GPT-6 Luna (temperature 0)",
     "GPT-6 Luna (default temperature)",
-    DECISIONS_LABEL,
 ]
 STRIP_ORDER = [TYPESAFE_LABEL, *LABELS]  # rows of the final plot: every condition
 
 
-def ask(llm_fn, decisions_fn, condition: dict, sample_index: int, post_json: str):
-    """One cached call for one condition: the LLM function, or the Decisions API one."""
-    if condition["model"] is None:
-        return decisions_fn(sample_index, post_json, QUESTIONS_JSON,
-                            decisions_model=DECISIONS_MODEL)
-    return llm_fn(condition["model"], condition["reasoning"], condition["temp"], sample_index,
-                  post_json, QUESTIONS_JSON)
 POST_JSON = json.dumps(POST)
 
 runs: dict[str, list] = {}  # label -> NUM_SAMPLES samples of {question key: distribution}
@@ -6889,7 +6821,8 @@ stats: dict[str, list] = {}  # label -> NUM_SAMPLES (cost_usd, latency_s) pairs
 with ThreadPoolExecutor(max_workers=16) as pool:
     futures = {
         condition["label"]: [
-            pool.submit(ask, ask_llm, ask_decisions, condition, sample_index, POST_JSON)
+            pool.submit(ask_llm, condition["model"], condition["reasoning"],
+                        condition["temp"], sample_index, POST_JSON, QUESTIONS_JSON)
             for sample_index in range(NUM_SAMPLES)
         ]
         for condition in CONDITIONS
@@ -6915,8 +6848,8 @@ stats[TYPESAFE_LABEL] = [
 
 ### Cost + speed (per rubric query)
 
-Costs use the per-token prices in Setup: list prices as of 2026-11 for the LLMs and the
-Decisions API, and TypeSafe's rate as of 2026-08.
+Costs use the per-token prices in Setup: list prices as of 2026-11 for the LLMs, and
+TypeSafe's rate as of 2026-08.
 
 One row is one full 8-question rubric call on the example post. `time/call` and
 `cost/call` average the 15 calls, and the `vs Jev 1.14` columns divide by the Jev 1.14
@@ -6959,13 +6892,11 @@ GPT-6.1 Terra (temperature 0)             15     4274ms    $0.002694      41.6x 
 GPT-6.1 Terra (default temperature)       15     4344ms    $0.002745      42.3x      41.8x
 GPT-6 Luna (temperature 0)                15     2753ms    $0.000269      26.8x       4.1x
 GPT-6 Luna (default temperature)          15     2836ms    $0.000269      27.6x       4.1x
-OpenAI Decisions (GPT-6 Luna)             15      301ms    $0.000150       2.9x       2.3x
 Jev 1.14                                  15      103ms    $0.000066       1.0x       1.0x
 ```
 
 In this run Jev has a mean round-trip latency of 103ms. The LLM conditions range from 2.8
-to 18.2 seconds per call under the concurrency settings above, and the Decisions API takes
-0.3 seconds.
+to 18.2 seconds per call under the concurrency settings above.
 
 ## Plot: every sample's top option on the example post
 
@@ -7106,15 +7037,14 @@ fig.tight_layout()
 display(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/FM06dz4_TXP9gq_Z/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.1.png?fit=max\&auto=format\&n=FM06dz4_TXP9gq_Z\&q=85\&s=374039ad3114931f32b998f67cd122d7)
+![output](https://mintcdn.com/ts-docs/orb6EiXzZ12Fo-od/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.1.png?fit=max\&auto=format\&n=orb6EiXzZ12Fo-od\&q=85\&s=58026a966827f85ad53f034232fbe48c)
 
 `target` reads Person on every repeat of every condition. Jev changes its top option on one
 question, `primary_risk`: Harassment 11 times and Violence 4 times, with both near 0.5.
 Claude Haiku 5.5 changes its top option on 7 of the 8 questions, and splits `action` three
 ways between Strike, Escalate and Remove. Claude Opus 5.5 and GPT-6.1 Sol each change it on
 4 questions. GPT-6 Luna changes `action` once at temperature `0`; at its default
-temperature it splits `action` and `link_handling`. The Decisions API splits
-`link_handling` almost evenly between Brigade and RmLink.
+temperature it splits `action` and `link_handling`.
 
 A change of top option shows only the moves that reorder two options. A probability can
 move a long way without reordering anything, and a cutoff set anywhere along that move
@@ -7182,15 +7112,15 @@ POSTS = {
     for combo in random.Random(0).sample(combinations, NUM_POSTS)
 }
 
-# 40 posts x 14 conditions x 15 repeats; a live run takes hours, most of it the models
+# 40 posts x 13 conditions x 15 repeats; a live run takes hours, most of it the models
 # reasoning at high effort.
 with ThreadPoolExecutor(max_workers=16) as pool:
     sweep = {
         post_id: {
             **{
                 condition["label"]: [
-                    pool.submit(ask, sweep_llm, sweep_decisions, condition, index,
-                                json.dumps(post))
+                    pool.submit(sweep_llm, condition["model"], condition["reasoning"],
+                                condition["temp"], index, json.dumps(post), QUESTIONS_JSON)
                     for index in range(NUM_SAMPLES)
                 ]
                 for condition in CONDITIONS
@@ -7274,7 +7204,6 @@ Claude Opus 5.5 (reasoning)                    2.4%          6.6%       10.3%   
 Claude Fable 5.1 (reasoning)                   2.7%          7.5%       16.8%        5/40           0
 Claude Sonnet 5.5 (reasoning)                  3.2%         10.3%       25.3%       13/40           0
 GPT-6 Luna (temperature 0)                     2.2%         11.5%       28.4%       21/40           0
-OpenAI Decisions (GPT-6 Luna)                  2.8%         12.3%       22.3%       26/40           0
 Claude Haiku 5.5 (reasoning)                   4.4%         12.8%       16.8%       35/40           0
 GPT-6 Astra (reasoning)                        2.2%         12.9%       25.5%       25/40           0
 GPT-6.1 Sol (reasoning)                        2.5%         14.9%       25.8%       30/40           0
@@ -7332,10 +7261,9 @@ GPT-6.1 Terra (temperature 0)                    p < 0.001   p < 0.001
 GPT-6.1 Terra (default temperature)              p < 0.001   p < 0.001
 GPT-6 Luna (temperature 0)                       p < 0.001   p < 0.001
 GPT-6 Luna (default temperature)                 p < 0.001   p < 0.001
-OpenAI Decisions (GPT-6 Luna)                    p < 0.001   p < 0.001
 ```
 
-Every p-value is below 0.001, after multiplying by 13 for the 13 comparisons: luck would
+Every p-value is below 0.001, after multiplying by 12 for the 12 comparisons: luck would
 produce gaps this large less than once in a thousand runs. Temperature `0` lowers the LLMs'
 numbers, but GPT-6 Luna at temperature `0` still has a decision that changes more than 1
 time in 10 on 21 of the 40 posts.
@@ -7402,7 +7330,7 @@ for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light
     plt.close(fig_strip)
 ```
 
-![output](https://mintcdn.com/ts-docs/FM06dz4_TXP9gq_Z/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.2.png?fit=max\&auto=format\&n=FM06dz4_TXP9gq_Z\&q=85\&s=0b84f9220804687896293cb6636e6c53)
+![output](https://mintcdn.com/ts-docs/orb6EiXzZ12Fo-od/cookbooks/consistency_choice_cookbook/consistency_choice_cookbook.executed.2.png?fit=max\&auto=format\&n=orb6EiXzZ12Fo-od\&q=85\&s=9ace390e28eeefd80b7d69fcbef27ebe)
 
 ## Open it in the TypeSafe playground
 
@@ -7460,7 +7388,6 @@ The conditions, each one model plus one setting:
   `gpt-6-luna`, each reasoning at high effort.
 * `gpt-6.1-terra` and `gpt-6-luna` with reasoning off, at temperature `0` and the API
   default. They are the only models here that take a temperature.
-* OpenAI's Decisions API on `gpt-6-luna`.
 * Jev 1.14 (`jev-1.14.0`): one `system_one` call over the 14 `Noul` questions.
 
 For Jev, a claim's least stable decision changes 3.8% of the time on average, about 1 time
@@ -7518,7 +7445,6 @@ LLM_MODELS = {  # every one reasons at high effort
     "gpt-6-luna": "GPT-6 Luna",
 }
 TEMPERATURE_MODELS = ["gpt-6.1-terra", "gpt-6-luna"]  # also reasoning off: temperature 0 + default
-DECISIONS_MODEL = "gpt-6-luna"  # through OpenAI's Decisions API
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 NUM_SAMPLES = 15  # repeated claim+rubric calls per condition
 NUM_CLAIMS = 40  # versions of the claim, drawn from the combinations of the borderline facts
@@ -7533,7 +7459,6 @@ LLM_PRICES = {  # $ per 1M tokens (input, output), list prices as of 2026-11
     "gpt-6.1-terra": (1.00, 5.00),
     "gpt-6-luna": (0.10, 0.50),
 }
-DECISIONS_PRICE = (0.10, 0.00)  # $ per 1M tokens (input, output); output tokens are free
 TYPESAFE_PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output), as of 2026-08
 
 anthropic_client = anthropic.Anthropic(
@@ -7638,16 +7563,13 @@ question's key. Calls route to Anthropic or OpenAI by model name. Reasoning runs
 effort; with reasoning off, `gpt-6.1-terra` and `gpt-6-luna` take a `temperature`, `0` or
 the API default.
 
-The Decisions API call sends the same claim as JSON and asks each `Noul` question as a
-Decisions `predicate` question, which comes back with a probability.
-
 The TypeSafe call is one `system_one` request over the same claim and the same 14 `Noul`
 questions. Each answer's `noul` is P(true).
 
 Every query also gets a fresh `uid`, a throwaway unique value that changes each run while
 leaving the claim and rubric unchanged. It appears in the LLM prompt and as an extra field
-in the TypeSafe and Decisions API states. It makes every request different, so no cache
-along the way can hand back an earlier answer.
+in the TypeSafe state. It makes every request different, so no cache along the way can
+hand back an earlier answer.
 
 For every call we also record its cost and round-trip time.
 
@@ -7736,34 +7658,6 @@ def _query_llm(model, reasoning, temperature, sample_index, claim_json, question
     return {key: _parse_answer(raw.get(key)) for key in questions}, cost, latency
 
 
-def _query_decisions(sample_index, claim_json, questions_json, decisions_model):
-    """One Decisions API call -> (probabilities keyed by question key, cost_usd, latency_s)."""
-    questions = json.loads(questions_json)
-    state = {"uid": f"{sample_index}:{token_hex(4)}", "claim": json.loads(claim_json)}
-    started = perf_counter()
-    response = openai_client.post(
-        "/decisions",
-        cast_to=object,
-        body={
-            "model": decisions_model,
-            "input": [{"role": "user", "content": [{"type": "input_json", "data": state}]}],
-            "questions": [
-                {"type": "predicate", "name": key, "instructions": question}
-                for key, question in questions.items()
-            ],
-        },
-    )
-    latency = perf_counter() - started
-    answers = {answer.get("name"): answer for answer in response.get("answers") or []}
-    usage = response.get("usage") or {}
-    cost = _cost(DECISIONS_PRICE, usage.get("input_tokens") or 0, usage.get("output_tokens") or 0)
-    return (
-        {key: _parse_answer((answers.get(key) or {}).get("probability")) for key in questions},
-        cost,
-        latency,
-    )
-
-
 def _query_typesafe(sample_index, claim_json, questions_json, model):
     """One TypeSafe call -> (nouls keyed by question key, input tokens, output tokens, latency)."""
     questions = json.loads(questions_json)
@@ -7817,12 +7711,6 @@ def ask_llm(model: str, reasoning: str, temperature: float | None, sample_index:
 
 
 @json_cache
-def ask_decisions(sample_index: int, claim_json: str, questions_json: str, decisions_model: str):
-    """The example claim's Decisions API answers, with cost and latency."""
-    return _query_decisions(sample_index, claim_json, questions_json, decisions_model)
-
-
-@json_cache
 def ask_typesafe(sample_index: int, claim_json: str, questions_json: str, model: str):
     """The example claim's Jev answers, with token usage and latency."""
     return _query_typesafe(sample_index, claim_json, questions_json, model)
@@ -7833,12 +7721,6 @@ def sweep_llm(model: str, reasoning: str, temperature: float | None, sample_inde
               claim_json: str, questions_json: str):
     """One LLM answer set for one version of the claim."""
     return _query_llm(model, reasoning, temperature, sample_index, claim_json, questions_json)[0]
-
-
-@json_cache
-def sweep_decisions(sample_index: int, claim_json: str, questions_json: str, decisions_model: str):
-    """One Decisions API answer set for one version of the claim."""
-    return _query_decisions(sample_index, claim_json, questions_json, decisions_model)[0]
 
 
 @json_cache
@@ -7859,7 +7741,6 @@ def sweep_typesafe(sample_index: int, claim_json: str, questions_json: str, mode
 | GPT | `gpt-6.1-sol` | ✓ | — | — |
 | GPT | `gpt-6.1-terra` | ✓ | ✓ | ✓ |
 | GPT | `gpt-6-luna` | ✓ | ✓ | ✓ |
-| Decisions API | `gpt-6-luna` | — | — | ✓ |
 | System One | `jev-1.14.0` | — | — | ✓ |
 
 * A check mark is one condition, run 15 times per claim. A dash is a combination that was
@@ -7871,7 +7752,6 @@ def sweep_typesafe(sample_index: int, claim_json: str, questions_json: str, mode
   default where a model takes one.
 
 ```python expandable theme={null}
-DECISIONS_LABEL = "OpenAI Decisions (GPT-6 Luna)"
 CONDITIONS = [
     {"label": f"{name} (reasoning)", "model": model, "reasoning": "high", "temp": None}
     for model, name in LLM_MODELS.items()
@@ -7880,7 +7760,7 @@ CONDITIONS = [
      "temp": temp}
     for model in TEMPERATURE_MODELS
     for temp, setting in ((0, "temperature 0"), (None, "default temperature"))
-] + [{"label": DECISIONS_LABEL, "model": None, "reasoning": None, "temp": None}]
+]
 LABELS = [condition["label"] for condition in CONDITIONS]
 TYPESAFE_LABEL = "Jev 1.14"
 ALL_LABELS = [*LABELS, TYPESAFE_LABEL]
@@ -7893,18 +7773,10 @@ PLOT_ORDER = [
     "GPT-6.1 Sol (reasoning)",
     "GPT-6 Luna (temperature 0)",
     "GPT-6 Luna (default temperature)",
-    DECISIONS_LABEL,
 ]
 STRIP_ORDER = [TYPESAFE_LABEL, *LABELS]  # rows of the final plot: every condition
 
 
-def ask(llm_fn, decisions_fn, condition: dict, sample_index: int, claim_json: str):
-    """One cached call for one condition: the LLM function, or the Decisions API one."""
-    if condition["model"] is None:
-        return decisions_fn(sample_index, claim_json, QUESTIONS_JSON,
-                            decisions_model=DECISIONS_MODEL)
-    return llm_fn(condition["model"], condition["reasoning"], condition["temp"], sample_index,
-                  claim_json, QUESTIONS_JSON)
 CLAIM_JSON = json.dumps(CLAIM)
 
 runs: dict[str, list] = {}  # label -> NUM_SAMPLES samples of {question key: probability}
@@ -7912,7 +7784,8 @@ stats: dict[str, list] = {}  # label -> NUM_SAMPLES (cost_usd, latency_s) pairs
 with ThreadPoolExecutor(max_workers=16) as pool:
     futures = {
         condition["label"]: [
-            pool.submit(ask, ask_llm, ask_decisions, condition, sample_index, CLAIM_JSON)
+            pool.submit(ask_llm, condition["model"], condition["reasoning"],
+                        condition["temp"], sample_index, CLAIM_JSON, QUESTIONS_JSON)
             for sample_index in range(NUM_SAMPLES)
         ]
         for condition in CONDITIONS
@@ -7938,8 +7811,8 @@ stats[TYPESAFE_LABEL] = [
 
 ### Cost + speed (per rubric query)
 
-Costs use the per-token prices in Setup: list prices as of 2026-11 for the LLMs and the
-Decisions API, and TypeSafe's rate as of 2026-08.
+Costs use the per-token prices in Setup: list prices as of 2026-11 for the LLMs, and
+TypeSafe's rate as of 2026-08.
 
 One row is one full 14-question rubric call on the example claim. `time/call` and
 `cost/call` average the 15 calls, and the `vs Jev 1.14` columns divide by the Jev 1.14
@@ -7982,13 +7855,11 @@ GPT-6.1 Terra (temperature 0)             15     2464ms    $0.001483      25.5x 
 GPT-6.1 Terra (default temperature)       15     2527ms    $0.001483      26.2x      32.8x
 GPT-6 Luna (temperature 0)                15     1656ms    $0.000148      17.2x       3.3x
 GPT-6 Luna (default temperature)          15     2092ms    $0.000148      21.7x       3.3x
-OpenAI Decisions (GPT-6 Luna)             15      522ms    $0.000253       5.4x       5.6x
 Jev 1.14                                  15       97ms    $0.000045       1.0x       1.0x
 ```
 
 In this run Jev has a mean round-trip latency of 97ms. The LLM conditions range from 1.7 to
-16.4 seconds per call under the concurrency settings above, and the Decisions API takes 0.5
-seconds.
+16.4 seconds per call under the concurrency settings above.
 
 ## Plot: every sample on the example claim
 
@@ -8081,13 +7952,12 @@ fig.tight_layout()
 display(fig)
 ```
 
-![output](https://mintcdn.com/ts-docs/FM06dz4_TXP9gq_Z/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.executed.1.png?fit=max\&auto=format\&n=FM06dz4_TXP9gq_Z\&q=85\&s=0d1adde12df85be5f8bd47f56a72584e)
+![output](https://mintcdn.com/ts-docs/orb6EiXzZ12Fo-od/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.executed.1.png?fit=max\&auto=format\&n=orb6EiXzZ12Fo-od\&q=85\&s=e5d016c80052dd4745a848de7c5154ca)
 
 Jev holds every question within a narrow band and varies most on `exclusion` (0.37 to
 0.53). Among the other conditions even a factual check moves: GPT-6 Luna, at temperature
 `0` as at its default, puts `line_items_sum` anywhere from 0 to nearly 1. On the judgment
-calls the Decisions API moves furthest, `covered` from 0.12 to 0.87 and `exclusion` from
-0.13 to 0.71, and GPT-6.1 Sol puts `deductible` anywhere from 0.03 to 1.00.
+calls GPT-6.1 Sol puts `deductible` anywhere from 0.03 to 1.00.
 
 ## 40 versions of the claim
 
@@ -8149,15 +8019,15 @@ CLAIMS = {
     for combo in random.Random(0).sample(combinations, NUM_CLAIMS)
 }
 
-# 40 claims x 14 conditions x 15 repeats; a live run takes hours, most of it the models
+# 40 claims x 13 conditions x 15 repeats; a live run takes hours, most of it the models
 # reasoning at high effort.
 with ThreadPoolExecutor(max_workers=16) as pool:
     sweep = {
         claim_id: {
             **{
                 condition["label"]: [
-                    pool.submit(ask, sweep_llm, sweep_decisions, condition, index,
-                                json.dumps(claim))
+                    pool.submit(sweep_llm, condition["model"], condition["reasoning"],
+                                condition["temp"], index, json.dumps(claim), QUESTIONS_JSON)
                     for index in range(NUM_SAMPLES)
                 ]
                 for condition in CONDITIONS
@@ -8233,7 +8103,6 @@ GPT-6.1 Terra (temperature 0)                  1.7%          13.8%        50.3% 
 Claude Haiku 5.5 (reasoning)                   4.0%          17.6%        36.2%       33/40
 GPT-6 Astra (reasoning)                        1.8%          18.6%        51.1%       29/40
 GPT-6.1 Terra (default temperature)            2.7%          19.7%        50.2%       28/40
-OpenAI Decisions (GPT-6 Luna)                  2.8%          20.1%        38.4%       34/40
 GPT-6 Luna (reasoning)                         4.7%          27.6%        49.0%       40/40
 Claude Sonnet 5.5 (reasoning)                  6.1%          29.3%        52.0%       40/40
 GPT-6 Luna (temperature 0)                     4.7%          31.1%        51.4%       39/40
@@ -8280,19 +8149,18 @@ Claude Fable 5.1 (reasoning)                       p < 0.001   p < 0.001
 Claude Opus 5.5 (reasoning)                        p < 0.001   p < 0.001
 Claude Sonnet 5.5 (reasoning)                      p < 0.001   p < 0.001
 Claude Haiku 5.5 (reasoning)                       p < 0.001   p < 0.001
-GPT-6 Astra (reasoning)                            p < 0.001   p = 0.020
+GPT-6 Astra (reasoning)                            p < 0.001   p = 0.018
 GPT-6.1 Sol (reasoning)                            p < 0.001   p = 1.000
 GPT-6.1 Terra (reasoning)                          p = 0.008   p = 1.000
 GPT-6 Luna (reasoning)                             p < 0.001   p < 0.001
-GPT-6.1 Terra (temperature 0)                      p < 0.001   p = 0.164
+GPT-6.1 Terra (temperature 0)                      p < 0.001   p = 0.152
 GPT-6.1 Terra (default temperature)                p < 0.001   p < 0.001
 GPT-6 Luna (temperature 0)                         p < 0.001   p < 0.001
 GPT-6 Luna (default temperature)                   p < 0.001   p < 0.001
-OpenAI Decisions (GPT-6 Luna)                      p < 0.001   p < 0.001
 ```
 
-On the least stable question every p-value is below 0.01, after multiplying by 13 for the
-13 comparisons, and below 0.001 for every condition but GPT-6.1 Terra, reasoning (p =
+On the least stable question every p-value is below 0.01, after multiplying by 12 for the
+12 comparisons, and below 0.001 for every condition but GPT-6.1 Terra, reasoning (p =
 0.008). On the average over all questions, Jev's lead over GPT-6.1 Sol and GPT-6.1 Terra,
 reasoning, and over GPT-6.1 Terra at temperature `0` could be luck. Temperature `0` lowers
 the LLMs' numbers, but GPT-6.1 Terra at temperature `0` still has a decision that changes
@@ -8359,7 +8227,7 @@ for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light
     plt.close(fig_strip)
 ```
 
-![output](https://mintcdn.com/ts-docs/FM06dz4_TXP9gq_Z/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.executed.2.png?fit=max\&auto=format\&n=FM06dz4_TXP9gq_Z\&q=85\&s=6dbdeae18958a806e74028593646df23)
+![output](https://mintcdn.com/ts-docs/orb6EiXzZ12Fo-od/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.executed.2.png?fit=max\&auto=format\&n=orb6EiXzZ12Fo-od\&q=85\&s=7d4d5a588b02dd539f247ea1e133a66e)
 
 ## Open it in the TypeSafe playground
 
@@ -9361,7 +9229,7 @@ Send Jev the frames of a video one at a time and ask questions about each frame.
 footage from a bird feeder camera, the answers become a visit log per species.
 
 ![A snowy bird feeder with a male cardinal and a downy woodpecker, each in its own
-labeled box with a species probability. A status bar shows the time, the bird\_present
+labeled box with a species probability. A status bar shows the time, the bird_present
 probability, and the visits open so far.](https://mintcdn.com/ts-docs/l_j5jNYNp6JTBESY/cookbooks/feeder_watch/feeder-watch-hero.webp?fit=max\&auto=format\&n=l_j5jNYNp6JTBESY\&q=85\&s=b18b39e8df73dcaa8cf0f5d4c30e9b0a)
 
 We send Jev one frame a second, with five questions about each frame per request:
@@ -14225,9 +14093,9 @@ Set `TYPESAFE_API_KEY`.
 
 > [!WARNING]
 >
-> Images and `Box` questions are an early preview. Requests that carry an image
+> &#x20;Images and `Box` questions are an early preview. Requests that carry an image
 > or a `Box` question need the `TypeSafe-Danger-Zone-Images: true` header, and the request
-> format can change between releases. See [Images](/images).
+> format can change between releases. See [Images](/images).&#x20;
 
 ```python expandable theme={null}
 import hashlib
@@ -14420,8 +14288,8 @@ question about an unlisted vaccine scores 0.02, so there isn't one.
 
 > [!NOTE]
 >
-> A `Box` always returns a box, even for a vaccine that isn't on the page. Only use
-> the box when the `Noul` says the vaccine is there.
+> &#x20;A `Box` always returns a box, even for a vaccine that isn't on the page. Only use
+> the box when the `Noul` says the vaccine is there.&#x20;
 
 Sixteen vaccines make 33 questions. With a list of thousands, the questions may not
 fit in one request (see [context length](/models#context-length)). A bigger version of
@@ -15512,7 +15380,7 @@ schema-valid: True
 
 * the verifier is **Jev**; we ask it one `Noul` question per rule the answer must follow,
   each framed so that `true` = the rule is broken (escalate)
-* Jev returns a calibrated `noul` = `P(true)` per question, in one system\_one call
+* Jev returns a calibrated `noul` = `P(true)` per question, in one system_one call
 * the state holds the task and the cheap model's record; Jev never sees a correct answer
 * **The TypeSafe Way: Decomposition**
   * we split the check in code into narrow questions, one per rule, never one question
@@ -15916,10 +15784,10 @@ ID. The query goes in `instructions`; the state stays unchanged between searches
 
 > [!NOTE]
 >
-> A `Choice` question accepts up to 255 options, so this recipe searches documents of
+> &#x20;A `Choice` question accepts up to 255 options, so this recipe searches documents of
 > up to 255 lines in one request. Past that, search in two passes: one Choice question picks
 > a window
-> of lines, and a second ranks the lines inside it.
+> of lines, and a second ranks the lines inside it.&#x20;
 
 ## Step 3: check whether an answer exists
 
@@ -18210,6 +18078,10 @@ Each page shows a project running, then explains how it works: the questions it 
 >
 > An assistant for requests like "Turn off all of the lights in the house". It asks Jev every question it might need in one call, and code ignores the answers that don't apply. It calls an LLM to split a request that asks for several actions, and to reply to general questions or chat.
 
+> [card] [Content audit](/demos/content-audit)
+>
+> Score all 279 pages of the Django docs on 45 questions each in about 4 seconds, then turn the answers into a fix-first list, quick wins, and Divio types. A deep scan finds typos down to the sentence.
+
 To build your own project step by step, with code you can run, see the [cookbooks](/cookbooks).
 
 > [!TIP]
@@ -18251,19 +18123,19 @@ The two steps take 11 requests instead of 1,000, and the search finishes in abou
 
 ## Any request, same sheet
 
-The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is a new search. The sheet caches each request's results, so editing other cells doesn't run the search again.
+The formula is `=JEV_TOP10(B2, Listings!A2:H1001)`, so a new request in `B2` is a new search. The sheet caches each request's results, so editing other cells doesn't run the search again.
 
 ## Build it
 
-> [card] [Copy the Google Sheet](https://docs.google.com/spreadsheets/d/1E1UOTwk2QIA9ZxIieXPvvQaGPOCZn7991bT49S07bRA/copy)
+> [card] [Copy the Google Sheet](https://docs.google.com/spreadsheets/d/1OeHSq-B354XT7ZoUIZU31kXKdgb7CHQnh43EpOSRAKo/copy)
 >
-> The 1,000 listings and the `JEV_TOP10` formula. Add your TypeSafe API key under Extensions > Apps Script > Project Settings > Script properties, as `TYPESAFE_API_KEY`.
+> The 1,000 listings and the `JEV_TOP10` formula. Add your TypeSafe API key under Extensions > Apps Script > Project Settings > Script properties, as `TYPESAFE_API_KEY`. Then type a request in `B2`. Anyone with edit access to your copy can see the key.
 
 > [card] [Get an API key](https://console.typesafe.ai/keys)
 >
 > Create a key in the TypeSafe console.
 
-> [accordion] The Apps Script behind JEV\_TOP10
+> [accordion] The Apps Script behind JEV_TOP10
 >
 > ```javascript Code.gs theme={null}
 > /**
@@ -18272,7 +18144,7 @@ The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is 
 >  * Setup: Extensions > Apps Script, paste this file, save. Then Project Settings >
 >  * Script properties: add TYPESAFE_API_KEY with your TypeSafe key. No permission prompt.
 >  *
->  * Usage: =JEV_TOP10(B1, Listings!A2:H1001)
+>  * Usage: =JEV_TOP10(B2, Listings!A2:H1001)
 >  *   The listing columns must be: Name, Type, Price per night (R), Bedrooms, Guests, Rating,
 >  *   Description, Link.
 >  *
@@ -18310,7 +18182,7 @@ The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is 
 >   const key = PropertiesService.getScriptProperties().getProperty('TYPESAFE_API_KEY');
 >   if (!key) throw new Error('Add TYPESAFE_API_KEY under Project Settings > Script properties.');
 >   request = String(request || '').trim();
->   if (!request) return [['Type what you are looking for in B1.']];
+>   if (!request) return [['Type what you are looking for in B2.']];
 >
 >   const rows = listings.filter((r) => r[0] !== '');
 >   const cache = CacheService.getScriptCache();
@@ -18391,6 +18263,159 @@ The formula is `=JEV_TOP10(B1, Listings!A2:H1001)`, so a new request in `B1` is 
 The listings come from [Inside Airbnb](https://insideairbnb.com/get-the-data/)'s 23 September 2026 scrape of Cape Town, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). We took a random sample of 1,000 listings with a price and a description of at least 200 characters, removed HTML line breaks and repeated whitespace, and flattened the amenities to a comma-separated list.
 
 
+# Content audits with Jev
+Source: https://docs.typesafe.ai/demos/content-audit
+
+Audit all of the Django documentation in under 5 seconds for $0.10. Get an overview of what kind of content you have, what needs fixing, and where to spend effort.
+
+## The problem
+
+Most companies and projects gain content over time until no one person can understand all of it, or know where to spend effort improving it. The [Django documentation](https://docs.djangoproject.com/en/dev/) has 279 pages and 584,234 words, not counting release notes. Reading them once takes a person about 39 hours. There are different kinds of content and different kinds of errors, and some pages are much more important than others. But which?
+
+## Why Jev fits
+
+Jev turns large amounts of text into numbers. Instead of writing hundreds of manual rules, you can ask questions in natural language: Is this page out of date? Is it a tutorial or a reference page? Is it for beginners or experts? Jev answers dozens of these about a page in one request and returns a probability or a score for each, so you can sort, filter, and plot the results.
+
+## One request per page
+
+Each request holds one page and 45 questions:
+
+| Questions | Type | What they measure |
+| - | - | - |
+| 8 | Score | Quality: overall, accuracy, freshness, clarity, completeness, structure, examples, spelling and grammar. |
+| 5 | Score, Choice, Noul | Importance: how much the page matters, expected traffic, whether newcomers or AI assistants read it. |
+| 7 | Choice | Classification: [Divio](https://docs.divio.com/documentation-system/) type, level, complexity, length, fix effort, who can fix it, and the best single fix. |
+| 21 | Noul | Problems: out of date, incorrect facts, deprecated APIs, typos, broken markup, insecure examples, missing examples, and more. |
+| 4 | Noul | Quick wins: would one small edit help, is there content to delete, does it need cross-links. |
+
+Jev answers every question in a request in parallel, so more questions add little time: on one test page, the median request took 144 ms with 1 question and 151 ms with all 45. Questions do add cost, because their text counts as input tokens: here, the 45 questions are about 40% of the \$0.10. This audit asks every question that might be useful, including ones that flag only a handful of pages. There is no limit on the number of questions, only on [context length](/models#context-length).
+
+## Visualizing the results
+
+You can build any dashboard or visualization from Jev's answers. Here, we plotted each page on an importance and quality grid, so it's easy to see the pages that most deserve human attention: the low-quality, high-importance quadrant in the top left, labeled "Fix first". The dashboard also lists quick wins: important pages that Jev rates trivial or small to fix. Depending on what matters to you, the grid could instead show fix effort, page complexity, or anything else.
+
+![The audit dashboard: importance plotted against quality for all 279 Django docs pages, with the fix-first list beside it.](https://mintcdn.com/ts-docs/tSHMUPy1QMGjBb5r/images/demos/content-audit/dashboard.webp?fit=max\&auto=format\&n=tSHMUPy1QMGjBb5r\&q=85\&s=ae55a8799b263f5521ba257c73aca191)
+
+## What the questions found
+
+Each problem and quick-win question is a yes-or-no flag. The left side of the chart counts how many of the 279 pages each one flagged. The right side shows how the pages split on four of the classification questions.
+
+Most Django pages are reference or explanation pages for intermediate developers, and quick to fix. The common flags are small jobs, like adding cross-links or a diagram, or explaining jargon. The serious flags fire on far fewer pages: 28 show a deprecated API, 18 may contain an incorrect fact, and 13 have out-of-date content. Those are short lists to check by hand.
+
+## Find the exact sentence
+
+Each page in the audit has a deep scan button. It asks Jev which sentence holds each problem, and highlights that sentence. Here, it flags a sentence on the Django admin page with two typos: "it's" should be "its", and "as" should be "are".
+
+![A deep scan of a paragraph on the Django admin page, with the sentence 'At it's simplest list_filter takes a list or tuple of field names to activate filtering upon, but several more advanced options as available.' underlined and tagged as a typo with a trivial fix.](https://mintcdn.com/ts-docs/tSHMUPy1QMGjBb5r/images/demos/content-audit/deep-scan.webp?fit=max\&auto=format\&n=tSHMUPy1QMGjBb5r\&q=85\&s=c37c21b23f9c4def1021acab76035ccf)
+
+Each finding links to its line on GitHub, so you can fix the typos in a pull request.
+
+## Build it
+
+> [card] [Get an API key](https://console.typesafe.ai/keys)
+>
+> Create a key in the TypeSafe console.
+
+> [card] [Question types](/primitives)
+>
+> Score, Choice and Noul, and when to use each.
+
+This script is a cut-down version of the demo's scoring pass. It asks 7 of the 45 questions, and the `# ...` comment marks where the other 38 go. It sends 12 pages at a time and lists the 20 pages with the highest priority. Its priority is simpler than the dashboard's: (1 − overall quality) × importance, so its list can differ from the dashboard's "Fix first" list.
+
+> [accordion] The scoring pass in Python
+>
+> ```python audit.py theme={null}
+> """Score every page of the Django docs with Jev, 12 requests at a time.
+>
+> git clone --depth 1 https://github.com/django/django.git
+> TYPESAFE_API_KEY=... python audit.py
+> """
+> import json
+> import os
+> from concurrent.futures import ThreadPoolExecutor
+> from pathlib import Path
+>
+> import requests
+>
+> API = "https://api.typesafe.ai/v1/systemone"
+> KEY = os.environ["TYPESAFE_API_KEY"]
+> LEVELS = ["0: Serious problems; urgent editorial attention.", "1: Significant problems; revise soon.",
+>           "2: Mixed; targeted edits needed.", "3: Mostly sound; minor edits.", "4: Excellent; leave as is."]
+> # The demo's site context also lists recent Django releases and features, and explains the docs layout.
+> SITE = ("docs.djangoproject.com: the official documentation for Django, the Python web framework, development "
+>         "version. These docs are the source of truth for APIs newer than your knowledge: never call an API, setting, "
+>         "date or version scheme incorrect or outdated just because you do not recognize it. Sphinx reStructuredText "
+>         "markup (roles, directives, underlined headings) is source markup, NOT an error.")
+>
+>
+> def score(q, levels=LEVELS):
+>     return {"type": "score", "instructions": q, "criteria": levels}
+>
+>
+> def noul(q):
+>     return {"type": "noul", "instructions": q + " Answer yes only when the page content gives concrete evidence."}
+>
+>
+> def choice(q, options):
+>     return {"type": "choice", "instructions": q, "criteria": options}
+>
+>
+> QUESTIONS = {
+>     "quality": score("Overall, how high quality is this page as official framework documentation?"),
+>     "importance": score(
+>         "How important is this page to Django developers? The tutorial, installation, models, views, URLs, "
+>         "templates, forms, the ORM, settings, deployment and security are critical; niche contrib apps, "
+>         "internals and rarely used backends are minor.",
+>         ["0: Negligible; niche or archival.", "1: Minor.", "2: Moderate.",
+>          "3: High; many developers rely on it.", "4: Critical; core page most developers read."]),
+>     "divio": choice("Which Divio documentation type does this page mainly belong to?", {
+>         "tutorial": "Tutorial: a lesson that takes a beginner by the hand through building something.",
+>         "how_to": "How-to guide: steps to solve a specific real-world problem for someone who already knows the basics.",
+>         "reference": "Reference: dry, complete technical description of APIs, settings, commands or fields.",
+>         "explanation": "Explanation: discussion that clarifies concepts, background, design decisions and alternatives."}),
+>     "level": choice("What level of Django experience does this page assume?", {
+>         "beginner": "New to Django; may be new to web development.",
+>         "intermediate": "Has built a Django app and knows models, views, templates and forms.",
+>         "advanced": "Experienced; customizes internals, writes backends, tunes performance, or contributes to Django."}),
+>     "effort": choice("An editor is going to bring this page to excellent quality, fixing its mistakes and problems. "
+>                      "How much work is that?", {
+>         "trivial": "Minutes: a few wording, typo or link fixes.", "small": "About an hour: a handful of targeted edits.",
+>         "medium": "Half a day: rework sections, refresh examples.", "large": "Days: substantial rewrite or restructuring."}),
+>     "outdated": noul("Is part of this page out of date for current Django (6.x) or current Python?"),
+>     "typos": noul("Does the prose contain spelling, grammar or punctuation errors? Ignore code and markup."),
+>     # ... The demo asks 38 more: 7 more quality scores, 4 more importance questions,
+>     # 4 more classifications, 19 more problem flags and 4 quick-win flags.
+> }
+>
+>
+> def grade(path):
+>     body = {"model": "jev-latest", "questions": QUESTIONS,
+>             "state": {"site": SITE, "page": str(path), "content": path.read_text()[:105_000]}}
+>     r = requests.post(API, headers={"Authorization": f"Bearer {KEY}"}, json=body, timeout=120)
+>     r.raise_for_status()
+>     return str(path), r.json()["answers"]
+>
+>
+> docs = Path("django/docs")
+> pages = sorted(p for p in docs.rglob("*.txt")
+>                if p.relative_to(docs).parts[0] != "releases" and p.name != "requirements.txt")
+> with ThreadPoolExecutor(12) as pool:
+>     results = dict(pool.map(grade, pages))
+>
+> # Priority: how much a page needs work multiplied by how much it matters. The dashboard's version also
+> # weighs the other quality scores, expected traffic, incoming links and the problem flags.
+> rows = []
+> for path, a in results.items():
+>     quality, importance = a["quality"]["score"] / 4, a["importance"]["score"] / 4
+>     rows.append((100 * (1 - quality) * importance, path, a["divio"]["choice"], a["effort"]["choice"]))
+> for priority, path, divio, effort in sorted(rows, reverse=True)[:20]:
+>     print(f"{priority:5.1f}  {path}  {divio}  {effort} effort")
+> Path("audit.json").write_text(json.dumps(results, indent=1))
+> ```
+
+The pages come from the `docs/` folder of [django/django](https://github.com/django/django) at commit `ca3f31b` (4 November 2026), under Django's [BSD license](https://github.com/django/django/blob/main/LICENSE). Release notes are left out.
+
+
 # Smart home assistant demo
 Source: https://docs.typesafe.ai/demos/smart-home
 
@@ -18440,9 +18465,9 @@ The assistant calls an LLM in two cases, both where it needs generated text:
 
 **Falling back to a conversational LLM:** When Jev determines that the user query is a request for general information or conversation, the system calls an LLM to generate a freeform response. This allows an interactive system to handle requests with known deterministic behavior in a fast and cost efficient way, while still allowing for the flexibility provided by a generative LLM when needed. Jev's initial response is so fast compared to the LLM response that it adds negligible latency to the overall system.
 
-## Run it yourself
+## The code
 
-This demo is a simple Vite/React single-page app that uses the TypeSafe API to evaluate user requests. The full source code will be available on GitHub at release. Its README includes instructions for running the demo locally and an overview of which bits of the source code are responsible for which parts of the demo.
+This demo is a simple Vite/React single-page app that uses the TypeSafe API to evaluate user requests. We plan to open-source the code, and will link it here when it's published.
 
 
 # Images
@@ -18456,7 +18481,7 @@ To use images or Box questions, send the `TypeSafe-Danger-Zone-Images: true` hea
 
 An image can go anywhere text can go in a System One request: in the `state`, in a question's `instructions`, and in its `criteria`. Every question type accepts images, and the [Box](/primitives/box) question type returns where something is in an image.
 
-![A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs\_up option in a Choice question's criteria. The images themselves are listed in the request's assets.](https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/anatomy-light.webp?fit=max\&auto=format\&n=OmOS-OoUA_8VxwSR\&q=85\&s=7d5e99842cb8a482309f65a6d4aa195e)
+![A request body with three references highlighted, each linked to the image it stands for: door.jpg is the camera value in the state, badge.jpg is inside a Noul question's instructions, and thumb.jpg is the value of the thumbs_up option in a Choice question's criteria. The images themselves are listed in the request's assets.](https://mintcdn.com/ts-docs/OmOS-OoUA_8VxwSR/images/images/anatomy-light.webp?fit=max\&auto=format\&n=OmOS-OoUA_8VxwSR\&q=85\&s=7d5e99842cb8a482309f65a6d4aa195e)
 
 ## Turning on images
 
@@ -18520,7 +18545,7 @@ The kind of asset. Optional. If you send it, it must be `"image"`.
 
 In a multipart request, the name of the file part that holds the image. See [Uploading images](#uploading-images).
 
-**data\_base64** `string`
+**data_base64** `string`
 
 The image file, base64-encoded. Required unless `part` is set. Use the standard base64 alphabet with `=` padding, no line breaks or other whitespace, and no `data:` prefix.
 
@@ -19701,7 +19726,7 @@ The model ID or alias, as accepted by the `model` field.
 
 What the model is for.
 
-**release\_date** `string` *required*
+**release_date** `string` *required*
 
 When the model or alias was released.
 
@@ -21137,7 +21162,7 @@ The [smart home assistant demo](/demos/smart-home) evaluates every user request 
 
 Start with a one-line description per option. When two options are similar and the model keeps confusing them, describe each one with an object instead of a string. Give it fields for what the option covers, what belongs to a neighboring option instead, and a few example inputs.
 
-The two answer options below, return\_policy and return\_status, are easy to confuse. A ticket about either one can mention returns and refunds, so each option says what it is not for.
+The two answer options below, return_policy and return_status, are easy to confuse. A ticket about either one can mention returns and refunds, so each option says what it is not for.
 
 Try it in the Playground →
 
@@ -21918,7 +21943,7 @@ import { choice, TypeSafeClient } from "@typesafe-ai/sdk";
 
 const client = new TypeSafeClient();
 const response = await client.systemOne({
-  state: { document: "I was charged twice. Please fix this ASAP." },
+  state: { ticket: "I was charged twice. Please fix this ASAP." },
   questions: {
     category: choice("What is this ticket about?", {
       billing: null,
@@ -22151,7 +22176,7 @@ Source: https://docs.typesafe.ai/sdk/javascript/api
 ## Variables
 
 * [ENV](/sdk/javascript/api/variables/ENV)
-* [LOG\_LEVELS](/sdk/javascript/api/variables/LOG_LEVELS)
+* [LOG_LEVELS](/sdk/javascript/api/variables/LOG_LEVELS)
 * [noul](/sdk/javascript/api/variables/noul)
 * [score](/sdk/javascript/api/variables/score)
 * [VERSION](/sdk/javascript/api/variables/VERSION)
@@ -24404,7 +24429,7 @@ readonly name: string;
 
 ***
 
-### release\_date
+### release_date
 
 ```ts theme={null}
 readonly release_date: string;
@@ -25067,7 +25092,7 @@ Token usage for a request.
 
 ## Properties
 
-### input\_tokens
+### input_tokens
 
 ```ts theme={null}
 readonly input_tokens: number | null;
@@ -25077,7 +25102,7 @@ Number of input tokens used, or `null` when the API did not report it.
 
 ***
 
-### output\_tokens
+### output_tokens
 
 ```ts theme={null}
 readonly output_tokens: number | null;
@@ -25760,7 +25785,7 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
    > async def main() -> None:
    >     async with AsyncTypeSafeClient() as client:
    >         response = await client.system_one(
-   >             state={"document": "I was charged twice. Please fix this ASAP."},
+   >             state={"ticket": "I was charged twice. Please fix this ASAP."},
    >             questions={
    >                 "billing": Noul(instructions="Is this ticket about billing?"),
    >                 "tone": Choice(
@@ -25788,7 +25813,7 @@ Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.
    >
    > with TypeSafeClient() as client:
    >     response = client.system_one(
-   >         state={"document": "I was charged twice. Please fix this ASAP."},
+   >         state={"ticket": "I was charged twice. Please fix this ASAP."},
    >         questions={
    >             "billing": Noul(instructions="Is this ticket about billing?"),
    >             "tone": Choice(
@@ -25836,12 +25861,12 @@ Source: https://docs.typesafe.ai/sdk/python/api/clients/async
 
 Use AsyncTypeSafeClient to ask questions, list models, and configure asynchronous TypeSafe API requests.
 
-## typesafe\_sdk.AsyncTypeSafeClient
+## typesafe_sdk.AsyncTypeSafeClient
 
 Copy signature
 <pre aria-label="SDK signature">`AsyncTypeSafeClient(
 &#x20;   \*,
-&#x20;   api\_key: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   api_key: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
@@ -25850,12 +25875,12 @@ Copy signature
 &#x20;   headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)] | None = None,
 &#x20;   transport: httpx2.AsyncBaseTransport
 &#x20;   | None = None,
-&#x20;   http\_client: httpx2.[AsyncClient](https://pydantic.dev/docs/httpx2/api/api/#httpx2.AsyncClient)
+&#x20;   http_client: httpx2.[AsyncClient](https://pydantic.dev/docs/httpx2/api/api/#httpx2.AsyncClient)
 &#x20;   | None = None,
-&#x20;   base\_url: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   base_url: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   compression: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["zstd", False]
 &#x20;   | None = None,
-)`</pre>
+)&#xA;`</pre>
 
 Create an asynchronous HTTP client for [TypeSafe AI API](https://typesafe.ai).
 
@@ -25946,7 +25971,9 @@ Copy signature
 
   &#x20;
 
-  [AsyncModels](/sdk/python/api/clients/async#typesafe_sdk.AsyncModels)\`
+  [AsyncModels](/sdk/python/api/clients/async#typesafe_sdk.AsyncModels)
+
+  &#xA;\`
 </pre>
 
 An accessor for the Models API resource.
@@ -25959,12 +25986,12 @@ async def main() -> None:
         models = await client.models.list()
 ```
 
-### attach\_assets
+### attach_assets
 
 Copy signature
-<pre aria-label="SDK signature">`attach\_assets(
+<pre aria-label="SDK signature">`attach_assets(
 &#x20;   assets: [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset) | [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)\[[Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)],
-) -> [AbstractContextManager](https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager)\[None]`</pre>
+) -> [AbstractContextManager](https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager)\[None]&#xA;`</pre>
 
 Attach assets to calls made within a `with` block, for referencing them inside strings.
 
@@ -26005,14 +26032,14 @@ async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
         )
 ```
 
-### system\_one
+### system_one
 
 `async`
 
 > [tab] Implementation
 >
 > Copy signature
-> <pre aria-label="SDK signature">`system\_one(
+> <pre aria-label="SDK signature">`system_one(
 > &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 > &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 > &#x20;   \*,
@@ -26022,18 +26049,18 @@ async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
 > &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 > &#x20;   | httpx2.Timeout
 > &#x20;   | None = None,
-> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 > &#x20;   | None = None,
-> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
 > &#x20;   | None = None,
-> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
+> &#x20;   response_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
 > &#x20;   | None = None,
-> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT&#xA;`</pre>
 
 > [tab] Overload 1
 >
 > Copy signature
-> <pre aria-label="SDK signature">`system\_one(
+> <pre aria-label="SDK signature">`system_one(
 > &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 > &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 > &#x20;   \*,
@@ -26043,17 +26070,17 @@ async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
 > &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 > &#x20;   | httpx2.Timeout
 > &#x20;   | None = None,
-> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 > &#x20;   | None = None,
-> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
 > &#x20;   | None = None,
-> &#x20;   response\_model: None = None,
-> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)`</pre>
+> &#x20;   response_model: None = None,
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)&#xA;`</pre>
 
 > [tab] Overload 2
 >
 > Copy signature
-> <pre aria-label="SDK signature">`system\_one(
+> <pre aria-label="SDK signature">`system_one(
 > &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 > &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 > &#x20;   \*,
@@ -26063,12 +26090,12 @@ async def inspect(client: AsyncTypeSafeClient, path: Path) -> SystemOneResponse:
 > &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 > &#x20;   | httpx2.Timeout
 > &#x20;   | None = None,
-> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 > &#x20;   | None = None,
-> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
 > &#x20;   | None = None,
-> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
-> ) -> ResponseT`</pre>
+> &#x20;   response_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
+> ) -> ResponseT&#xA;`</pre>
 
 Answer named questions about text, structured state, or assets.
 
@@ -26183,7 +26210,7 @@ Release network resources and close the underlying HTTP client, including a supp
 
 Reached through [`AsyncTypeSafeClient.models`](/sdk/python/api/clients/async#typesafe_sdk.AsyncTypeSafeClient.models).
 
-### typesafe\_sdk.AsyncModels
+### typesafe_sdk.AsyncModels
 
 Access to the models available to the account, reached through `AsyncTypeSafeClient.models`.
 
@@ -26198,9 +26225,9 @@ Copy signature
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 &#x20;   | httpx2.Timeout
 &#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+&#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 &#x20;   | None = None,
-) -> [ListModelsResponse](/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse)`</pre>
+) -> [ListModelsResponse](/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse)&#xA;`</pre>
 
 List the models available to the account.
 
@@ -26251,12 +26278,12 @@ Source: https://docs.typesafe.ai/sdk/python/api/clients/sync
 
 Use TypeSafeClient to ask questions, list models, and configure synchronous TypeSafe API requests.
 
-## typesafe\_sdk.TypeSafeClient
+## typesafe_sdk.TypeSafeClient
 
 Copy signature
 <pre aria-label="SDK signature">`TypeSafeClient(
 &#x20;   \*,
-&#x20;   api\_key: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   api_key: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   model: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   retry: [RetryPolicy](/sdk/python/api/retries#typesafe_sdk.RetryPolicy) | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
@@ -26265,11 +26292,11 @@ Copy signature
 &#x20;   headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)] | None = None,
 &#x20;   transport: httpx2.BaseTransport
 &#x20;   | None = None,
-&#x20;   http\_client: httpx2.[Client](https://pydantic.dev/docs/httpx2/api/api/#httpx2.Client) | None = None,
-&#x20;   base\_url: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
+&#x20;   http_client: httpx2.[Client](https://pydantic.dev/docs/httpx2/api/api/#httpx2.Client) | None = None,
+&#x20;   base_url: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | None = None,
 &#x20;   compression: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["zstd", False]
 &#x20;   | None = None,
-)`</pre>
+)&#xA;`</pre>
 
 Create an HTTP client for [TypeSafe AI API](https://typesafe.ai).
 
@@ -26353,7 +26380,9 @@ Copy signature
 
   &#x20;
 
-  [Models](/sdk/python/api/clients/sync#typesafe_sdk.Models)\`
+  [Models](/sdk/python/api/clients/sync#typesafe_sdk.Models)
+
+  &#xA;\`
 </pre>
 
 An accessor for the Models API resource.
@@ -26365,12 +26394,12 @@ with TypeSafeClient() as client:
     models = client.models.list()
 ```
 
-### attach\_assets
+### attach_assets
 
 Copy signature
-<pre aria-label="SDK signature">`attach\_assets(
+<pre aria-label="SDK signature">`attach_assets(
 &#x20;   assets: [Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset) | [Sequence](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)\[[Asset](/sdk/python/api/types/assets#typesafe_sdk.Asset)],
-) -> [AbstractContextManager](https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager)\[None]`</pre>
+) -> [AbstractContextManager](https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager)\[None]&#xA;`</pre>
 
 Attach assets to calls made within a `with` block, for referencing them inside strings.
 
@@ -26411,12 +26440,12 @@ def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
         )
 ```
 
-### system\_one
+### system_one
 
 > [tab] Implementation
 >
 > Copy signature
-> <pre aria-label="SDK signature">`system\_one(
+> <pre aria-label="SDK signature">`system_one(
 > &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 > &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 > &#x20;   \*,
@@ -26426,18 +26455,18 @@ def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
 > &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 > &#x20;   | httpx2.Timeout
 > &#x20;   | None = None,
-> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 > &#x20;   | None = None,
-> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
 > &#x20;   | None = None,
-> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
+> &#x20;   response_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT]
 > &#x20;   | None = None,
-> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT`</pre>
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse) | ResponseT&#xA;`</pre>
 
 > [tab] Overload 1
 >
 > Copy signature
-> <pre aria-label="SDK signature">`system\_one(
+> <pre aria-label="SDK signature">`system_one(
 > &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 > &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 > &#x20;   \*,
@@ -26447,17 +26476,17 @@ def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
 > &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 > &#x20;   | httpx2.Timeout
 > &#x20;   | None = None,
-> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 > &#x20;   | None = None,
-> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
 > &#x20;   | None = None,
-> &#x20;   response\_model: None = None,
-> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)`</pre>
+> &#x20;   response_model: None = None,
+> ) -> [SystemOneResponse](/sdk/python/api/types/responses#typesafe_sdk.SystemOneResponse)&#xA;`</pre>
 
 > [tab] Overload 2
 >
 > Copy signature
-> <pre aria-label="SDK signature">`system\_one(
+> <pre aria-label="SDK signature">`system_one(
 > &#x20;   state: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 > &#x20;   questions: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)],
 > &#x20;   \*,
@@ -26467,12 +26496,12 @@ def inspect(client: TypeSafeClient, path: Path) -> SystemOneResponse:
 > &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 > &#x20;   | httpx2.Timeout
 > &#x20;   | None = None,
-> &#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+> &#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 > &#x20;   | None = None,
-> &#x20;   extra\_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
+> &#x20;   extra_body: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [JSONValue](/sdk/python/api/types/common#typesafe_sdk.JSONValue) | None]
 > &#x20;   | None = None,
-> &#x20;   response\_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
-> ) -> ResponseT`</pre>
+> &#x20;   response_model: [type](https://docs.python.org/3/builtins/functions.html#type)\[ResponseT],
+> ) -> ResponseT&#xA;`</pre>
 
 Answer named questions about text, structured state, or assets.
 
@@ -26583,7 +26612,7 @@ Release network resources and close the underlying HTTP client, including a supp
 
 Reached through [`TypeSafeClient.models`](/sdk/python/api/clients/sync#typesafe_sdk.TypeSafeClient.models).
 
-### typesafe\_sdk.Models
+### typesafe_sdk.Models
 
 Access to the models available to the account, reached through `TypeSafeClient.models`.
 
@@ -26596,9 +26625,9 @@ Copy signature
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float)
 &#x20;   | httpx2.Timeout
 &#x20;   | None = None,
-&#x20;   extra\_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
+&#x20;   extra_headers: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]
 &#x20;   | None = None,
-) -> [ListModelsResponse](/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse)`</pre>
+) -> [ListModelsResponse](/sdk/python/api/types/responses#typesafe_sdk.ListModelsResponse)&#xA;`</pre>
 
 List the models available to the account.
 
@@ -26647,11 +26676,11 @@ Source: https://docs.typesafe.ai/sdk/python/api/constants
 
 Default settings and environment variable names for the TypeSafe Python SDK.
 
-## typesafe\_sdk.constants
+## typesafe_sdk.constants
 
 Public environment-variable names and client defaults.
 
-### API\_KEY\_ENV
+### API_KEY_ENV
 
 `module-attribute`
 
@@ -26661,7 +26690,7 @@ API_KEY_ENV = 'TYPESAFE_API_KEY'
 
 Environment variable for the API key.
 
-### BASE\_URL\_ENV
+### BASE_URL_ENV
 
 `module-attribute`
 
@@ -26671,7 +26700,7 @@ BASE_URL_ENV = 'TYPESAFE_BASE_URL'
 
 Environment variable for the API base URL.
 
-### DEFAULT\_MODEL\_ENV
+### DEFAULT_MODEL_ENV
 
 `module-attribute`
 
@@ -26681,7 +26710,7 @@ DEFAULT_MODEL_ENV = 'TYPESAFE_DEFAULT_MODEL'
 
 Environment variable for the default model.
 
-### LOG\_LEVEL\_ENV
+### LOG_LEVEL_ENV
 
 `module-attribute`
 
@@ -26691,7 +26720,7 @@ LOG_LEVEL_ENV = 'TYPESAFE_LOG_LEVEL'
 
 Environment variable for the logging level.
 
-### DEFAULT\_BASE\_URL
+### DEFAULT_BASE_URL
 
 `module-attribute`
 
@@ -26701,7 +26730,7 @@ DEFAULT_BASE_URL = 'https://api.typesafe.ai'
 
 Default API base URL.
 
-### DEFAULT\_MODEL
+### DEFAULT_MODEL
 
 `module-attribute`
 
@@ -26711,7 +26740,7 @@ DEFAULT_MODEL = 'jev-latest'
 
 Default model name.
 
-### DEFAULT\_TIMEOUT
+### DEFAULT_TIMEOUT
 
 `module-attribute`
 
@@ -26729,7 +26758,7 @@ Handle TypeSafe API errors, rate limits, connection failures, and timeouts.
 
 ## Base exception
 
-## typesafe\_sdk.TypeSafeError
+## typesafe_sdk.TypeSafeError
 
 Bases: `Exception`
 
@@ -26737,7 +26766,7 @@ Base exception for SDK failures.
 
 ## HTTP errors
 
-## typesafe\_sdk.TypeSafeAPIError
+## typesafe_sdk.TypeSafeAPIError
 
 Bases: `TypeSafeError`
 
@@ -26783,14 +26812,14 @@ endpoint = endpoint
 
 The request method and URL, without credentials, query parameters, or fragment, when available.
 
-### request\_id
+### request_id
 
 `property`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`request\_id
+  \`request_id
 
   :
 
@@ -26804,48 +26833,50 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 The `x-typesafe-request-id` response header, or `None` if absent.
 
-## typesafe\_sdk.TypeSafeBadRequestError
+## typesafe_sdk.TypeSafeBadRequestError
 
 Bases: `TypeSafeAPIError`
 
 The request was invalid (400).
 
-## typesafe\_sdk.TypeSafeAuthenticationError
+## typesafe_sdk.TypeSafeAuthenticationError
 
 Bases: `TypeSafeAPIError`
 
 Authentication failed (401).
 
-## typesafe\_sdk.TypeSafePermissionDeniedError
+## typesafe_sdk.TypeSafePermissionDeniedError
 
 Bases: `TypeSafeAPIError`
 
 Access was denied (403).
 
-## typesafe\_sdk.TypeSafeNotFoundError
+## typesafe_sdk.TypeSafeNotFoundError
 
 Bases: `TypeSafeAPIError`
 
 The resource was not found (404).
 
-## typesafe\_sdk.TypeSafeUnprocessableEntityError
+## typesafe_sdk.TypeSafeUnprocessableEntityError
 
 Bases: `TypeSafeAPIError`
 
 The request failed server validation (422).
 
-## typesafe\_sdk.TypeSafeRateLimitError
+## typesafe_sdk.TypeSafeRateLimitError
 
 Bases: `TypeSafeAPIError`
 
 The rate limit was exceeded (429).
 
-### retry\_after\_ms
+### retry_after_ms
 
 `instance-attribute`
 
@@ -26855,7 +26886,7 @@ retry_after_ms = parse_retry_after(headers)
 
 The server's requested wait in milliseconds, or `None` if unavailable.
 
-## typesafe\_sdk.TypeSafeInternalServerError
+## typesafe_sdk.TypeSafeInternalServerError
 
 Bases: `TypeSafeAPIError`
 
@@ -26863,13 +26894,13 @@ The server failed to process the request (5xx).
 
 ## Connection errors
 
-## typesafe\_sdk.TypeSafeAPIConnectionError
+## typesafe_sdk.TypeSafeAPIConnectionError
 
 Bases: `TypeSafeError`, `ConnectionError`
 
 A request failed without an HTTP response.
 
-## typesafe\_sdk.TypeSafeAPITimeoutError
+## typesafe_sdk.TypeSafeAPITimeoutError
 
 Bases: `TypeSafeAPIConnectionError`, `TimeoutError`
 
@@ -26887,13 +26918,13 @@ The timeout setting used for the request, in seconds or as an `httpx2.Timeout`.
 
 ## Response validation
 
-## typesafe\_sdk.TypeSafeAPIResponseValidationError
+## typesafe_sdk.TypeSafeAPIResponseValidationError
 
 Bases: `TypeSafeAPIError`
 
 A successful HTTP response whose body was missing or structurally invalid required data.
 
-### field\_path
+### field_path
 
 `instance-attribute`
 
@@ -26923,29 +26954,29 @@ Source: https://docs.typesafe.ai/sdk/python/api/retries
 
 Configure retries with RetryPolicy — attempt count, retryable statuses, backoff, and retry headers handling.
 
-## typesafe\_sdk.RetryPolicy
+## typesafe_sdk.RetryPolicy
 
 `dataclass`
 
 Copy signature
 <pre aria-label="SDK signature">`RetryPolicy(
-&#x20;   max\_retries: [int](https://docs.python.org/3/builtins/functions.html#int) = 2,
-&#x20;   backoff\_initial: [float](https://docs.python.org/3/builtins/functions.html#float) = 0.5,
-&#x20;   backoff\_max: [float](https://docs.python.org/3/builtins/functions.html#float) = 5.0,
-&#x20;   backoff\_jitter: [float](https://docs.python.org/3/builtins/functions.html#float) = 0.25,
-&#x20;   http\_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = (
+&#x20;   max_retries: [int](https://docs.python.org/3/builtins/functions.html#int) = 2,
+&#x20;   backoff_initial: [float](https://docs.python.org/3/builtins/functions.html#float) = 0.5,
+&#x20;   backoff_max: [float](https://docs.python.org/3/builtins/functions.html#float) = 5.0,
+&#x20;   backoff_jitter: [float](https://docs.python.org/3/builtins/functions.html#float) = 0.25,
+&#x20;   http_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = (
 &#x20;       lambda: \{408, 429, \*[range](https://docs.python.org/3/builtins/stdtypes.html#range)(500, 600)}
 &#x20;   )(),
-&#x20;   respect\_retry\_after: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
-&#x20;   api\_connection\_error: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
-&#x20;   api\_timeout\_error: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
+&#x20;   respect_retry_after: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
+&#x20;   api_connection_error: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
+&#x20;   api_timeout_error: [bool](https://docs.python.org/3/builtins/functions.html#bool) = True,
 &#x20;   exceptions: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[
 &#x20;       [type](https://docs.python.org/3/builtins/functions.html#type)\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]
 &#x20;   ] = [set](https://docs.python.org/3/builtins/stdtypes.html#set)(),
 &#x20;   predicate: [Callable](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)\[\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)], [bool](https://docs.python.org/3/builtins/functions.html#bool)]
 &#x20;   | None = None,
 &#x20;   timeout: [float](https://docs.python.org/3/builtins/functions.html#float) | None = 30.0,
-)`</pre>
+)&#xA;`</pre>
 
 Configuration for SDK retry behavior.
 
@@ -26961,14 +26992,14 @@ client = TypeSafeClient(
 )
 ```
 
-### max\_retries
+### max_retries
 
 `class-attribute` `instance-attribute`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`max\_retries
+  \`max_retries
 
   :
 
@@ -26982,19 +27013,21 @@ Copy signature
 
   &#x20;
 
-  2\`
+  2
+
+  &#xA;\`
 </pre>
 
 Maximum retries after the initial attempt; `0` disables retries.
 
-### backoff\_initial
+### backoff_initial
 
 `class-attribute` `instance-attribute`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`backoff\_initial
+  \`backoff_initial
 
   :
 
@@ -27008,19 +27041,21 @@ Copy signature
 
   &#x20;
 
-  0.5\`
+  0.5
+
+  &#xA;\`
 </pre>
 
 First backoff delay in seconds, doubled each attempt up to `backoff_max`; zero disables backoff.
 
-### backoff\_max
+### backoff_max
 
 `class-attribute` `instance-attribute`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`backoff\_max
+  \`backoff_max
 
   :
 
@@ -27034,19 +27069,21 @@ Copy signature
 
   &#x20;
 
-  5.0\`
+  5.0
+
+  &#xA;\`
 </pre>
 
 Maximum backoff delay in seconds; zero disables backoff.
 
-### backoff\_jitter
+### backoff_jitter
 
 `class-attribute` `instance-attribute`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`backoff\_jitter
+  \`backoff_jitter
 
   :
 
@@ -27060,34 +27097,36 @@ Copy signature
 
   &#x20;
 
-  0.25\`
+  0.25
+
+  &#xA;\`
 </pre>
 
 Fraction of each backoff delay randomly subtracted, between 0 and 1.
 
-### http\_statuses
+### http_statuses
 
 `class-attribute` `instance-attribute`
 
 Copy signature
-<pre aria-label="SDK signature">`http\_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
-&#x20;   default\_factory=lambda: \{
+<pre aria-label="SDK signature">`http_statuses: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[int](https://docs.python.org/3/builtins/functions.html#int)] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
+&#x20;   default_factory=lambda: \{
 &#x20;       408,
 &#x20;       429,
 &#x20;       \*[range](https://docs.python.org/3/builtins/stdtypes.html#range)(500, 600),
 &#x20;   }
-)`</pre>
+)&#xA;`</pre>
 
 HTTP status codes that are retried.
 
-### respect\_retry\_after
+### respect_retry_after
 
 `class-attribute` `instance-attribute`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`respect\_retry\_after
+  \`respect_retry_after
 
   :
 
@@ -27101,19 +27140,21 @@ Copy signature
 
   &#x20;
 
-  True\`
+  True
+
+  &#xA;\`
 </pre>
 
 Whether to honor `Retry-After` and `retry-after-ms` response headers.
 
-### api\_connection\_error
+### api_connection_error
 
 `class-attribute` `instance-attribute`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`api\_connection\_error
+  \`api_connection_error
 
   :
 
@@ -27127,19 +27168,21 @@ Copy signature
 
   &#x20;
 
-  True\`
+  True
+
+  &#xA;\`
 </pre>
 
 Whether to retry `TypeSafeAPIConnectionError`, raised when the request cannot reach or read from the server.
 
-### api\_timeout\_error
+### api_timeout_error
 
 `class-attribute` `instance-attribute`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`api\_timeout\_error
+  \`api_timeout_error
 
   :
 
@@ -27153,7 +27196,9 @@ Copy signature
 
   &#x20;
 
-  True\`
+  True
+
+  &#xA;\`
 </pre>
 
 Whether to retry `TypeSafeAPITimeoutError`, raised when the request exceeds its timeout.
@@ -27164,8 +27209,8 @@ Whether to retry `TypeSafeAPITimeoutError`, raised when the request exceeds its 
 
 Copy signature
 <pre aria-label="SDK signature">`exceptions: [set](https://docs.python.org/3/builtins/stdtypes.html#set)\[[type](https://docs.python.org/3/builtins/functions.html#type)\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]] = [field](https://docs.python.org/3/library/dataclasses.html#dataclasses.field)(
-&#x20;   default\_factory=[set](https://docs.python.org/3/builtins/stdtypes.html#set)
-)`</pre>
+&#x20;   default_factory=[set](https://docs.python.org/3/builtins/stdtypes.html#set)
+)&#xA;`</pre>
 
 Additional exception types that trigger a retry, on top of the built-in rules.
 
@@ -27176,7 +27221,7 @@ Additional exception types that trigger a retry, on top of the built-in rules.
 Copy signature
 <pre aria-label="SDK signature">`predicate: (
 &#x20;   [Callable](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)\[\[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)], [bool](https://docs.python.org/3/builtins/functions.html#bool)] | None
-) = None`</pre>
+) = None&#xA;`</pre>
 
 An optional predicate called with the raised exception; returning `True` triggers a retry in addition to the other rules.
 
@@ -27209,7 +27254,9 @@ Copy signature
 
   &#x20;
 
-  30.0\`
+  30.0
+
+  &#xA;\`
 </pre>
 
 Total retry budget in seconds per SDK call, including the initial attempt and delays; `None` disables the limit.
@@ -27228,7 +27275,7 @@ Attach assets to System One requests and reference them from request content.
 >
 > The API detects each image's format from its bytes.
 
-## typesafe\_sdk.Asset
+## typesafe_sdk.Asset
 
 `module-attribute`
 
@@ -27249,12 +27296,14 @@ Copy signature
 
   &#x20;
 
-  [Image](/sdk/python/api/types/assets#typesafe_sdk.Image)\`
+  [Image](/sdk/python/api/types/assets#typesafe_sdk.Image)
+
+  &#xA;\`
 </pre>
 
 An asset referenced from request content; currently only images are supported.
 
-## typesafe\_sdk.Image
+## typesafe_sdk.Image
 
 `dataclass`
 
@@ -27285,7 +27334,9 @@ Copy signature
 
   [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-  ])\`
+  ])
+
+  &#xA;\`
 </pre>
 
 An image asset backed by image file bytes, or a path to an image file.
@@ -27379,7 +27430,9 @@ Copy signature
 
   [str](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Image contents, represented as one of:
@@ -27387,14 +27440,14 @@ Image contents, represented as one of:
 * raw bytes (anything supporting the [`Buffer` protocol](https://docs.python.org/3/library/stdtypes.html#buffer-objects))
 * [path-like](https://docs.python.org/3/library/os.html#os.PathLike) object pointing at the image on the filesystem
 
-### from\_base64
+### from_base64
 
 `classmethod`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`from\_base64
+  \`from_base64
 
   (
 
@@ -27422,7 +27475,9 @@ Copy signature
 
   &#x20;
 
-  [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)\`
+  [Self](https://docs.python.org/3/library/typing.html#typing.Self)
+
+  &#xA;\`
 </pre>
 
 Create an `Image` instance from a base64-encoded image bytes.
@@ -27439,14 +27494,14 @@ Raises:
 
   The data isn't valid base64 text.
 
-### from\_pil
+### from_pil
 
 `classmethod`
 
 Copy signature
-<pre aria-label="SDK signature">`from\_pil(
+<pre aria-label="SDK signature">`from_pil(
 &#x20;   image: [PIL](https://pillow.readthedocs.io/en/stable/PIL.html#module-PIL).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#module-PIL.Image).[Image](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image), format: [str](https://docs.python.org/3/builtins/stdtypes.html#str) = "jpeg"
-) -> [Self](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.Self)`</pre>
+) -> [Self](https://docs.python.org/3/library/typing.html#typing.Self)&#xA;`</pre>
 
 Create an `Image` instance from a [Pillow](https://pillow.readthedocs.io/) image.
 
@@ -27477,7 +27532,7 @@ Source: https://docs.typesafe.ai/sdk/python/api/types/common
 
 Common types for TypeSafe API SDK.
 
-## typesafe\_sdk.JSONValue
+## typesafe_sdk.JSONValue
 
 `module-attribute`
 
@@ -27485,11 +27540,11 @@ Copy signature
 <pre aria-label="SDK signature">`JSONValue = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
 &#x20;   "JSONValue",
 &#x20;   "str | int | float | bool | Sequence\[JSONValue | None] | Mapping\[str, JSONValue | None]",
-)`</pre>
+)&#xA;`</pre>
 
 A JSON-like value. May be nested and contain `None`.
 
-## typesafe\_sdk.JSONContent
+## typesafe_sdk.JSONContent
 
 `module-attribute`
 
@@ -27497,11 +27552,11 @@ Copy signature
 <pre aria-label="SDK signature">`JSONContent = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
 &#x20;   "JSONContent",
 &#x20;   "str | Mapping\[str, JSONValue | None] | Sequence\[JSONValue | None]",
-)`</pre>
+)&#xA;`</pre>
 
 Either a plain string or a mapping/sequence of [`JSONValue`](/sdk/python/api/types/common#typesafe_sdk.JSONValue) entries.
 
-## typesafe\_sdk.ContentValue
+## typesafe_sdk.ContentValue
 
 `module-attribute`
 
@@ -27509,11 +27564,11 @@ Copy signature
 <pre aria-label="SDK signature">`ContentValue = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
 &#x20;   "ContentValue",
 &#x20;   "str | int | float | bool | Sequence\[ContentValue | None] | Mapping\[str, ContentValue | None] | Asset",
-)`</pre>
+)&#xA;`</pre>
 
 A JSON-like value that may also hold [assets](/sdk/python/api/types/assets#typesafe_sdk.Asset). May be nested and contain `None`.
 
-## typesafe\_sdk.Content
+## typesafe_sdk.Content
 
 `module-attribute`
 
@@ -27521,7 +27576,7 @@ Copy signature
 <pre aria-label="SDK signature">`Content = [TypeAliasType](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.TypeAliasType)(
 &#x20;   "Content",
 &#x20;   "str | Mapping\[str, ContentValue | None] | Sequence\[ContentValue | None] | Asset",
-)`</pre>
+)&#xA;`</pre>
 
 Text, an [asset](/sdk/python/api/types/assets#typesafe_sdk.Asset), or a mapping/sequence of [`ContentValue`](/sdk/python/api/types/common#typesafe_sdk.ContentValue) entries.
 
@@ -27541,7 +27596,7 @@ Provide state and ask yes/no, choice, and score questions using objects or dicti
 
 Use `Noul`, `Choice`, `Score`, and `Box` to define questions with named arguments.
 
-## typesafe\_sdk.NoulCriteria
+## typesafe_sdk.NoulCriteria
 
 Bases: `TypedDict`
 
@@ -27570,7 +27625,9 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 Description of the yes outcome as text, an asset, a JSON object, or an array; `None` leaves it undescribed.
@@ -27596,12 +27653,14 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 Description of the no outcome as text, an asset, a JSON object, or an array; `None` leaves it undescribed.
 
-## typesafe\_sdk.Noul
+## typesafe_sdk.Noul
 
 `pydantic-model`
 
@@ -27624,7 +27683,9 @@ Description of the no outcome as text, an asset, a JSON object, or an array; `No
 >
 >   [Any](https://docs.python.org/3/library/typing.html#typing.Any)
 >
->   )\`
+>   )
+>
+>   &#xA;\`
 > </pre>
 
 > [tab] Overload 1
@@ -27635,7 +27696,7 @@ Description of the no outcome as text, an asset, a JSON object, or an array; `No
 > &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
 > &#x20;   instructions: [Content](/sdk/python/api/types/common#typesafe_sdk.Content),
 > &#x20;   criteria: [NoulCriteria](/sdk/python/api/types/questions#typesafe_sdk.NoulCriteria) | None = ...,
-> )`</pre>
+> )&#xA;`</pre>
 
 > [tab] Overload 2
 >
@@ -27645,7 +27706,7 @@ Description of the no outcome as text, an asset, a JSON object, or an array; `No
 > &#x20;   type: [Literal](https://docs.python.org/3/library/typing.html#typing.Literal)\["noul"] = ...,
 > &#x20;   instructions: None = ...,
 > &#x20;   criteria: \_DescribedTrue | \_DescribedFalse,
-> )`</pre>
+> )&#xA;`</pre>
 
 Bases: `_Question`, `wire.NoulQuestion`
 
@@ -27838,7 +27899,9 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional when `criteria` describes an outcome.
@@ -27872,12 +27935,14 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
-## typesafe\_sdk.Choice
+## typesafe_sdk.Choice
 
 `pydantic-model`
 
@@ -28054,7 +28119,9 @@ Copy signature
 
   None
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 A nonempty mapping of labels to text, asset, object, or array descriptions, or `None` for undescribed labels.
@@ -28088,12 +28155,14 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
-## typesafe\_sdk.Score
+## typesafe_sdk.Score
 
 `pydantic-model`
 
@@ -28250,7 +28319,9 @@ Copy signature
 
   [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 A nonempty, ordered list of text, asset, object, or array descriptions, one per score from zero.
@@ -28284,12 +28355,14 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
 
-## typesafe\_sdk.Box
+## typesafe_sdk.Box
 
 `pydantic-model`
 
@@ -28459,23 +28532,25 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 What to locate in the request's image, expressed as text, an asset, a JSON object, or an array; optional.
 
-## typesafe\_sdk.Question
+## typesafe_sdk.Question
 
 `module-attribute`
 
 Copy signature
 <pre aria-label="SDK signature">`Question: [TypeAlias](https://docs.python.org/3/library/typing.html#typing.TypeAlias) = (
 &#x20;   [Noul](/sdk/python/api/types/questions#typesafe_sdk.Noul) | [Choice](/sdk/python/api/types/questions#typesafe_sdk.Choice) | [Score](/sdk/python/api/types/questions#typesafe_sdk.Score) | [Box](/sdk/python/api/types/questions#typesafe_sdk.Box) | [QuestionModel](/sdk/python/api/types/questions#typesafe_sdk.QuestionModel)
-)`</pre>
+)&#xA;`</pre>
 
 A question object or question dictionary.
 
-## typesafe\_sdk.Questions
+## typesafe_sdk.Questions
 
 `module-attribute`
 
@@ -28508,7 +28583,9 @@ Copy signature
 
   [Question](/sdk/python/api/types/questions#typesafe_sdk.Question)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Question inputs keyed by the names used to identify their answers.
@@ -28517,7 +28594,7 @@ Question inputs keyed by the names used to identify their answers.
 
 Question dictionaries include a `type` key: `"noul"`, `"choice"`, `"score"`, or `"box"`. You can mix dictionaries and question objects in the same request.
 
-## typesafe\_sdk.NoulModel
+## typesafe_sdk.NoulModel
 
 Bases: `TypedDict`
 
@@ -28544,7 +28621,9 @@ Copy signature
 
   'noul'
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 ### instructions
@@ -28560,7 +28639,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -28574,7 +28653,9 @@ Copy signature
 
   None
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional when `criteria` describes an outcome.
@@ -28592,7 +28673,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -28606,12 +28687,14 @@ Copy signature
 
   None
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Optional descriptions of the yes and no outcomes; required when `instructions` is `None`.
 
-## typesafe\_sdk.ChoiceModel
+## typesafe_sdk.ChoiceModel
 
 Bases: `TypedDict`
 
@@ -28638,7 +28721,9 @@ Copy signature
 
   'choice'
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 ### instructions
@@ -28654,7 +28739,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -28668,7 +28753,9 @@ Copy signature
 
   None
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
@@ -28706,12 +28793,14 @@ Copy signature
 
   None
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 A nonempty mapping of labels to text, asset, object, or array descriptions, or `None` for undescribed labels.
 
-## typesafe\_sdk.ScoreModel
+## typesafe_sdk.ScoreModel
 
 Bases: `TypedDict`
 
@@ -28738,7 +28827,9 @@ Copy signature
 
   'score'
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 ### instructions
@@ -28754,7 +28845,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -28768,7 +28859,9 @@ Copy signature
 
   None
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 The question to ask, expressed as text, an asset, a JSON object, or an array; optional.
@@ -28792,12 +28885,14 @@ Copy signature
 
   [Content](/sdk/python/api/types/common#typesafe_sdk.Content)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 A nonempty, ordered list of text, asset, object, or array descriptions, one per score from zero.
 
-## typesafe\_sdk.BoxModel
+## typesafe_sdk.BoxModel
 
 Bases: `TypedDict`
 
@@ -28822,7 +28917,9 @@ Copy signature
 
   'box'
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 ### instructions
@@ -28838,7 +28935,7 @@ Copy signature
 
   &#x20;
 
-  [NotRequired](https://typing-extensions.readthedocs.io/en/latest/index.html#typing_extensions.NotRequired)
+  [NotRequired](https://docs.python.org/3/library/typing.html#typing.NotRequired)
 
   \[
 
@@ -28852,12 +28949,14 @@ Copy signature
 
   None
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 What to locate in the request's image, expressed as text, an asset, a JSON object, or an array; optional.
 
-## typesafe\_sdk.QuestionModel
+## typesafe_sdk.QuestionModel
 
 `module-attribute`
 
@@ -28867,7 +28966,7 @@ Copy signature
 &#x20;   | [ChoiceModel](/sdk/python/api/types/questions#typesafe_sdk.ChoiceModel)
 &#x20;   | [ScoreModel](/sdk/python/api/types/questions#typesafe_sdk.ScoreModel)
 &#x20;   | [BoxModel](/sdk/python/api/types/questions#typesafe_sdk.BoxModel)
-)`</pre>
+)&#xA;`</pre>
 
 A question dictionary identified by its `type` key.
 
@@ -28879,7 +28978,7 @@ Read answers, confidence scores, token usage, and available models returned by t
 
 ## Response
 
-## typesafe\_sdk.SystemOneResponse
+## typesafe_sdk.SystemOneResponse
 
 `pydantic-model`
 
@@ -29200,25 +29299,27 @@ Fields:
 * `usage` (`Usage`)
 * `answers` (`dict[str, Answer]`)
 
-### request\_id
+### request_id
 
 `cached` `property`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`request\_id
+  \`request_id
 
   :
 
   &#x20;
 
-  [str](https://docs.python.org/3/builtins/stdtypes.html#str)\`
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#xA;\`
 </pre>
 
 The `x-typesafe-request-id` response header.
 
-### raw\_http\_response
+### raw_http_response
 
 `property`
 
@@ -29228,7 +29329,7 @@ raw_http_response: httpx2.Response
 
 The underlying `httpx2.Response`, exposing status, headers, and body.
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -29251,7 +29352,9 @@ Copy signature
 
   &#x20;
 
-  [str](https://docs.python.org/3/builtins/stdtypes.html#str)\`
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#xA;\`
 </pre>
 
 The model used to answer the request.
@@ -29269,7 +29372,9 @@ Copy signature
 
   &#x20;
 
-  [Usage](/sdk/python/api/types/responses#typesafe_sdk.Usage)\`
+  [Usage](/sdk/python/api/types/responses#typesafe_sdk.Usage)
+
+  &#xA;\`
 </pre>
 
 Token usage for the request.
@@ -29299,7 +29404,9 @@ Copy signature
 
   [Answer](/sdk/python/api/types/responses#typesafe_sdk.Answer)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 All answer objects keyed by question name.
@@ -29329,7 +29436,9 @@ Copy signature
 
   [NoulAnswer](/sdk/python/api/types/responses#typesafe_sdk.NoulAnswer)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Yes/no answers keyed by question name.
@@ -29359,7 +29468,9 @@ Copy signature
 
   [ChoiceAnswer](/sdk/python/api/types/responses#typesafe_sdk.ChoiceAnswer)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Choice answers keyed by question name.
@@ -29389,7 +29500,9 @@ Copy signature
 
   [ScoreAnswer](/sdk/python/api/types/responses#typesafe_sdk.ScoreAnswer)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Score answers keyed by question name.
@@ -29419,12 +29532,14 @@ Copy signature
 
   [BoxAnswer](/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Box answers keyed by question name.
 
-## typesafe\_sdk.Usage
+## typesafe_sdk.Usage
 
 `pydantic-model`
 
@@ -29483,7 +29598,7 @@ Fields:
 * `input_tokens` (`int | None`)
 * `output_tokens` (`int | None`)
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -29493,14 +29608,14 @@ model_config = ConfigDict(
 )
 ```
 
-### input\_tokens
+### input_tokens
 
 `pydantic-field`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`input\_tokens
+  \`input_tokens
 
   :
 
@@ -29522,19 +29637,21 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 Number of input tokens used, or `None` when the API did not report it.
 
-### output\_tokens
+### output_tokens
 
 `pydantic-field`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`output\_tokens
+  \`output_tokens
 
   :
 
@@ -29556,14 +29673,16 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 Number of output tokens used, or `None` when the API did not report it.
 
 ## Answers
 
-## typesafe\_sdk.NoulAnswer
+## typesafe_sdk.NoulAnswer
 
 `pydantic-model`
 
@@ -29630,12 +29749,14 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Probability of a yes answer or a true statement, from 0 to 1. Values near 1 favor yes or true, values near 0 favor no or false, and values near 0.5 indicate uncertainty.
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -29645,7 +29766,7 @@ model_config = ConfigDict(
 )
 ```
 
-## typesafe\_sdk.ChoiceAnswer
+## typesafe_sdk.ChoiceAnswer
 
 `pydantic-model`
 
@@ -29739,7 +29860,9 @@ Copy signature
 
   &#x20;
 
-  [str](https://docs.python.org/3/builtins/stdtypes.html#str)\`
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#xA;\`
 </pre>
 
 The name of the choice with the highest probability among the question's criteria.
@@ -29757,7 +29880,9 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Confidence in the selected choice, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain selections for review.
@@ -29787,12 +29912,14 @@ Copy signature
 
   [float](https://docs.python.org/3/builtins/functions.html#float)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Probability of each choice in criteria, keyed by choice name, from 0 to 1. Shows how likely the alternatives are; values sum to approximately 1.
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -29802,7 +29929,7 @@ model_config = ConfigDict(
 )
 ```
 
-## typesafe\_sdk.ScoreAnswer
+## typesafe_sdk.ScoreAnswer
 
 `pydantic-model`
 
@@ -29909,7 +30036,9 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Expected score: the probability-weighted average of the rubric levels. May fall between integer levels.
@@ -29927,12 +30056,14 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Confidence in the score, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain ratings for review.
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -29949,7 +30080,7 @@ model_config = ConfigDict(
 Copy signature
 <pre aria-label="SDK signature">`legend: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)\[
 &#x20;   [int](https://docs.python.org/3/builtins/functions.html#int), [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)\[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Any](https://docs.python.org/3/library/typing.html#typing.Any)] | [list](https://docs.python.org/3/builtins/stdtypes.html#list)\[[Any](https://docs.python.org/3/library/typing.html#typing.Any)]
-]`</pre>
+]&#xA;`</pre>
 
 Rubric descriptions keyed by integer score.
 
@@ -29978,12 +30109,14 @@ Copy signature
 
   [float](https://docs.python.org/3/builtins/functions.html#float)
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 Probabilities keyed by integer score.
 
-## typesafe\_sdk.BoxAnswer
+## typesafe_sdk.BoxAnswer
 
 `pydantic-model`
 
@@ -30090,7 +30223,7 @@ Fields:
 * `box` (`BoxCoordinates`)
 * `confidence` (`float | None`)
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -30113,7 +30246,9 @@ Copy signature
 
   &#x20;
 
-  [BoxCoordinates](/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates)\`
+  [BoxCoordinates](/sdk/python/api/types/responses#typesafe_sdk.BoxCoordinates)
+
+  &#xA;\`
 </pre>
 
 The box's edges as fractions of the image's height and width, from 0 to 1.
@@ -30139,12 +30274,14 @@ Copy signature
 
   &#x20;
 
-  None\`
+  None
+
+  &#xA;\`
 </pre>
 
 Confidence for the box, from 0 to 1, or `None` when the model does not provide it.
 
-## typesafe\_sdk.BoxCoordinates
+## typesafe_sdk.BoxCoordinates
 
 `pydantic-model`
 
@@ -30232,7 +30369,9 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Top edge of the box, as a fraction of image height from the top (0-1).
@@ -30250,7 +30389,9 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Bottom edge of the box, as a fraction of image height from the top (0-1).
@@ -30268,7 +30409,9 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Left edge of the box, as a fraction of image width from the left (0-1).
@@ -30286,12 +30429,14 @@ Copy signature
 
   &#x20;
 
-  [float](https://docs.python.org/3/builtins/functions.html#float)\`
+  [float](https://docs.python.org/3/builtins/functions.html#float)
+
+  &#xA;\`
 </pre>
 
 Right edge of the box, as a fraction of image width from the left (0-1).
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -30301,7 +30446,7 @@ model_config = ConfigDict(
 )
 ```
 
-## typesafe\_sdk.Answer
+## typesafe_sdk.Answer
 
 `module-attribute`
 
@@ -30312,13 +30457,13 @@ Copy signature
 &#x20;   | [ScoreAnswer](/sdk/python/api/types/responses#typesafe_sdk.ScoreAnswer)
 &#x20;   | [BoxAnswer](/sdk/python/api/types/responses#typesafe_sdk.BoxAnswer),
 &#x20;   Field(discriminator="type"),
-]`</pre>
+]&#xA;`</pre>
 
 An answer to a single question, identified by its `type`.
 
 ## Available models
 
-## typesafe\_sdk.ListModelsResponse
+## typesafe_sdk.ListModelsResponse
 
 `pydantic-model`
 
@@ -30382,25 +30527,27 @@ Fields:
 
 * `models` (`tuple[ModelMetadata, ...]`)
 
-### request\_id
+### request_id
 
 `cached` `property`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`request\_id
+  \`request_id
 
   :
 
   &#x20;
 
-  [str](https://docs.python.org/3/builtins/stdtypes.html#str)\`
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#xA;\`
 </pre>
 
 The `x-typesafe-request-id` response header.
 
-### raw\_http\_response
+### raw_http_response
 
 `property`
 
@@ -30410,7 +30557,7 @@ raw_http_response: httpx2.Response
 
 The underlying `httpx2.Response`, exposing status, headers, and body.
 
-### model\_config
+### model_config
 
 `class-attribute` `instance-attribute`
 
@@ -30445,12 +30592,14 @@ Copy signature
 
   ...
 
-  ]\`
+  ]
+
+  &#xA;\`
 </pre>
 
 The available models.
 
-## typesafe\_sdk.ModelMetadata
+## typesafe_sdk.ModelMetadata
 
 `pydantic-model`
 
@@ -30510,7 +30659,9 @@ Copy signature
 
   &#x20;
 
-  [str](https://docs.python.org/3/builtins/stdtypes.html#str)\`
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#xA;\`
 </pre>
 
 Model name or alias accepted by a request's model field.
@@ -30528,25 +30679,29 @@ Copy signature
 
   &#x20;
 
-  [str](https://docs.python.org/3/builtins/stdtypes.html#str)\`
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#xA;\`
 </pre>
 
 Human-readable description of the model and its capabilities.
 
-### release\_date
+### release_date
 
 `pydantic-field`
 
 Copy signature
 
 <pre aria-label="SDK signature">
-  \`release\_date
+  \`release_date
 
   :
 
   &#x20;
 
-  [str](https://docs.python.org/3/builtins/stdtypes.html#str)\`
+  [str](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+  &#xA;\`
 </pre>
 
 Model release date, formatted as YYYY-MM-DD.

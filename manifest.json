@@ -87,10 +87,10 @@
       "url": "https://docs.typesafe.ai/concepts/use-case-map.md",
       "title": "Use cases",
       "description": "Build business workflows where Jev makes the judgments and your code acts on them.",
-      "raw_sha256": "2ae16aed7cc301c4ac23b2432b1135cd5b9a4c9f6cd92ca3b46a4f941adcbdbd",
-      "clean_sha256": "98d6f3322f2e62fb267f7f2cfca5df28db93ef9efb9724439e16d7de1287edb1",
-      "bytes": 28319,
-      "changed_at": "2026-11-12T15:21:07.296Z"
+      "raw_sha256": "db7b52a032d5da6dd9a2066b0a86762202d700d8fe5d7f6b344e374d2d5b2cb0",
+      "clean_sha256": "b5e2ac3d66a652dcda43c3b0ae8d2e40766281b67ffcbf854de4778d3de95741",
+      "bytes": 28047,
+      "changed_at": "2026-11-14T13:37:12.725Z"
     },
     "confidence.md": {
       "url": "https://docs.typesafe.ai/confidence.md",

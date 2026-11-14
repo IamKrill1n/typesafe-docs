@@ -8,13 +8,11 @@ Use cases include checking invoices, moderating chat, guarding LLM apps, and sea
 
 [Business process automationCheck invoices, claims, and documents before money moves, and send the uncertain ones to a person. Code owns the control flow, not markdown files, so it runs a million times in the background without a human co-pilot.](#business-process-automation)
 
-[Real-time appsFrontier intelligence in about 150ms, fast enough for live UIs, voice assistants, and games.](#real-time-apps)
+[Real-time appsFrontier intelligence in about 150ms, fast enough for live UIs, voice assistants, games, and live chat moderation.](#real-time-apps)
 
 [Search and labeling at scaleAbout 100x cheaper than a frontier LLM, so you can ask a question of every row, line, or record, then rank, filter, or label the results.](#search-and-labeling-at-scale)
 
 [Agents and verificationCatch the jailbreaks, hallucinations, and citation errors other AIs make, at a fraction of the cost of the LLM call, and add routing, safety checks, and new abilities to agents.](#agents-and-verification)
-
-[ModerationApply your own content rules to every message, fast enough for live chat.](#moderation)
 
 [Images and videoFind, read, and check what's in scans, photos, and video frames.](#images-and-video)
 
@@ -90,13 +88,14 @@ For teams that check documents and claims before money moves, copy values out of
 
 ### Real-time apps
 
-For apps that need an answer in milliseconds, such as smart home assistants, ordering, and presentation tools.
+For apps that need an answer in milliseconds, such as smart home assistants, ordering, presentation tools, and live chat moderation.
 
 | Use case | What Jev judges | What your code does | Example |
 | - | - | - | - |
 | **Tick off a presenter's notes as they speak** | How well the live transcript covers each note not yet ticked | Ticks a note once its score passes the threshold | [Try it →](https://docs.typesafe.ai/cookbooks/intelliprompter.md) |
 | **Turn a cafe order into a shopping cart** | Which menu items an order names, and the fields of each item | Builds a structured cart | [Try it →](https://docs.typesafe.ai/cookbooks/cart_from_primitives.md) |
 | **Control a smart home from plain-language requests** | What kind of request it is, and which area, device, and action it targets | Runs the command, and passes questions and conversation to an LLM | [Try it →](https://docs.typesafe.ai/demos/smart-home.md) |
+| **Filter Twitch chat** | What kind of message it is (a question, cheering, chat, unasked-for gameplay advice, or spam), whether it insults someone, and whether it spoils the game | Hides insults, spam, and unasked-for advice, blurs spoilers, and highlights questions | [Try it →](https://docs.typesafe.ai/cookbooks/twitch_chat_filter.md) |
 
 **More ideas**
 
@@ -181,30 +180,6 @@ For teams whose agents or LLM features in production need checks, routing, or re
 > * Define checks for your team's coding conventions and writing guidelines.
 > * Run these checks in CI and flag violations for review.
 
-### Moderation
-
-For teams whose moderators work through a queue of reports or a live stream of messages by hand.
-
-| Use case | What Jev judges | What your code does | Example |
-| - | - | - | - |
-| **Filter Twitch chat** | What kind of message it is (a question, cheering, chat, unasked-for gameplay advice, or spam), whether it insults someone, and whether it spoils the game | Hides insults, spam, and unasked-for advice, blurs spoilers, and highlights questions | [Try it →](https://docs.typesafe.ai/cookbooks/twitch_chat_filter.md) |
-
-**More ideas**
-
-> [accordion] Your own content rules
->
-> * Apply company-specific, nuanced criteria to judge which posts meet your moderation standards.
-> * Moderate user content and automated conversations across communities, customer support, and outreach by SDRs (sales development reps).
-> * Detect fraud, unsafe advice, personal-data exposure, opt-out requests, and policy-violating claims.
-> * Combine severity and probability or confidence to allow, warn, review, or block content.
-
-> [accordion] Gaming
->
-> * Evaluate player reports, in-game chat, reviews, and support conversations.
-> * Detect suspicious behavior in player reports and chat.
-> * Annotate content and score frustration or engagement.
-> * Detect signs of churn (players about to stop playing) and route player-support requests.
-
 ### Images and video
 
 For teams reading scans, photos, or video frames by eye.
@@ -217,6 +192,20 @@ For teams reading scans, photos, or video frames by eye.
 ### More industries
 
 Ideas for industries beyond the categories above.
+
+> [accordion] Content moderation
+>
+> * Apply company-specific, nuanced criteria to judge which posts meet your moderation standards.
+> * Moderate user content and automated conversations across communities, customer support, and outreach by SDRs (sales development reps).
+> * Detect fraud, unsafe advice, personal-data exposure, opt-out requests, and policy-violating claims.
+> * Combine severity and probability or confidence to allow, warn, review, or block content.
+
+> [accordion] Gaming
+>
+> * Evaluate player reports, in-game chat, reviews, and support conversations.
+> * Detect suspicious behavior in player reports and chat.
+> * Annotate content and score frustration or engagement.
+> * Detect signs of churn (players about to stop playing) and route player-support requests.
 
 > [accordion] Customer support
 >

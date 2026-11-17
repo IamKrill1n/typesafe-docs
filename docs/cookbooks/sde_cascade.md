@@ -24,15 +24,29 @@
 
 ## Setup
 
-* install the dependencies:
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/sde_cascade/cascade_cookbook.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/sde_cascade/cascade_cookbook.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiCgIYDOA1qQaQJoQz7kBOCrS+WADgmxSshlKAAsEYGABsAlkgDm+RAhTyFlAHT4mLdpwWyAbslb4AZggDu+KBCSUUbcvJSV89-Cgk9Msx+r4ohJS0pwQ5jzk4vi87GpQsnGoADRePipqivhSzmr2aeRIYLEQlJSyAEbSAJ5BEIixHJYcSFAI7p7enJmBaojaAHIQKJzdHL7+bmaUENIw+dze5EJWEGzU7lay3pMB2cGSMuGRCCZsdXGCsonJKNoAEgKc+maWNljkcLxhXlSbXBKs3mi0ouGIxCQEKQaAAggBlADSBF0+CQCEkXggQXER1+5GUGKySnM63wACkIEU0mgJBxKASiiV4WJZGwwnVSWwPOj8GJmNzKqorBilj41hs+QLOpEAJy4AAMCqx+AAjAB2RXKzwAWXsYHINW00OhTwmr26e2JOJCx3cXJ45xq9k4uT6PgNNXokMpRT5VEJqnUnW4euKhpyMDYgVVqq1KtjuAAzAq0qqAEzJ5UobGqpNagDc+GhtOeDP97l6ihD+DDnsj0eyGfjObVmZTaYArC3c92U0XoSy2RyK4HiTW6xG3dl5SmEwqs2m40qE5mlWn8yvW6qACxartZhMANizA8h0IAYvISgT+mMxCt8BKAQ6zgJneiAOTuQ6hF7FWx7EcZxXC0YtIXhAB5AAZABVNAAElIMGegQDSUgikoEU2DofASHAQ1cNIScalIdCQEceIAH07yIkBVQXFMyOLEBkDAGjZEQOjEyYkAAF8+LQwheDYBpeDcDBsDwQh8MqGBKBqKi7CQcw5CgFBcPwlAan4OikGYaRmNIeRgJgdTZCAuiABEIA6dIeiJPpOM4eR7PwAADTDsPcjxzmkcheDMO8nwkbgikueIbiSIohFcy13IoGgfP8fA5IUgB+IyQCgaNRmjchNNIJwYAQOjLS8gRUo4cgAW8FK2GOLLzHIaRKFK6Sip8CruVJaRpAgKx3Dq9wGrCUgBPI5g3FkMAECo-ko0oQqyB09rUP0mQspM4rzMsjqQAQoaMkc7JgrinxPIcbyPAWCpZrc58pUWjxuUtT0js4BL-h8lr+sGzKhNIHKdgEWQCukrSGrWljyquyrKmq2rWRGxrAZAZrWuhzr-ywyrer+o76tRiaWIRhAasoKiRIQFpkHaZbtN0-aNsMtHtoa3aHGs2yPrHJzGnOz7up8smarManabaThKNGEpBY8xLqHctJKDMsRWHcAkrgSaLUBC7E1hkEo8jpNERjHHkzHaQQXG4esySFLlwm5chzDyq2BAoOLnIB8jgbysGGahsqurhwVEcJlGxrRjG2pDnHsIsOYCfSIno5J0h9JQKjyfZWQOg0iGitWvSDK2hwdtBbm7PixWfpoJPXp8XO5AL1gjBcfzKlkORtMKACUvGf8ojzyrguWVZ1hfMk3wuWJItuGLfZY-3QfBghIZK+OuFx8PyaRtP2vI2OsbIUPd6TvqBsj-BRvajOQCsUTFCosJFG8BmS+Zsu2Yrjmq-2odNyVYlDy0urvH6ORZDmElkIN+ChdjmFEnANyLo3JfSShraebBl5A1ymvIOW99qwwvqLA+Ucj4sRPtvbql8U7DVvsTPi5F9JUQqIoMIHEuJFxWkzdaP9yLszMgA1CNka4XWFhYTuKoRIQF4GUTgnx1K1B5K6CMTJVFBAoIIQEPAAJ3lwdlfB+VCGnxIYnMhN875NRanHYh59E742vqnCh40BJCRAAFWQAA1AQFR7DSRAEYVU-EgA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
 
 ```bash
 pip install openai jsonschema ipython matplotlib pandas 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-* then set `OPENAI_API_KEY` and `TYPESAFE_API_KEY` in your environment
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY` and `OPENAI_API_KEY`; in Colab, add them in the Secrets
+panel.
 
-```python
+```python expandable
 import json
 import os
 import re
@@ -56,6 +70,19 @@ CONFIGS = {
 }
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 FIRE_T = 0.7  # escalate if any rule's P(broken) exceeds this; also the "<== FIRES" display marker
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY", "OPENAI_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 oai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "cache-only"))
 
@@ -226,7 +253,7 @@ def verify(state_json: str, model: str) -> dict[str, float]:
 state = {"task": task, "answer": cheap_record}
 checks = verify(json.dumps(state), model=TYPESAFE_MODEL)
 playground_link = make_playground_link(state, {k: q.model_dump(mode="json", exclude_none=True) for k, q in CHECKS.items()})
-display(Markdown(f"🔗 [Open this verification in the TypeSafe playground]({playground_link})"))
+display(Markdown(f"🔗 [Open in the TypeSafe playground]({playground_link})"))
 
 print(f"{'rule':<20}{'P(broken)':>10}")
 print("-" * 30)
@@ -246,7 +273,7 @@ no_single_time            0.07
 outside_hours             0.04
 ```
 
-[Open this verification in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiCgIYDOA1qQaQJoQz7kBOCrS+WADgmxSshlKAAsEYGABsAlkgDm+RAhTyFlAHT4mLdpwWyAbslb4AZggDu+KBCSUUbcvJSV89-Cgk9Msx+r4ohJS0pwQ5jzk4vi87GpQsnGoADRePipqivhSzmr2aeRIYLEQlJSyAEbSAJ5BEIixHJYcSFAI7p7enJmBaojaAHIQKJzdHL7+bmaUENIw+dze5EJWEGzU7lay3pMB2cGSMuGRCCZsdXGCsonJKNoAEgKc+maWNljkcLxhXlSbXBKs3mi0ouGIxCQEKQaAAggBlADSBF0+CQCEkXggQXER1+5GUGKySnM63wACkIEU0mgJBxKASiiV4WJZGwwnVSWwPOj8GJmNzKqorBilj41hs+QLOpEAJy4AAMCqx+AAjAB2RXKzwAWXsYHINW00OhTwmr26e2JOJCx3cXJ45xq9k4uT6PgNNXokMpRT5VEJqnUnW4euKhpyMDYgVVqq1KtjuAAzAq0qqAEzJ5UobGqpNagDc+GhtOeDP97l6ihD+DDnsj0eyGfjObVmZTaYArC3c92U0XoSy2RyK4HiTW6xG3dl5SmEwqs2m40qE5mlWn8yvW6qACxartZhMANizA8h0IAYvISgT+mMxCt8BKAQ6zgJneiAOTuQ6hF7FWx7EcZxXC0YtIXhAB5AAZABVNAAElIMGegQDSUgikoEU2DofASHAQ1cNIScalIdCQEceIAH07yIkBVQXFMyOLEBkDAGjZEQOjEyYkAAF8+LQwheDYBpeDcDBsDwQh8MqGBKBqKi7CQcw5CgFBcPwlAan4OikGYaRmNIeRgJgdTZCAuiABEIA6dIeiJPpOM4eR7PwAADTDsPcjxzmkcheDMO8nwkbgikueIbiSIohFcy13IoGgfP8fA5IUgB+IyQCgaNRmjchNNIJwYAQOjLS8gRUo4cgAW8FK2GOLLzHIaRKFK6Sip8CruVJaRpAgKx3Dq9wGrCUgBPI5g3FkMAECo-ko0oQqyB09rUP0mQspM4rzMsjqQAQoaMkc7JgrinxPIcbyPAWCpZrc58pUWjxuUtT0js4BL-h8lr+sGzKhNIHKdgEWQCukrSGrWljyquyrKmq2rWRGxrAZAZrWuhzr-ywyrer+o76tRiaWIRhAasoKiRIQFpkHaZbtN0-aNsMtHtoa3aHGs2yPrHJzGnOz7up8smarManabaThKNGEpBY8xLqHctJKDMsRWHcAkrgSaLUBC7E1hkEo8jpNERjHHkzHaQQXG4esySFLlwm5chzDyq2BAoOLnIB8jgbysGGahsqurhwVEcJlGxrRjG2pDnHsIsOYCfSIno5J0h9JQKjyfZWQOg0iGitWvSDK2hwdtBbm7PixWfpoJPXp8XO5AL1gjBcfzKlkORtMKACUvGf8ojzyrguWVZ1hfMk3wuWJItuGLfZY-3QfBghIZK+OuFx8PyaRtP2vI2OsbIUPd6TvqBsj-BRvajOQCsUTFCosJFG8BmS+Zsu2Yrjmq-2odNyVYlDy0urvH6ORZDmElkIN+ChdjmFEnANyLo3JfSShraebBl5A1ymvIOW99qwwvqLA+Ucj4sRPtvbql8U7DVvsTPi5F9JUQqIoMIHEuJFxWkzdaP9yLszMgA1CNka4XWFhYTuKoRIQF4GUTgnx1K1B5K6CMTJVFBAoIIQEPAAJ3lwdlfB+VCGnxIYnMhN875NRanHYh59E742vqnCh40BJCRAAFWQAA1AQFR7DSRAEYVU-EgA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiCgIYDOA1qQaQJoQz7kBOCrS+WADgmxSshlKAAsEYGABsAlkgDm+RAhTyFlAHT4mLdpwWyAbslb4AZggDu+KBCSUUbcvJSV89-Cgk9Msx+r4ohJS0pwQ5jzk4vi87GpQsnGoADRePipqivhSzmr2aeRIYLEQlJSyAEbSAJ5BEIixHJYcSFAI7p7enJmBaojaAHIQKJzdHL7+bmaUENIw+dze5EJWEGzU7lay3pMB2cGSMuGRCCZsdXGCsonJKNoAEgKc+maWNljkcLxhXlSbXBKs3mi0ouGIxCQEKQaAAggBlADSBF0+CQCEkXggQXER1+5GUGKySnM63wACkIEU0mgJBxKASiiV4WJZGwwnVSWwPOj8GJmNzKqorBilj41hs+QLOpEAJy4AAMCqx+AAjAB2RXKzwAWXsYHINW00OhTwmr26e2JOJCx3cXJ45xq9k4uT6PgNNXokMpRT5VEJqnUnW4euKhpyMDYgVVqq1KtjuAAzAq0qqAEzJ5UobGqpNagDc+GhtOeDP97l6ihD+DDnsj0eyGfjObVmZTaYArC3c92U0XoSy2RyK4HiTW6xG3dl5SmEwqs2m40qE5mlWn8yvW6qACxartZhMANizA8h0IAYvISgT+mMxCt8BKAQ6zgJneiAOTuQ6hF7FWx7EcZxXC0YtIXhAB5AAZABVNAAElIMGegQDSUgikoEU2DofASHAQ1cNIScalIdCQEceIAH07yIkBVQXFMyOLEBkDAGjZEQOjEyYkAAF8+LQwheDYBpeDcDBsDwQh8MqGBKBqKi7CQcw5CgFBcPwlAan4OikGYaRmNIeRgJgdTZCAuiABEIA6dIeiJPpOM4eR7PwAADTDsPcjxzmkcheDMO8nwkbgikueIbiSIohFcy13IoGgfP8fA5IUgB+IyQCgaNRmjchNNIJwYAQOjLS8gRUo4cgAW8FK2GOLLzHIaRKFK6Sip8CruVJaRpAgKx3Dq9wGrCUgBPI5g3FkMAECo-ko0oQqyB09rUP0mQspM4rzMsjqQAQoaMkc7JgrinxPIcbyPAWCpZrc58pUWjxuUtT0js4BL-h8lr+sGzKhNIHKdgEWQCukrSGrWljyquyrKmq2rWRGxrAZAZrWuhzr-ywyrer+o76tRiaWIRhAasoKiRIQFpkHaZbtN0-aNsMtHtoa3aHGs2yPrHJzGnOz7up8smarManabaThKNGEpBY8xLqHctJKDMsRWHcAkrgSaLUBC7E1hkEo8jpNERjHHkzHaQQXG4esySFLlwm5chzDyq2BAoOLnIB8jgbysGGahsqurhwVEcJlGxrRjG2pDnHsIsOYCfSIno5J0h9JQKjyfZWQOg0iGitWvSDK2hwdtBbm7PixWfpoJPXp8XO5AL1gjBcfzKlkORtMKACUvGf8ojzyrguWVZ1hfMk3wuWJItuGLfZY-3QfBghIZK+OuFx8PyaRtP2vI2OsbIUPd6TvqBsj-BRvajOQCsUTFCosJFG8BmS+Zsu2Yrjmq-2odNyVYlDy0urvH6ORZDmElkIN+ChdjmFEnANyLo3JfSShraebBl5A1ymvIOW99qwwvqLA+Ucj4sRPtvbql8U7DVvsTPi5F9JUQqIoMIHEuJFxWkzdaP9yLszMgA1CNka4XWFhYTuKoRIQF4GUTgnx1K1B5K6CMTJVFBAoIIQEPAAJ3lwdlfB+VCGnxIYnMhN875NRanHYh59E742vqnCh40BJCRAAFWQAA1AQFR7DSRAEYVU-EgA)
 
 * Only the broken rule scores high:
   * `busy_conflict` fires at 0.97

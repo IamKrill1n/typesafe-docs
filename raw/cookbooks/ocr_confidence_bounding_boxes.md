@@ -70,11 +70,22 @@ flowchart TB
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/ocr_confidence_bounding_boxes/ocr_confidence_bounding_boxes.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/ocr_confidence_bounding_boxes/ocr_confidence_bounding_boxes.py)
+>
+> This page as one .py file, to run locally.
+
+To run it on your own machine instead:
+
 ```bash theme={null}
 pip install ipython pillow 'typesafe-sdk[pil]>=0.7.5' 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-Then set `TYPESAFE_API_KEY`.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
 > **Note** - Images and `Box` questions are dreamer-ready, which means they are not yet
 > ready for production, and their request format and answers can change between releases.
@@ -103,6 +114,19 @@ ZOOM = 3  # the zoomed region is three times the first box, and at least ZOOM_MI
 ZOOM_MIN = (0.30, 0.15)  # width, height as fractions of the page
 GROW = (0.25, 0.20)  # review margin around each box, as fractions of its width and height
 MIN_SIDE, MAX_SIDE = 280, 1568  # the pixel range Jev accepts for each side of an image
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay the cache

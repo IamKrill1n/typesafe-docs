@@ -65,13 +65,27 @@ flowchart LR
 
 ## Setup
 
-To run this example locally, [create a TypeSafe API key](https://console.typesafe.ai/keys),
-then run these commands in your terminal and replace `<ADD_YOUR_KEY>` with your key.
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/intelliprompter/intelliprompter.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/intelliprompter/intelliprompter.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiCgE4CGSAzlOQJYAOKpBpAEggDbcQB0+NAAsGNfGPwBJVD27NyEOCwTlBUlBPGV8NOJXKaUPBE0XLja6Zvk1jtfAHdR3BNPxmENZJuph8+uQA1uJMEAyo2gBmlu5QEABuqvgowghwggCC4lL4QQimukwIlEERAOYANClp+PHKrsYpVLT0zJo0EPhRBvjlEF4pXWgAnsUAypRRblEQ5PjkCAkMCI7VSBCaAFYwdgEj+NyUe-JICPykAL4g1SBmSiw0GNh4hCQgUAD6AIyfAAxsfDvFBjBCA0h0OZgm74UgROzkGBQFAMCC0cEgDgQRx1B6NHgHYTHGpuGjFUrJeJJRb+VKSNqWVFICTMgAGFGodEYLFZ7GIpBEpPJ+XmWCYRwiCFpRKMtUoUFgcBgR2MtJaXPaWl0PiGQlBk2m3TmunijCQ5Qu-JApGqpAZqgYlEBAG1SAA5TYBHxMqX4Si+Xg22EgABCjAQUW4B2NETADEWyKjXtQPrAQdIAFlvWjfXGEygo+mQBmIHYk1TVFKiwBhRKV-yOOR+pANhipfC7CPK-BgBAoSgMbikAC6l1tHx+P0BwNBGMhiyL8IoSJRaJoGKxOPq4r7BPwRPEqSFJRFuOpvrp4ntjDRLPw7PVbR5fIFtTJJ+SYolZ2l-vwJSgYQ6kYRlb3KPttBNKFunMfBvl1ABWao-D9FJKG4MpzQ8cJUFxBpd3EZxkD9XgJBQK8QIdHQDDcCsaUtUgi2vR0XXdT1EBTHN-D-dChxhUgwxWSNo3mWN4wQRMDg41cfyLLNOJ-HtxMkuTSwLA46KrfiQFrc8GybFDHDbIDOyibte37QcRzHYMvgAJn+adSBBYo51NaFxyXRFkSZddXk4bE8J3YwkwPEkig-eZNOlelKJvZkInvDlWm5FBeVhK1BQiil5iQShEG4mwSj2FBHC6GgYDbSgACNXA7bwaGqCrAL9K80WmRYkCgNx+wwxrDgklAYEWfrjXuMAVx7dJSwY61tOYp1XldEAPU0aTUz9AM+PHQSIyTGMW2U9TkxkrTx3k07-DzQbC20ksyw0usaRrJ7fUbUjDOM+qu24KbLL40drluSgmAYAA1VQaCZV4QASb4QEuIA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
 
 ```bash
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
-export TYPESAFE_API_KEY="<ADD_YOUR_KEY>"
 ```
+
+The code replays saved answers, so it runs as published without an API key. To change a
+request, [create a TypeSafe API key](https://console.typesafe.ai/keys) and set
+`TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
 Numbers below came from `jev-1.14.0` on 2026-11-04.
 
@@ -87,6 +101,19 @@ from typesafe_sdk import Score, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 COVERED_AT = 2.5  # the live app's default threshold on its 1–5 scale
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # cached re-renders need no key
@@ -353,7 +380,7 @@ To use this pattern with a real stream, replace `SPEECH_CHUNKS` with your transc
 provider's accumulated text. Keep the score descriptions specific, and keep the threshold
 in code.
 
-## Try it in the playground
+## Open it in the playground
 
 The link below holds the third tick: the transcript after three chunks as the state, and
 a `Score` question for every criterion still unchecked at that point. Edit the transcript
@@ -367,11 +394,11 @@ playground_link = make_playground_link(
 )
 display(
     Markdown(
-        f"🔗 [Open one scoring tick in the TypeSafe playground]({playground_link})"
+        f"🔗 [Open in the TypeSafe playground]({playground_link})"
     )
 )
 ```
 
-[Open one scoring tick in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiCgE4CGSAzlOQJYAOKpBpAEggDbcQB0+NAAsGNfGPwBJVD27NyEOCwTlBUlBPGV8NOJXKaUPBE0XLja6Zvk1jtfAHdR3BNPxmENZJuph8+uQA1uJMEAyo2gBmlu5QEABuqvgowghwggCC4lL4QQimukwIlEERAOYANClp+PHKrsYpVLT0zJo0EPhRBvjlEF4pXWgAnsUAypRRblEQ5PjkCAkMCI7VSBCaAFYwdgEj+NyUe-JICPykAL4g1SBmSiw0GNh4hCQgUAD6AIyfAAxsfDvFBjBCA0h0OZgm74UgROzkGBQFAMCC0cEgDgQRx1B6NHgHYTHGpuGjFUrJeJJRb+VKSNqWVFICTMgAGFGodEYLFZ7GIpBEpPJ+XmWCYRwiCFpRKMtUoUFgcBgR2MtJaXPaWl0PiGQlBk2m3TmunijCQ5Qu-JApGqpAZqgYlEBAG1SAA5TYBHxMqX4Si+Xg22EgABCjAQUW4B2NETADEWyKjXtQPrAQdIAFlvWjfXGEygo+mQBmIHYk1TVFKiwBhRKV-yOOR+pANhipfC7CPK-BgBAoSgMbikAC6l1tHx+P0BwNBGMhiyL8IoSJRaJoGKxOPq4r7BPwRPEqSFJRFuOpvrp4ntjDRLPw7PVbR5fIFtTJJ+SYolZ2l-vwJSgYQ6kYRlb3KPttBNKFunMfBvl1ABWao-D9FJKG4MpzQ8cJUFxBpd3EZxkD9XgJBQK8QIdHQDDcCsaUtUgi2vR0XXdT1EBTHN-D-dChxhUgwxWSNo3mWN4wQRMDg41cfyLLNOJ-HtxMkuTSwLA46KrfiQFrc8GybFDHDbIDOyibte37QcRzHYMvgAJn+adSBBYo51NaFxyXRFkSZddXk4bE8J3YwkwPEkig-eZNOlelKJvZkInvDlWm5FBeVhK1BQiil5iQShEG4mwSj2FBHC6GgYDbSgACNXA7bwaGqCrAL9K80WmRYkCgNx+wwxrDgklAYEWfrjXuMAVx7dJSwY61tOYp1XldEAPU0aTUz9AM+PHQSIyTGMW2U9TkxkrTx3k07-DzQbC20ksyw0usaRrJ7fUbUjDOM+qu24KbLL40drluSgmAYAA1VQaCZV4QASb4QEuIA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiCgE4CGSAzlOQJYAOKpBpAEggDbcQB0+NAAsGNfGPwBJVD27NyEOCwTlBUlBPGV8NOJXKaUPBE0XLja6Zvk1jtfAHdR3BNPxmENZJuph8+uQA1uJMEAyo2gBmlu5QEABuqvgowghwggCC4lL4QQimukwIlEERAOYANClp+PHKrsYpVLT0zJo0EPhRBvjlEF4pXWgAnsUAypRRblEQ5PjkCAkMCI7VSBCaAFYwdgEj+NyUe-JICPykAL4g1SBmSiw0GNh4hCQgUAD6AIyfAAxsfDvFBjBCA0h0OZgm74UgROzkGBQFAMCC0cEgDgQRx1B6NHgHYTHGpuGjFUrJeJJRb+VKSNqWVFICTMgAGFGodEYLFZ7GIpBEpPJ+XmWCYRwiCFpRKMtUoUFgcBgR2MtJaXPaWl0PiGQlBk2m3TmunijCQ5Qu-JApGqpAZqgYlEBAG1SAA5TYBHxMqX4Si+Xg22EgABCjAQUW4B2NETADEWyKjXtQPrAQdIAFlvWjfXGEygo+mQBmIHYk1TVFKiwBhRKV-yOOR+pANhipfC7CPK-BgBAoSgMbikAC6l1tHx+P0BwNBGMhiyL8IoSJRaJoGKxOPq4r7BPwRPEqSFJRFuOpvrp4ntjDRLPw7PVbR5fIFtTJJ+SYolZ2l-vwJSgYQ6kYRlb3KPttBNKFunMfBvl1ABWao-D9FJKG4MpzQ8cJUFxBpd3EZxkD9XgJBQK8QIdHQDDcCsaUtUgi2vR0XXdT1EBTHN-D-dChxhUgwxWSNo3mWN4wQRMDg41cfyLLNOJ-HtxMkuTSwLA46KrfiQFrc8GybFDHDbIDOyibte37QcRzHYMvgAJn+adSBBYo51NaFxyXRFkSZddXk4bE8J3YwkwPEkig-eZNOlelKJvZkInvDlWm5FBeVhK1BQiil5iQShEG4mwSj2FBHC6GgYDbSgACNXA7bwaGqCrAL9K80WmRYkCgNx+wwxrDgklAYEWfrjXuMAVx7dJSwY61tOYp1XldEAPU0aTUz9AM+PHQSIyTGMW2U9TkxkrTx3k07-DzQbC20ksyw0usaRrJ7fUbUjDOM+qu24KbLL40drluSgmAYAA1VQaCZV4QASb4QEuIA)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

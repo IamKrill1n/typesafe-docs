@@ -55,11 +55,26 @@ flowchart LR
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/llm_guardrails/llm_guardrails.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/llm_guardrails/llm_guardrails.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAYgE4Rz5IQDu+ES+AnhDPgIYkL4DmEAlkm74UEdlBTsAzvlIIEAIQgoANOwYBBAJLCAFmwl7pAIzkNOAGwRtJCMPgBmZCggBuCEo3wkYl-HxTScGwA1u7S3GxufigAdDKcCkqUru5eCPYwNpKqSCkk7GBg0tQcSALc2Wp2uW75kmyM0v74UGxIAOQSkPiS5AgoOuUA3H720fiQCJIdEsFUtG1qktTuqs1BodL0XDAADlX4u5w2qE0S1g5s4nGaY8yskuZ8+ywSEGNQeiRXKKma7eZzD0GvgADrEBKKFQ9FAgxxyACE4IO9x4okkKG+fG4OgkRiuwWEohM5XicihMVBSCp6iQy1SeU8iEk9W4XBQ1D4UAQqieoV0fEkuCpVIA2uoWYLYagALoEe75KgkIJAtr0khi2SJFBy3RcNUrfJaqE8PhuSQipBEPgkDH4ACOMCmKD49AI1D0KHa0hEYAa3om+n1SDsAy4WB+wj4iC82NxlBoAH4QKoQEdyLsAhhsHhCMBwQArNh8cxGTghcEEfMgFCMXYIStgkBUHzg1TggQY7ziV10xvggAiECmAsCU1Z7I8RJ4-T1UkkUraEhEfm4Sp5dFqJD4YA3EHynDcbCB-iadMxMB79Eq++nZEsAFpduYQRdFlp8JyBgmvD4pom2ybKBt1+bc2EbasLwbXNwU0ZdtxHFcjDrawtnyLBdggGw51QxdUADTsLyvOk6DqNh7H6TxvEsSRKRTJt7GPGx+xAOC-GkRZ9zAAQOCohBHWdXR9DSSR63EH0dH1SUMSXAMlRVfAjBYEMOD4KY6IAXw09twDIXYAH16go7gYA4IoIPBWt6xYltzEAjtz27F1rxYodEMGMcWTYNkpEJMN5zw5d0REfZuDNUkShIMpBEqDEIH2TgMgXQRVFvMA9OiaRWkSnwiVyBxb38443jGfyoHoWp6mcpAAPo8FgP8dw+HA3NIO8aCCFg85JGCCSpIXGTUGnOL9jYXZn0YUlT2BYzTJIIoHCcBNaHoOidMY8xmJg1iJA2EdOPmnip04AS7S-HRXl80l-NwwagomDLpqMhATLM2jwS0nSvjgDJzH0k6nQxCyazrDqm1s+yQEIpzewtba3IkwV8GZCdfIK-JJPMfZWkyUldh0RouWPfBvunet4ssVL8nsW9Mf2MsrGCa7JPwF9qFqnSGtA5rgagli2JsBBeoCwbuU-fwdEOAmF1aIFSdvEtLAiVUexcfxGDWhimLBrqJmHaQqAkQXCTp8Xv3l-JFZe4mfnC2tNO0ptEG42X9LYMA1e5XnQZslg7LqqHHMvaq4c6kAEdHZHx28qTCRp-I2AmZq1ywwVVET0SECgPh7C5B6YCESAJyp9hhHLFBECG3ds4XehVBMZgQxnXJvjlqxzG-AR46CaqOaAkCmpaqtLPa-nuuFm7pOle69tL+tbXoYnnaJoFq8FXtNfBDatrDtjrGF+OEwGUll9lkv6HMTxD7ZFvick49O6Qbv9A3j7HfBGxzHsfTvu96ztohgHaGwdYauX1pHFGMcegFzZHafy89egMBONxQQ4wgieBMC0a8O4mqoO+szBAcBP7mj7vVAeYFeaj22mxQYpx2BGxgFyHcxMBgsBxAEUiag-CoGQPdT+9gHzfU3iAbeOsdo9AutQA26JsQMH8sg1IAhfghh9KIUmYYiEIHMOaB2OkbC1HVn-MRkhyqcEhsA4iocmwAAkaDI0vJLUm5UfB2GOD4CQOccJTyXFguAz41J2HOhA6ObJSEgC5oPRsopwQADk1EcDgAQA6KDeKqGemkU6bwDwIAmsIgAsiWMABARAOP2j0ZAC4XRRBCnnIwMAJDlT8ZfUkkxpFpGJn6IIbJhEAGUmosCFL4iapJkBsCMDRdpQJqBkEEJAUkt4wrmnwDAOk5EuAIMXqqD2XIEC9LyAgAgjThmoJxlkcp24BlS0JrLEmCTOE2AuZkPwgJrZywSXRGUWl6IgDGnwAAamEXsuYQAuAAIwgA0kAA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
+
 ```bash theme={null}
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-then set `TYPESAFE_API_KEY`.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
 Numbers below came from `jev-1.14.0` on 2026-10-31.
 
@@ -75,6 +90,19 @@ from IPython.display import Markdown, display
 from typesafe_sdk import Noul, NoulCriteria, Score, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay the cache

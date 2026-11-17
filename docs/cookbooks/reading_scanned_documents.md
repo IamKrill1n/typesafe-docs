@@ -56,12 +56,23 @@ flowchart LR
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/reading_scanned_documents/reading_scanned_documents.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/reading_scanned_documents/reading_scanned_documents.py)
+>
+> This page as one .py file, to run locally.
+
+To run it on your own machine instead:
+
 ```bash
 pip install ipython matplotlib 'typesafe-sdk>=0.7.5,<0.8.0' \
     'cooksafe>=0.3.0,<0.4.0'
 ```
 
-Set `TYPESAFE_API_KEY`.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
 > [!WARNING]
 >
@@ -78,9 +89,6 @@ from datetime import date
 from pathlib import Path
 from time import perf_counter
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from cooksafe import JsonCache
 from IPython.display import Markdown, display
@@ -91,6 +99,19 @@ IMAGES_ON = {"TypeSafe-Danger-Zone-Images": "true"}  # opt in to the image previ
 READ_CUTOFF = 0.90  # below this, a person checks the reading against the paper
 LEGIBLE_CUTOFF = 0.50  # the legibility Noul gets its own, lower cutoff
 IN_DATE_CUTOFF = 0.50  # below this, a nurse checks whether the dose still covers the trip
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay

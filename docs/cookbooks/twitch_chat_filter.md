@@ -29,22 +29,37 @@ rule, such as hiding spam, you rerun only `decide()`, with no new request to Jev
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/twitch_chat_filter/twitch_chat_filter.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/twitch_chat_filter/twitch_chat_filter.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAM4oBOCAhnKQSSCgJYoA2CD+pAou2GT4ASiyQBzfADMWlCvgAO7GgE8UAC0oQY49QEJ8AOQj4yCiC05zFnGmS4gANDxDi6DgnwFDRE0gF9nUkQyMhpxD3wmGHtKblIAIxooAGt7GhQAWgSEShRSIOYsfLwXcRNOKRRnDVyEAHIyfBpTNgR8CCl8cUpk9pz1MTB8WpHqB39-J0IFLTgFFDIMbFKiUigMhHLKFW4mFBUFSPX1CygHQrEKShgoVggkMniQAHVBqHV8DZQtiB38HLyQRkKCUFiAkbqdpwGhiRQwSjmewdLoAAxCYQiADofthUQB+AouUFtME0PakACOMAQFBYD2eAEFusgYGJ2tRqbSUNI-vgxFI-jD7khpHNIe1rrREJQOrKPhlnEgIDy3IglKp+Y8qLcRU0FJo7AhhnZmvguXSHnKzbMIHAVfSkDR2Io2B8iaR1IdjiAAMJQ3JicTOajJPXOPnUI6bYYIe0-JoACgAChBxP66ApnAAZACq2ecAHFC84Xs5OItuhBqwBKADc+CjCFYIua7Ae7UgtPwyp5MJS7Q+CEDElMCjoHpAUAeADdcmERc8APKUMBiGj-BUoH6UCMKMSOsghhBKFi05wxBBSGAusjqDfG-DsMRpCOymhIFT4DHhdoAd1OZEYThBQESRTsIG7XtpDYCUOlqeVNm2M8nmmRJkjSWgSk8EBcyQTkaQoR81RPZQvxoMAZxYc4RgQdhn1HUYpXcWUAIyEYTEgZwxCgdgYDXUcrh1O5D0UQ17BNJoWgtEUG2gloCO5XlZQFIUMkdSczAnUpSDwsgIGfKA2hNSjclYMgg2cex2CkTJbXjR1nEFeiID-XJTDohjg2teyHQeZ0nxfMg5JVOUBI3L8hxHbymxjfA4xVc9rRaS9rxdBiUgCQIXBQCBMGoilmG9Z5lRvSchJuESHlQnCAEkmg0Fgmh-CItTIG9WAkZx7x+NLrXvXpQiDDi-w3MAmn0xAO0JNCpzBHcWHJUp9huH1aseDqj1MPi5BqTQsKaPkjjkfyXQyFAMMO0UmKoaV3L5D8VShWUqIQNy4lmqRnXsZ4ADEwWQMB2BUJUEBgKhnTfQLdB5JJUHcv82E+ZURg3CISkmQozAsKxCoOI4Su0dhyu1Sq9WeAARSCGsGZraUxDkEDnAKWiUULzDEHk+UB4bOjgkiAQQYaNRUY0ZsmaYQBofcADV50dVYZwARhAfwgA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
+
 ```bash
 pip install 'typesafe-sdk>=0.7.1,<0.8.0' ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-Create a new file named `twitch_chat_filter.py`. As you work through this cookbook,
-copy each Python code block into that file, in order. For a live run, set
-`TYPESAFE_API_KEY` in your environment. Once you have added all the blocks, run this
-command from the file's directory:
+[`twitch_chat_filter.py`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/twitch_chat_filter/twitch_chat_filter.py)
+holds every code block on this page, in order. Run it from the file's directory:
 
 ```bash
 python twitch_chat_filter.py
 ```
 
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
+
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
-```python
+```python expandable
 from concurrent.futures import ThreadPoolExecutor
 import os
 import urllib.request
@@ -56,6 +71,19 @@ from IPython.display import Markdown, display
 from typesafe_sdk import Choice, Noul, NoulCriteria, TypeSafeClient
 
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # cached re-renders need no key

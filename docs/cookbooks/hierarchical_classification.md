@@ -65,14 +65,23 @@ Attribution and licences for the three are in
 
 ## Setup
 
-Requires Python 3.13 or later.
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/hierarchical_classification/taxonomy_beam_search.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/hierarchical_classification/taxonomy_beam_search.py)
+>
+> This page as one .py file, to run locally.
+
+Requires Python 3.10 or later.
 
 ```bash
 pip install typesafe-sdk ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-then set `TYPESAFE_API_KEY`. The first run downloads the three hierarchies (about 28 MB)
-into `datasets/`.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel. The first run
+downloads the three hierarchies (about 28 MB) into `datasets/`.
 
 Numbers below came from `jev-1.14.0` on 2026-11-03.
 
@@ -588,6 +597,19 @@ distribution they receive, so the diagrams can label each edge with its probabil
 HIERARCHIES = load_hierarchies()
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 BEAM_WIDTH, MAX_DEPTH, EPSILON = 3, 12, 1e-9
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
+
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),
     retry=RetryPolicy(max_retries=5, backoff_initial=1.0, backoff_max=20.0),

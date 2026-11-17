@@ -62,15 +62,30 @@ response, you can swap one for the other without changing any other code.
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/basic_memory/basic_memory.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/basic_memory/basic_memory.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiLAM4oSIBOpBJIAlmPfqQMIC0AjAAwAWAEykANOzLUADgEMkATzakAglET4OEGlNIBfcaRRMoAawQo2jFkpBouQvjzESaCKAiYA3BGAD6EJBsHIQA2Lj4ATnsADmdSchgAIwArNws8CQBlABsIAHd8MBlyAAtEiBkaMHI4kERychkAcwQajIBtRgAzGmobCipaWpQsdIJSABFisoqq8nwSmW98RIRkfFcZbOz5fHJcgvImJHd8FBKmebgtJGOmgDo9AF19CQRK7KYEGl8jU3NyL4etRfhdAQNqN82J1SK4AI4wVpjfCMCFDDJWVgZTi8QQiEAGSRwWQKGyqdSabR6Ql-MzIzE2Oz8JwElxuDzePwBIJ8ULhaLhAS1BIpNJksBgO74OTSsBwY61eqNFptAgwkDAuD9GCUSF0VmGUY2AASTHEeQQGxgSHw8ggMBoewQ2S6XBKEEoPnwPiYRgC+H9AHVjpA8vNMt9vI7gkJ8McAw6A3kbUUUDJ8O5UK57vhjflChB8ABJWVgaX4JAIAoyOXxnXfAD8z10r1IqU8vjk5AtrixDFIgYuUBKexgUikWhQZ3ecD27pg2TLiyQYGyloABrTzOum9iQBGXW6PSMyyMZHBxMGV-lyARjpQttlyOIx00aDXWtKV-gpN8ulo4DkU4IC6M4SktchnVdd1PTLH0-RtIMQxvfAIxoKM9FeRh4URShLFINEoQxUhrD3bh+GEWooGkORFD3clLUpHQQFbEAt3pEi+wkJk+AAVlqVx3C8Hx-ECPdgjCSJcWFJJUigZFSEyOQwHKTBvSQTwmF6JBEFQRVWmVVpoW6XotT3Qj9RpI09wAMS0DMAhGbBzQgpgmkrMsZQAUVQb4pBoS5LWorMZHk-A8l9Ec7RgOMbQAWUqYccw4GULXwFop3TRoV1U9TNO03Sp3-R0RkoO5d10F5WPbTskG7b4fHwkBB2MEcEnHSdp3POd7UXBZlLXfBN2MOkdxsHyRm0ALIMKVoTAISCZBQZ8HJC+T5mU6UoGo60p2HOQVXwYqMx1QZvnmf1vN8qbAtWlB3zCgAKc4PBKtwSluKAth-XpEjXOB5iaQsqDAy0RmHT7vrPAGAEpMJeVkQH86RlowbAMiIQ1zyalB5F-fp3WMBBanve6YHkpgAlVCQWuHUcOpoKdoZ6hclwGjd2LGg0yACyamBkJqoFyGAuSkanOGF08ZwIZG-oQAHwsi0GFmPL0hftODJQQ8QaGtFZdh1YUoJgk9fE+JAYEwGwD2g1WpfPcQABljktu86rTbYVtfd8wE-TbfxoYrAJOS0QOVyDDxNr14MpxCbWdi21Mg9DzqNl0o78CLrzDa2oKPWCuovfAr1DW9YofT2XykN8Pw278A6DoDQ9Al6nUju3vS12OAxtEuULQjDucSJhtjuGwACER-Npo3c8CAiZW2R5EKlbFuWr8yykbIZX2pBDuOiPXWT5Yt67WpkEm-zAt8X3yBMcbrqvmbb-mp0lpW4L7tC9fNtCnbUAzMufe9kLIXRtFdS+00gqOQelOZ64EtLTghsYb6st-qA2BsDcCSCPooOyIXcgcNuYtErO+bINgADiyBvioN6GAcmU4ERIljmXLo7wUAOlaOId0eQuBUHEJBFARg95tEJEgAICBfAJF9DIOWNgAByEiAwt3AjNaG8wui+nmK3dimFdCIxkFIJgAA1c6scMaeB4CxIAA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
+
 ```bash
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-Set `TYPESAFE_API_KEY`.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
-```python
+```python expandable
 import json
 import os
 import urllib.request
@@ -83,6 +98,19 @@ from typesafe_sdk import Choice, Noul, NoulCriteria, SystemOneResponse, TypeSafe
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 REMEMBER_AT = 0.5  # save when P(lasting customer fact) reaches this starting threshold
 MEMORY_KEY = "earlier_tickets_from_this_customer"  # where saved tickets go in the state
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay the cache
@@ -537,11 +565,11 @@ including its memories at that point, plus the routing question.
 ```python
 playground_link = make_playground_link(example_state, ROUTE)
 display(Markdown(
-    f"🔗 [Open C-1042's ticket with its memories in the TypeSafe playground]({playground_link})"
+    f"🔗 [Open in the TypeSafe playground]({playground_link})"
 ))
 ```
 
-[Open C-1042's ticket with its memories in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiLAM4oSIBOpBJIAlmPfqQMIC0AjAAwAWAEykANOzLUADgEMkATzakAglET4OEGlNIBfcaRRMoAawQo2jFkpBouQvjzESaCKAiYA3BGAD6EJBsHIQA2Lj4ATnsADmdSchgAIwArNws8CQBlABsIAHd8MBlyAAtEiBkaMHI4kERychkAcwQajIBtRgAzGmobCipaWpQsdIJSABFisoqq8nwSmW98RIRkfFcZbOz5fHJcgvImJHd8FBKmebgtJGOmgDo9AF19CQRK7KYEGl8jU3NyL4etRfhdAQNqN82J1SK4AI4wVpjfCMCFDDJWVgZTi8QQiEAGSRwWQKGyqdSabR6Ql-MzIzE2Oz8JwElxuDzePwBIJ8ULhaLhAS1BIpNJksBgO74OTSsBwY61eqNFptAgwkDAuD9GCUSF0VmGUY2AASTHEeQQGxgSHw8ggMBoewQ2S6XBKEEoPnwPiYRgC+H9AHVjpA8vNMt9vI7gkJ8McAw6A3kbUUUDJ8O5UK57vhjflChB8ABJWVgaX4JAIAoyOXxnXfAD8z10r1IqU8vjk5AtrixDFIgYuUBKexgUikWhQZ3ecD27pg2TLiyQYGyloABrTzOum9iQBGXW6PSMyyMZHBxMGV-lyARjpQttlyOIx00aDXWtKV-gpN8ulo4DkU4IC6M4SktchnVdd1PTLH0-RtIMQxvfAIxoKM9FeRh4URShLFINEoQxUhrD3bh+GEWooGkORFD3clLUpHQQFbEAt3pEi+wkJk+AAVlqVx3C8Hx-ECPdgjCSJcWFJJUigZFSEyOQwHKTBvSQTwmF6JBEFQRVWmVVpoW6XotT3Qj9RpI09wAMS0DMAhGbBzQgpgmkrMsZQAUVQb4pBoS5LWorMZHk-A8l9Ec7RgOMbQAWUqYccw4GULXwFop3TRoV1U9TNO03Sp3-R0RkoO5d10F5WPbTskG7b4fHwkBB2MEcEnHSdp3POd7UXBZlLXfBN2MOkdxsHyRm0ALIMKVoTAISCZBQZ8HJC+T5mU6UoGo60p2HOQVXwYqMx1QZvnmf1vN8qbAtWlB3zCgAKc4PBKtwSluKAth-XpEjXOB5iaQsqDAy0RmHT7vrPAGAEpMJeVkQH86RlowbAMiIQ1zyalB5F-fp3WMBBanve6YHkpgAlVCQWuHUcOpoKdoZ6hclwGjd2LGg0yACyamBkJqoFyGAuSkanOGF08ZwIZG-oQAHwsi0GFmPL0hftODJQQ8QaGtFZdh1YUoJgk9fE+JAYEwGwD2g1WpfPcQABljktu86rTbYVtfd8wE-TbfxoYrAJOS0QOVyDDxNr14MpxCbWdi21Mg9DzqNl0o78CLrzDa2oKPWCuovfAr1DW9YofT2XykN8Pw278A6DoDQ9Al6nUju3vS12OAxtEuULQjDucSJhtjuGwACER-Npo3c8CAiZW2R5EKlbFuWr8yykbIZX2pBDuOiPXWT5Yt67WpkEm-zAt8X3yBMcbrqvmbb-mp0lpW4L7tC9fNtCnbUAzMufe9kLIXRtFdS+00gqOQelOZ64EtLTghsYb6st-qA2BsDcCSCPooOyIXcgcNuYtErO+bINgADiyBvioN6GAcmU4ERIljmXLo7wUAOlaOId0eQuBUHEJBFARg95tEJEgAICBfAJF9DIOWNgAByEiAwt3AjNaG8wui+nmK3dimFdCIxkFIJgAA1c6scMaeB4CxIAA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiLAM4oSIBOpBJIAlmPfqQMIC0AjAAwAWAEykANOzLUADgEMkATzakAglET4OEGlNIBfcaRRMoAawQo2jFkpBouQvjzESaCKAiYA3BGAD6EJBsHIQA2Lj4ATnsADmdSchgAIwArNws8CQBlABsIAHd8MBlyAAtEiBkaMHI4kERychkAcwQajIBtRgAzGmobCipaWpQsdIJSABFisoqq8nwSmW98RIRkfFcZbOz5fHJcgvImJHd8FBKmebgtJGOmgDo9AF19CQRK7KYEGl8jU3NyL4etRfhdAQNqN82J1SK4AI4wVpjfCMCFDDJWVgZTi8QQiEAGSRwWQKGyqdSabR6Ql-MzIzE2Oz8JwElxuDzePwBIJ8ULhaLhAS1BIpNJksBgO74OTSsBwY61eqNFptAgwkDAuD9GCUSF0VmGUY2AASTHEeQQGxgSHw8ggMBoewQ2S6XBKEEoPnwPiYRgC+H9AHVjpA8vNMt9vI7gkJ8McAw6A3kbUUUDJ8O5UK57vhjflChB8ABJWVgaX4JAIAoyOXxnXfAD8z10r1IqU8vjk5AtrixDFIgYuUBKexgUikWhQZ3ecD27pg2TLiyQYGyloABrTzOum9iQBGXW6PSMyyMZHBxMGV-lyARjpQttlyOIx00aDXWtKV-gpN8ulo4DkU4IC6M4SktchnVdd1PTLH0-RtIMQxvfAIxoKM9FeRh4URShLFINEoQxUhrD3bh+GEWooGkORFD3clLUpHQQFbEAt3pEi+wkJk+AAVlqVx3C8Hx-ECPdgjCSJcWFJJUigZFSEyOQwHKTBvSQTwmF6JBEFQRVWmVVpoW6XotT3Qj9RpI09wAMS0DMAhGbBzQgpgmkrMsZQAUVQb4pBoS5LWorMZHk-A8l9Ec7RgOMbQAWUqYccw4GULXwFop3TRoV1U9TNO03Sp3-R0RkoO5d10F5WPbTskG7b4fHwkBB2MEcEnHSdp3POd7UXBZlLXfBN2MOkdxsHyRm0ALIMKVoTAISCZBQZ8HJC+T5mU6UoGo60p2HOQVXwYqMx1QZvnmf1vN8qbAtWlB3zCgAKc4PBKtwSluKAth-XpEjXOB5iaQsqDAy0RmHT7vrPAGAEpMJeVkQH86RlowbAMiIQ1zyalB5F-fp3WMBBanve6YHkpgAlVCQWuHUcOpoKdoZ6hclwGjd2LGg0yACyamBkJqoFyGAuSkanOGF08ZwIZG-oQAHwsi0GFmPL0hftODJQQ8QaGtFZdh1YUoJgk9fE+JAYEwGwD2g1WpfPcQABljktu86rTbYVtfd8wE-TbfxoYrAJOS0QOVyDDxNr14MpxCbWdi21Mg9DzqNl0o78CLrzDa2oKPWCuovfAr1DW9YofT2XykN8Pw278A6DoDQ9Al6nUju3vS12OAxtEuULQjDucSJhtjuGwACER-Npo3c8CAiZW2R5EKlbFuWr8yykbIZX2pBDuOiPXWT5Yt67WpkEm-zAt8X3yBMcbrqvmbb-mp0lpW4L7tC9fNtCnbUAzMufe9kLIXRtFdS+00gqOQelOZ64EtLTghsYb6st-qA2BsDcCSCPooOyIXcgcNuYtErO+bINgADiyBvioN6GAcmU4ERIljmXLo7wUAOlaOId0eQuBUHEJBFARg95tEJEgAICBfAJF9DIOWNgAByEiAwt3AjNaG8wui+nmK3dimFdCIxkFIJgAA1c6scMaeB4CxIAA)
 
 ## Next steps
 

@@ -39,6 +39,14 @@ sightings.
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/feeder_watch.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/feeder_watch.py)
+>
+> This page as one .py file, to run locally.
+
 Requires Python 3.10 or later. Choose a package manager to install the dependencies:
 
 > [tab] pip
@@ -59,15 +67,8 @@ Requires Python 3.10 or later. Choose a package manager to install the dependenc
 > uv add 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 > ```
 
-Set your TypeSafe API key:
-
-```bash theme={null}
-export TYPESAFE_API_KEY="your-api-key"
-```
-
-Create a new file named `feeder_watch.py`. As you work through this cookbook, copy each
-Python code block into that file, in order. This command runs it whether you installed
-with pip or uv:
+[`feeder_watch.py`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/feeder_watch.py) holds every code block on
+this page, in order. This command runs it whether you installed with pip or uv:
 
 ```bash theme={null}
 .venv/bin/python feeder_watch.py
@@ -76,12 +77,13 @@ with pip or uv:
 A full run sends about 180 requests. Pillow draws the boxes and matplotlib lays out the
 figures.
 
-The code downloads the published answers into `feeder_watch_cache.json`, so the run makes
-no requests; to run live, set `DOWNLOAD_CACHE = False` and delete that file.
+The code downloads the published answers into `feeder_watch_cache.json`, so it runs as
+published without an API key; to run live, set `DOWNLOAD_CACHE = False` and delete that
+file. To change a request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
 Numbers below came from `jev-1.14.0` on 2026-10-15.
 
-```python theme={null}
+```python expandable theme={null}
 import json
 import os
 import statistics
@@ -91,9 +93,6 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from time import perf_counter
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from IPython.display import display
 from PIL import Image as PILImage
@@ -104,6 +103,19 @@ from typesafe_sdk import Box, Choice, Image, Noul, SystemOneResponse, TypeSafeCl
 # Box questions need Jev 1.14 or later.
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 IMAGE_HEADERS = {"TypeSafe-Danger-Zone-Images": "true"}  # images and Box are opt-in
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless runs replay the cache

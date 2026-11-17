@@ -42,13 +42,29 @@ than once in a hundred runs.
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiFADYCGAlnKQSSAA4TnVQCe9+jLbnAfWphupAIIAFALQB2GQBYAjAGZSAGnyk+7DgAtWYBACdRIAFKUkCfABEICdZpAIAZi4RQU1AG4O8TgCYABgCANikgxSlFAFZHUiwmaiMEAGdTYICZCKjY+LIIXyNKAHM07kYoVjZU6ggkbhQjGAQNUhTUSnIBFNoAIxgjVIREVG4XLuGAXzbwBDAYT2o+8j8CGKCggDog2aZjISQoYWQUATY4ahRuRU3NndmalHmBMCMfY3T-AG1SCytbPZ8mYILokIC-ABdWZYCgwWr1L4EX4gJqUKAAawA9FU4PsvF5fPg3j5qEgSvkSUVUvgkBAUPgnvN8PV8ChdNZtJxSNCnCkWEYvOSBAB3MmQEWvSgcJH4W57VjsBA9BACs4pACOMGSL0Kxm4wXuQRmTgoNDo-kqVFoQhE-lIAGEADIAWSkMQ2AQAnPkycdDKgpc8MiFwkFwgEABz5fkQQUvMCUYP2kCZMPZILySnvIqmEFgiGUtJQd5MLz1UxiFDPJCGMD4Shs4qYqSJjj4BC+VAAbnwvl07FW+BFlBpKUoRikyDr+D67cs9I5RnwUAn+DJbI5+FS+08Sbj+CYE4xZJKjPpw4HQ9SKCTdSQE44W3wADkL6z2dZjkZYFctvlKDgCAYEDM1aHmbhlACDYHicNgrCEZ44Flb5GCuEZTHHZcBjxYx8H5KgoBGU58iqG8bhkI0TTQpDTCPMkGQAanw1wyWoVJdFIiByP8SMqI0GiMJTI8jBPckpGGJBUgPFJVzYPpinLBoQFmMjrn8eQYONATSHQi0CHaU4uhXNcAApQmJaVUgASi4niCGUKjeVISBYFGW8lO4FF+RoZc0i8OAk2sUyJBsAAxWyVKcSNLMCspD30FBuJ5E1SEoMAACt4WeIwBDpZ4UMYSgYHZONTGKpKpCaahSj8WZ8rWJwHWqdj7xXPVini9FCQQZ8xCYJgjD1MBnwkaV8BcGByHIBsgJAhkABJlDUaCgjZCBD0VTh9HIQwjA0GJojWgZaisVIaTbVJ-xAKZnLIa04AEAcbzjLhLVIMDkPOUczkUAIgINPZ3jjV5kGoCD-GNKYpii5ghrxFBUgwbB-CID6OohhhSBQDh9lMOkpt9KSmkWJTZVIABJGlP3Pc72qKZkQL2zdOS2jgAHIaSqabWtZKoilqgB+UhUucTA4QRZSsdRXHGtIAnyCJm9miWRFTDsNIG02-h21hch4TaygBvIdsks3djadSYWbtmeoBG-X91OlnG8ZTBWlZJ1WpPV4QWfannJfwXQjf2cERSvawaf7QdrBHGk+gQU9iRzZAWXBGnmwQNFMXXRGEHIFxrdFutSeWVYKmx2X8eAxWot04mVbJ0wAHUa-rGmFo2NaS6WFZrAT9qjFklATYbY3wfrBOXDjaxLHbI8OGAlAi9mVzUgEVIYDcdhwbGd6ZddgyQHduuQDJZXS7VlMqb9pNbygDl61c+AjKU7ct5cHfTnWhtMpgMB2BBT9p9BsqQpDsRXk4MU7IyTnFoFcCuB85bHxrh7Ru95yYgBvjTQCwFUArgesyaBA505bn2JOP0Jx8H82MLVRk8Dl4i1mMQ2BYpawQBFIgl2yCT6zHPp7JuKYbC+xpuQbiNJoCwGXCw0hrMdacwbEsIkNDOqcmMHUMAkDDJqheAFfOb1nZVzdqg0+-D0FXyPs3UcfsxF01jPGesMi-Zcg5mOBAWodSOPFBwrRIAOi3m6PnagJQy6NUYNw6uhNTEN0vt7a+1Mtz+K6FIVcy41IdjYCEvuE0ZKJzgAMIYxF8FMzwjAmkLjfEuGKP-AQLgqAUn3hE4xUS+ExK9pgsQKQWZdPFIApKQxNxJmHBOYo+DGxVOKvWFI3hwYil8boeAlgVQzIQJwxpRij68KcGY2JmCrHlOlO5Meg1hqznnCVCAgVnjt3eHQ4hS8tYLMCuCdKWUbzGAUdM2ZvjnkwC6Ms2ZXCNlOC2fXC+7TTAAGV9BTXbs9Ah5pZzWCGiVZk09ly-K6FiTe5CZnSWXF81ZSL0WcmlEvXx8FlR6XXpvfSPBK6HxBSY1p4LBFHzsMAwh9ZKXgKQu1G8NJ0r1hgEwH+NMkoBNmnghkn15i+M3gpCAJQ7wVnWYy+WzLtltLZU4bBS5Z6bRrF4Loo8kxSAmFNBkMCjD1hEjjP259Bh4SqLCw8gxN7WHRe-RVyq36yQ6hwIuMMNAgCNtQAAap8e8qNvCKBukAA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
+
 ```bash
 pip install anthropic openai matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-then set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY`, and `OPENAI_API_KEY`. Numbers below came
-from `jev-1.14.0` on 2026-11-02. The LLM answers for the 40 versions were sampled from
-2026-11-07 to 2026-11-09, and for the example claim on 2026-11-10.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`; in Colab, add
+them in the Secrets panel. Numbers below came from `jev-1.14.0` on 2026-11-02. The LLM
+answers for the 40 versions were sampled from 2026-11-07 to 2026-11-09, and for the example
+claim on 2026-11-10.
 
 ```python expandable
 import copy
@@ -65,7 +81,6 @@ from statistics import mean
 from time import perf_counter
 
 import anthropic
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import PercentFormatter
@@ -73,8 +88,6 @@ from cooksafe import JsonCache, make_playground_link
 from IPython.display import Markdown, display
 from openai import OpenAI
 from typesafe_sdk import Noul, TypeSafeClient
-
-matplotlib.use("Agg")  # headless render
 
 LLM_MODELS = {  # every one reasons at high effort
     "claude-fable-5-1": "Claude Fable 5.1",
@@ -102,6 +115,19 @@ LLM_PRICES = {  # $ per 1M tokens (input, output), list prices as of 2026-11
     "gpt-6-luna": (0.10, 0.50),
 }
 TYPESAFE_PRICE = (0.042, 0.00)  # $ per 1M tokens (input, output), as of 2026-08
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 anthropic_client = anthropic.Anthropic(
     api_key=os.environ.get("ANTHROPIC_API_KEY", "cache-only")
@@ -578,6 +604,7 @@ ax.set_title(
 )
 fig.tight_layout()
 display(fig)
+plt.close(fig)
 ```
 
 ![output](https://mintcdn.com/ts-docs/orb6EiXzZ12Fo-od/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.executed.1.png?fit=max\&auto=format\&n=orb6EiXzZ12Fo-od\&q=85\&s=e5d016c80052dd4745a848de7c5154ca)
@@ -849,7 +876,7 @@ for theme in ("light", "dark") if os.environ.get("COOKSAFE_RENDER") else ("light
 
 ![output](https://mintcdn.com/ts-docs/orb6EiXzZ12Fo-od/cookbooks/consistency_noul_cookbook/consistency_noul_cookbook.executed.2.png?fit=max\&auto=format\&n=orb6EiXzZ12Fo-od\&q=85\&s=7d4d5a588b02dd539f247ea1e133a66e)
 
-## Open it in the TypeSafe playground
+## Open it in the playground
 
 The link below opens the example claim and rubric in the playground: one claim, the same
 14 `Noul` questions, and `jev-latest`. It omits the changing `uid` field used
@@ -862,11 +889,11 @@ playground_link = make_playground_link(
 )
 display(
     Markdown(
-        f"🔗 [Open this claim + rubric in the TypeSafe playground]({playground_link})"
+        f"🔗 [Open in the TypeSafe playground]({playground_link})"
     )
 )
 ```
 
-[Open this claim + rubric in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiFADYCGAlnKQSSAA4TnVQCe9+jLbnAfWphupAIIAFALQB2GQBYAjAGZSAGnyk+7DgAtWYBACdRIAFKUkCfABEICdZpAIAZi4RQU1AG4O8TgCYABgCANikgxSlFAFZHUiwmaiMEAGdTYICZCKjY+LIIXyNKAHM07kYoVjZU6ggkbhQjGAQNUhTUSnIBFNoAIxgjVIREVG4XLuGAXzbwBDAYT2o+8j8CGKCggDog2aZjISQoYWQUATY4ahRuRU3NndmalHmBMCMfY3T-AG1SCytbPZ8mYILokIC-ABdWZYCgwWr1L4EX4gJqUKAAawA9FU4PsvF5fPg3j5qEgSvkSUVUvgkBAUPgnvN8PV8ChdNZtJxSNCnCkWEYvOSBAB3MmQEWvSgcJH4W57VjsBA9BACs4pACOMGSL0Kxm4wXuQRmTgoNDo-kqVFoQhE-lIAGEADIAWSkMQ2AQAnPkycdDKgpc8MiFwkFwgEABz5fkQQUvMCUYP2kCZMPZILySnvIqmEFgiGUtJQd5MLz1UxiFDPJCGMD4Shs4qYqSJjj4BC+VAAbnwvl07FW+BFlBpKUoRikyDr+D67cs9I5RnwUAn+DJbI5+FS+08Sbj+CYE4xZJKjPpw4HQ9SKCTdSQE44W3wADkL6z2dZjkZYFctvlKDgCAYEDM1aHmbhlACDYHicNgrCEZ44Flb5GCuEZTHHZcBjxYx8H5KgoBGU58iqG8bhkI0TTQpDTCPMkGQAanw1wyWoVJdFIiByP8SMqI0GiMJTI8jBPckpGGJBUgPFJVzYPpinLBoQFmMjrn8eQYONATSHQi0CHaU4uhXNcAApQmJaVUgASi4niCGUKjeVISBYFGW8lO4FF+RoZc0i8OAk2sUyJBsAAxWyVKcSNLMCspD30FBuJ5E1SEoMAACt4WeIwBDpZ4UMYSgYHZONTGKpKpCaahSj8WZ8rWJwHWqdj7xXPVini9FCQQZ8xCYJgjD1MBnwkaV8BcGByHIBsgJAhkABJlDUaCgjZCBD0VTh9HIQwjA0GJojWgZaisVIaTbVJ-xAKZnLIa04AEAcbzjLhLVIMDkPOUczkUAIgINPZ3jjV5kGoCD-GNKYpii5ghrxFBUgwbB-CID6OohhhSBQDh9lMOkpt9KSmkWJTZVIABJGlP3Pc72qKZkQL2zdOS2jgAHIaSqabWtZKoilqgB+UhUucTA4QRZSsdRXHGtIAnyCJm9miWRFTDsNIG02-h21hch4TaygBvIdsks3djadSYWbtmeoBG-X91OlnG8ZTBWlZJ1WpPV4QWfannJfwXQjf2cERSvawaf7QdrBHGk+gQU9iRzZAWXBGnmwQNFMXXRGEHIFxrdFutSeWVYKmx2X8eAxWot04mVbJ0wAHUa-rGmFo2NaS6WFZrAT9qjFklATYbY3wfrBOXDjaxLHbI8OGAlAi9mVzUgEVIYDcdhwbGd6ZddgyQHduuQDJZXS7VlMqb9pNbygDl61c+AjKU7ct5cHfTnWhtMpgMB2BBT9p9BsqQpDsRXk4MU7IyTnFoFcCuB85bHxrh7Ru95yYgBvjTQCwFUArgesyaBA505bn2JOP0Jx8H82MLVRk8Dl4i1mMQ2BYpawQBFIgl2yCT6zHPp7JuKYbC+xpuQbiNJoCwGXCw0hrMdacwbEsIkNDOqcmMHUMAkDDJqheAFfOb1nZVzdqg0+-D0FXyPs3UcfsxF01jPGesMi-Zcg5mOBAWodSOPFBwrRIAOi3m6PnagJQy6NUYNw6uhNTEN0vt7a+1Mtz+K6FIVcy41IdjYCEvuE0ZKJzgAMIYxF8FMzwjAmkLjfEuGKP-AQLgqAUn3hE4xUS+ExK9pgsQKQWZdPFIApKQxNxJmHBOYo+DGxVOKvWFI3hwYil8boeAlgVQzIQJwxpRij68KcGY2JmCrHlOlO5Meg1hqznnCVCAgVnjt3eHQ4hS8tYLMCuCdKWUbzGAUdM2ZvjnkwC6Ms2ZXCNlOC2fXC+7TTAAGV9BTXbs9Ah5pZzWCGiVZk09ly-K6FiTe5CZnSWXF81ZSL0WcmlEvXx8FlR6XXpvfSPBK6HxBSY1p4LBFHzsMAwh9ZKXgKQu1G8NJ0r1hgEwH+NMkoBNmnghkn15i+M3gpCAJQ7wVnWYy+WzLtltLZU4bBS5Z6bRrF4Loo8kxSAmFNBkMCjD1hEjjP259Bh4SqLCw8gxN7WHRe-RVyq36yQ6hwIuMMNAgCNtQAAap8e8qNvCKBukAA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiFADYCGAlnKQSSAA4TnVQCe9+jLbnAfWphupAIIAFALQB2GQBYAjAGZSAGnyk+7DgAtWYBACdRIAFKUkCfABEICdZpAIAZi4RQU1AG4O8TgCYABgCANikgxSlFAFZHUiwmaiMEAGdTYICZCKjY+LIIXyNKAHM07kYoVjZU6ggkbhQjGAQNUhTUSnIBFNoAIxgjVIREVG4XLuGAXzbwBDAYT2o+8j8CGKCggDog2aZjISQoYWQUATY4ahRuRU3NndmalHmBMCMfY3T-AG1SCytbPZ8mYILokIC-ABdWZYCgwWr1L4EX4gJqUKAAawA9FU4PsvF5fPg3j5qEgSvkSUVUvgkBAUPgnvN8PV8ChdNZtJxSNCnCkWEYvOSBAB3MmQEWvSgcJH4W57VjsBA9BACs4pACOMGSL0Kxm4wXuQRmTgoNDo-kqVFoQhE-lIAGEADIAWSkMQ2AQAnPkycdDKgpc8MiFwkFwgEABz5fkQQUvMCUYP2kCZMPZILySnvIqmEFgiGUtJQd5MLz1UxiFDPJCGMD4Shs4qYqSJjj4BC+VAAbnwvl07FW+BFlBpKUoRikyDr+D67cs9I5RnwUAn+DJbI5+FS+08Sbj+CYE4xZJKjPpw4HQ9SKCTdSQE44W3wADkL6z2dZjkZYFctvlKDgCAYEDM1aHmbhlACDYHicNgrCEZ44Flb5GCuEZTHHZcBjxYx8H5KgoBGU58iqG8bhkI0TTQpDTCPMkGQAanw1wyWoVJdFIiByP8SMqI0GiMJTI8jBPckpGGJBUgPFJVzYPpinLBoQFmMjrn8eQYONATSHQi0CHaU4uhXNcAApQmJaVUgASi4niCGUKjeVISBYFGW8lO4FF+RoZc0i8OAk2sUyJBsAAxWyVKcSNLMCspD30FBuJ5E1SEoMAACt4WeIwBDpZ4UMYSgYHZONTGKpKpCaahSj8WZ8rWJwHWqdj7xXPVini9FCQQZ8xCYJgjD1MBnwkaV8BcGByHIBsgJAhkABJlDUaCgjZCBD0VTh9HIQwjA0GJojWgZaisVIaTbVJ-xAKZnLIa04AEAcbzjLhLVIMDkPOUczkUAIgINPZ3jjV5kGoCD-GNKYpii5ghrxFBUgwbB-CID6OohhhSBQDh9lMOkpt9KSmkWJTZVIABJGlP3Pc72qKZkQL2zdOS2jgAHIaSqabWtZKoilqgB+UhUucTA4QRZSsdRXHGtIAnyCJm9miWRFTDsNIG02-h21hch4TaygBvIdsks3djadSYWbtmeoBG-X91OlnG8ZTBWlZJ1WpPV4QWfannJfwXQjf2cERSvawaf7QdrBHGk+gQU9iRzZAWXBGnmwQNFMXXRGEHIFxrdFutSeWVYKmx2X8eAxWot04mVbJ0wAHUa-rGmFo2NaS6WFZrAT9qjFklATYbY3wfrBOXDjaxLHbI8OGAlAi9mVzUgEVIYDcdhwbGd6ZddgyQHduuQDJZXS7VlMqb9pNbygDl61c+AjKU7ct5cHfTnWhtMpgMB2BBT9p9BsqQpDsRXk4MU7IyTnFoFcCuB85bHxrh7Ru95yYgBvjTQCwFUArgesyaBA505bn2JOP0Jx8H82MLVRk8Dl4i1mMQ2BYpawQBFIgl2yCT6zHPp7JuKYbC+xpuQbiNJoCwGXCw0hrMdacwbEsIkNDOqcmMHUMAkDDJqheAFfOb1nZVzdqg0+-D0FXyPs3UcfsxF01jPGesMi-Zcg5mOBAWodSOPFBwrRIAOi3m6PnagJQy6NUYNw6uhNTEN0vt7a+1Mtz+K6FIVcy41IdjYCEvuE0ZKJzgAMIYxF8FMzwjAmkLjfEuGKP-AQLgqAUn3hE4xUS+ExK9pgsQKQWZdPFIApKQxNxJmHBOYo+DGxVOKvWFI3hwYil8boeAlgVQzIQJwxpRij68KcGY2JmCrHlOlO5Meg1hqznnCVCAgVnjt3eHQ4hS8tYLMCuCdKWUbzGAUdM2ZvjnkwC6Ms2ZXCNlOC2fXC+7TTAAGV9BTXbs9Ah5pZzWCGiVZk09ly-K6FiTe5CZnSWXF81ZSL0WcmlEvXx8FlR6XXpvfSPBK6HxBSY1p4LBFHzsMAwh9ZKXgKQu1G8NJ0r1hgEwH+NMkoBNmnghkn15i+M3gpCAJQ7wVnWYy+WzLtltLZU4bBS5Z6bRrF4Loo8kxSAmFNBkMCjD1hEjjP259Bh4SqLCw8gxN7WHRe-RVyq36yQ6hwIuMMNAgCNtQAAap8e8qNvCKBukAA)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

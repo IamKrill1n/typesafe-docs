@@ -126,11 +126,26 @@ flowchart TB
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/cart_from_primitives/cart_from_primitives.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/cart_from_primitives/cart_from_primitives.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAwgIZL4CS+A5givifgDYkBOt+EJ9cAlkwGtm3FAgZIwDfACMmMBNIStWAT3xwYAM029yAByYISAZwQgANIT2sIcPSmMZseQsAA6IXqLgeC7kCgqegi++B5QABYQvFAhFmGeSMYorDBQKLwQSaEeaBG8xvgFUlAkmmIQrGBKAHSU3oUkTKxGYGokUFAQMKgIkpqVBEgQKPlI1PgqdHUA6vmR+C1wJLq6E4hIMEXe+JAIhaMVVUrqyBlZAPyUmviHnMesp6iZSeqVYqNknEhiSytIa22CDglkiEAgpluEQqPye5x+-V4rGSNQ8lnCrC8Sl4JFC-hYKFEORAAFFjNZ9sYIPgAO5eCL4ZJGRCSPiCOoAQSYVPu1RakhMUk0BNp+VE9ykbIEai62gQCFR8Q8OiYolYAH1ZeU4gQPAAFFi6GQtGl9XaYvT4LXyyxUxAZRCFSp8s2CxiyDpCa0KtEJWTyRTKFTqjTaXTEjkyOQKJSqdRaHRIRXokBNOBZMCamwFYxkFAR8hpjNW7PGXOoW22Oi8R28pSuxr4PQmFIqZMJYajNbqhDcnUJPJHPlwl6FYZPLZYuCcQ6PT7kO5ZfYMZqtdqdbq9fqVRUAX338VTel4ADUlMYXi4QAA3ACMIF3QA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
+
 ```bash
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-then set `TYPESAFE_API_KEY`.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
 Numbers below came from `jev-1.14.0` on 2026-10-29.
 
@@ -146,6 +161,19 @@ from typesafe_sdk import Choice, TypeSafeClient
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 NOTHING_ELSE = "nothing_else"  # the sentinel option that ends the item loop
 MAX_ITEM_REQUESTS = 6  # a hard stop, so a bad answer can never loop forever
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # cached re-renders need no key
@@ -370,7 +398,7 @@ latte  (item confidence 0.99)
 blueberry_muffin  (item confidence 1.00)
 ```
 
-## Try it in the playground
+## Open it in the playground
 
 The link below holds the first item-finding request: the full order as the state, and
 one `Choice` question over the four menu items plus `nothing_else`. The loop above repeats
@@ -381,12 +409,12 @@ answer changes with it.
 playground_link = make_playground_link(ORDER, {"item": item_question(MENU, [])})
 display(
     Markdown(
-        f"🔗 [Open the first item-finding request in the TypeSafe playground]({playground_link})"
+        f"🔗 [Open in the TypeSafe playground]({playground_link})"
     )
 )
 ```
 
-[Open the first item-finding request in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAwgIZL4CS+A5givifgDYkBOt+EJ9cAlkwGtm3FAgZIwDfACMmMBNIStWAT3xwYAM029yAByYISAZwQgANIT2sIcPSmMZseQsAA6IXqLgeC7kCgqegi++B5QABYQvFAhFmGeSMYorDBQKLwQSaEeaBG8xvgFUlAkmmIQrGBKAHSU3oUkTKxGYGokUFAQMKgIkpqVBEgQKPlI1PgqdHUA6vmR+C1wJLq6E4hIMEXe+JAIhaMVVUrqyBlZAPyUmviHnMesp6iZSeqVYqNknEhiSytIa22CDglkiEAgpluEQqPye5x+-V4rGSNQ8lnCrC8Sl4JFC-hYKFEORAAFFjNZ9sYIPgAO5eCL4ZJGRCSPiCOoAQSYVPu1RakhMUk0BNp+VE9ykbIEai62gQCFR8Q8OiYolYAH1ZeU4gQPAAFFi6GQtGl9XaYvT4LXyyxUxAZRCFSp8s2CxiyDpCa0KtEJWTyRTKFTqjTaXTEjkyOQKJSqdRaHRIRXokBNOBZMCamwFYxkFAR8hpjNW7PGXOoW22Oi8R28pSuxr4PQmFIqZMJYajNbqhDcnUJPJHPlwl6FYZPLZYuCcQ6PT7kO5ZfYMZqtdqdbq9fqVRUAX338VTel4ADUlMYXi4QAA3ACMIF3QA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIAwgIZL4CS+A5givifgDYkBOt+EJ9cAlkwGtm3FAgZIwDfACMmMBNIStWAT3xwYAM029yAByYISAZwQgANIT2sIcPSmMZseQsAA6IXqLgeC7kCgqegi++B5QABYQvFAhFmGeSMYorDBQKLwQSaEeaBG8xvgFUlAkmmIQrGBKAHSU3oUkTKxGYGokUFAQMKgIkpqVBEgQKPlI1PgqdHUA6vmR+C1wJLq6E4hIMEXe+JAIhaMVVUrqyBlZAPyUmviHnMesp6iZSeqVYqNknEhiSytIa22CDglkiEAgpluEQqPye5x+-V4rGSNQ8lnCrC8Sl4JFC-hYKFEORAAFFjNZ9sYIPgAO5eCL4ZJGRCSPiCOoAQSYVPu1RakhMUk0BNp+VE9ykbIEai62gQCFR8Q8OiYolYAH1ZeU4gQPAAFFi6GQtGl9XaYvT4LXyyxUxAZRCFSp8s2CxiyDpCa0KtEJWTyRTKFTqjTaXTEjkyOQKJSqdRaHRIRXokBNOBZMCamwFYxkFAR8hpjNW7PGXOoW22Oi8R28pSuxr4PQmFIqZMJYajNbqhDcnUJPJHPlwl6FYZPLZYuCcQ6PT7kO5ZfYMZqtdqdbq9fqVRUAX338VTel4ADUlMYXi4QAA3ACMIF3QA)
 
 ## What's next
 

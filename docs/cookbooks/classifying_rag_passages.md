@@ -67,13 +67,29 @@ flowchart LR
 
 ## Setup
 
+> [card] [Run in Colab](https://colab.research.google.com/github/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/classifying_rag_passages/classifying_rag_passages.ipynb)
+>
+> Runs as published without an API key.
+
+> [card] [Python file](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/classifying_rag_passages/classifying_rag_passages.py)
+>
+> This page as one .py file, to run locally.
+
+> [card] [Open in playground](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAnqQaQEoIBmVCAzgBb4oQDWyDviwAHAJbt8AQxYpq+AMwAGfGGk1hAWnxcIAdzUR8ASRHZkYXl2kp8+8Ukj6A-KQA0+UqOkcO0gHMEenwSEHEwENIOTg5xCCQOLWUARg8vEBRxFAAbYLwMgFUYqnwYv3jEggB1GztxYWky2Mq3EE9SeWwokABBZoqE-Ab8KHZbBCt9LmQZfBgSsvEAxOGkADp8ACEaNVZpGByUT2z8HN8UYUcwVkdshBzd6Sc5hYUoZ91pADcEGSR5kgcuI4PcrEh4AAjBQQFgyKBZX4DOIJYRDXz4ODPXY3b7iKCcdbEYhIYlIfrlFEAkbsUTsGKoSb4SG7FAzfAAZRgPkhvj+vRgbPhBL8vAEs0c1j+LAgVDg+FhcwAUtU0J5nlYmuw2JweHxBADpvieCMmjAkOIKH8OCgqI4AkSSWTelARcJ9UIZFIbnEVky+MzrXoqHZgb8wJ4FjBpDlHoGUPoELMAKyYxyCzj-KwpXQQGClI15fDa+l68WrJAIX6lMSSP6QwWjT4JOPQ+YxKwJAmbACaeabAKwUBsSCCcxLurFBoVQN2Xb+AaCdialcM0ldsSzxdYpansx8kkdpJJaC4Izp0E3Iw+saZACo7xPuPapcjKusH2TnW+hvI5Y4Jg4TwblESwXyGKAEhYZZ81sSpPGmZBcDJHRTz+N5SigYEoH4YRfQBPMUCPVD2Qw0YRyCd0ZkkfAfD8fRZU7UpQKoGU5UaZpYDtFBdgZOJET+dcsgSYjTDsLJEDRRswEoMU1iE8Q8R40STDscZh0zbJhCxTAQXgM5xBYBAJIQUT+jI-CrgIgFnggNkFFxfFTPSaI8yoAkAH0eNAnpYWgqBxBjDzIFgRBUDghJSAAXyi9pCAvOBREuDBsAKIhSAaDz2Dyb5nhQEIwm8-IGBAJA8xyFzwkSW0YARSoOB6AARCBMzZc9fH8MdpDAMB6So60YEhAArBAEQVOF7PwK1aDaKKOhASDwscDgPOeDhEyoDyqwiZACQKzoaB8gpSDKw5KuWmq6tRJqWqo9q-ECa0UAmNY2KxYSAQWaRISLSUmjAOsxrWjbZvmxbbW6-FLg86aaA8ukEFBGJ9syQ7ioyU6KrijLqqoWqPoa46QGa1qz2EOjOr+RaWGwuwHCFJoWCE6Mclo9gkaeiYrElSbYdBjJwekZb4aoCBEpQDzHBGq7SQKQq0Z6THztx-H6pu0n7spmQUHkcW5PB0XWcmjhNF1-51uoF9ecoGbotizwQGkCQADVqCpNLvhSEAoqAA)
+>
+> Edit one request and run it live. Needs a TypeSafe account.
+
+To run it on your own machine instead:
+
 ```bash
 pip install anthropic openai matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-Set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. We use Jev to score
-each retrieved passage, OpenAI to embed the corpus for the search step, and Claude to write
-the final answer out of whatever survives the scoring.
+The code replays saved answers, so it runs as published without an API key. To change a
+request, set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`; in Colab, add
+them in the Secrets panel. We use Jev to score each retrieved passage, OpenAI to embed the
+corpus for the search step, and Claude to write the final answer out of whatever survives
+the scoring.
 
 The numbers here came out of `jev-1.14.0` and `claude-sonnet-5` on 2026-11-03.
 
@@ -86,14 +102,11 @@ from pathlib import Path
 from time import perf_counter
 
 import anthropic
-import matplotlib
 from cooksafe import JsonCache, make_playground_link
+import matplotlib.pyplot as plt
 from IPython.display import Markdown, display
 from openai import OpenAI
 from typesafe_sdk import Noul, TypeSafeClient
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
 
 TYPESAFE_MODEL = "jev-1.14.0"  # the page's model; "jev-latest" runs the newest, live
 GENERATOR_MODEL = "claude-sonnet-5"  # writes the answer out of what the routing keeps
@@ -110,6 +123,19 @@ THRESHOLDS = {
     "relevant_min": 0.45,  # below this the passage is not about the query at all
     "evidence_min": 0.55,  # above this it states something usable in an answer
 }
+
+# The keys this cookbook uses. In Colab, keys saved in the Secrets panel are copied in here.
+KEYS = ["TYPESAFE_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY"]
+try:
+    from google.colab import userdata
+except ImportError:  # not in Colab
+    userdata = None
+for key in KEYS:
+    if userdata is not None and key not in os.environ:
+        try:
+            os.environ[key] = userdata.get(key)
+        except (userdata.SecretNotFoundError, userdata.NotebookAccessError):
+            pass  # not saved, or this notebook may not read it
 
 client = TypeSafeClient(
     api_key=os.environ.get("TYPESAFE_API_KEY", "cache-only"),  # keyless kernels replay
@@ -748,9 +774,9 @@ deeplink = make_playground_link(
     passage_state(HEADLINE_QUERY, linked["passage"]),
     PASSAGE_QUESTIONS,
 )
-display(Markdown(f"🔗 [Open the query + passage and its four questions]({deeplink})"))
+display(Markdown(f"🔗 [Open in the TypeSafe playground]({deeplink})"))
 ```
 
-[Open the query + passage and its four questions →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAnqQaQEoIBmVCAzgBb4oQDWyDviwAHAJbt8AQxYpq+AMwAGfGGk1hAWnxcIAdzUR8ASRHZkYXl2kp8+8Ukj6A-KQA0+UqOkcO0gHMEenwSEHEwENIOTg5xCCQOLWUARg8vEBRxFAAbYLwMgFUYqnwYv3jEggB1GztxYWky2Mq3EE9SeWwokABBZoqE-Ab8KHZbBCt9LmQZfBgSsvEAxOGkADp8ACEaNVZpGByUT2z8HN8UYUcwVkdshBzd6Sc5hYUoZ91pADcEGSR5kgcuI4PcrEh4AAjBQQFgyKBZX4DOIJYRDXz4ODPXY3b7iKCcdbEYhIYlIfrlFEAkbsUTsGKoSb4SG7FAzfAAZRgPkhvj+vRgbPhBL8vAEs0c1j+LAgVDg+FhcwAUtU0J5nlYmuw2JweHxBADpvieCMmjAkOIKH8OCgqI4AkSSWTelARcJ9UIZFIbnEVky+MzrXoqHZgb8wJ4FjBpDlHoGUPoELMAKyYxyCzj-KwpXQQGClI15fDa+l68WrJAIX6lMSSP6QwWjT4JOPQ+YxKwJAmbACaeabAKwUBsSCCcxLurFBoVQN2Xb+AaCdialcM0ldsSzxdYpansx8kkdpJJaC4Izp0E3Iw+saZACo7xPuPapcjKusH2TnW+hvI5Y4Jg4TwblESwXyGKAEhYZZ81sSpPGmZBcDJHRTz+N5SigYEoH4YRfQBPMUCPVD2Qw0YRyCd0ZkkfAfD8fRZU7UpQKoGU5UaZpYDtFBdgZOJET+dcsgSYjTDsLJEDRRswEoMU1iE8Q8R40STDscZh0zbJhCxTAQXgM5xBYBAJIQUT+jI-CrgIgFnggNkFFxfFTPSaI8yoAkAH0eNAnpYWgqBxBjDzIFgRBUDghJSAAXyi9pCAvOBREuDBsAKIhSAaDz2Dyb5nhQEIwm8-IGBAJA8xyFzwkSW0YARSoOB6AARCBMzZc9fH8MdpDAMB6So60YEhAArBAEQVOF7PwK1aDaKKOhASDwscDgPOeDhEyoDyqwiZACQKzoaB8gpSDKw5KuWmq6tRJqWqo9q-ECa0UAmNY2KxYSAQWaRISLSUmjAOsxrWjbZvmxbbW6-FLg86aaA8ukEFBGJ9syQ7ioyU6KrijLqqoWqPoa46QGa1qz2EOjOr+RaWGwuwHCFJoWCE6Mclo9gkaeiYrElSbYdBjJwekZb4aoCBEpQDzHBGq7SQKQq0Z6THztx-H6pu0n7spmQUHkcW5PB0XWcmjhNF1-51uoF9ecoGbotizwQGkCQADVqCpNLvhSEAoqAA)
+[Open in the TypeSafe playground →](https://console.typesafe.ai/playground#share/N4IgJg9gxgrgtgUwHYBcAqCAeKQC4AEIwAOiAI4wIBOAnqQaQEoIBmVCAzgBb4oQDWyDviwAHAJbt8AQxYpq+AMwAGfGGk1hAWnxcIAdzUR8ASRHZkYXl2kp8+8Ukj6A-KQA0+UqOkcO0gHMEenwSEHEwENIOTg5xCCQOLWUARg8vEBRxFAAbYLwMgFUYqnwYv3jEggB1GztxYWky2Mq3EE9SeWwokABBZoqE-Ab8KHZbBCt9LmQZfBgSsvEAxOGkADp8ACEaNVZpGByUT2z8HN8UYUcwVkdshBzd6Sc5hYUoZ91pADcEGSR5kgcuI4PcrEh4AAjBQQFgyKBZX4DOIJYRDXz4ODPXY3b7iKCcdbEYhIYlIfrlFEAkbsUTsGKoSb4SG7FAzfAAZRgPkhvj+vRgbPhBL8vAEs0c1j+LAgVDg+FhcwAUtU0J5nlYmuw2JweHxBADpvieCMmjAkOIKH8OCgqI4AkSSWTelARcJ9UIZFIbnEVky+MzrXoqHZgb8wJ4FjBpDlHoGUPoELMAKyYxyCzj-KwpXQQGClI15fDa+l68WrJAIX6lMSSP6QwWjT4JOPQ+YxKwJAmbACaeabAKwUBsSCCcxLurFBoVQN2Xb+AaCdialcM0ldsSzxdYpansx8kkdpJJaC4Izp0E3Iw+saZACo7xPuPapcjKusH2TnW+hvI5Y4Jg4TwblESwXyGKAEhYZZ81sSpPGmZBcDJHRTz+N5SigYEoH4YRfQBPMUCPVD2Qw0YRyCd0ZkkfAfD8fRZU7UpQKoGU5UaZpYDtFBdgZOJET+dcsgSYjTDsLJEDRRswEoMU1iE8Q8R40STDscZh0zbJhCxTAQXgM5xBYBAJIQUT+jI-CrgIgFnggNkFFxfFTPSaI8yoAkAH0eNAnpYWgqBxBjDzIFgRBUDghJSAAXyi9pCAvOBREuDBsAKIhSAaDz2Dyb5nhQEIwm8-IGBAJA8xyFzwkSW0YARSoOB6AARCBMzZc9fH8MdpDAMB6So60YEhAArBAEQVOF7PwK1aDaKKOhASDwscDgPOeDhEyoDyqwiZACQKzoaB8gpSDKw5KuWmq6tRJqWqo9q-ECa0UAmNY2KxYSAQWaRISLSUmjAOsxrWjbZvmxbbW6-FLg86aaA8ukEFBGJ9syQ7ioyU6KrijLqqoWqPoa46QGa1qz2EOjOr+RaWGwuwHCFJoWCE6Mclo9gkaeiYrElSbYdBjJwekZb4aoCBEpQDzHBGq7SQKQq0Z6THztx-H6pu0n7spmQUHkcW5PB0XWcmjhNF1-51uoF9ecoGbotizwQGkCQADVqCpNLvhSEAoqAA)
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

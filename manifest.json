@@ -222,10 +222,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/function_calling.md",
       "title": "Function calling",
       "description": "Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware System One questions.",
-      "raw_sha256": "1a8754583eed24a25b9482b61b99b5d9e76325ada541026620979ca7d188baef",
-      "clean_sha256": "5a6053e86c0e2390e694e37db0231e581c7d4982a4dd30d5eed50725b61f74f5",
-      "bytes": 24522,
-      "changed_at": "2026-11-17T16:08:04.647Z"
+      "raw_sha256": "412eee250669f7bc0ff133841f1ba322b938f8d82b5c660f7193a08e37f19913",
+      "clean_sha256": "f4ad8f4e94c9cf5c07b7bf345d4c64580fa0a38152fdee1c3477719637f96a32",
+      "bytes": 32176,
+      "changed_at": "2026-11-18T15:44:48.938Z"
     },
     "cookbooks/hierarchical_classification.md": {
       "url": "https://docs.typesafe.ai/cookbooks/hierarchical_classification.md",

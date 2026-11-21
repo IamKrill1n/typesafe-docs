@@ -1,3 +1,9 @@
+# TypeSafe
+
+> This file is very large and may be truncated. For an index of this content, please refer to https://docs.typesafe.ai/llms.txt instead.
+
+> How to use TypeSafe's System One API
+
 # Agent skill
 Source: https://docs.typesafe.ai/agent-skill
 

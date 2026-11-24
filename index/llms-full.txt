@@ -1056,23 +1056,23 @@ The exact formula for each question type is in [How confidence is calculated](#h
 
 If an intelligent system, whether human or machine, cannot express honest uncertainty, the system cannot be trusted.
 
-Confidence gives you a built-in mechanism for the model to say "I'm not sure about this one." This lets your code implement different behavior for different levels of certainty, which is the foundation for building systems you can actually rely on.
+An answer's probabilities, and the confidence computed from them, give you a built-in mechanism for the model to say "I'm not sure about this one." This lets your code implement different behavior for different levels of certainty, which is the foundation for building systems you can actually rely on.
 
-## Three paths for using confidence in your code
+## Three paths for acting on an answer
 
-A useful starting pattern is to divide confidence into three ranges, each producing a different system behavior:
+A useful starting pattern is to split the probability of the option your code will act on into three ranges, and give each range its own behavior:
 
-**High confidence:** Act automatically. The model has a clear read and you can proceed without human involvement.
+**High probability:** Act automatically. The model has a clear read and you can proceed without human involvement.
 
-**Medium confidence:** Proceed with caution. The model has a reasonable answer but is not certain. Depending on context, you might ask the user to confirm, flag for review, or gather more information before acting.
+**Medium probability:** Proceed with caution. The model has a reasonable answer but is not certain. Depending on context, you might ask the user to confirm, flag for review, or gather more information before acting.
 
-**Low confidence:** Do not act. Route to a human, request clarification, or fall back to a different system. The model is telling you it does not have enough information or the question is not a good fit.
+**Low probability:** Do not act. Route to a human, request clarification, or fall back to a different system. The model is telling you it does not have enough information or the question is not a good fit.
 
 Where you draw those boundaries depends on the stakes.
 
 ## Thresholds scale with risk
 
-A confidence threshold is not one number. Different actions within the same system should use different thresholds depending on the consequences of getting it wrong.
+A threshold is not one number. Different actions within the same system should use different thresholds depending on the consequences of getting it wrong.
 
 ```python theme={null}
 response = client.system_one(
@@ -1090,9 +1090,9 @@ response = client.system_one(
 )
 
 action = response.answers["action"]
-confidence = action.confidence
+p = action.probabilities[action.choice]  # Probability that the chosen option is correct
 
-if confidence < 0.5:
+if p < 0.67:
     # Model is genuinely unsure. Don't guess.
     route_to_human(user_message)
 
@@ -1101,15 +1101,19 @@ elif action.choice == "check_balance":
     show_balance(account_id)
 
 elif action.choice == "approve_transfer":
-    if confidence > 0.9:
-        # High stakes, high confidence. Proceed with confirmation.
+    if p > 0.93:
+        # High stakes, high probability. Proceed with confirmation.
         confirm_then_execute(account_id)
     else:
-        # High stakes, moderate confidence. Verify first.
+        # High stakes, medium probability. Verify first.
         ask_user_to_confirm(account_id)
 ```
 
-The 0.5 confidence floor catches anything the model reports as genuinely uncertain. Above that, the threshold for acting without confirmation is higher for a destructive operation than for a read-only one. Your code encodes the risk tolerance.
+Below 0.67, the chosen option is wrong at least one time in three, so the code sends the message to a person. Above that, the threshold for acting without confirmation is higher for a destructive operation than for a read-only one. Your code encodes the risk tolerance.
+
+> [!NOTE]
+>
+> A Choice's `confidence` is calculated from its top probability, so with a fixed number of options, any threshold on `confidence` can be rewritten as a threshold on the chosen option's probability. [When to act on confidence](#when-to-act-on-confidence) covers when `confidence` is the better check.
 
 > [!NOTE]
 >
@@ -1133,7 +1137,26 @@ What to put the threshold on instead:
 * **For a Choice, the probability of the option your code will act on.** It's the probability that the chosen option is correct, so a threshold on it is a statement about risk that anyone can read. In an answer with probabilities `{"check_balance": 0.05, "approve_transfer": 0.92, "support": 0.03}`, 0.92 is the probability that the user meant `approve_transfer`, and a rule that acts only above 0.9 says "act when the chance of the wrong option is under 10%". [Routing by probability](/patterns/probability-routing) sets a different threshold per action this way.
 * **For a Score whose decision depends on one level, that level's probability.** The position can be between two levels and hide a split answer, where the probability is high on two separate levels. Probability on a neighboring level barely lowers confidence, so confidence doesn't show the split either ([When two levels split the answer](/patterns/confidence-routing#when-two-levels-split-the-answer)).
 
-Check confidence first when your code needs to know whether a Score answer is settled at all. A Score's confidence measures how far the probability is from the most likely level, so it catches an answer spread across distant levels that the position alone doesn't. [Routing by confidence](/patterns/confidence-routing) checks confidence first and then routes on the score.
+Check confidence first when your code needs to know whether a Score answer is clear enough to act on at all. A Score's confidence drops as probability moves away from the most likely level, and drops more the further away it goes. A low confidence flags an answer split between distant levels, which `score` on its own doesn't show. In [Routing by confidence](/patterns/confidence-routing), a bug tracker scores each report's `severity` from 0 (cosmetic) to 4 (critical). Reports with confidence below 0.5 go to a person, and the rest are routed by score:
+
+```python theme={null}
+severity = response.answers["severity"]
+
+if severity.confidence < 0.5:
+    # The probability is spread across the scale. A person reads the report first.
+    send_to_triage(report_id)
+
+elif severity.score < 1.5:
+    add_to_backlog(report_id)
+
+elif severity.score < 2.5:
+    add_to_sprint(report_id)
+
+else:
+    message_on_call(report_id)
+```
+
+An answer split between two neighboring levels can still pass this check. When one level decides the action, put the threshold on that level's probability, as described above.
 
 Confidence is also useful for comparing uncertainty across questions, because it's on the same 0-to-1 scale whatever the number of options or levels.
 
@@ -1235,7 +1258,7 @@ levels = sorted(answer.probabilities)
 score_confidence([answer.probabilities[level] for level in levels])
 ```
 
-The `bug_severity` answer in the [Score response example](/primitives/score#response-structure) has probabilities $(0, 0.57, 0.43)$. The most likely level is 1, the spread is $0.43$, and $\text{MAD}_{\text{unif}}$ for three levels is $\frac{2}{3}$, so confidence is $1 - 0.43 / \frac{2}{3} \approx 0.35$.
+The `bug_severity` answer in the [Score response example](/primitives/score#response-structure) has probabilities $(0, 0.52, 0.48)$. The most likely level is 1, the spread is $0.48$, and $\text{MAD}_{\text{unif}}$ for three levels is $\frac{2}{3}$, so confidence is $1 - 0.48 / \frac{2}{3} \approx 0.28$.
 
 
 # Cookbooks
@@ -20109,7 +20132,7 @@ The example sends a customer support ticket and asks Jev three questions in one 
 
 > [tab] JavaScript
 >
-> Requires Node.js 20 or later. Install the SDK and mark the project as an ES module:
+> Requires Node.js 22 or later. Install the SDK and mark the project as an ES module:
 >
 > ```bash wrap theme={null}
 > npm install @typesafe-ai/sdk
@@ -20256,7 +20279,7 @@ The Python, JavaScript, and TypeScript examples print those three values:
 
 ```text Example output theme={null}
 technical
-0.67
+0.59
 0.99
 ```
 
@@ -20278,30 +20301,30 @@ Content-Type: application/json
 >
 > ```json theme={null}
 > {
->   "model": "jev-1.13.0",
+>   "model": "jev-1.14.0",
 >   "answers": {
 >     "department": {
 >       "type": "choice",
 >       "choice": "technical",
 >       "confidence": 1.0,
 >       "probabilities": {
->         "technical": 1.0,
 >         "billing": 0.0,
+>         "technical": 1.0,
 >         "sales": 0.0
 >       }
 >     },
 >     "frustration": {
 >       "type": "score",
->       "score": 0.67,
->       "confidence": 0.5,
+>       "score": 0.59,
+>       "confidence": 0.38,
 >       "legend": {
 >         "0": "Calm, just stating facts",
 >         "1": "Frustrated but civil",
 >         "2": "Very angry, strong language"
 >       },
 >       "probabilities": {
->         "0": 0.33,
->         "1": 0.67,
+>         "0": 0.41,
+>         "1": 0.59,
 >         "2": 0.0
 >       }
 >     },
@@ -21411,7 +21434,7 @@ Two properties of these answers make them composable:
 * **Every answer is constrained to the options you supplied.** The model returns a probability distribution over your options or levels, never a value outside them. Your code never has to recover a value from generated prose.
 * **Every answer is independent.** One question's answer is not hidden context for another. You can add or remove questions without changing the others' results.
 
-Some question types also return `confidence`; each type's page says whether its answers include it. [Confidence](/confidence) explains how to use it to decide when to act automatically and when to escalate to a person.
+Some question types also return `confidence`; each type's page says whether its answers include it. [Confidence](/confidence) explains how to use an answer's probabilities to decide when to act automatically and when to escalate to a person. It also covers when `confidence` is the better check.
 
 ## Reference specific fields
 
@@ -21534,7 +21557,7 @@ For example, ticket priority might be built from three Score questions: how seve
 
 Questions in the same request are independent: one answer does not become context for another question. If a later judgment depends on an earlier answer, make a second request in code. The dependency is real only when your code cannot build the second request until it has the first answer: it needs the answer to fetch more data for the state, to decide what the state is made of, or to pick the next question's options. Otherwise, ask the questions together and combine their answers in code.
 
-Two requests are the exception, not the rule. If the second request's questions could have been asked against the original state, ask them in the first request and let the code ignore the ones it doesn't need. Three cookbooks make a second request for a real reason. [Skill suggestion](/cookbooks/skill_suggestion) ranks 182 skills in one request, then fetches the full text of the top three and judges them again against that better evidence. [Structure recovery](/cookbooks/autoformat) asks whether each line break split a sentence, merges lines into blocks from those answers, then classifies the blocks, which did not exist until the first request had answered. [Hierarchical classification](/cookbooks/hierarchical_classification) uses each Choice answer to decide which options the next request offers.
+Two requests are the exception, not the rule. If the second request's questions could have been asked against the original state, ask them in the first request and let the code ignore the ones it doesn't need. Three cookbooks make a second request for a real reason. [Skill suggestion](/cookbooks/skill_suggestion) ranks its whole skill catalogue in one request, then fetches the full text of the top three and judges them again against that better evidence. [Structure recovery](/cookbooks/autoformat) asks whether each line break split a sentence, merges lines into blocks from those answers, then classifies the blocks, which did not exist until the first request had answered. [Hierarchical classification](/cookbooks/hierarchical_classification) uses each Choice answer to decide which options the next request offers.
 
 See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) for guidance on breaking a workflow into focused judgments.
 
@@ -21847,22 +21870,22 @@ The response has one entry in `answers` per question, under the ids from the req
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "department": {
       "type": "choice",
       "choice": "returns",
       "confidence": 1.0,
       "probabilities": {
-        "shipping": 0.0,
         "returns": 1.0,
+        "shipping": 0.0,
         "billing": 0.0
       }
     }
   },
   "usage": {
-    "input_tokens": 328,
-    "output_tokens": 34
+    "input_tokens": 357,
+    "output_tokens": 38
   }
 }
 ```
@@ -21901,16 +21924,16 @@ Jev's response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "department": {
       "type": "choice",
-      "choice": "returns",
-      "confidence": 0.42,
+      "choice": "billing",
+      "confidence": 0.31,
       "probabilities": {
-        "shipping": 0.04,
-        "billing": 0.35,
-        "returns": 0.61
+        "returns": 0.35,
+        "shipping": 0.11,
+        "billing": 0.54
       }
     },
     "return_reason": {
@@ -21918,63 +21941,63 @@ Jev's response:
       "choice": "wrong_size",
       "confidence": 1.0,
       "probabilities": {
-        "other": 0.0,
         "wrong_size": 1.0,
-        "changed_mind": 0.0,
+        "wrong_item": 0.0,
         "damaged": 0.0,
-        "wrong_item": 0.0
+        "changed_mind": 0.0,
+        "other": 0.0
       }
     },
     "shipping_issue": {
       "type": "choice",
       "choice": "delayed",
-      "confidence": 0.67,
+      "confidence": 0.56,
       "probabilities": {
-        "wrong_address": 0.0,
-        "other": 0.26,
         "not_delivered": 0.0,
+        "delayed": 0.65,
+        "wrong_address": 0.0,
         "damaged_in_transit": 0.0,
-        "delayed": 0.74
+        "other": 0.35
       }
     },
     "requested_resolution": {
       "type": "choice",
       "choice": "refund",
-      "confidence": 0.2,
+      "confidence": 0.28,
       "probabilities": {
-        "replacement": 0.34,
-        "refund": 0.4,
-        "information": 0.02,
-        "exchange": 0.24
+        "exchange": 0.25,
+        "refund": 0.46,
+        "replacement": 0.26,
+        "information": 0.03
       }
     },
     "tone": {
       "type": "choice",
       "choice": "frustrated",
-      "confidence": 0.76,
+      "confidence": 0.66,
       "probabilities": {
-        "frustrated": 0.84,
-        "angry": 0.16,
-        "calm": 0.0
+        "calm": 0.0,
+        "frustrated": 0.77,
+        "angry": 0.23
       }
     }
   },
   "usage": {
-    "input_tokens": 589,
-    "output_tokens": 212
+    "input_tokens": 750,
+    "output_tokens": 237
   }
 }
 ```
 
 Each question is answered on its own against the ticket:
 
-* The `department` answer is `returns` with a 0.61 probability, but `billing` has 0.35 because of the double charge. The ticket belongs to two teams, and the split confidence of 0.42 reflects that.
+* The `department` answer is `billing` with a 0.54 probability, but `returns` has 0.35 because of the wrong size. The ticket belongs to two teams, which is why confidence is low, at 0.31.
 * The `return_reason` is `wrong_size` with a confidence of 1.0, which is expected because it says this clearly in the ticket.
 * The `shipping_issue` answer is split between `delayed` and `other`. It's a speculative question and `department` didn't come back as shipping, so it can be ignored by the code, as shown in the example code snippet below.
-* The `requested_resolution` answer leans to `refund` at 0.40, with `replacement` and `exchange` sharing most of the rest, and the confidence is 0.20. The double charge suggests money back, the wrong size suggests a swap, and the customer never says which they want.
-* The `tone` answer is `frustrated` with a probability of 0.84 and a confidence of 0.76.
+* The `requested_resolution` answer leans to `refund` at 0.46, with most of the rest split between `replacement` and `exchange`. Confidence is 0.28. The double charge suggests money back, the wrong size suggests a swap, and the customer never says which they want.
+* The `tone` answer is `frustrated` with a probability of 0.77 and a confidence of 0.66.
 
-The example code below reads the answers it needs, ignores the rest, and treats a low-confidence answer as a reason to ask rather than act:
+The example code below uses only the answers it needs. When the chosen option has a low probability, the code hands the ticket to a person or asks the customer, instead of acting on that answer:
 
 ```python theme={null}
 from typesafe_sdk import Choice, TypeSafeClient
@@ -22033,7 +22056,7 @@ def triage(ticket: str) -> None:
     answers = response.answers
 
     department = answers["department"]
-    if department.confidence < 0.3:
+    if department.probabilities[department.choice] < 0.53:
         # Not clear which team to send to. Let a person decide.
         send_to_manual_triage(ticket)
         return
@@ -22053,7 +22076,7 @@ def triage(ticket: str) -> None:
             notify(ticket, team=team)
 
     resolution = answers["requested_resolution"]
-    if resolution.confidence < 0.5:
+    if resolution.probabilities[resolution.choice] < 0.63:
         # The customer hasn't said what they want. Ask, don't guess.
         ask_customer_what_they_want(ticket)
     elif resolution.choice == "refund":
@@ -22063,7 +22086,7 @@ def triage(ticket: str) -> None:
         flag_for_senior_agent(ticket)
 ```
 
-For the ticket above, this assigns the ticket to the returns team with issue `wrong_size`, sends the billing team a copy because its 0.35 share is over the 0.25 threshold, and asks the customer what they want because the resolution confidence of 0.20 is under 0.5. The code does not use the `shipping_issue` answer.
+For the ticket above, `billing` has a probability of 0.54, just over the 0.53 cutoff, so the code assigns the ticket to the billing team instead of sending it to a person to route. `returns` has a probability of 0.35, over the 0.25 cutoff, so the returns team gets a copy. `refund` has a probability of 0.46, under the 0.63 cutoff, so the code asks the customer what they want. The code does not use the `return_reason` or `shipping_issue` answers.
 
 One request, five answers, and the routing logic is ordinary `if` statements. If you later need to know the customer's language, or which product the ticket is about, add another Choice question to `TRIAGE_QUESTIONS`; the call count stays at one.
 
@@ -22081,7 +22104,7 @@ The response is `return_status` at confidence 1.0:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "return_topic": {
       "type": "choice",
@@ -22094,8 +22117,8 @@ The response is `return_status` at confidence 1.0:
     }
   },
   "usage": {
-    "input_tokens": 407,
-    "output_tokens": 32
+    "input_tokens": 459,
+    "output_tokens": 35
   }
 }
 ```
@@ -22167,42 +22190,42 @@ The response has one entry in `answers` per question, under the ids from the req
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "is_human_escalation": {
       "type": "noul",
-      "noul": 0.99
+      "noul": 0.98
     },
     "is_repeat_contact": {
       "type": "noul",
-      "noul": 0.93
+      "noul": 0.95
     }
   },
   "usage": {
-    "input_tokens": 360,
-    "output_tokens": 39
+    "input_tokens": 344,
+    "output_tokens": 43
   }
 }
 ```
 
-Both answers here are close to 1. The customer says "talk to a real person", so `is_human_escalation` is 0.99. "I have asked three times now" matches the `true` description of `is_repeat_contact`, so it is 0.93.
+Both answers here are close to 1. The customer says "talk to a real person", so `is_human_escalation` is 0.98. "I have asked three times now" matches the `true` description of `is_repeat_contact`, so it is 0.95.
 
 ## Reading a Noul
 
 The number is the answer and the certainty in one. A value near 1 is a strong yes. A value near 0 is a strong no. A value near 0.5 means the model gives yes and no similar probability.
 
-The table below shows recorded `jev-1.13.0` answers to the `is_human_escalation` question for different customer messages:
+The table below shows recorded `jev-1.14.0` answers to the `is_human_escalation` question for different customer messages:
 
 | State | `noul` |
 | - | - |
-| Thanks, that fixed it! | 0.02 |
-| How do I reset my password? | 0.07 |
+| Thanks, that fixed it! | 0.03 |
+| How do I reset my password? | 0.06 |
 | I need this sorted today, whatever it takes. | 0.26 |
-| Are you a bot? | 0.40 |
-| Is there any way to speak to someone about my invoice? | 0.84 |
-| I have asked three times now. Can I please just talk to a real person? | 0.99 |
+| Are you a bot? | 0.37 |
+| Is there any way to speak to someone about my invoice? | 0.83 |
+| I have asked three times now. Can I please just talk to a real person? | 0.98 |
 
-The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and the model splits almost evenly at 0.40. Both are the kind of message where a decision needs to be made based on a threshold in your code.
+The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and gets 0.37: it leans to no, but is far from a clear answer. Both are the kind of message where a decision needs to be made based on a threshold in your code.
 
 There is no separate `confidence` value for a Noul, unlike a [Choice](/primitives/choice) or a [Score](/primitives/score). A Noul's probability distribution has only two outcomes, yes and no, so the single `noul` value describes it completely. A Choice or Score spreads probability over several options or levels, and `confidence` summarizes that spread.
 
@@ -22217,7 +22240,7 @@ else:
     route_to_bot(ticket)
 ```
 
-A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
+A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence#three-paths-for-acting-on-an-answer) page describes for Choice and Score answers.
 
 A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) question with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
@@ -22292,7 +22315,7 @@ def route(message: str) -> None:
         route_to_bot(message, priority=priority)
 ```
 
-For the message above, the noul answer value for `is_human_escalation` is 0.99 and `is_repeat_contact` is 0.93, so the code routes it to an agent at high priority. The message "How do I reset my password?" is 0.07 on both questions and is routed to the bot.
+For the message above, `is_human_escalation` is 0.98 and `is_repeat_contact` is 0.95, both over `YES`, so the code routes it to an agent at high priority. The message "How do I reset my password?" is 0.06 on `is_human_escalation` and 0.09 on `is_repeat_contact`, both under `NO`, and is routed to the bot.
 
 The thresholds live in your code. If reviewers see too many messages, narrow the gap between `NO` and `YES`. If too many wrong routes get through, widen it. If you later need to know whether the message mentions a payment, or whether it contains personal data, add another Noul to `SUPPORT_QUESTIONS`. The call count stays at one.
 
@@ -22306,15 +22329,15 @@ The response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "same_as_record_18": {
       "type": "noul",
-      "noul": 0.74
+      "noul": 0.71
     },
     "same_as_record_42": {
       "type": "noul",
-      "noul": 0.09
+      "noul": 0.08
     },
     "same_as_record_77": {
       "type": "noul",
@@ -22322,13 +22345,13 @@ The response:
     }
   },
   "usage": {
-    "input_tokens": 535,
-    "output_tokens": 58
+    "input_tokens": 584,
+    "output_tokens": 67
   }
 }
 ```
 
-Each answer is the probability that the resume is for the person in that record. Record 18 spells the name differently but matches on location and employer, and gets 0.74. Record 42 has the same name in a different city with a different employer, and gets 0.09. Record 77 is a similar name at the same location with a different employer, and gets 0.08. Threshold each value in your code, as in [Handling multiple Noul answers in code](#handling-multiple-noul-answers-in-code), and send the middle values to a person.
+Each answer is the probability that the resume is for the person in that record. Record 18 spells the name differently but matches on location and employer, and gets 0.71. Record 42 has the same name in a different city with a different employer, and gets 0.08. Record 77 is a similar name at the same location with a different employer, and gets 0.08. Threshold each value in your code, as in [Handling multiple Noul answers in code](#handling-multiple-noul-answers-in-code), and send the middle values to a person.
 
 With the Python SDK, the questions are built from the candidate records. The question text is fixed and the record changes:
 
@@ -22482,12 +22505,12 @@ The response has one entry in `answers` per question, under the ids from the req
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "bug_severity": {
       "type": "score",
-      "score": 1.43,
-      "confidence": 0.35,
+      "score": 1.48,
+      "confidence": 0.28,
       "legend": {
         "0": "Cosmetic; no impact to functionality",
         "1": "Broken or degraded feature, but workaround exists",
@@ -22495,14 +22518,14 @@ The response has one entry in `answers` per question, under the ids from the req
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.57,
-        "2": 0.43
+        "1": 0.52,
+        "2": 0.48
       }
     }
   },
   "usage": {
-    "input_tokens": 332,
-    "output_tokens": 18
+    "input_tokens": 341,
+    "output_tokens": 20
   }
 }
 ```
@@ -22511,11 +22534,11 @@ Each Score answer has five values:
 
 * `type`: The type of System One question.
 * `probabilities`: The probability of each level, keyed by level number as a string. The sum of all values is 1.
-* `score`: The position on the level number line, from 0 to the top level number, which is 2 here. It's each level number multiplied by its probability, added up: 0 x 0.0 + 1 x 0.57 + 2 x 0.43 = 1.43.
+* `score`: The position on the level number line, from 0 to the top level number, which is 2 here. It's each level number multiplied by its probability, added up: 0 x 0.0 + 1 x 0.52 + 2 x 0.48 = 1.48.
 * `legend`: Each level number mapped back to its description.
 * [`confidence`](/confidence): A number from 0 to 1 computed from how `probabilities` is spread. A single peak on one level means high confidence. Probability spread over several levels means low confidence.
 
-A score of 1.43 means the model is split between levels 1 and 2, leaning to level 1. That matches the report: the export is broken, and switching to Chrome is a workaround for most customers, but not for the ones who only use Safari. The model puts 0.57 on "workaround exists" and 0.43 on "no workaround", and confidence is 0.35 because it's split.
+A score of 1.48 means the model is almost evenly split between levels 1 and 2, with slightly more on level 1. That matches the report: the export is broken, and switching to Chrome is a workaround for most customers, but not for the ones who only use Safari. The model puts 0.52 on "workaround exists" and 0.48 on "no workaround", and that split brings confidence down to 0.28.
 
 Using the Python SDK, `ScoreAnswer` has `score`, `confidence`, `probabilities`, and `legend` as typed fields. The SDK keys `probabilities` and `legend` by integer level rather than by string.
 
@@ -22563,12 +22586,12 @@ We can see how different bug reports change the score:
 
     <tr>
       <td>Export to PDF fails with a spinner that never finishes. Some of our team say CSV export still works for them, others say it fails too.</td>
-      <td>1.11</td><td>0.84</td><td>0.0</td><td>0.89</td><td>0.11</td>
+      <td>1.13</td><td>0.8</td><td>0.0</td><td>0.87</td><td>0.13</td>
     </tr>
 
     <tr>
       <td>The export button crashes the settings page in Safari. It works in Chrome, but a few of our customers only use Safari.</td>
-      <td>1.43</td><td>0.35</td><td>0.0</td><td>0.57</td><td>0.43</td>
+      <td>1.48</td><td>0.28</td><td>0.0</td><td>0.52</td><td>0.48</td>
     </tr>
 
     <tr>
@@ -22622,12 +22645,12 @@ Jev's response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "severity": {
       "type": "score",
-      "score": 1.24,
-      "confidence": 0.64,
+      "score": 1.26,
+      "confidence": 0.61,
       "legend": {
         "0": "Cosmetic; no impact to functionality",
         "1": "Broken or degraded feature, but workaround exists",
@@ -22635,14 +22658,14 @@ Jev's response:
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.76,
-        "2": 0.24
+        "1": 0.74,
+        "2": 0.26
       }
     },
     "frustration": {
       "type": "score",
-      "score": 1.28,
-      "confidence": 0.58,
+      "score": 1.2,
+      "confidence": 0.7,
       "legend": {
         "0": "Calm, just stating facts",
         "1": "Frustrated but civil",
@@ -22650,8 +22673,8 @@ Jev's response:
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.72,
-        "2": 0.28
+        "1": 0.8,
+        "2": 0.2
       }
     },
     "report_quality": {
@@ -22673,16 +22696,16 @@ Jev's response:
     }
   },
   "usage": {
-    "input_tokens": 468,
-    "output_tokens": 43
+    "input_tokens": 510,
+    "output_tokens": 46
   }
 }
 ```
 
 Each question is answered on its own against the ticket and given a score:
 
-* `severity` is 1.24 at confidence 0.64. Same reading as the opening example: the export is broken and some have a workaround.
-* `frustration` is 1.28 at confidence 0.58. The wording is civil, but "third time" and "I'm done" shift some of the score toward the top level, so the model splits 0.72 and 0.28 between "frustrated but civil" and "very angry". For this ticket the two levels overlap, which is why the confidence is moderate.
+* `severity` is 1.26 at confidence 0.61. Same reading as the opening example: the export is broken and some have a workaround.
+* `frustration` is 1.2 at confidence 0.7. The wording is civil, but "third time" and "I'm done" move some probability to the top level: 0.8 goes to "frustrated but civil" and 0.2 to "very angry". For this ticket the two levels overlap, which is why confidence is 0.7 rather than 1.0.
 * `report_quality` is 3.0 at confidence 1.0. The steps and browser version are both stated.
 
 The three scales have different lengths, so before combining them, normalize each score. A four-level scale returns 0 to 3 and a three-level scale returns 0 to 2, so a top score on one is bigger than a top score on the other. Divide each score by its top level number, `len(criteria) - 1`, to put every score on 0 to 1. Then the weights mean what they say: 0.6 on severity and 0.3 on frustration makes severity count twice as much.
@@ -22743,7 +22766,7 @@ def priority(ticket: str) -> float:
     return 0.6 * severity + 0.3 * frustration + 0.1 * report_quality
 ```
 
-For the example response above, the normalized scores are 0.62 for severity, 0.64 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.62 + 0.3 × 0.64 + 0.1 × 1.0 = 0.664`, which rounds to `0.66`.
+For the example response above, the normalized scores are 0.63 for severity, 0.6 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.63 + 0.3 × 0.6 + 0.1 × 1.0 = 0.658`, which rounds to `0.66`.
 
 The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The call count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](/patterns/composite-scoring) pattern.
 
@@ -22759,12 +22782,12 @@ The response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "bug_severity": {
       "type": "score",
       "score": 1.09,
-      "confidence": 0.87,
+      "confidence": 0.85,
       "legend": {
         "0": {
           "what": "Cosmetic; no impact to functionality",
@@ -22789,29 +22812,29 @@ The response:
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.91,
-        "2": 0.09
+        "1": 0.9,
+        "2": 0.1
       }
     }
   },
   "usage": {
-    "input_tokens": 379,
-    "output_tokens": 18
+    "input_tokens": 419,
+    "output_tokens": 20
   }
 }
 ```
 
-With plain strings this ticket scored 1.11 with a confidence of 0.84. With examples it scores 1.09 at 0.87 confidence, a small shift because the plain strings already placed it well. The effect is larger when the plain strings leave the model split, as the next table shows.
+With plain strings, this ticket scores 1.13 at confidence 0.8. With examples, it scores 1.09 at confidence 0.85. The change is small because the plain strings already put most of the probability on level 1. Examples make a bigger difference when plain strings leave the model split, as the next table shows.
 
 Examples steer the model, and they only help when they look like your real inputs. The table below is the opening Safari report with three different sets of level objects:
 
 | Level description | `score` | `confidence` |
 | - | - | - |
-| plain string: no object with examples | 1.43 | 0.35 |
-| Added examples array with useful example: "export fails in one browser but works in another" | 1.03 | 0.96 |
-| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.43 | 0.35 |
+| plain string: no object with examples | 1.48 | 0.28 |
+| Added examples array with useful example: "export fails in one browser but works in another" | 1.04 | 0.94 |
+| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.42 | 0.37 |
 
-In this comparison, the matching example concentrates almost all the probability on one level. The unrelated example returns the same result as plain strings. Higher confidence does not establish which answer is correct. Choose examples with known expected levels, then test the revised descriptions on separate inputs before keeping them.
+In this comparison, the matching example concentrates almost all the probability on one level. The unrelated example returns almost the same result as plain strings. Higher confidence does not establish which answer is correct. Choose examples with known expected levels, then test the revised descriptions on separate inputs before keeping them.
 
 
 # Client SDKs

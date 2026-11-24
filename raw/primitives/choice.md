@@ -74,22 +74,22 @@ The response has one entry in `answers` per question, under the ids from the req
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "department": {
       "type": "choice",
       "choice": "returns",
       "confidence": 1.0,
       "probabilities": {
-        "shipping": 0.0,
         "returns": 1.0,
+        "shipping": 0.0,
         "billing": 0.0
       }
     }
   },
   "usage": {
-    "input_tokens": 328,
-    "output_tokens": 34
+    "input_tokens": 357,
+    "output_tokens": 38
   }
 }
 ```
@@ -128,16 +128,16 @@ Jev's response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "department": {
       "type": "choice",
-      "choice": "returns",
-      "confidence": 0.42,
+      "choice": "billing",
+      "confidence": 0.31,
       "probabilities": {
-        "shipping": 0.04,
-        "billing": 0.35,
-        "returns": 0.61
+        "returns": 0.35,
+        "shipping": 0.11,
+        "billing": 0.54
       }
     },
     "return_reason": {
@@ -145,63 +145,63 @@ Jev's response:
       "choice": "wrong_size",
       "confidence": 1.0,
       "probabilities": {
-        "other": 0.0,
         "wrong_size": 1.0,
-        "changed_mind": 0.0,
+        "wrong_item": 0.0,
         "damaged": 0.0,
-        "wrong_item": 0.0
+        "changed_mind": 0.0,
+        "other": 0.0
       }
     },
     "shipping_issue": {
       "type": "choice",
       "choice": "delayed",
-      "confidence": 0.67,
+      "confidence": 0.56,
       "probabilities": {
-        "wrong_address": 0.0,
-        "other": 0.26,
         "not_delivered": 0.0,
+        "delayed": 0.65,
+        "wrong_address": 0.0,
         "damaged_in_transit": 0.0,
-        "delayed": 0.74
+        "other": 0.35
       }
     },
     "requested_resolution": {
       "type": "choice",
       "choice": "refund",
-      "confidence": 0.2,
+      "confidence": 0.28,
       "probabilities": {
-        "replacement": 0.34,
-        "refund": 0.4,
-        "information": 0.02,
-        "exchange": 0.24
+        "exchange": 0.25,
+        "refund": 0.46,
+        "replacement": 0.26,
+        "information": 0.03
       }
     },
     "tone": {
       "type": "choice",
       "choice": "frustrated",
-      "confidence": 0.76,
+      "confidence": 0.66,
       "probabilities": {
-        "frustrated": 0.84,
-        "angry": 0.16,
-        "calm": 0.0
+        "calm": 0.0,
+        "frustrated": 0.77,
+        "angry": 0.23
       }
     }
   },
   "usage": {
-    "input_tokens": 589,
-    "output_tokens": 212
+    "input_tokens": 750,
+    "output_tokens": 237
   }
 }
 ```
 
 Each question is answered on its own against the ticket:
 
-* The `department` answer is `returns` with a 0.61 probability, but `billing` has 0.35 because of the double charge. The ticket belongs to two teams, and the split confidence of 0.42 reflects that.
+* The `department` answer is `billing` with a 0.54 probability, but `returns` has 0.35 because of the wrong size. The ticket belongs to two teams, which is why confidence is low, at 0.31.
 * The `return_reason` is `wrong_size` with a confidence of 1.0, which is expected because it says this clearly in the ticket.
 * The `shipping_issue` answer is split between `delayed` and `other`. It's a speculative question and `department` didn't come back as shipping, so it can be ignored by the code, as shown in the example code snippet below.
-* The `requested_resolution` answer leans to `refund` at 0.40, with `replacement` and `exchange` sharing most of the rest, and the confidence is 0.20. The double charge suggests money back, the wrong size suggests a swap, and the customer never says which they want.
-* The `tone` answer is `frustrated` with a probability of 0.84 and a confidence of 0.76.
+* The `requested_resolution` answer leans to `refund` at 0.46, with most of the rest split between `replacement` and `exchange`. Confidence is 0.28. The double charge suggests money back, the wrong size suggests a swap, and the customer never says which they want.
+* The `tone` answer is `frustrated` with a probability of 0.77 and a confidence of 0.66.
 
-The example code below reads the answers it needs, ignores the rest, and treats a low-confidence answer as a reason to ask rather than act:
+The example code below uses only the answers it needs. When the chosen option has a low probability, the code hands the ticket to a person or asks the customer, instead of acting on that answer:
 
 ```python theme={null}
 from typesafe_sdk import Choice, TypeSafeClient
@@ -260,7 +260,7 @@ def triage(ticket: str) -> None:
     answers = response.answers
 
     department = answers["department"]
-    if department.confidence < 0.3:
+    if department.probabilities[department.choice] < 0.53:
         # Not clear which team to send to. Let a person decide.
         send_to_manual_triage(ticket)
         return
@@ -280,7 +280,7 @@ def triage(ticket: str) -> None:
             notify(ticket, team=team)
 
     resolution = answers["requested_resolution"]
-    if resolution.confidence < 0.5:
+    if resolution.probabilities[resolution.choice] < 0.63:
         # The customer hasn't said what they want. Ask, don't guess.
         ask_customer_what_they_want(ticket)
     elif resolution.choice == "refund":
@@ -290,7 +290,7 @@ def triage(ticket: str) -> None:
         flag_for_senior_agent(ticket)
 ```
 
-For the ticket above, this assigns the ticket to the returns team with issue `wrong_size`, sends the billing team a copy because its 0.35 share is over the 0.25 threshold, and asks the customer what they want because the resolution confidence of 0.20 is under 0.5. The code does not use the `shipping_issue` answer.
+For the ticket above, `billing` has a probability of 0.54, just over the 0.53 cutoff, so the code assigns the ticket to the billing team instead of sending it to a person to route. `returns` has a probability of 0.35, over the 0.25 cutoff, so the returns team gets a copy. `refund` has a probability of 0.46, under the 0.63 cutoff, so the code asks the customer what they want. The code does not use the `return_reason` or `shipping_issue` answers.
 
 One request, five answers, and the routing logic is ordinary `if` statements. If you later need to know the customer's language, or which product the ticket is about, add another Choice question to `TRIAGE_QUESTIONS`; the call count stays at one.
 
@@ -308,7 +308,7 @@ The response is `return_status` at confidence 1.0:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "return_topic": {
       "type": "choice",
@@ -321,8 +321,8 @@ The response is `return_status` at confidence 1.0:
     }
   },
   "usage": {
-    "input_tokens": 407,
-    "output_tokens": 32
+    "input_tokens": 459,
+    "output_tokens": 35
   }
 }
 ```

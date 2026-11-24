@@ -38,23 +38,23 @@ The exact formula for each question type is in [How confidence is calculated](#h
 
 If an intelligent system, whether human or machine, cannot express honest uncertainty, the system cannot be trusted.
 
-Confidence gives you a built-in mechanism for the model to say "I'm not sure about this one." This lets your code implement different behavior for different levels of certainty, which is the foundation for building systems you can actually rely on.
+An answer's probabilities, and the confidence computed from them, give you a built-in mechanism for the model to say "I'm not sure about this one." This lets your code implement different behavior for different levels of certainty, which is the foundation for building systems you can actually rely on.
 
-## Three paths for using confidence in your code
+## Three paths for acting on an answer
 
-A useful starting pattern is to divide confidence into three ranges, each producing a different system behavior:
+A useful starting pattern is to split the probability of the option your code will act on into three ranges, and give each range its own behavior:
 
-**High confidence:** Act automatically. The model has a clear read and you can proceed without human involvement.
+**High probability:** Act automatically. The model has a clear read and you can proceed without human involvement.
 
-**Medium confidence:** Proceed with caution. The model has a reasonable answer but is not certain. Depending on context, you might ask the user to confirm, flag for review, or gather more information before acting.
+**Medium probability:** Proceed with caution. The model has a reasonable answer but is not certain. Depending on context, you might ask the user to confirm, flag for review, or gather more information before acting.
 
-**Low confidence:** Do not act. Route to a human, request clarification, or fall back to a different system. The model is telling you it does not have enough information or the question is not a good fit.
+**Low probability:** Do not act. Route to a human, request clarification, or fall back to a different system. The model is telling you it does not have enough information or the question is not a good fit.
 
 Where you draw those boundaries depends on the stakes.
 
 ## Thresholds scale with risk
 
-A confidence threshold is not one number. Different actions within the same system should use different thresholds depending on the consequences of getting it wrong.
+A threshold is not one number. Different actions within the same system should use different thresholds depending on the consequences of getting it wrong.
 
 ```python
 response = client.system_one(
@@ -72,9 +72,9 @@ response = client.system_one(
 )
 
 action = response.answers["action"]
-confidence = action.confidence
+p = action.probabilities[action.choice]  # Probability that the chosen option is correct
 
-if confidence < 0.5:
+if p < 0.67:
     # Model is genuinely unsure. Don't guess.
     route_to_human(user_message)
 
@@ -83,15 +83,19 @@ elif action.choice == "check_balance":
     show_balance(account_id)
 
 elif action.choice == "approve_transfer":
-    if confidence > 0.9:
-        # High stakes, high confidence. Proceed with confirmation.
+    if p > 0.93:
+        # High stakes, high probability. Proceed with confirmation.
         confirm_then_execute(account_id)
     else:
-        # High stakes, moderate confidence. Verify first.
+        # High stakes, medium probability. Verify first.
         ask_user_to_confirm(account_id)
 ```
 
-The 0.5 confidence floor catches anything the model reports as genuinely uncertain. Above that, the threshold for acting without confirmation is higher for a destructive operation than for a read-only one. Your code encodes the risk tolerance.
+Below 0.67, the chosen option is wrong at least one time in three, so the code sends the message to a person. Above that, the threshold for acting without confirmation is higher for a destructive operation than for a read-only one. Your code encodes the risk tolerance.
+
+> [!NOTE]
+>
+> A Choice's `confidence` is calculated from its top probability, so with a fixed number of options, any threshold on `confidence` can be rewritten as a threshold on the chosen option's probability. [When to act on confidence](#when-to-act-on-confidence) covers when `confidence` is the better check.
 
 > [!NOTE]
 >
@@ -115,7 +119,26 @@ What to put the threshold on instead:
 * **For a Choice, the probability of the option your code will act on.** It's the probability that the chosen option is correct, so a threshold on it is a statement about risk that anyone can read. In an answer with probabilities `{"check_balance": 0.05, "approve_transfer": 0.92, "support": 0.03}`, 0.92 is the probability that the user meant `approve_transfer`, and a rule that acts only above 0.9 says "act when the chance of the wrong option is under 10%". [Routing by probability](https://docs.typesafe.ai/patterns/probability-routing.md) sets a different threshold per action this way.
 * **For a Score whose decision depends on one level, that level's probability.** The position can be between two levels and hide a split answer, where the probability is high on two separate levels. Probability on a neighboring level barely lowers confidence, so confidence doesn't show the split either ([When two levels split the answer](https://docs.typesafe.ai/patterns/confidence-routing.md#when-two-levels-split-the-answer)).
 
-Check confidence first when your code needs to know whether a Score answer is settled at all. A Score's confidence measures how far the probability is from the most likely level, so it catches an answer spread across distant levels that the position alone doesn't. [Routing by confidence](https://docs.typesafe.ai/patterns/confidence-routing.md) checks confidence first and then routes on the score.
+Check confidence first when your code needs to know whether a Score answer is clear enough to act on at all. A Score's confidence drops as probability moves away from the most likely level, and drops more the further away it goes. A low confidence flags an answer split between distant levels, which `score` on its own doesn't show. In [Routing by confidence](https://docs.typesafe.ai/patterns/confidence-routing.md), a bug tracker scores each report's `severity` from 0 (cosmetic) to 4 (critical). Reports with confidence below 0.5 go to a person, and the rest are routed by score:
+
+```python
+severity = response.answers["severity"]
+
+if severity.confidence < 0.5:
+    # The probability is spread across the scale. A person reads the report first.
+    send_to_triage(report_id)
+
+elif severity.score < 1.5:
+    add_to_backlog(report_id)
+
+elif severity.score < 2.5:
+    add_to_sprint(report_id)
+
+else:
+    message_on_call(report_id)
+```
+
+An answer split between two neighboring levels can still pass this check. When one level decides the action, put the threshold on that level's probability, as described above.
 
 Confidence is also useful for comparing uncertainty across questions, because it's on the same 0-to-1 scale whatever the number of options or levels.
 
@@ -215,6 +238,6 @@ levels = sorted(answer.probabilities)
 score_confidence([answer.probabilities[level] for level in levels])
 ```
 
-The `bug_severity` answer in the [Score response example](https://docs.typesafe.ai/primitives/score.md#response-structure) has probabilities $(0, 0.57, 0.43)$. The most likely level is 1, the spread is $0.43$, and $\text{MAD}_{\text{unif}}$ for three levels is $\frac{2}{3}$, so confidence is $1 - 0.43 / \frac{2}{3} \approx 0.35$.
+The `bug_severity` answer in the [Score response example](https://docs.typesafe.ai/primitives/score.md#response-structure) has probabilities $(0, 0.52, 0.48)$. The most likely level is 1, the spread is $0.48$, and $\text{MAD}_{\text{unif}}$ for three levels is $\frac{2}{3}$, so confidence is $1 - 0.48 / \frac{2}{3} \approx 0.28$.
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

@@ -159,7 +159,7 @@ The example sends a customer support ticket and asks Jev three questions in one 
 
 > [tab] JavaScript
 >
-> Requires Node.js 20 or later. Install the SDK and mark the project as an ES module:
+> Requires Node.js 22 or later. Install the SDK and mark the project as an ES module:
 >
 > ```bash wrap
 > npm install @typesafe-ai/sdk
@@ -306,7 +306,7 @@ The Python, JavaScript, and TypeScript examples print those three values:
 
 ```text Example output
 technical
-0.67
+0.59
 0.99
 ```
 
@@ -328,30 +328,30 @@ Content-Type: application/json
 >
 > ```json
 > {
->   "model": "jev-1.13.0",
+>   "model": "jev-1.14.0",
 >   "answers": {
 >     "department": {
 >       "type": "choice",
 >       "choice": "technical",
 >       "confidence": 1.0,
 >       "probabilities": {
->         "technical": 1.0,
 >         "billing": 0.0,
+>         "technical": 1.0,
 >         "sales": 0.0
 >       }
 >     },
 >     "frustration": {
 >       "type": "score",
->       "score": 0.67,
->       "confidence": 0.5,
+>       "score": 0.59,
+>       "confidence": 0.38,
 >       "legend": {
 >         "0": "Calm, just stating facts",
 >         "1": "Frustrated but civil",
 >         "2": "Very angry, strong language"
 >       },
 >       "probabilities": {
->         "0": 0.33,
->         "1": 0.67,
+>         "0": 0.41,
+>         "1": 0.59,
 >         "2": 0.0
 >       }
 >     },

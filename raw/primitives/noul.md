@@ -65,42 +65,42 @@ The response has one entry in `answers` per question, under the ids from the req
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "is_human_escalation": {
       "type": "noul",
-      "noul": 0.99
+      "noul": 0.98
     },
     "is_repeat_contact": {
       "type": "noul",
-      "noul": 0.93
+      "noul": 0.95
     }
   },
   "usage": {
-    "input_tokens": 360,
-    "output_tokens": 39
+    "input_tokens": 344,
+    "output_tokens": 43
   }
 }
 ```
 
-Both answers here are close to 1. The customer says "talk to a real person", so `is_human_escalation` is 0.99. "I have asked three times now" matches the `true` description of `is_repeat_contact`, so it is 0.93.
+Both answers here are close to 1. The customer says "talk to a real person", so `is_human_escalation` is 0.98. "I have asked three times now" matches the `true` description of `is_repeat_contact`, so it is 0.95.
 
 ## Reading a Noul
 
 The number is the answer and the certainty in one. A value near 1 is a strong yes. A value near 0 is a strong no. A value near 0.5 means the model gives yes and no similar probability.
 
-The table below shows recorded `jev-1.13.0` answers to the `is_human_escalation` question for different customer messages:
+The table below shows recorded `jev-1.14.0` answers to the `is_human_escalation` question for different customer messages:
 
 | State | `noul` |
 | - | - |
-| Thanks, that fixed it! | 0.02 |
-| How do I reset my password? | 0.07 |
+| Thanks, that fixed it! | 0.03 |
+| How do I reset my password? | 0.06 |
 | I need this sorted today, whatever it takes. | 0.26 |
-| Are you a bot? | 0.40 |
-| Is there any way to speak to someone about my invoice? | 0.84 |
-| I have asked three times now. Can I please just talk to a real person? | 0.99 |
+| Are you a bot? | 0.37 |
+| Is there any way to speak to someone about my invoice? | 0.83 |
+| I have asked three times now. Can I please just talk to a real person? | 0.98 |
 
-The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and the model splits almost evenly at 0.40. Both are the kind of message where a decision needs to be made based on a threshold in your code.
+The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and gets 0.37: it leans to no, but is far from a clear answer. Both are the kind of message where a decision needs to be made based on a threshold in your code.
 
 There is no separate `confidence` value for a Noul, unlike a [Choice](https://docs.typesafe.ai/primitives/choice.md) or a [Score](https://docs.typesafe.ai/primitives/score.md). A Noul's probability distribution has only two outcomes, yes and no, so the single `noul` value describes it completely. A Choice or Score spreads probability over several options or levels, and `confidence` summarizes that spread.
 
@@ -115,7 +115,7 @@ else:
     route_to_bot(ticket)
 ```
 
-A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](https://docs.typesafe.ai/confidence.md#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
+A good starting point is 0.7 for yes and 0.3 for no. Often you only care whether the answer is yes, and 0.7 is the only threshold you need. Where to set it depends on the cost of being wrong. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Avoid fitting thresholds closely to a handful of test cases. Values between 0.3 and 0.7 can go to a person rather than either code path. That is the same three-way split the [Confidence](https://docs.typesafe.ai/confidence.md#three-paths-for-acting-on-an-answer) page describes for Choice and Score answers.
 
 A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](https://docs.typesafe.ai/primitives/score.md) question with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
@@ -190,7 +190,7 @@ def route(message: str) -> None:
         route_to_bot(message, priority=priority)
 ```
 
-For the message above, the noul answer value for `is_human_escalation` is 0.99 and `is_repeat_contact` is 0.93, so the code routes it to an agent at high priority. The message "How do I reset my password?" is 0.07 on both questions and is routed to the bot.
+For the message above, `is_human_escalation` is 0.98 and `is_repeat_contact` is 0.95, both over `YES`, so the code routes it to an agent at high priority. The message "How do I reset my password?" is 0.06 on `is_human_escalation` and 0.09 on `is_repeat_contact`, both under `NO`, and is routed to the bot.
 
 The thresholds live in your code. If reviewers see too many messages, narrow the gap between `NO` and `YES`. If too many wrong routes get through, widen it. If you later need to know whether the message mentions a payment, or whether it contains personal data, add another Noul to `SUPPORT_QUESTIONS`. The call count stays at one.
 
@@ -204,15 +204,15 @@ The response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "same_as_record_18": {
       "type": "noul",
-      "noul": 0.74
+      "noul": 0.71
     },
     "same_as_record_42": {
       "type": "noul",
-      "noul": 0.09
+      "noul": 0.08
     },
     "same_as_record_77": {
       "type": "noul",
@@ -220,13 +220,13 @@ The response:
     }
   },
   "usage": {
-    "input_tokens": 535,
-    "output_tokens": 58
+    "input_tokens": 584,
+    "output_tokens": 67
   }
 }
 ```
 
-Each answer is the probability that the resume is for the person in that record. Record 18 spells the name differently but matches on location and employer, and gets 0.74. Record 42 has the same name in a different city with a different employer, and gets 0.09. Record 77 is a similar name at the same location with a different employer, and gets 0.08. Threshold each value in your code, as in [Handling multiple Noul answers in code](#handling-multiple-noul-answers-in-code), and send the middle values to a person.
+Each answer is the probability that the resume is for the person in that record. Record 18 spells the name differently but matches on location and employer, and gets 0.71. Record 42 has the same name in a different city with a different employer, and gets 0.08. Record 77 is a similar name at the same location with a different employer, and gets 0.08. Threshold each value in your code, as in [Handling multiple Noul answers in code](#handling-multiple-noul-answers-in-code), and send the middle values to a person.
 
 With the Python SDK, the questions are built from the candidate records. The question text is fixed and the record changes:
 

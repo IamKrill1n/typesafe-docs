@@ -96,10 +96,10 @@
       "url": "https://docs.typesafe.ai/confidence.md",
       "title": "Confidence",
       "description": "How Jev reports certainty, how it differs from probability, and how to use it to control system behavior.",
-      "raw_sha256": "3f15502effc8da348b7e5cf395632a9e7971c7cad91660f56995a9c6beb90ee3",
-      "clean_sha256": "fe5956af643784781cafa8e7944e9748b518b9afa9b4cabbc4929926e8124311",
-      "bytes": 14159,
-      "changed_at": "2026-11-04T14:39:00.932Z"
+      "raw_sha256": "ec579d5a7d573be9c292155204388f3ac3553d80f8dccd0b8a0ab5aef58a9065",
+      "clean_sha256": "f493bb81e6e966e005133572c02f0792d763db22d322add5a135c79bc032bbf4",
+      "bytes": 15336,
+      "changed_at": "2026-11-24T17:52:34.140Z"
     },
     "cookbooks.md": {
       "url": "https://docs.typesafe.ai/cookbooks.md",
@@ -429,10 +429,10 @@
       "url": "https://docs.typesafe.ai/introduction/quickstart.md",
       "title": "Quick start",
       "description": "Get up and running with Jev in 5 minutes.",
-      "raw_sha256": "63931dedc21803b17418d7ab3dc6d4d38c67f6ecdb15d7d5490f183b99c58afb",
-      "clean_sha256": "6b92df7e307d98bc416a69413f6c2db91cc51e8bdce8696ee8d2b7f9492b190e",
-      "bytes": 15156,
-      "changed_at": "2026-11-07T13:11:11.621Z"
+      "raw_sha256": "b0fa760454435c2b7476f28ed147e6f53bb7af23e8894e8477b74f4c5e01ef40",
+      "clean_sha256": "2796a2c1fee75eef292e7acfe02d3db58178d45b460fe90dffcf7114ad3f6e6e",
+      "bytes": 15157,
+      "changed_at": "2026-11-24T17:52:34.129Z"
     },
     "legal.md": {
       "url": "https://docs.typesafe.ai/legal.md",
@@ -546,10 +546,10 @@
       "url": "https://docs.typesafe.ai/primitives.md",
       "title": "Primitives (Questions)",
       "description": "The System One question types, the typed answers they return, how to choose between them, and how to ask several at once.",
-      "raw_sha256": "cc7a8b0a455b8146bb8db3e12c309bf185fa2abc31f82d88b61ec1e63bc86be0",
-      "clean_sha256": "f7eeaff81114d13ea4636f8929bf403990b97ae84a37d94121526f7566b08a49",
-      "bytes": 16368,
-      "changed_at": "2026-11-07T13:11:11.627Z"
+      "raw_sha256": "2e0d0a93270c33a31c32eb6df2988709c98e8ba1da9222c972c17b4e36d16a30",
+      "clean_sha256": "17bb0a6eb00487508101dc7e3807e0283309af74456acba6dde2e330d118421f",
+      "bytes": 16460,
+      "changed_at": "2026-11-24T17:52:34.134Z"
     },
     "primitives/advanced.md": {
       "url": "https://docs.typesafe.ai/primitives/advanced.md",
@@ -573,28 +573,28 @@
       "url": "https://docs.typesafe.ai/primitives/choice.md",
       "title": "Choice",
       "description": "A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.",
-      "raw_sha256": "a3f3ded62c00901a6cbbc3d012a339dde4a7f3fdb68ede338b385f9099b04186",
-      "clean_sha256": "d7f0b7ce95ad5c74dc1ac823f09a757c88f440774102802714d85e0f3eee2599",
-      "bytes": 15647,
-      "changed_at": "2026-11-04T14:39:00.927Z"
+      "raw_sha256": "bf6a70e89c2ff8e335fa51fa2a26b1fd9ba901da6a126b7933bfaeee19616ab7",
+      "clean_sha256": "c23da9c766605d142a6e807e27795ee9244e43b6f67fe1583fe5d2006bf42d3e",
+      "bytes": 15871,
+      "changed_at": "2026-11-24T17:52:34.135Z"
     },
     "primitives/noul.md": {
       "url": "https://docs.typesafe.ai/primitives/noul.md",
       "title": "Noul",
       "description": "A Noul question asks Jev to evaluate a yes/no question and return the probability that the answer is yes.",
-      "raw_sha256": "c53213dda01777eb2ff183fd00862bb4f4825be9bc328149a2df865737704fd0",
-      "clean_sha256": "6b5effc707e497976b9c23278dc7e8eef2ab3fb5c96460358d93efc588c4009b",
-      "bytes": 16697,
-      "changed_at": "2026-11-04T14:39:00.930Z"
+      "raw_sha256": "c413f26e14bf1a01452e58b793c3665a4853c64f0734581eb8973f487cd1960f",
+      "clean_sha256": "6b409fdafb2adafa944aaf44a5b3d6f927d0bd9b1244814e82dd7e2198bf3185",
+      "bytes": 16754,
+      "changed_at": "2026-11-24T17:52:34.138Z"
     },
     "primitives/score.md": {
       "url": "https://docs.typesafe.ai/primitives/score.md",
       "title": "Score",
       "description": "A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.",
-      "raw_sha256": "93c593881a2cd134acba3514cf325cc156bad7dc1a4e0b0ed2580301127c2c3e",
-      "clean_sha256": "6e7a64e7603ca3d2a7f28fe10bd50dddf02f337f36bee81ce5b896e698f3c093",
-      "bytes": 20657,
-      "changed_at": "2026-11-04T14:39:00.929Z"
+      "raw_sha256": "1ebc5e4763bd9a65da60467cac0b8d62ee00f0cbd8e858f8f541230e002a2e97",
+      "clean_sha256": "8938d21f833de3d1e97336a4f84b2bd06d856426a09931f9b02a16c16301525e",
+      "bytes": 20693,
+      "changed_at": "2026-11-24T17:52:34.137Z"
     },
     "sdk.md": {
       "url": "https://docs.typesafe.ai/sdk.md",

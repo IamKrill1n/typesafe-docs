@@ -101,12 +101,12 @@ The response has one entry in `answers` per question, under the ids from the req
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "bug_severity": {
       "type": "score",
-      "score": 1.43,
-      "confidence": 0.35,
+      "score": 1.48,
+      "confidence": 0.28,
       "legend": {
         "0": "Cosmetic; no impact to functionality",
         "1": "Broken or degraded feature, but workaround exists",
@@ -114,14 +114,14 @@ The response has one entry in `answers` per question, under the ids from the req
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.57,
-        "2": 0.43
+        "1": 0.52,
+        "2": 0.48
       }
     }
   },
   "usage": {
-    "input_tokens": 332,
-    "output_tokens": 18
+    "input_tokens": 341,
+    "output_tokens": 20
   }
 }
 ```
@@ -130,11 +130,11 @@ Each Score answer has five values:
 
 * `type`: The type of System One question.
 * `probabilities`: The probability of each level, keyed by level number as a string. The sum of all values is 1.
-* `score`: The position on the level number line, from 0 to the top level number, which is 2 here. It's each level number multiplied by its probability, added up: 0 x 0.0 + 1 x 0.57 + 2 x 0.43 = 1.43.
+* `score`: The position on the level number line, from 0 to the top level number, which is 2 here. It's each level number multiplied by its probability, added up: 0 x 0.0 + 1 x 0.52 + 2 x 0.48 = 1.48.
 * `legend`: Each level number mapped back to its description.
 * [`confidence`](https://docs.typesafe.ai/confidence): A number from 0 to 1 computed from how `probabilities` is spread. A single peak on one level means high confidence. Probability spread over several levels means low confidence.
 
-A score of 1.43 means the model is split between levels 1 and 2, leaning to level 1. That matches the report: the export is broken, and switching to Chrome is a workaround for most customers, but not for the ones who only use Safari. The model puts 0.57 on "workaround exists" and 0.43 on "no workaround", and confidence is 0.35 because it's split.
+A score of 1.48 means the model is almost evenly split between levels 1 and 2, with slightly more on level 1. That matches the report: the export is broken, and switching to Chrome is a workaround for most customers, but not for the ones who only use Safari. The model puts 0.52 on "workaround exists" and 0.48 on "no workaround", and that split brings confidence down to 0.28.
 
 Using the Python SDK, `ScoreAnswer` has `score`, `confidence`, `probabilities`, and `legend` as typed fields. The SDK keys `probabilities` and `legend` by integer level rather than by string.
 
@@ -182,12 +182,12 @@ We can see how different bug reports change the score:
 
     <tr>
       <td>Export to PDF fails with a spinner that never finishes. Some of our team say CSV export still works for them, others say it fails too.</td>
-      <td>1.11</td><td>0.84</td><td>0.0</td><td>0.89</td><td>0.11</td>
+      <td>1.13</td><td>0.8</td><td>0.0</td><td>0.87</td><td>0.13</td>
     </tr>
 
     <tr>
       <td>The export button crashes the settings page in Safari. It works in Chrome, but a few of our customers only use Safari.</td>
-      <td>1.43</td><td>0.35</td><td>0.0</td><td>0.57</td><td>0.43</td>
+      <td>1.48</td><td>0.28</td><td>0.0</td><td>0.52</td><td>0.48</td>
     </tr>
 
     <tr>
@@ -241,12 +241,12 @@ Jev's response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "severity": {
       "type": "score",
-      "score": 1.24,
-      "confidence": 0.64,
+      "score": 1.26,
+      "confidence": 0.61,
       "legend": {
         "0": "Cosmetic; no impact to functionality",
         "1": "Broken or degraded feature, but workaround exists",
@@ -254,14 +254,14 @@ Jev's response:
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.76,
-        "2": 0.24
+        "1": 0.74,
+        "2": 0.26
       }
     },
     "frustration": {
       "type": "score",
-      "score": 1.28,
-      "confidence": 0.58,
+      "score": 1.2,
+      "confidence": 0.7,
       "legend": {
         "0": "Calm, just stating facts",
         "1": "Frustrated but civil",
@@ -269,8 +269,8 @@ Jev's response:
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.72,
-        "2": 0.28
+        "1": 0.8,
+        "2": 0.2
       }
     },
     "report_quality": {
@@ -292,16 +292,16 @@ Jev's response:
     }
   },
   "usage": {
-    "input_tokens": 468,
-    "output_tokens": 43
+    "input_tokens": 510,
+    "output_tokens": 46
   }
 }
 ```
 
 Each question is answered on its own against the ticket and given a score:
 
-* `severity` is 1.24 at confidence 0.64. Same reading as the opening example: the export is broken and some have a workaround.
-* `frustration` is 1.28 at confidence 0.58. The wording is civil, but "third time" and "I'm done" shift some of the score toward the top level, so the model splits 0.72 and 0.28 between "frustrated but civil" and "very angry". For this ticket the two levels overlap, which is why the confidence is moderate.
+* `severity` is 1.26 at confidence 0.61. Same reading as the opening example: the export is broken and some have a workaround.
+* `frustration` is 1.2 at confidence 0.7. The wording is civil, but "third time" and "I'm done" move some probability to the top level: 0.8 goes to "frustrated but civil" and 0.2 to "very angry". For this ticket the two levels overlap, which is why confidence is 0.7 rather than 1.0.
 * `report_quality` is 3.0 at confidence 1.0. The steps and browser version are both stated.
 
 The three scales have different lengths, so before combining them, normalize each score. A four-level scale returns 0 to 3 and a three-level scale returns 0 to 2, so a top score on one is bigger than a top score on the other. Divide each score by its top level number, `len(criteria) - 1`, to put every score on 0 to 1. Then the weights mean what they say: 0.6 on severity and 0.3 on frustration makes severity count twice as much.
@@ -362,7 +362,7 @@ def priority(ticket: str) -> float:
     return 0.6 * severity + 0.3 * frustration + 0.1 * report_quality
 ```
 
-For the example response above, the normalized scores are 0.62 for severity, 0.64 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.62 + 0.3 × 0.64 + 0.1 × 1.0 = 0.664`, which rounds to `0.66`.
+For the example response above, the normalized scores are 0.63 for severity, 0.6 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.63 + 0.3 × 0.6 + 0.1 × 1.0 = 0.658`, which rounds to `0.66`.
 
 The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The call count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring.md) pattern.
 
@@ -378,12 +378,12 @@ The response:
 
 ```json theme={null}
 {
-  "model": "jev-1.13.0",
+  "model": "jev-1.14.0",
   "answers": {
     "bug_severity": {
       "type": "score",
       "score": 1.09,
-      "confidence": 0.87,
+      "confidence": 0.85,
       "legend": {
         "0": {
           "what": "Cosmetic; no impact to functionality",
@@ -408,29 +408,29 @@ The response:
       },
       "probabilities": {
         "0": 0.0,
-        "1": 0.91,
-        "2": 0.09
+        "1": 0.9,
+        "2": 0.1
       }
     }
   },
   "usage": {
-    "input_tokens": 379,
-    "output_tokens": 18
+    "input_tokens": 419,
+    "output_tokens": 20
   }
 }
 ```
 
-With plain strings this ticket scored 1.11 with a confidence of 0.84. With examples it scores 1.09 at 0.87 confidence, a small shift because the plain strings already placed it well. The effect is larger when the plain strings leave the model split, as the next table shows.
+With plain strings, this ticket scores 1.13 at confidence 0.8. With examples, it scores 1.09 at confidence 0.85. The change is small because the plain strings already put most of the probability on level 1. Examples make a bigger difference when plain strings leave the model split, as the next table shows.
 
 Examples steer the model, and they only help when they look like your real inputs. The table below is the opening Safari report with three different sets of level objects:
 
 | Level description | `score` | `confidence` |
 | - | - | - |
-| plain string: no object with examples | 1.43 | 0.35 |
-| Added examples array with useful example: "export fails in one browser but works in another" | 1.03 | 0.96 |
-| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.43 | 0.35 |
+| plain string: no object with examples | 1.48 | 0.28 |
+| Added examples array with useful example: "export fails in one browser but works in another" | 1.04 | 0.94 |
+| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.42 | 0.37 |
 
-In this comparison, the matching example concentrates almost all the probability on one level. The unrelated example returns the same result as plain strings. Higher confidence does not establish which answer is correct. Choose examples with known expected levels, then test the revised descriptions on separate inputs before keeping them.
+In this comparison, the matching example concentrates almost all the probability on one level. The unrelated example returns almost the same result as plain strings. Higher confidence does not establish which answer is correct. Choose examples with known expected levels, then test the revised descriptions on separate inputs before keeping them.
 
 
 This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

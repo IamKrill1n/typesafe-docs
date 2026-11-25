@@ -137,6 +137,16 @@
   </url>
 
   <url>
+    <loc>https://docs.typesafe.ai/cookbooks/langchain_quickstart</loc>
+    <lastmod>2026-11-25T01:59:44.802Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://docs.typesafe.ai/cookbooks/langchain_safety_gate</loc>
+    <lastmod>2026-11-25T02:26:55.071Z</lastmod>
+  </url>
+
+  <url>
     <loc>https://docs.typesafe.ai/cookbooks/llm_guardrails</loc>
     <lastmod>2026-11-16T21:54:27.469Z</lastmod>
   </url>
@@ -214,6 +224,11 @@
   <url>
     <loc>https://docs.typesafe.ai/images</loc>
     <lastmod>2026-11-12T22:44:42.039Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://docs.typesafe.ai/integrations</loc>
+    <lastmod>2026-11-25T01:59:44.802Z</lastmod>
   </url>
 
   <url>
@@ -698,7 +713,7 @@
 
   <url>
     <loc>https://docs.typesafe.ai/sdk/python/changelog</loc>
-    <lastmod>2026-10-14T21:23:09.094Z</lastmod>
+    <lastmod>2026-11-25T11:04:24.226Z</lastmod>
   </url>
 
   <url>

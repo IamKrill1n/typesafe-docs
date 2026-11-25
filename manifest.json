@@ -1,6 +1,6 @@
 {
   "source": "https://docs.typesafe.ai",
-  "page_count": 149,
+  "page_count": 152,
   "pages": {
     "agent-skill.md": {
       "url": "https://docs.typesafe.ai/agent-skill.md",
@@ -254,6 +254,24 @@
       "bytes": 17460,
       "changed_at": "2026-11-17T16:08:04.689Z"
     },
+    "cookbooks/langchain_quickstart.md": {
+      "url": "https://docs.typesafe.ai/cookbooks/langchain_quickstart.md",
+      "title": "LangChain quickstart",
+      "description": "Ask Jev a question from LangChain with TypeSafeClassifier, read the answer's probabilities and confidence, and act on it in code.",
+      "raw_sha256": "52df41c32deaddaf0494de126e23d9afe6fe72f55760998d1b4575f6c4cc84d2",
+      "clean_sha256": "5281bc4a04e27ca7b6228f10d8ed4bf29dfd1ef505cc438b52681b670a608dcb",
+      "bytes": 18436,
+      "changed_at": "2026-11-25T17:19:21.056Z"
+    },
+    "cookbooks/langchain_safety_gate.md": {
+      "url": "https://docs.typesafe.ai/cookbooks/langchain_safety_gate.md",
+      "title": "Tool-call safety gate",
+      "description": "Before a LangChain agent for customer support runs a tool, it asks Jev whether to run it, get a person's approval first, or refuse. We grade this gate on 24 labeled tool calls.",
+      "raw_sha256": "ca3f0f3bc19a5ebfe8f37924bbc4f57ee57516df6c399995253fa7867affacf6",
+      "clean_sha256": "8a7a96ff03a5a89142ba417040915764e2c50a88f02a2a4942bb414c71fb50b6",
+      "bytes": 56412,
+      "changed_at": "2026-11-25T17:19:21.058Z"
+    },
     "cookbooks/llm_guardrails.md": {
       "url": "https://docs.typesafe.ai/cookbooks/llm_guardrails.md",
       "title": "Guardrails for LLMs",
@@ -397,6 +415,15 @@
       "clean_sha256": "40c206c81a978a59893e50f1760932236522f6444e6f66928c06a042a00bfcd0",
       "bytes": 21186,
       "changed_at": "2026-11-05T14:44:01.305Z"
+    },
+    "integrations.md": {
+      "url": "https://docs.typesafe.ai/integrations.md",
+      "title": "Integrations",
+      "description": "Use Jev from the agent frameworks you already build with.",
+      "raw_sha256": "a89e759ef662f3ae2978e18a7ba5a82bbb722fb431989daae43768a34762e227",
+      "clean_sha256": "5dec587015efca98a4e23ba69580c05a29bb0cd2a3bae781614e5d0ba6ea2200",
+      "bytes": 1062,
+      "changed_at": "2026-11-25T17:19:21.055Z"
     },
     "introduction.md": {
       "url": "https://docs.typesafe.ai/introduction.md",
@@ -1311,10 +1338,10 @@
       "url": "https://docs.typesafe.ai/sdk/python/changelog.md",
       "title": "Changelog",
       "description": "Python clients for the TypeSafe AI API",
-      "raw_sha256": "854a9ff2823c7675fa7708b3ff516c0f84943f3569f0d1487ee3c91315cc5cd2",
-      "clean_sha256": "fc8798c2aec4bd10d13b1837a1c12f207dd8b5e04cd0292bd0036b835b21e043",
-      "bytes": 2638,
-      "changed_at": "2026-10-23T11:45:21.828Z"
+      "raw_sha256": "818e944094658293ddf4741015e4be7854b266a013ea2ff0f687f1ee46a22753",
+      "clean_sha256": "06c4411df92530d0698f0d1faf4e9709be3c01868ab23a2b694985248ec32980",
+      "bytes": 2739,
+      "changed_at": "2026-11-25T17:19:21.065Z"
     },
     "sdk/python/usage.md": {
       "url": "https://docs.typesafe.ai/sdk/python/usage.md",

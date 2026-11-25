@@ -6,6 +6,12 @@
 
 > Python clients for the TypeSafe AI API
 
+## v0.7.6 (2026-11-25)
+
+### Bug fixes
+
+* serialize non-finite numbers in question models as strings
+
 ## v0.7.5 (2026-10-14)
 
 ### Documentation

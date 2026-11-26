@@ -1148,25 +1148,13 @@ def steps_chart(
 >
 > Edit one request and run it live. Needs a TypeSafe account.
 
-Requires Python 3.10 or later. Choose a package manager to install the dependencies:
+To run it on your own machine instead:
 
-> [tab] pip
->
-> Create a virtual environment and add the dependencies:
->
-> ```bash wrap theme={null}
-> python3 -m venv .venv
-> .venv/bin/pip install anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
+```bash theme={null}
+pip install anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
+```
 
-> [tab] uv
->
-> Initialize a project and add the dependencies:
->
-> ```bash wrap theme={null}
-> uv init --bare
-> uv add anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
+With uv, `uv run autoresearch_feature_discovery.py` installs the dependencies for you.
 
 The code downloads the published answers into `autoresearch_feature_discovery_cache.json`,
 so it runs as published without an API key; to run live, set `DOWNLOAD_CACHE = False` and

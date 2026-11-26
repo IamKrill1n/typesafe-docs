@@ -114,145 +114,145 @@
       "url": "https://docs.typesafe.ai/cookbooks/autoformat.md",
       "title": "Structure recovery",
       "description": "Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout).",
-      "raw_sha256": "611bfef9a6fee30ce4df923509bd6970d88569be7963612f02d6c0e7abf7c598",
-      "clean_sha256": "a3dab5847d29334f7c18400d6e8ab206a93878a5bf7138369f02b3d36e496fed",
-      "bytes": 42065,
-      "changed_at": "2026-11-17T16:08:04.673Z"
+      "raw_sha256": "204501b2922975efbef817d908bd314f78bb66e06337aefc6158671e7143f48e",
+      "clean_sha256": "efd220968ef05434d163969abac973176b21a8d5d004bfde70a1912e163c9fb5",
+      "bytes": 42133,
+      "changed_at": "2026-11-26T16:59:23.724Z"
     },
     "cookbooks/autoresearch_feature_discovery.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md",
       "title": "Autoresearch feature discovery",
       "description": "Let an LLM propose questions about labelled text, have Jev answer them for every row, and train CatBoost on the answers, feeding its misses back to the next step. The worked example predicts how polite Wikipedia editors' requests read.",
-      "raw_sha256": "a9fbdf4a54e0e6505ef77bbf25c815514367f9a4fddb3151593b1f7e2ca0994d",
-      "clean_sha256": "d0ac0d9735e35ed249755463f07b08aff857be06a13ce101dc40e7fd7922ab96",
-      "bytes": 83520,
-      "changed_at": "2026-11-17T16:08:04.700Z"
+      "raw_sha256": "e81dd190a268545d13207ef0a3d86f7d2e713a778f7485dd52d3d4f10d66c416",
+      "clean_sha256": "9304c2baf3e50513b22480714d1b5897232c3bc7ffbbc4c1f6b465853904d150",
+      "bytes": 83243,
+      "changed_at": "2026-11-26T16:59:23.745Z"
     },
     "cookbooks/basic_memory.md": {
       "url": "https://docs.typesafe.ai/cookbooks/basic_memory.md",
       "title": "Simple memory system",
       "description": "Let Jev decide which requests and answers are worth remembering, then wrap the Jev call in a small function that adds memories to later calls.",
-      "raw_sha256": "59117d686a986d2abe3d5ab655b604b909dcf045322faeecb2d6ebb464e8b333",
-      "clean_sha256": "67451f861793b36553306a2445b2f843546c0c2e3b61bc39e4ed82527a78f368",
-      "bytes": 30870,
-      "changed_at": "2026-11-17T16:08:04.658Z"
+      "raw_sha256": "b9a4893ea8355513516e9e4f9025f0c66f2b9e2be90ac52be866b3396f6eb1d4",
+      "clean_sha256": "9bf8f304d447267c3cf372ce60c8a446dfeb8e017e4998fb714633c89c95c933",
+      "bytes": 30940,
+      "changed_at": "2026-11-26T16:59:23.716Z"
     },
     "cookbooks/cart_from_primitives.md": {
       "url": "https://docs.typesafe.ai/cookbooks/cart_from_primitives.md",
       "title": "Shopping cart",
       "description": "Turns a natural-language cafe order into a structured cart: a shrinking-options loop of Choice questions finds every item, then one batched request per item fills its known fields.",
-      "raw_sha256": "a871af7546be5f005c055b1638d176dda6b87501a40ea33ec164c4607706c668",
-      "clean_sha256": "7c43bb4ade17d15a6c02a856bb69d15305f4212f566a1b1c8dbebbeed0af0001",
-      "bytes": 17883,
-      "changed_at": "2026-11-17T16:08:04.674Z"
+      "raw_sha256": "0eac105fefc8d1fc2971c5af30c7dd4e1431c05a68447ea27e3263cc25c13d41",
+      "clean_sha256": "0868e7d1c565d1a007588edde1bbad28212579e28f15c310b7d758f99cca389f",
+      "bytes": 17961,
+      "changed_at": "2026-11-26T16:59:23.725Z"
     },
     "cookbooks/citation_check.md": {
       "url": "https://docs.typesafe.ai/cookbooks/citation_check.md",
       "title": "Double-checking citations",
       "description": "Catch wrong or hallucinated citations by checking against the source document. One Choice question decides whether the quote's context supports the claim.",
-      "raw_sha256": "15738a3465506517b5b06eddda27d646cea2332b7c32b49d70d131d73851a918",
-      "clean_sha256": "10f3b447eb438bcf88996667531ed89fd7d3d8c15d58877c3737c782c42867a4",
-      "bytes": 18115,
-      "changed_at": "2026-11-17T16:08:04.653Z"
+      "raw_sha256": "b1c87e6c44b421177c2a1f7f25d31ba08179a99140e7c287eb354a60b2d62dc4",
+      "clean_sha256": "560a12dbddf8dfd19ad57882f61e8b7fa623d55b36a5d75fc217d5f5995804dc",
+      "bytes": 18187,
+      "changed_at": "2026-11-26T16:59:23.713Z"
     },
     "cookbooks/classification_using_confidence.md": {
       "url": "https://docs.typesafe.ai/cookbooks/classification_using_confidence.md",
       "title": "Classification using confidence",
       "description": "Classify SEC annual reports into 75 industry groups with one Choice each, then read the answer's own confidence to decide whether to report that group or the broader division above it.",
-      "raw_sha256": "14a94bae5b97741ae4fd466ed647f19d923bb06bfd85fa4fd4ffa1de75b25b40",
-      "clean_sha256": "4ab05aeb3cc49b9a862396cb1ee9f9ac262a2959d8494a0c9aeb8c7f724f84ed",
-      "bytes": 32741,
-      "changed_at": "2026-11-17T16:08:04.662Z"
+      "raw_sha256": "c30b14473ba2167e5fadde64f151ee82465a4804b88c052687360d9058d55497",
+      "clean_sha256": "6254454247ecfeb8e57c11dd522143cd627e26b60dd0eb715b788d13e7e78fe3",
+      "bytes": 32830,
+      "changed_at": "2026-11-26T16:59:23.719Z"
     },
     "cookbooks/classifying_rag_passages.md": {
       "url": "https://docs.typesafe.ai/cookbooks/classifying_rag_passages.md",
       "title": "Classifying RAG passages",
       "description": "Score each retrieved passage with one TypeSafe request, then decide in code which ones reach the answering model.",
-      "raw_sha256": "fa7155a4b88cd9ee1d7b5256644a09b6739b732cea9b29eff3970ff73de0cedb",
-      "clean_sha256": "200ac95307e6960987e2227cfe9b1955acfbe70bacb12091d2e07e66a0f70ab9",
-      "bytes": 36616,
-      "changed_at": "2026-11-17T16:08:04.657Z"
+      "raw_sha256": "e4802e06926cb987d6b56a46bf1266a32ea18fe40849de1a9a9edb6ba4146a7b",
+      "clean_sha256": "a785678208d6a1ea080cfcdf07370f90088e63669b45b304fd42a743330108cd",
+      "bytes": 36698,
+      "changed_at": "2026-11-26T16:59:23.715Z"
     },
     "cookbooks/consistency_choice_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md",
       "title": "Self-consistency: choices",
       "description": "Ask a model the same moderation question twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline posts.",
-      "raw_sha256": "6423e0e134d6a1e4edd0ca5cbcb9b07ff6cfbc40f595512338199fa481794e2a",
-      "clean_sha256": "c3e4f197c5c072ea93f493098ecaba8d94cc9502090e774761dd49aa914bc724",
-      "bytes": 54520,
-      "changed_at": "2026-11-17T16:08:04.691Z"
+      "raw_sha256": "5740e861e3689db0144a3e2c981149f8a4cd71f5ee1636df08a2b0ea15c9fc31",
+      "clean_sha256": "8826bd5716efb76f111f2f79b4e42b388c91a04ae2a8aff5a14da92a44094976",
+      "bytes": 54605,
+      "changed_at": "2026-11-26T16:59:23.738Z"
     },
     "cookbooks/consistency_noul_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook.md",
       "title": "Self-consistency: nouls",
       "description": "Ask a model about the same insurance claim twice: how often does the decision change? A test of reliability that needs no answer key, comparing LLMs and Jev on borderline claims.",
-      "raw_sha256": "676611801306bcd585a4d4a5b32d51620596857389d96e9eea32a64c1dfd5c3f",
-      "clean_sha256": "c633bf1ef2312bbf36f21a998e740115f64a9d0772387aaec80947118cdef639",
-      "bytes": 46219,
-      "changed_at": "2026-11-17T16:08:04.694Z"
+      "raw_sha256": "153714bc80e6f6bdf4704a249d2644ea99413d9a742f08713557f36366c45c35",
+      "clean_sha256": "3755c7e351381b7dbab6395522571249ade177ba467271cbd467d55ac9f82624",
+      "bytes": 46302,
+      "changed_at": "2026-11-26T16:59:23.740Z"
     },
     "cookbooks/date_extraction_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/date_extraction_cookbook.md",
       "title": "Date extraction",
       "description": "Extracts absolute and relative dates by asking Jev for the parts named in a document, then resolving and validating them in code with confidence-based review.",
-      "raw_sha256": "84a5404cc57854132022a1dfa0599a93c3f7e4128b8e880682751a1163c143e0",
-      "clean_sha256": "9f9d006e1b3a703d981ecca8e5191ed666cf6d0366e5bd83f8a302b5a310114e",
-      "bytes": 23900,
-      "changed_at": "2026-11-17T16:08:04.667Z"
+      "raw_sha256": "cfc511207bd122b2c200f4302564fba89d10e185852eb751a2f9bcb1a60db44d",
+      "clean_sha256": "f55906082952a53d4b571cac470d4e9c5362b754c877f489deb71f61e8d55a1e",
+      "bytes": 23982,
+      "changed_at": "2026-11-26T16:59:23.722Z"
     },
     "cookbooks/entity_alignment.md": {
       "url": "https://docs.typesafe.ai/cookbooks/entity_alignment.md",
       "title": "Knowledge graph entity alignment",
       "description": "Route candidate record pairs from two sources to a merge recommendation, manual review, or no link, using one Score question. Three Noul questions check individual fields. The worked example uses 450 album pairs from Wikidata and MusicBrainz.",
-      "raw_sha256": "9745f9699b5a5c1df401e46cdcee0fffc38a6dfc80b20ad4b10e91bf026a4d7e",
-      "clean_sha256": "d7b57417d31d458ef0553507d1a04a5f6f23ec249aecdf77c3badaf28b993265",
-      "bytes": 25443,
-      "changed_at": "2026-11-17T16:08:04.688Z"
+      "raw_sha256": "c4f4ddcbe4449ab31131f6e722975fd3ee146a1baa5bd78511f9e5d23f296e42",
+      "clean_sha256": "75ef68d10179419db3bf08da7292e2a3acbd783b8f45418a4a3c0ec97ecac8c4",
+      "bytes": 25184,
+      "changed_at": "2026-11-26T16:59:23.735Z"
     },
     "cookbooks/feeder_watch.md": {
       "url": "https://docs.typesafe.ai/cookbooks/feeder_watch.md",
       "title": "Feeder-cam visit log",
       "description": "Send frames from bird feeder camera footage to Jev with five questions, one of them a Box that finds the bird, then use plain code to turn the answers into a visit log per species.",
-      "raw_sha256": "9d7be2301cde3238bed7193567dd7df8551841b22153c5af44472a7458516d67",
-      "clean_sha256": "e1fe7b42a77ad2a57a979222d21fb9fab4d725075a8a541cae3676f87cca74e8",
-      "bytes": 36487,
-      "changed_at": "2026-11-17T16:08:04.680Z"
+      "raw_sha256": "709323470ca2f7c86910ee00240706dba60c4138ca078c3761170d51d4d8ed75",
+      "clean_sha256": "64d399e31bd6907083a61cb9dd3ffa362b51487a8520f077ed26311ecc474473",
+      "bytes": 35896,
+      "changed_at": "2026-11-26T16:59:23.729Z"
     },
     "cookbooks/function_calling.md": {
       "url": "https://docs.typesafe.ai/cookbooks/function_calling.md",
       "title": "Function calling",
       "description": "Turns natural-language trading requests into calls to ordinary typed functions by mapping function names and closed-set arguments to confidence-aware System One questions.",
-      "raw_sha256": "412eee250669f7bc0ff133841f1ba322b938f8d82b5c660f7193a08e37f19913",
-      "clean_sha256": "f4ad8f4e94c9cf5c07b7bf345d4c64580fa0a38152fdee1c3477719637f96a32",
-      "bytes": 32176,
-      "changed_at": "2026-11-18T15:44:48.938Z"
+      "raw_sha256": "23e77379ded5ae45acb049e06d75de0bd83faa29d584f11865f5431993aa58ad",
+      "clean_sha256": "7b3b8d10d8f26e1b471a16d37c39410b094741d8ffd71021937d9fe8fd03b64a",
+      "bytes": 32250,
+      "changed_at": "2026-11-26T16:59:23.709Z"
     },
     "cookbooks/hierarchical_classification.md": {
       "url": "https://docs.typesafe.ai/cookbooks/hierarchical_classification.md",
       "title": "Hierarchical classification",
       "description": "Uses parallel beam search over Jev's Choice probabilities to classify documents in deep patent, retail product, and biomedical hierarchies.",
-      "raw_sha256": "6d969848695974b5ec670a010da3a053babaadaab551f330d58b3fc04d75203a",
-      "clean_sha256": "6e85ec8f5f669857b09c1ad56548e505f8c87feaf32c125b9eb20e5167a825f6",
-      "bytes": 34533,
-      "changed_at": "2026-11-17T16:08:04.660Z"
+      "raw_sha256": "8629c8dfc78244ba14ae16ec3d5d2a91d6e6352e8978a5ddb1c2b67af67fe7c9",
+      "clean_sha256": "93a63d54bc2ee7217612b55ef45664a6162f01825123c2aa6b6880951b9956fe",
+      "bytes": 34611,
+      "changed_at": "2026-11-26T16:59:23.718Z"
     },
     "cookbooks/infinite_cardinality_choice.md": {
       "url": "https://docs.typesafe.ai/cookbooks/infinite_cardinality_choice.md",
       "title": "Infinite cardinality choice",
       "description": "From someone's own description, find the film they half-remember among 5,000: one Noul per film on a short plot, again on a long plot for the top eighty, and one Choice over the top twenty. The right film comes first 78% of the time, against 33% when embedding search builds the shortlist.",
-      "raw_sha256": "c391c0a4c2a2d22f22c5ce9b5c41de242184b746d6a012fad52790fe804d3e78",
-      "clean_sha256": "175a527751e325c895f5b595bf55cf70de0cfcc45d4cbc3c81f33e4b350bb1a5",
-      "bytes": 65882,
-      "changed_at": "2026-11-17T16:08:04.684Z"
+      "raw_sha256": "bbbc9e130a5e13f2920c77bb9a3668aaf7d4e29c8a80398f8cdabcbc04ef1757",
+      "clean_sha256": "b74ac4e6adeac181513148739ab53e8ce5826bc5ee516142b47fd8ece8542c7b",
+      "bytes": 65967,
+      "changed_at": "2026-11-26T16:59:23.732Z"
     },
     "cookbooks/intelliprompter.md": {
       "url": "https://docs.typesafe.ai/cookbooks/intelliprompter.md",
       "title": "Intelliprompter",
       "description": "Tick off a presenter's notes as they speak: Jev scores the live transcript against each note not yet covered, and a note stays ticked once its score passes the threshold.",
-      "raw_sha256": "dbd26e92a7783757fe9c253ee05b265e138be854299e94ae03e71f2dec035b8a",
-      "clean_sha256": "31f02860486cb9f5838c8dd1311e7115e42d15c08df7a4cf547f389b1a5c8419",
-      "bytes": 17460,
-      "changed_at": "2026-11-17T16:08:04.689Z"
+      "raw_sha256": "13741e37e963b6e865bce8e63d270199402b84e639c41cc5c86d5f5742aead91",
+      "clean_sha256": "995a79e241705727ddc15c455669056f2c97ed4d58e66571524b1416a0fe339c",
+      "bytes": 17533,
+      "changed_at": "2026-11-26T16:59:23.736Z"
     },
     "cookbooks/langchain_quickstart.md": {
       "url": "https://docs.typesafe.ai/cookbooks/langchain_quickstart.md",
@@ -276,100 +276,100 @@
       "url": "https://docs.typesafe.ai/cookbooks/llm_guardrails.md",
       "title": "Guardrails for LLMs",
       "description": "Screens every message into and out of an LLM app with one TypeSafe request, then passes, reviews, blocks, or sends it to support by thresholds you set.",
-      "raw_sha256": "a6e5a94b8bfab1fd6c45806c81d5fa212a83a2efb43ffed632c2d6cea9a62126",
-      "clean_sha256": "28c2f29d9ec6daf53130e4146fce94c4a0d5692633a968a3dc1ea1a9a1d947c4",
-      "bytes": 27291,
-      "changed_at": "2026-11-17T16:08:04.652Z"
+      "raw_sha256": "7c84f8cd90d1815476654d13cfca98d6d77929bea0fab7eb3f76f472c7cd970b",
+      "clean_sha256": "939a2933e979b9666c41e52759382b7a369e974ebe56159286ffb9668a0c4289",
+      "bytes": 27363,
+      "changed_at": "2026-11-26T16:59:23.712Z"
     },
     "cookbooks/ocr_confidence_bounding_boxes.md": {
       "url": "https://docs.typesafe.ai/cookbooks/ocr_confidence_bounding_boxes.md",
       "title": "OCR confidence and bounding boxes",
       "description": "Check the values an OCR extractor read from invoice photos: Jev boxes each value, scores it against the page and against a crop of its box, and flags low scores for review.",
-      "raw_sha256": "43f4c88b3cbf079608e3010deb490442d4270aca5d22a18dbbafcc69ccec519e",
-      "clean_sha256": "7e115c6a4ec5fc49db95feea41717fdfbb33489001f908d5c99f8541fcb39b35",
-      "bytes": 23504,
-      "changed_at": "2026-11-17T16:08:04.678Z"
+      "raw_sha256": "7da57321caf7fb4ce88b8de91c93bf243e6f8b96e641e51b9574a37a91928b9f",
+      "clean_sha256": "7a8bae6576f9fdda09b958173b685e1b4f4326a23e3fcd0ba5cf99d1234014e9",
+      "bytes": 23591,
+      "changed_at": "2026-11-26T16:59:23.727Z"
     },
     "cookbooks/parallel_questions.md": {
       "url": "https://docs.typesafe.ai/cookbooks/parallel_questions.md",
       "title": "Parallel questions",
       "description": "Runs a 13-question regulatory briefing over the GDPR Wikipedia article, showing that batching every question into one TypeSafe call is 12.2x cheaper and 11.8x faster with no change in answers.",
-      "raw_sha256": "5de8587b1de9ab10095f81abb696ca5cbc2f489c5734ff890454a3dde757dedd",
-      "clean_sha256": "199024a841db093927bc4b8c0075babbec8424b43da57f78218d6aab6acc9784",
-      "bytes": 50224,
-      "changed_at": "2026-11-17T16:08:04.696Z"
+      "raw_sha256": "ef304cd731f4fc1e3e06896f8ad31c3d91675c861187b0e618b54852a2de3359",
+      "clean_sha256": "46b11a70159c151d3782a14aadd9913cfd1e95cd00c396c5c60a94f1f8b2617e",
+      "bytes": 50300,
+      "changed_at": "2026-11-26T16:59:23.742Z"
     },
     "cookbooks/pre_parsed_value_extraction_cookbook.md": {
       "url": "https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook.md",
       "title": "Pre-parsed value extraction",
       "description": "Finds candidate emails, phone numbers, and amounts with a regex, has Jev pick the one you ask for, and normalizes that exact span in code.",
-      "raw_sha256": "d10f1ba6fef256bb948c606166d906f19c134779241c7d63b44eb2375568a47d",
-      "clean_sha256": "ae7343e45bdcfaac160c4ddc3d5afa462a339bc7f46c132482b3602670a23cd3",
-      "bytes": 15817,
-      "changed_at": "2026-11-17T16:08:04.669Z"
+      "raw_sha256": "3594e6a3bae021734d2dadcd62f59a56fe797f827758951878fc5a9bf97aa40a",
+      "clean_sha256": "3f4d23c5696d4c17a81078f4ea949d91932d8da2176102fa65285fafbb2ee119",
+      "bytes": 15911,
+      "changed_at": "2026-11-26T16:59:23.723Z"
     },
     "cookbooks/reading_scanned_documents.md": {
       "url": "https://docs.typesafe.ai/cookbooks/reading_scanned_documents.md",
       "title": "Reading a scanned vaccination record",
       "description": "Find each vaccine on a scanned travel record with a Noul and a Box, read the year of each dose with a Choice that can answer unreadable, and check each dose still covers the trip in a text-only request.",
-      "raw_sha256": "b84c04d5780a5c857cf63cf59d521e9bdcd15de90940e6da14359e369abcd06c",
-      "clean_sha256": "6535ca8b0a0e47ef2ada40a12bd7dc83f98398ed0aaf4c65931f2a1bb87cd9da",
-      "bytes": 27295,
-      "changed_at": "2026-11-17T16:08:04.676Z"
+      "raw_sha256": "33511b1334d1877ff326bf558369929e847f43053227f1575701b87e8cdbf656",
+      "clean_sha256": "7d55c89361dcf73c4bc6b31da45888ddcef82a835282da6d1654c6bb6b7d20a0",
+      "bytes": 27378,
+      "changed_at": "2026-11-26T16:59:23.726Z"
     },
     "cookbooks/rerank_typesafe.md": {
       "url": "https://docs.typesafe.ai/cookbooks/rerank_typesafe.md",
       "title": "Re-ranking",
       "description": "Builds 30-passage BM25 shortlists for 40 CLERC legal queries, then uses one System One question per query-candidate pair to raise top-1 accuracy from 5% to 30% and top-10 accuracy from 38% to 65%.",
-      "raw_sha256": "4a393d576920c906965eed7792ca4c9261b8873c96a2a0d55b09658e7e57b927",
-      "clean_sha256": "255f9919bd556edae7f5b10faaed53b9f9963e4a0bced0a13a1aaa76738e1919",
-      "bytes": 28570,
-      "changed_at": "2026-11-17T16:08:04.681Z"
+      "raw_sha256": "0dcd10a5d8606f23d0a231ea50e1d6f65db3e72b6ecb066ba86e50eb18003e89",
+      "clean_sha256": "ae98b693d161ce95e640cdb7e304526ad703a1185c868010d00475747905c4ce",
+      "bytes": 28643,
+      "changed_at": "2026-11-26T16:59:23.730Z"
     },
     "cookbooks/sde_cascade.md": {
       "url": "https://docs.typesafe.ai/cookbooks/sde_cascade.md",
       "title": "SDE cascade",
       "description": "Extracts structured data with a cheap model, checks each field with Jev, and escalates to a reasoning model only when a check fires.",
-      "raw_sha256": "c80d5125684ba3c8703e97a9b14888e3eae6a0b88552431822261d718f1d208e",
-      "clean_sha256": "668138cc8a9395d597422276af673160d30c5e9806fe034633ef0d66e2084562",
-      "bytes": 25134,
-      "changed_at": "2026-11-17T16:08:04.665Z"
+      "raw_sha256": "82427620fbd67f19e056c3b4ee57cb47648ad23c6ee998f20818cc97cd2ce77f",
+      "clean_sha256": "2cdf0992576ebcd35daec58ccbc44385cb36342b0257b1dae4b8d757e31dad6d",
+      "bytes": 25208,
+      "changed_at": "2026-11-26T16:59:23.721Z"
     },
     "cookbooks/semantic_find.md": {
       "url": "https://docs.typesafe.ai/cookbooks/semantic_find.md",
       "title": "Line-by-line search",
       "description": "Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer.",
-      "raw_sha256": "758c3a19143136dc950e7852b2913a8970a1c8a790c2050145debbee0197d8fa",
-      "clean_sha256": "3aaaf9a304c4d7ec28252e6ff2f4c172e78d3ec3e47ce15a4ddf07a429d17ab5",
-      "bytes": 39825,
-      "changed_at": "2026-11-17T16:08:04.686Z"
+      "raw_sha256": "16736767e0c3580237b8963935952819a662c8148b4a12ec3aad6bda2fb3002e",
+      "clean_sha256": "7408ac98620105926aff466d7ea4b725e3138c1a619d8a8ff64f985246642eb0",
+      "bytes": 39625,
+      "changed_at": "2026-11-26T16:59:23.733Z"
     },
     "cookbooks/skill_suggestion.md": {
       "url": "https://docs.typesafe.ai/cookbooks/skill_suggestion.md",
       "title": "Skill suggestion",
       "description": "Picks at most one skill for an agent turn out of the 194 in Nous Research's Hermes catalog, using two TypeSafe requests to rank and re-check the top candidates.",
-      "raw_sha256": "ab46484dc57eb7f85bd02736df5bbd6bd954dc394eda6b0bbc5298b4b0443b5d",
-      "clean_sha256": "5915f9394e5dff052ceb4057084ea91bf509ab0f87460e460ad43657ce7677b8",
-      "bytes": 47664,
-      "changed_at": "2026-11-17T16:08:04.650Z"
+      "raw_sha256": "6846e5cf3d746fe175a98a92918c21db8f6b6abe5df395fce5e50b737759047f",
+      "clean_sha256": "83c64866d7a10de3167a8ac450311ae64e8c1f2e1ea53e62e9b91fdaf4240fdc",
+      "bytes": 47543,
+      "changed_at": "2026-11-26T16:59:23.711Z"
     },
     "cookbooks/twitch_chat_filter.md": {
       "url": "https://docs.typesafe.ai/cookbooks/twitch_chat_filter.md",
       "title": "Twitch chat filter",
       "description": "Hides insults, spam, and unasked-for gameplay tips in Twitch chat, blurs spoilers, and highlights questions. Each message gets one TypeSafe request with three questions, requests run concurrently, and plain rules in code turn the answers into what the viewer sees.",
-      "raw_sha256": "069675fdcb5dee683aabd4561b0a5063acbbb7ef27c03d5686714cca4ccd2501",
-      "clean_sha256": "1292bc495e813ff59e0d05eed2845ff6ea5fa498a533f1619199b3170a45e7d7",
-      "bytes": 25515,
-      "changed_at": "2026-11-17T16:08:04.663Z"
+      "raw_sha256": "c4aa5239507e397605bfe6accc46f67bb5b8db69379be57ed93e5e67715b4ad5",
+      "clean_sha256": "80aa8b3ee701ad02ff8d0b2edd0258fc6bd49ac124856a046d74a83b04a91471",
+      "bytes": 25310,
+      "changed_at": "2026-11-26T16:59:23.720Z"
     },
     "cookbooks/verify_llm_outputs.md": {
       "url": "https://docs.typesafe.ai/cookbooks/verify_llm_outputs.md",
       "title": "Verifying LLM answers against their source",
       "description": "Check whether an LLM's answer follows from the paragraphs it was given, using three Noul questions in one request, and send the doubtful answers to review.",
-      "raw_sha256": "69221791aa6dc4eb47e05f9a6c6efe3f485d8b93e536ebefe39c2f30f1437455",
-      "clean_sha256": "a444bbc82a8133d609cddf8bb14585a2d8a748e182f7ef38f5b61b876692eea7",
-      "bytes": 33172,
-      "changed_at": "2026-11-17T16:08:04.655Z"
+      "raw_sha256": "a5a1725eb74270213d847f754477e1934ef4123d8980d1d63739836fd71170ba",
+      "clean_sha256": "9de8a8f166eb659aad160e3ab88fd58b4129060555fa4f7f18faf56855b73ef4",
+      "bytes": 33248,
+      "changed_at": "2026-11-26T16:59:23.714Z"
     },
     "demos.md": {
       "url": "https://docs.typesafe.ai/demos.md",
@@ -456,10 +456,10 @@
       "url": "https://docs.typesafe.ai/introduction/quickstart.md",
       "title": "Quick start",
       "description": "Get up and running with Jev in 5 minutes.",
-      "raw_sha256": "b0fa760454435c2b7476f28ed147e6f53bb7af23e8894e8477b74f4c5e01ef40",
+      "raw_sha256": "9739f71a669ccf2b8966a436db65dd1be04221ab3ec9e308c7ef25da6bcdbff2",
       "clean_sha256": "2796a2c1fee75eef292e7acfe02d3db58178d45b460fe90dffcf7114ad3f6e6e",
-      "bytes": 15157,
-      "changed_at": "2026-11-24T17:52:34.129Z"
+      "bytes": 15469,
+      "changed_at": "2026-11-26T16:59:23.699Z"
     },
     "legal.md": {
       "url": "https://docs.typesafe.ai/legal.md",

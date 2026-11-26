@@ -1399,6 +1399,8 @@ To run it on your own machine instead:
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run autoformat.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -3185,25 +3187,13 @@ def steps_chart(
 >
 > Edit one request and run it live. Needs a TypeSafe account.
 
-Requires Python 3.10 or later. Choose a package manager to install the dependencies:
+To run it on your own machine instead:
 
-> [tab] pip
->
-> Create a virtual environment and add the dependencies:
->
-> ```bash wrap theme={null}
-> python3 -m venv .venv
-> .venv/bin/pip install anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
+```bash theme={null}
+pip install anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
+```
 
-> [tab] uv
->
-> Initialize a project and add the dependencies:
->
-> ```bash wrap theme={null}
-> uv init --bare
-> uv add anthropic openai catboost numpy matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
+With uv, `uv run autoresearch_feature_discovery.py` installs the dependencies for you.
 
 The code downloads the published answers into `autoresearch_feature_discovery_cache.json`,
 so it runs as published without an API key; to run live, set `DOWNLOAD_CACHE = False` and
@@ -3840,6 +3830,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run basic_memory.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
@@ -4515,6 +4507,8 @@ To run it on your own machine instead:
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run cart_from_primitives.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -4882,6 +4876,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run citation_check.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
@@ -5277,6 +5273,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install ipython matplotlib 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run classification_using_confidence.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
@@ -5772,6 +5770,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install anthropic openai matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run classifying_rag_passages.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`; in Colab, add
@@ -6553,6 +6553,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install anthropic openai matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run consistency_choice_cookbook.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`; in Colab, add
@@ -7649,6 +7651,8 @@ To run it on your own machine instead:
 pip install anthropic openai matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run consistency_noul_cookbook.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`, `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`; in Colab, add
 them in the Secrets panel. Numbers below came from `jev-1.14.0` on 2026-11-02. The LLM
@@ -8564,6 +8568,8 @@ To run it on your own machine instead:
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run date_extraction_cookbook.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -9033,25 +9039,13 @@ flowchart LR
 >
 > Edit one request and run it live. Needs a TypeSafe account.
 
-Requires Python 3.10 or later. Choose a package manager to install the dependencies:
+To run it on your own machine instead:
 
-> [tab] pip
->
-> Create a virtual environment and add the dependencies:
->
-> ```bash wrap theme={null}
-> python3 -m venv .venv
-> .venv/bin/pip install matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
+```bash theme={null}
+pip install matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
+```
 
-> [tab] uv
->
-> Initialize a project and add the dependencies:
->
-> ```bash wrap theme={null}
-> uv init --bare
-> uv add matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
+With uv, `uv run entity_alignment.py` installs the dependencies for you.
 
 The code downloads the published answers into `entity_alignment_cache.json`, so it runs as
 published without an API key; to run live, set `DOWNLOAD_CACHE = False` and delete that
@@ -9571,32 +9565,13 @@ sightings.
 >
 > This page as one .py file, to run locally.
 
-Requires Python 3.10 or later. Choose a package manager to install the dependencies:
-
-> [tab] pip
->
-> Create a virtual environment and add the dependencies:
->
-> ```bash wrap theme={null}
-> python3 -m venv .venv
-> .venv/bin/pip install 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
-
-> [tab] uv
->
-> Initialize a project and add the dependencies:
->
-> ```bash wrap theme={null}
-> uv init --bare
-> uv add 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
-> ```
-
-[`feeder_watch.py`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/feeder_watch/feeder_watch.py) holds every code block on
-this page, in order. This command runs it whether you installed with pip or uv:
+To run it on your own machine instead:
 
 ```bash theme={null}
-.venv/bin/python feeder_watch.py
+pip install 'typesafe-sdk>=0.7.5,<0.8.0' pillow matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run feeder_watch.py` installs the dependencies for you.
 
 A full run sends about 180 requests. Pillow draws the boxes and matplotlib lays out the
 figures.
@@ -10425,6 +10400,8 @@ To run it on your own machine instead:
 pip install ipython polars matplotlib numpy 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run function_calling.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel. The code below
 downloads `trader.py`, which holds the ten functions, with `spec.json` and the price bars,
@@ -11109,6 +11086,8 @@ Requires Python 3.10 or later.
 ```bash theme={null}
 pip install typesafe-sdk ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run taxonomy_beam_search.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel. The first run
@@ -11983,6 +11962,8 @@ To run it on your own machine instead:
 pip install openai ipython matplotlib 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run infinite_cardinality_choice.py` installs the dependencies for you.
+
 The code downloads the published answers into `infinite_cardinality_choice_cache.json`, so
 it runs as published without an API key; to run live, set `DOWNLOAD_CACHE = False` and
 delete that file. To change a request, set `TYPESAFE_API_KEY`, and `OPENAI_API_KEY` for the
@@ -12595,6 +12576,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run intelliprompter.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, [create a TypeSafe API key](https://console.typesafe.ai/keys) and set
@@ -14485,6 +14468,8 @@ To run it on your own machine instead:
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run llm_guardrails.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -15025,6 +15010,8 @@ To run it on your own machine instead:
 pip install ipython pillow 'typesafe-sdk[pil]>=0.7.5' 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run ocr_confidence_bounding_boxes.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -15507,6 +15494,8 @@ To run it on your own machine instead:
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run parallel_questions.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -15915,6 +15904,9 @@ To run it on your own machine instead:
 pip install ipython phonenumbers 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run pre_parsed_value_extraction_cookbook.py` installs the dependencies for
+you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -16321,6 +16313,8 @@ To run it on your own machine instead:
 pip install ipython matplotlib 'typesafe-sdk>=0.7.5,<0.8.0' \
     'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run reading_scanned_documents.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
@@ -17066,6 +17060,8 @@ This example uses 3,565 court opinion passages and 40 queries.
 pip install bm25s datasets matplotlib 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run rerank_typesafe.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
 
@@ -17511,6 +17507,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install openai jsonschema ipython matplotlib pandas 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run cascade_cookbook.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY` and `OPENAI_API_KEY`; in Colab, add them in the Secrets
@@ -17986,24 +17984,17 @@ The search has three parts:
 >
 > Edit one request and run it live. Needs a TypeSafe account.
 
-### Install the dependencies
+To run it on your own machine instead:
 
 ```bash theme={null}
 pip install ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run semantic_find.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, [create a TypeSafe API key](https://console.typesafe.ai/keys) and set
 `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
-
-### Run the script
-
-[`semantic_find.py`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/semantic_find/semantic_find.py)
-holds every code block on this page, in order. Run it from the file's directory:
-
-```bash theme={null}
-python semantic_find.py
-```
 
 The first block imports `typesafe_sdk`, reads `TYPESAFE_API_KEY` and creates the client:
 
@@ -18412,13 +18403,12 @@ Install the TypeSafe client, the Anthropic client, and the shared cookbook helpe
 pip install anthropic matplotlib ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
+With uv, `uv run skill_suggestion.py` installs the dependencies for you.
+
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set a [TypeSafe API key](https://console.typesafe.ai/keys) as `TYPESAFE_API_KEY`,
 and an Anthropic key for the agent being measured as `ANTHROPIC_API_KEY`; in Colab, add
 them in the Secrets panel.
-
-> **Note:** this page's code blocks form one script,
-> [`skill_suggestion.py`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/skill_suggestion/skill_suggestion.py).
 
 ## Caching results
 
@@ -19422,12 +19412,7 @@ To run it on your own machine instead:
 pip install 'typesafe-sdk>=0.7.1,<0.8.0' ipython 'cooksafe>=0.3.0,<0.4.0'
 ```
 
-[`twitch_chat_filter.py`](https://github.com/typesafe-ai/typesafe-public-examples/blob/main/cookbooks/twitch_chat_filter/twitch_chat_filter.py)
-holds every code block on this page, in order. Run it from the file's directory:
-
-```bash theme={null}
-python twitch_chat_filter.py
-```
+With uv, `uv run twitch_chat_filter.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY`; in Colab, add it in the Secrets panel.
@@ -19932,6 +19917,8 @@ To run it on your own machine instead:
 ```bash theme={null}
 pip install openai ipython matplotlib 'cooksafe>=0.3.0,<0.4.0'
 ```
+
+With uv, `uv run verify_llm_outputs.py` installs the dependencies for you.
 
 The code replays saved answers, so it runs as published without an API key. To change a
 request, set `TYPESAFE_API_KEY` and `OPENAI_API_KEY`; in Colab, add them in the Secrets
@@ -21525,14 +21512,14 @@ The fastest way to add Jev to your project is to have your coding agent write th
 >
 > Run these two commands in your terminal:
 >
-> ```bash theme={null}
+> ```bash theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null}
 > claude plugin marketplace add typesafe-ai/skills
 > claude plugin install typesafe@typesafe-ai
 > ```
 
 > [tab] Other agents
 >
-> ```bash theme={null}
+> ```bash theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null}
 > npx skills add typesafe-ai/skills --skill typesafe-ai
 > ```
 >
@@ -21542,7 +21529,7 @@ The fastest way to add Jev to your project is to have your coding agent write th
 >
 > Paste this prompt into your coding agent:
 >
-> ```text wrap theme={null}
+> ```text wrap theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null} theme={null}
 > Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
 > ```
 

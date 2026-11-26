@@ -58,82 +58,82 @@
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/autoformat</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/basic_memory</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/cart_from_primitives</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/citation_check</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/classification_using_confidence</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/classifying_rag_passages</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/date_extraction_cookbook</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/entity_alignment</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/feeder_watch</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/function_calling</loc>
-    <lastmod>2026-11-17T19:20:44.200Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/hierarchical_classification</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/infinite_cardinality_choice</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/intelliprompter</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
@@ -148,57 +148,57 @@
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/llm_guardrails</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/ocr_confidence_bounding_boxes</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/parallel_questions</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/pre_parsed_value_extraction_cookbook</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/reading_scanned_documents</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/rerank_typesafe</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/sde_cascade</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/semantic_find</loc>
-    <lastmod>2026-11-16T22:03:28.921Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/skill_suggestion</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/twitch_chat_filter</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
     <loc>https://docs.typesafe.ai/cookbooks/verify_llm_outputs</loc>
-    <lastmod>2026-11-16T21:54:27.469Z</lastmod>
+    <lastmod>2026-11-25T21:55:36.875Z</lastmod>
   </url>
 
   <url>
@@ -248,7 +248,7 @@
 
   <url>
     <loc>https://docs.typesafe.ai/introduction/quickstart</loc>
-    <lastmod>2026-11-23T19:00:29.586Z</lastmod>
+    <lastmod>2026-11-26T00:16:57.670Z</lastmod>
   </url>
 
   <url>

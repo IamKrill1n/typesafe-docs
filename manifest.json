@@ -114,10 +114,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/autoformat.md",
       "title": "Structure recovery",
       "description": "Reconstructs Markdown from plain text that lost its formatting in two requests: one stitches hard-wrapped lines back together, one classifies every block (heading, list, code, callout).",
-      "raw_sha256": "204501b2922975efbef817d908bd314f78bb66e06337aefc6158671e7143f48e",
-      "clean_sha256": "efd220968ef05434d163969abac973176b21a8d5d004bfde70a1912e163c9fb5",
-      "bytes": 42133,
-      "changed_at": "2026-11-26T16:59:23.724Z"
+      "raw_sha256": "556b32deda6f2bacf337bcca56673190bd087927cf50a4ce9edf82458da08834",
+      "clean_sha256": "1091bfced22fad1fb50fe06cedf5c74619cdf9e2fe36d4e2f6a8a3ff42299fc3",
+      "bytes": 41784,
+      "changed_at": "2026-11-27T16:45:03.987Z"
     },
     "cookbooks/autoresearch_feature_discovery.md": {
       "url": "https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery.md",
@@ -231,10 +231,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/hierarchical_classification.md",
       "title": "Hierarchical classification",
       "description": "Uses parallel beam search over Jev's Choice probabilities to classify documents in deep patent, retail product, and biomedical hierarchies.",
-      "raw_sha256": "8629c8dfc78244ba14ae16ec3d5d2a91d6e6352e8978a5ddb1c2b67af67fe7c9",
-      "clean_sha256": "93a63d54bc2ee7217612b55ef45664a6162f01825123c2aa6b6880951b9956fe",
+      "raw_sha256": "3da75f3dacdfb817ef5f194d3468682303be70bfb5d45b3a44d128ee370a39e0",
+      "clean_sha256": "dd4bc5a69c467e3fccaa832b0ff6d9375da8e0d1988a8cba13559f4d82525d5e",
       "bytes": 34611,
-      "changed_at": "2026-11-26T16:59:23.718Z"
+      "changed_at": "2026-11-27T16:45:03.982Z"
     },
     "cookbooks/infinite_cardinality_choice.md": {
       "url": "https://docs.typesafe.ai/cookbooks/infinite_cardinality_choice.md",
@@ -267,10 +267,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/langchain_safety_gate.md",
       "title": "Tool-call safety gate",
       "description": "Before a LangChain agent for customer support runs a tool, it asks Jev whether to run it, get a person's approval first, or refuse. We grade this gate on 24 labeled tool calls.",
-      "raw_sha256": "ca3f0f3bc19a5ebfe8f37924bbc4f57ee57516df6c399995253fa7867affacf6",
-      "clean_sha256": "8a7a96ff03a5a89142ba417040915764e2c50a88f02a2a4942bb414c71fb50b6",
-      "bytes": 56412,
-      "changed_at": "2026-11-25T17:19:21.058Z"
+      "raw_sha256": "3f06975fb90fa00eb8208991a141ad356619c40cfd047fa505df928e485dc4b0",
+      "clean_sha256": "38855a362345b76d97f4feaffeabffb8a8d18186555d43fe871981747bee2297",
+      "bytes": 56472,
+      "changed_at": "2026-11-27T16:45:04.002Z"
     },
     "cookbooks/llm_guardrails.md": {
       "url": "https://docs.typesafe.ai/cookbooks/llm_guardrails.md",
@@ -339,10 +339,10 @@
       "url": "https://docs.typesafe.ai/cookbooks/semantic_find.md",
       "title": "Line-by-line search",
       "description": "Build semantic search for GitHub's Terms of Service. In one request, score 218 line ids against a plain-language query with a Choice question, and use a Noul question to check whether the document contains an answer.",
-      "raw_sha256": "16736767e0c3580237b8963935952819a662c8148b4a12ec3aad6bda2fb3002e",
-      "clean_sha256": "7408ac98620105926aff466d7ea4b725e3138c1a619d8a8ff64f985246642eb0",
-      "bytes": 39625,
-      "changed_at": "2026-11-26T16:59:23.733Z"
+      "raw_sha256": "079ad29748c9bd27cb9a00481901b0c820707f3a0859309d1dc7098f89fa588e",
+      "clean_sha256": "b81afbc11356eb904769ec55bfadebf463072480498b21f2253511aa55c1bce9",
+      "bytes": 39227,
+      "changed_at": "2026-11-27T16:45:03.994Z"
     },
     "cookbooks/skill_suggestion.md": {
       "url": "https://docs.typesafe.ai/cookbooks/skill_suggestion.md",

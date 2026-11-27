@@ -115,17 +115,7 @@ plain-text inbox: paragraphs hard-wrapped mid-sentence, a shell command sitting 
 line, two lists with no bullets or numbers, a warning with nothing marking it as one.
 
 ```python
-DOCUMENT_URL = (
-    "https://raw.githubusercontent.com/typesafe-ai/typesafe-public-examples/main/cookbooks/autoformat/build-memo.txt"
-)
-
-@json_cache
-def fetch_document(url: str) -> str:
-    request = urllib.request.Request(url, headers={"User-Agent": "typesafe-cookbook/1.0"})
-    with urllib.request.urlopen(request) as response:
-        return response.read().decode()
-
-RAW = fetch_document(DOCUMENT_URL)
+RAW = download("build-memo.txt").read_text(encoding="utf-8")
 print(RAW[:560])
 ```
 
